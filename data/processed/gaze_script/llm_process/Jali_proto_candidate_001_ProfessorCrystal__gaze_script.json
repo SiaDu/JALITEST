@@ -1,0 +1,551 @@
+{
+  "schema_version": "gaze_script_v1",
+  "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
+  "movie_id": "tt0032138",
+  "prototype_label": "Professor crystal-ball monologue",
+  "timing_basis": "textgrid_words",
+  "source_files": {
+    "candidate_sequences_jsonl": "data/processed/candidate_sequences/Jali_proto_candidate_sequences.jsonl",
+    "words_jsonl": "data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__words.jsonl",
+    "words_csv": "data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__words.csv",
+    "textgrid_summary_json": "data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__textgrid_summary.json",
+    "jali_emotion_options_yaml": "configs/jali_emotion_options.yaml"
+  },
+  "meta": {
+    "fps": 30,
+    "speaker": "PROFESSOR",
+    "duration_sec": 35.285,
+    "word_count": 81,
+    "note": "This is a hand-inferred first-pass script. It preserves TextGrid spelling such as lsis and lnfinite so span resolution stays exact."
+  },
+  "scene_context": {
+    "environment": "Professor wagon / crystal-ball reading setup",
+    "current_scene_summary": "The Professor guides Dorothy into a staged crystal-ball ritual, using theatrical confidence to sell the prop while keeping control of the interaction.",
+    "social_interaction": "single-speaker monologue addressed to Dorothy/listener",
+    "salient_objects": [
+      "listener_face",
+      "crystal",
+      "seat/downward action area"
+    ]
+  },
+  "target_policy": {
+    "disallowed_targets": [
+      "OFFSCREEN"
+    ],
+    "allowed_targets": [
+      "CHARACTER",
+      "LISTENER",
+      "OBJECT",
+      "CRYSTAL",
+      "DOWN",
+      "DOWN_LEFT",
+      "DOWN_RIGHT",
+      "UP",
+      "UP_LEFT",
+      "UP_RIGHT",
+      "LEFT",
+      "RIGHT",
+      "CAMERA",
+      "SELF",
+      "GROUP"
+    ]
+  },
+  "targets": {
+    "LISTENER": {
+      "type": "semantic_character",
+      "description": "Dorothy / listener face"
+    },
+    "CRYSTAL": {
+      "type": "semantic_object",
+      "description": "crystal ball prop"
+    },
+    "DOWN": {
+      "type": "direction",
+      "description": "seat or immediate action space"
+    },
+    "DOWN_LEFT": {
+      "type": "direction",
+      "description": "small comic/reflective aversion"
+    },
+    "UP": {
+      "type": "direction",
+      "description": "mystical upward focus"
+    },
+    "UP_RIGHT": {
+      "type": "direction",
+      "description": "imaginative storytelling glance"
+    }
+  },
+  "events": [
+    {
+      "event_id": "gaze_001",
+      "type": "gaze",
+      "span": "that's right here",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "intent": "reassurance",
+      "reason": "Gentle direct address to settle Dorothy before guiding her into the performance space.",
+      "confidence": 0.82,
+      "resolved_time": {
+        "start": 0.19,
+        "end": 1.44,
+        "source": "textgrid_words",
+        "word_index_start": 0,
+        "word_index_end": 2
+      },
+      "matched_words": [
+        "that's",
+        "right",
+        "here"
+      ]
+    },
+    {
+      "event_id": "gaze_002",
+      "type": "gaze",
+      "span": "sit right down here",
+      "mode": "SHIFT",
+      "target": "DOWN",
+      "intent": "social_control",
+      "reason": "Instructional gaze toward the seat / immediate action area while asking her to sit.",
+      "confidence": 0.86,
+      "resolved_time": {
+        "start": 1.91,
+        "end": 3.36,
+        "source": "textgrid_words",
+        "word_index_start": 3,
+        "word_index_end": 6
+      },
+      "matched_words": [
+        "sit",
+        "right",
+        "down",
+        "here"
+      ]
+    },
+    {
+      "event_id": "gaze_003",
+      "type": "gaze",
+      "span": "this is the same genuine magic authentic crystal",
+      "mode": "HOLD",
+      "target": "CRYSTAL",
+      "intent": "showmanship",
+      "reason": "The crystal is the prop being sold as magical; sustained gaze sells its importance.",
+      "confidence": 0.92,
+      "resolved_time": {
+        "start": 5.16,
+        "end": 9.965875,
+        "source": "textgrid_words",
+        "word_index_start": 9,
+        "word_index_end": 16
+      },
+      "matched_words": [
+        "this",
+        "is",
+        "the",
+        "same",
+        "genuine",
+        "magic",
+        "authentic",
+        "crystal"
+      ]
+    },
+    {
+      "event_id": "gaze_004",
+      "type": "gaze",
+      "span": "used by the priests of lsis and osiris in the days of the pharaohs",
+      "mode": "GLANCE",
+      "target": "UP_RIGHT",
+      "intent": "mythic_storytelling",
+      "reason": "A theatrical upward glance marks invented ancient history and expands the scene beyond the room.",
+      "confidence": 0.74,
+      "resolved_time": {
+        "start": 10.369625,
+        "end": 14.189626,
+        "source": "textgrid_words",
+        "word_index_start": 17,
+        "word_index_end": 30
+      },
+      "matched_words": [
+        "used",
+        "by",
+        "the",
+        "priests",
+        "of",
+        "lsis",
+        "and",
+        "osiris",
+        "in",
+        "the",
+        "days",
+        "of",
+        "the",
+        "pharaohs"
+      ]
+    },
+    {
+      "event_id": "gaze_005",
+      "type": "gaze",
+      "span": "in which cleopatra saw the approach of julius caesar and marc anthony",
+      "mode": "SHIFT",
+      "target": "CRYSTAL",
+      "intent": "showmanship",
+      "reason": "Return attention to the crystal while elaborating its supposed visionary power.",
+      "confidence": 0.88,
+      "resolved_time": {
+        "start": 14.189626,
+        "end": 19.784748,
+        "source": "textgrid_words",
+        "word_index_start": 31,
+        "word_index_end": 42
+      },
+      "matched_words": [
+        "in",
+        "which",
+        "cleopatra",
+        "saw",
+        "the",
+        "approach",
+        "of",
+        "julius",
+        "caesar",
+        "and",
+        "marc",
+        "anthony"
+      ]
+    },
+    {
+      "event_id": "gaze_006",
+      "type": "gaze",
+      "span": "and so on and so on now",
+      "mode": "AVERT",
+      "target": "DOWN_LEFT",
+      "intent": "comic_evasion",
+      "reason": "The repeated filler exposes that the historical claim is improvised; a small downward aversion helps the comic dodge.",
+      "confidence": 0.79,
+      "resolved_time": {
+        "start": 19.784748,
+        "end": 22.79475,
+        "source": "textgrid_words",
+        "word_index_start": 43,
+        "word_index_end": 49
+      },
+      "matched_words": [
+        "and",
+        "so",
+        "on",
+        "and",
+        "so",
+        "on",
+        "now"
+      ]
+    },
+    {
+      "event_id": "gaze_007",
+      "type": "gaze",
+      "span": "you'd better close your eyes my child for a moment",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "intent": "gentle_command",
+      "reason": "He re-engages Dorothy to regain control and direct her into the ritual.",
+      "confidence": 0.9,
+      "resolved_time": {
+        "start": 23.830997,
+        "end": 27.100998,
+        "source": "textgrid_words",
+        "word_index_start": 50,
+        "word_index_end": 59
+      },
+      "matched_words": [
+        "you'd",
+        "better",
+        "close",
+        "your",
+        "eyes",
+        "my",
+        "child",
+        "for",
+        "a",
+        "moment"
+      ]
+    },
+    {
+      "event_id": "gaze_008",
+      "type": "gaze",
+      "span": "in order to be better in tuned with the lnfinite",
+      "mode": "HOLD",
+      "target": "UP",
+      "intent": "mystical_focus",
+      "reason": "The mystical phrase benefits from an elevated, unfocused gaze as if reaching beyond the immediate scene.",
+      "confidence": 0.81,
+      "resolved_time": {
+        "start": 27.100998,
+        "end": 31.210999,
+        "source": "textgrid_words",
+        "word_index_start": 60,
+        "word_index_end": 69
+      },
+      "matched_words": [
+        "in",
+        "order",
+        "to",
+        "be",
+        "better",
+        "in",
+        "tuned",
+        "with",
+        "the",
+        "lnfinite"
+      ]
+    },
+    {
+      "event_id": "gaze_009",
+      "type": "gaze",
+      "span": "we can't do these things without reaching out into the lnfinite",
+      "mode": "SHIFT",
+      "target": "CRYSTAL",
+      "intent": "ritual_completion",
+      "reason": "The final claim should return toward the prop, reinforcing the crystal as the ritual device.",
+      "confidence": 0.84,
+      "resolved_time": {
+        "start": 31.714188,
+        "end": 35.241562,
+        "source": "textgrid_words",
+        "word_index_start": 70,
+        "word_index_end": 80
+      },
+      "matched_words": [
+        "we",
+        "can't",
+        "do",
+        "these",
+        "things",
+        "without",
+        "reaching",
+        "out",
+        "into",
+        "the",
+        "lnfinite"
+      ]
+    }
+  ],
+  "emotion_annotations": [
+    {
+      "event_id": "emotion_001",
+      "span": "sit right down here",
+      "mask": {
+        "bearing": "Friendly",
+        "intensity": 68
+      },
+      "heart": null,
+      "reason": "Warm but directive invitation.",
+      "resolved_time": {
+        "start": 1.91,
+        "end": 3.36,
+        "source": "textgrid_words",
+        "word_index_start": 3,
+        "word_index_end": 6
+      },
+      "matched_words": [
+        "sit",
+        "right",
+        "down",
+        "here"
+      ]
+    },
+    {
+      "event_id": "emotion_002",
+      "span": "this is the same genuine magic authentic crystal used by the priests of lsis and osiris in the days of the pharaohs",
+      "mask": {
+        "bearing": "Smug",
+        "intensity": 82
+      },
+      "heart": {
+        "source": "Pride_P-91",
+        "strength": 58
+      },
+      "reason": "Showman pride and controlled confidence while presenting the fake mystical object.",
+      "resolved_time": {
+        "start": 5.16,
+        "end": 14.189626,
+        "source": "textgrid_words",
+        "word_index_start": 9,
+        "word_index_end": 30
+      },
+      "matched_words": [
+        "this",
+        "is",
+        "the",
+        "same",
+        "genuine",
+        "magic",
+        "authentic",
+        "crystal",
+        "used",
+        "by",
+        "the",
+        "priests",
+        "of",
+        "lsis",
+        "and",
+        "osiris",
+        "in",
+        "the",
+        "days",
+        "of",
+        "the",
+        "pharaohs"
+      ]
+    },
+    {
+      "event_id": "emotion_003",
+      "span": "in which cleopatra saw the approach of julius caesar and marc anthony and so on and so on",
+      "mask": {
+        "bearing": "Scheming",
+        "intensity": 76
+      },
+      "heart": {
+        "source": "Pride_P-91",
+        "strength": 52
+      },
+      "reason": "Improvised mythmaking with a sly confidence leak.",
+      "resolved_time": {
+        "start": 14.189626,
+        "end": 21.834751,
+        "source": "textgrid_words",
+        "word_index_start": 31,
+        "word_index_end": 48
+      },
+      "matched_words": [
+        "in",
+        "which",
+        "cleopatra",
+        "saw",
+        "the",
+        "approach",
+        "of",
+        "julius",
+        "caesar",
+        "and",
+        "marc",
+        "anthony",
+        "and",
+        "so",
+        "on",
+        "and",
+        "so",
+        "on"
+      ]
+    },
+    {
+      "event_id": "emotion_004",
+      "span": "now you'd better close your eyes my child for a moment",
+      "mask": {
+        "bearing": "Polite",
+        "intensity": 82
+      },
+      "heart": {
+        "source": "Afraid",
+        "strength": 44
+      },
+      "reason": "Polite surface control with slight nervous undercurrent.",
+      "resolved_time": {
+        "start": 22.424751,
+        "end": 27.100998,
+        "source": "textgrid_words",
+        "word_index_start": 49,
+        "word_index_end": 59
+      },
+      "matched_words": [
+        "now",
+        "you'd",
+        "better",
+        "close",
+        "your",
+        "eyes",
+        "my",
+        "child",
+        "for",
+        "a",
+        "moment"
+      ]
+    },
+    {
+      "event_id": "emotion_005",
+      "span": "in order to be better in tuned with the lnfinite",
+      "mask": {
+        "bearing": "Thinking",
+        "intensity": 78
+      },
+      "heart": null,
+      "reason": "Concentrated mystical framing.",
+      "resolved_time": {
+        "start": 27.100998,
+        "end": 31.210999,
+        "source": "textgrid_words",
+        "word_index_start": 60,
+        "word_index_end": 69
+      },
+      "matched_words": [
+        "in",
+        "order",
+        "to",
+        "be",
+        "better",
+        "in",
+        "tuned",
+        "with",
+        "the",
+        "lnfinite"
+      ]
+    },
+    {
+      "event_id": "emotion_006",
+      "span": "we can't do these things without reaching out into the lnfinite",
+      "mask": {
+        "bearing": "Watchful",
+        "intensity": 72
+      },
+      "heart": {
+        "source": "Afraid",
+        "strength": 52
+      },
+      "reason": "He tries to keep the ritual serious while hidden anxiety rises.",
+      "resolved_time": {
+        "start": 31.714188,
+        "end": 35.241562,
+        "source": "textgrid_words",
+        "word_index_start": 70,
+        "word_index_end": 80
+      },
+      "matched_words": [
+        "we",
+        "can't",
+        "do",
+        "these",
+        "things",
+        "without",
+        "reaching",
+        "out",
+        "into",
+        "the",
+        "lnfinite"
+      ]
+    }
+  ],
+  "jali_annotation": {
+    "mode": "text_editor_tags",
+    "tag_values_preserve_case": true,
+    "heart_strength_parse_rule": "split from final dash because sources can contain dashes, e.g. Pride_P-91-58",
+    "annotated_text_file": "data/processed/gaze_scripts/Jali_proto_candidate_001_ProfessorCrystal__annotated_for_jali.txt"
+  },
+  "validation": {
+    "all_gaze_spans_resolved": true,
+    "all_emotion_spans_resolved": true,
+    "offscreen_used": false,
+    "manual_review_recommended": true,
+    "review_notes": [
+      "Preview Pride_P-91 and Afraid heart sources in Maya; keep or replace after visual check.",
+      "The script intentionally does not correct lsis/lnfinite to Isis/Infinite."
+    ]
+  }
+}

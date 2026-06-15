@@ -1,0 +1,105 @@
+jali_emotion:
+  mode: transcript_annotation
+
+  node_settings_for_annotation:
+    mask_bearing:
+      attr: mask_bearing
+      enum_index: 0
+      label: from Annotation
+
+    mask_intensity:
+      attr: mask_intensity
+      enum_index: 0
+      label: From Transcript Tags
+
+    heart_source:
+      attr: heart_source
+      enum_index: 0
+      label: from Annotation
+
+    heart_strength:
+      attr: heart_strength
+      enum_index: 0
+      label: From Transcript Tags
+
+  tag_rules:
+    readable_annotation:
+      use_closing_tags: false
+      state_change_tags_only: true
+      tag_id_prefixes:
+        gaze: g
+        mask: m
+        heart: h
+
+    jali_export:
+      use_closing_tags: true
+      open_close_tags_must_match: true
+      tag_names_lowercase: true
+      tag_values_preserve_case: true
+
+  mask:
+    tag_format: "<mask={bearing}-{intensity}> {text} </mask={bearing}-{intensity}>"
+
+    intensity:
+      type: int
+      min: 0
+      max: 200
+      default: 80
+      llm_safe_min: 20
+      llm_safe_max: 120
+      note: "JALI Text Editor accepts arbitrary numeric intensity, not only dropdown presets."
+
+    allowed_bearings:
+      Nothing: 2
+      Neutral: 3
+      Polite: 4
+      Friendly: 5
+      Sassy: 6
+      Smug: 7
+      Cocky: 8
+      Nervous: 9
+      Panicky: 10
+      Thinking: 11
+      Scheming: 12
+      Devious: 13
+      Devilish: 14
+      Provoked: 15
+      Angered: 16
+      Dislike: 17
+      Disgust: 18
+      Singing_Serene: 19
+      Watchful: 20
+      Intimidating: 21
+      Confused: 22
+      Lost: 23
+
+  heart:
+    usage_policy:
+    use_only_when_visible_mask_and_inner_state_diverge: true
+    avoid_as_generic_second_emotion_layer: true
+    default_use: false
+    
+    tag_format: "<heart={source}-{strength}> {text} </heart={source}-{strength}>"
+
+    strength:
+      type: int
+      min: 0
+      max: 200
+      default: 60
+      llm_safe_min: 10
+      llm_safe_max: 100
+      note: "If source contains dashes, split the tag value from the final dash."
+
+    first_version_sources:
+      Nothing: 121
+      Angry: 122
+      Sad: 123
+      Disgusted: 124
+      Afraid: 125
+      Contempt: 126
+      Surprised: 127
+      Happy: 128
+
+    advanced_sources_allow_for_manual_tests:
+      Pride_P-91: 91
+      Emp_Anger-2: 2

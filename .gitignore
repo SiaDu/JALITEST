@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+.venv_clip/
+venv/
+env/
+
+# Local machine configuration
+configs/path_local.yaml
+.env
+.env.*
+
+# Windows metadata copied into WSL
+*:Zone.Identifier
+Thumbs.db
+desktop.ini
+
+# Large media inputs and generated media outputs
+data/movies/
+data/raw/
+data/interim/
+data/processed/candidate_sequences/audio_exports/
+data/processed/candidate_sequences/videos/
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.wav
+*.mp3
+
+# Runtime outputs
+outputs/**
+!outputs/**/.gitkeep
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
