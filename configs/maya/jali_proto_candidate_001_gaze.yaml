@@ -34,7 +34,7 @@ maya_gaze:
   # This runs before applying ExpreGaze gaze keys.
   jali_attribute_overrides:
     jSync1:
-      ambient_gaze_intensity: 0.2
+      ambient_gaze_intensity: 1
 
   # Bounds are for direction offsets only, NOT locator world positions.
   # z: [0, 0] means UP/DOWN/LEFT/RIGHT should not push eyeStare_world forward/back.

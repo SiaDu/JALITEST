@@ -7,7 +7,7 @@
       "mode": "GAZE",
       "target": "LISTENER",
       "text": "That's right.",
-      "reason": "Direct listener gaze establishes authority.",
+      "reason": "Direct listener gaze establishes immediate authority.",
       "span": {
         "start": 0,
         "end": 13,
@@ -49,7 +49,7 @@
       "mode": "GAZE",
       "target": "LISTENER",
       "text": "Sit right down here.",
-      "reason": "Return to listener while instructing Dorothy to sit.",
+      "reason": "Return to listener gaze continues the instruction to sit.",
       "span": {
         "start": 20,
         "end": 40,
@@ -70,7 +70,7 @@
       "mode": "GLANCE",
       "target": "CRYSTAL",
       "text": "That's it.",
-      "reason": "Quick crystal glance introduces the prop.",
+      "reason": "Quick crystal glance introduces the prop without overplaying it.",
       "span": {
         "start": 41,
         "end": 51,
@@ -78,8 +78,8 @@
         "raw_end": 51
       },
       "resolved_time": {
-        "start": 3.5,
-        "end": 4.14,
+        "start": 3.51,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 7,
         "end_word_index": 8
@@ -91,7 +91,7 @@
       "mode": "GAZE",
       "target": "CRYSTAL",
       "text": "This is the same genuine, magic, authentic crystal...",
-      "reason": "Crystal becomes the focus of the magical claim.",
+      "reason": "Crystal becomes the focus of the magical sales pitch.",
       "span": {
         "start": 52,
         "end": 105,
@@ -112,7 +112,7 @@
       "mode": "GAZE",
       "target": "LISTENER",
       "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Back to listener to keep persuasion social.",
+      "reason": "Back to listener keeps the persuasion social and directed at Dorothy.",
       "span": {
         "start": 106,
         "end": 178,
@@ -133,7 +133,7 @@
       "mode": "AVERT",
       "target": "UP_RIGHT",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Up-right aversion suggests theatrical recall.",
+      "reason": "Up-right aversion performs mystical recall and theatrical invention.",
       "span": {
         "start": 179,
         "end": 252,
@@ -142,7 +142,7 @@
       },
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -154,7 +154,7 @@
       "mode": "AVERT",
       "target": "DOWN_LEFT",
       "text": "And so on, and so on. Now...",
-      "reason": "Down-left aversion covers the filler “and so on.”",
+      "reason": "Down-left aversion covers the filler “and so on” as a controlled reset.",
       "span": {
         "start": 253,
         "end": 281,
@@ -162,7 +162,7 @@
         "raw_end": 281
       },
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 22.799999,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -175,7 +175,7 @@
       "mode": "GAZE",
       "target": "LISTENER",
       "text": "...you'd better close your eyes, my child,",
-      "reason": "Direct gaze makes the instruction controlled.",
+      "reason": "Direct listener gaze makes the close-your-eyes instruction controlled.",
       "span": {
         "start": 282,
         "end": 324,
@@ -238,7 +238,7 @@
       "mode": "GAZE",
       "target": "LISTENER",
       "text": "We can't do these things",
-      "reason": "Return to listener to reassert shared belief.",
+      "reason": "Return to listener gaze reasserts shared belief.",
       "span": {
         "start": 394,
         "end": 418,

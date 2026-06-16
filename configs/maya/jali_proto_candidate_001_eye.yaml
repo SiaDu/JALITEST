@@ -11,11 +11,11 @@ maya_eye_performance:
 
   # JALI blink is removed/replaced by ExpreGaze blink.
   clear_existing_eyelid_keys: true
-  jali_attribute_overrides:
-    jSync1:
-      calculate_blinks: false
-      blink_frequency: 0.0
-      long_blink_variation: false
+  #jali_attribute_overrides:
+  #  jSync1:
+  #    calculate_blinks: false
+  #    blink_frequency: 0.0
+  #    long_blink_variation: false
 
   lid_state_transition_frames: 8
   apply_weighted_flat_tangents: true

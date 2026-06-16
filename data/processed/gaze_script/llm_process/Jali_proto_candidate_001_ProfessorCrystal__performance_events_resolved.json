@@ -6,7 +6,7 @@
       "type": "mask",
       "value": "Friendly-66",
       "text": "That's right. Here. Sit right down here. That's it.",
-      "reason": "Friendly opening to reassure and control.",
+      "reason": "Friendly opening reassures Dorothy while preserving the Professor's control.",
       "span": {
         "start": 0,
         "end": 51,
@@ -16,7 +16,7 @@
       "order": 0,
       "resolved_time": {
         "start": 0.19,
-        "end": 4.14,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 0,
         "end_word_index": 8
@@ -27,7 +27,7 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "That's right.",
-      "reason": "Direct listener gaze establishes authority.",
+      "reason": "Direct listener gaze establishes immediate authority.",
       "span": {
         "start": 0,
         "end": 13,
@@ -48,7 +48,7 @@
       "type": "lid_state",
       "value": "-1",
       "text": "That's right. Here. Sit right down here. That's it.",
-      "reason": "Alert but controlled lid state supports the Professor's calm authority.",
+      "reason": "Alert but controlled lid state gives him calm command rather than nervous energy.",
       "span": {
         "start": 0,
         "end": 51,
@@ -58,7 +58,7 @@
       "order": 2,
       "resolved_time": {
         "start": 0.19,
-        "end": 4.14,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 0,
         "end_word_index": 8
@@ -90,7 +90,7 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "Sit right down here.",
-      "reason": "Return to listener while instructing Dorothy to sit.",
+      "reason": "Return to listener gaze continues the instruction to sit.",
       "span": {
         "start": 20,
         "end": 40,
@@ -111,7 +111,7 @@
       "type": "gaze",
       "value": "GLANCE-CRYSTAL",
       "text": "That's it.",
-      "reason": "Quick crystal glance introduces the prop.",
+      "reason": "Quick crystal glance introduces the prop without overplaying it.",
       "span": {
         "start": 41,
         "end": 51,
@@ -120,8 +120,8 @@
       },
       "order": 5,
       "resolved_time": {
-        "start": 3.5,
-        "end": 4.14,
+        "start": 3.51,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 7,
         "end_word_index": 8
@@ -132,7 +132,7 @@
       "type": "gaze",
       "value": "GAZE-CRYSTAL",
       "text": "This is the same genuine, magic, authentic crystal...",
-      "reason": "Crystal becomes the focus of the magical claim.",
+      "reason": "Crystal becomes the focus of the magical sales pitch.",
       "span": {
         "start": 52,
         "end": 105,
@@ -153,7 +153,7 @@
       "type": "mask",
       "value": "Smug-72",
       "text": "This is the same genuine, magic, authentic crystal...",
-      "reason": "Smug confidence around the fake authenticity.",
+      "reason": "Smug confidence fits the practiced claim of authenticity.",
       "span": {
         "start": 52,
         "end": 105,
@@ -173,42 +173,21 @@
       "id": "l02",
       "type": "lid_state",
       "value": "-2",
-      "text": "This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Heightened attention makes the crystal claim feel deliberate and performative.",
+      "text": "This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
+      "reason": "Heightened attention supports the theatrical sales pitch without making him look frantic.",
       "span": {
         "start": 52,
-        "end": 178,
+        "end": 252,
         "raw_start": 52,
-        "raw_end": 178
+        "raw_end": 252
       },
       "order": 8,
       "resolved_time": {
         "start": 5.16,
-        "end": 14.190001,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 9,
-        "end_word_index": 30
-      }
-    },
-    {
-      "id": "pb01",
-      "type": "performative_blink",
-      "value": "SLOW_BLINK-COGNITIVE_RETRIEVAL",
-      "text": "This is the",
-      "reason": "Slow blink marks cognitive retrieval and story construction around the crystal's supposed authenticity.",
-      "span": {
-        "start": 52,
-        "end": 63,
-        "raw_start": 52,
-        "raw_end": 63
-      },
-      "order": 9,
-      "resolved_time": {
-        "start": 5.16,
-        "end": 6.44,
-        "source": "textgrid_words",
-        "start_word_index": 9,
-        "end_word_index": 11
+        "end_word_index": 42
       }
     },
     {
@@ -216,7 +195,28 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Back to listener to keep persuasion social.",
+      "reason": "Back to listener keeps the persuasion social and directed at Dorothy.",
+      "span": {
+        "start": 106,
+        "end": 178,
+        "raw_start": 106,
+        "raw_end": 178
+      },
+      "order": 9,
+      "resolved_time": {
+        "start": 10.35,
+        "end": 14.190001,
+        "source": "textgrid_words",
+        "start_word_index": 17,
+        "end_word_index": 30
+      }
+    },
+    {
+      "id": "m03",
+      "type": "mask",
+      "value": "Friendly-68",
+      "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
+      "reason": "Friendly surface softens the invented history.",
       "span": {
         "start": 106,
         "end": 178,
@@ -233,42 +233,21 @@
       }
     },
     {
-      "id": "m03",
-      "type": "mask",
-      "value": "Friendly-68",
-      "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Friendly delivery softens the invented history.",
-      "span": {
-        "start": 106,
-        "end": 178,
-        "raw_start": 106,
-        "raw_end": 178
-      },
-      "order": 11,
-      "resolved_time": {
-        "start": 10.35,
-        "end": 14.190001,
-        "source": "textgrid_words",
-        "start_word_index": 17,
-        "end_word_index": 30
-      }
-    },
-    {
       "id": "g07",
       "type": "gaze",
       "value": "AVERT-UP_RIGHT",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Up-right aversion suggests theatrical recall.",
+      "reason": "Up-right aversion performs mystical recall and theatrical invention.",
       "span": {
         "start": 179,
         "end": 252,
         "raw_start": 179,
         "raw_end": 252
       },
-      "order": 12,
+      "order": 11,
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -279,38 +258,17 @@
       "type": "mask",
       "value": "Scheming-70",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Scheming marks deliberate fabrication.",
+      "reason": "Scheming marks the deliberate fabrication behind the mystical claim.",
       "span": {
         "start": 179,
         "end": 252,
         "raw_start": 179,
         "raw_end": 252
       },
-      "order": 13,
+      "order": 12,
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
-        "source": "textgrid_words",
-        "start_word_index": 31,
-        "end_word_index": 42
-      }
-    },
-    {
-      "id": "l03",
-      "type": "lid_state",
-      "value": "-3",
-      "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Wide, intense lid state gives the Cleopatra vision a feverish theatrical quality.",
-      "span": {
-        "start": 179,
-        "end": 252,
-        "raw_start": 179,
-        "raw_end": 252
-      },
-      "order": 14,
-      "resolved_time": {
-        "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -321,17 +279,17 @@
       "type": "blink_suppression",
       "value": "SUPPRESS",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Suppressing blink sustains the hypnotic, visionary intensity of the invented historical claim.",
+      "reason": "Suppressing blink sustains the controlled, hypnotic quality of the Cleopatra vision.",
       "span": {
         "start": 179,
         "end": 252,
         "raw_start": 179,
         "raw_end": 252
       },
-      "order": 15,
+      "order": 13,
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -342,16 +300,16 @@
       "type": "gaze",
       "value": "AVERT-DOWN_LEFT",
       "text": "And so on, and so on. Now...",
-      "reason": "Down-left aversion covers the filler “and so on.”",
+      "reason": "Down-left aversion covers the filler “and so on” as a controlled reset.",
       "span": {
         "start": 253,
         "end": 281,
         "raw_start": 253,
         "raw_end": 281
       },
-      "order": 16,
+      "order": 14,
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 22.799999,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -363,16 +321,16 @@
       "type": "mask",
       "value": "Polite-64",
       "text": "And so on, and so on. Now...",
-      "reason": "Polite reset before the command.",
+      "reason": "Polite reset transitions from sales pitch into command.",
       "span": {
         "start": 253,
         "end": 281,
         "raw_start": 253,
         "raw_end": 281
       },
-      "order": 17,
+      "order": 15,
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 22.799999,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -391,9 +349,9 @@
         "raw_start": 253,
         "raw_end": 418
       },
-      "order": 18,
+      "order": 16,
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 33.649998,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -401,24 +359,24 @@
       }
     },
     {
-      "id": "l04",
+      "id": "l03",
       "type": "lid_state",
-      "value": "0",
-      "text": "And so on, and so on. Now...",
-      "reason": "Neutral lid state resets the performance after the embellished history.",
+      "value": "2",
+      "text": "And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things",
+      "reason": "Soft lid state shifts the strategy from theatrical selling to coaxing Dorothy into compliance.",
       "span": {
         "start": 253,
-        "end": 281,
+        "end": 418,
         "raw_start": 253,
-        "raw_end": 281
+        "raw_end": 418
       },
-      "order": 19,
+      "order": 17,
       "resolved_time": {
-        "start": 19.799999,
-        "end": 22.799999,
+        "start": 19.789999,
+        "end": 33.649998,
         "source": "textgrid_words",
         "start_word_index": 43,
-        "end_word_index": 49
+        "end_word_index": 74
       }
     },
     {
@@ -426,14 +384,14 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "...you'd better close your eyes, my child,",
-      "reason": "Direct gaze makes the instruction controlled.",
+      "reason": "Direct listener gaze makes the close-your-eyes instruction controlled.",
       "span": {
         "start": 282,
         "end": 324,
         "raw_start": 282,
         "raw_end": 324
       },
-      "order": 20,
+      "order": 18,
       "resolved_time": {
         "start": 23.809999,
         "end": 26.439999,
@@ -447,14 +405,14 @@
       "type": "mask",
       "value": "Polite-82",
       "text": "...you'd better close your eyes, my child, for a moment...",
-      "reason": "Polite mask softens “close your eyes.”",
+      "reason": "Polite mask softens the command.",
       "span": {
         "start": 282,
         "end": 340,
         "raw_start": 282,
         "raw_end": 340
       },
-      "order": 21,
+      "order": 19,
       "resolved_time": {
         "start": 23.809999,
         "end": 27.1,
@@ -464,39 +422,18 @@
       }
     },
     {
-      "id": "l05",
-      "type": "lid_state",
-      "value": "3",
-      "text": "...you'd better close your eyes, my child, for a moment...",
-      "reason": "Guarded and slightly lowered lids make the command feel coaxing but controlling.",
-      "span": {
-        "start": 282,
-        "end": 340,
-        "raw_start": 282,
-        "raw_end": 340
-      },
-      "order": 22,
-      "resolved_time": {
-        "start": 23.809999,
-        "end": 27.1,
-        "source": "textgrid_words",
-        "start_word_index": 50,
-        "end_word_index": 59
-      }
-    },
-    {
-      "id": "pb02",
+      "id": "pb01",
       "type": "performative_blink",
       "value": "EYE_CLOSE_HOLD-AVOIDANCE",
       "text": "you'd better close",
-      "reason": "Eye close hold performs avoidance/control and demonstrates the “close your eyes” instruction.",
+      "reason": "Eye close hold demonstrates and performs the requested closing of the eyes while also avoiding direct pressure.",
       "span": {
         "start": 285,
         "end": 303,
         "raw_start": 282,
         "raw_end": 303
       },
-      "order": 23,
+      "order": 20,
       "resolved_time": {
         "start": 23.809999,
         "end": 25.309999,
@@ -517,7 +454,7 @@
         "raw_start": 325,
         "raw_end": 340
       },
-      "order": 24,
+      "order": 21,
       "resolved_time": {
         "start": 26.439999,
         "end": 27.1,
@@ -538,7 +475,7 @@
         "raw_start": 341,
         "raw_end": 393
       },
-      "order": 25,
+      "order": 22,
       "resolved_time": {
         "start": 27.1,
         "end": 31.209999,
@@ -552,14 +489,14 @@
       "type": "mask",
       "value": "Thinking-76",
       "text": "...in order to be better in tuned with the lnfinite.",
-      "reason": "Thinking mask supports the Infinite explanation.",
+      "reason": "Thinking mask supports the Infinite explanation without needing an extra blink.",
       "span": {
         "start": 341,
         "end": 393,
         "raw_start": 341,
         "raw_end": 393
       },
-      "order": 26,
+      "order": 23,
       "resolved_time": {
         "start": 27.1,
         "end": 31.209999,
@@ -569,60 +506,18 @@
       }
     },
     {
-      "id": "l06",
-      "type": "lid_state",
-      "value": "2",
-      "text": "...in order to be better in tuned with the lnfinite. We can't do these things",
-      "reason": "Soft lid state makes the mystical instruction gentler and more persuasive.",
-      "span": {
-        "start": 341,
-        "end": 418,
-        "raw_start": 341,
-        "raw_end": 418
-      },
-      "order": 27,
-      "resolved_time": {
-        "start": 27.1,
-        "end": 33.649998,
-        "source": "textgrid_words",
-        "start_word_index": 60,
-        "end_word_index": 74
-      }
-    },
-    {
-      "id": "pb03",
-      "type": "performative_blink",
-      "value": "SLOW_BLINK-COGNITIVE_RETRIEVAL",
-      "text": "in order to",
-      "reason": "Slow blink marks cognitive retrieval while searching for mystical language.",
-      "span": {
-        "start": 344,
-        "end": 355,
-        "raw_start": 341,
-        "raw_end": 355
-      },
-      "order": 28,
-      "resolved_time": {
-        "start": 27.1,
-        "end": 27.939999,
-        "source": "textgrid_words",
-        "start_word_index": 60,
-        "end_word_index": 62
-      }
-    },
-    {
       "id": "g12",
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "We can't do these things",
-      "reason": "Return to listener to reassert shared belief.",
+      "reason": "Return to listener gaze reasserts shared belief.",
       "span": {
         "start": 394,
         "end": 418,
         "raw_start": 394,
         "raw_end": 418
       },
-      "order": 29,
+      "order": 24,
       "resolved_time": {
         "start": 31.66,
         "end": 33.649998,
@@ -643,7 +538,7 @@
         "raw_start": 394,
         "raw_end": 418
       },
-      "order": 30,
+      "order": 25,
       "resolved_time": {
         "start": 31.66,
         "end": 33.649998,
@@ -664,7 +559,7 @@
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 31,
+      "order": 26,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -685,7 +580,7 @@
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 32,
+      "order": 27,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -695,18 +590,18 @@
       }
     },
     {
-      "id": "l07",
+      "id": "l04",
       "type": "lid_state",
-      "value": "-2",
+      "value": "-1",
       "text": "without reaching out into the lnfinite.",
-      "reason": "Heightened attention keeps the final Infinite line energized rather than sleepy.",
+      "reason": "Returning to alert controlled lids keeps the final line energized but not manic.",
       "span": {
         "start": 419,
         "end": 458,
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 33,
+      "order": 28,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -720,14 +615,14 @@
       "type": "blink_suppression",
       "value": "SUPPRESS",
       "text": "without reaching out into the lnfinite.",
-      "reason": "Suppressing blink on the final Infinite claim creates sustained mystical conviction.",
+      "reason": "Suppressing blink on the final Infinite claim creates sustained mystical conviction through the end of the clip.",
       "span": {
         "start": 419,
         "end": 458,
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 34,
+      "order": 29,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -749,17 +644,17 @@
       "type": "blink_suppression",
       "value": "SUPPRESS",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Suppressing blink sustains the hypnotic, visionary intensity of the invented historical claim.",
+      "reason": "Suppressing blink sustains the controlled, hypnotic quality of the Cleopatra vision.",
       "span": {
         "start": 179,
         "end": 252,
         "raw_start": 179,
         "raw_end": 252
       },
-      "order": 15,
+      "order": 13,
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -777,9 +672,9 @@
         "raw_start": 253,
         "raw_end": 418
       },
-      "order": 18,
+      "order": 16,
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 33.649998,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -791,14 +686,14 @@
       "type": "blink_suppression",
       "value": "SUPPRESS",
       "text": "without reaching out into the lnfinite.",
-      "reason": "Suppressing blink on the final Infinite claim creates sustained mystical conviction.",
+      "reason": "Suppressing blink on the final Infinite claim creates sustained mystical conviction through the end of the clip.",
       "span": {
         "start": 419,
         "end": 458,
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 34,
+      "order": 29,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -814,7 +709,7 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "That's right.",
-      "reason": "Direct listener gaze establishes authority.",
+      "reason": "Direct listener gaze establishes immediate authority.",
       "span": {
         "start": 0,
         "end": 13,
@@ -856,7 +751,7 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "Sit right down here.",
-      "reason": "Return to listener while instructing Dorothy to sit.",
+      "reason": "Return to listener gaze continues the instruction to sit.",
       "span": {
         "start": 20,
         "end": 40,
@@ -877,7 +772,7 @@
       "type": "gaze",
       "value": "GLANCE-CRYSTAL",
       "text": "That's it.",
-      "reason": "Quick crystal glance introduces the prop.",
+      "reason": "Quick crystal glance introduces the prop without overplaying it.",
       "span": {
         "start": 41,
         "end": 51,
@@ -886,8 +781,8 @@
       },
       "order": 5,
       "resolved_time": {
-        "start": 3.5,
-        "end": 4.14,
+        "start": 3.51,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 7,
         "end_word_index": 8
@@ -898,7 +793,7 @@
       "type": "gaze",
       "value": "GAZE-CRYSTAL",
       "text": "This is the same genuine, magic, authentic crystal...",
-      "reason": "Crystal becomes the focus of the magical claim.",
+      "reason": "Crystal becomes the focus of the magical sales pitch.",
       "span": {
         "start": 52,
         "end": 105,
@@ -919,14 +814,14 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Back to listener to keep persuasion social.",
+      "reason": "Back to listener keeps the persuasion social and directed at Dorothy.",
       "span": {
         "start": 106,
         "end": 178,
         "raw_start": 106,
         "raw_end": 178
       },
-      "order": 10,
+      "order": 9,
       "resolved_time": {
         "start": 10.35,
         "end": 14.190001,
@@ -940,17 +835,17 @@
       "type": "gaze",
       "value": "AVERT-UP_RIGHT",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Up-right aversion suggests theatrical recall.",
+      "reason": "Up-right aversion performs mystical recall and theatrical invention.",
       "span": {
         "start": 179,
         "end": 252,
         "raw_start": 179,
         "raw_end": 252
       },
-      "order": 12,
+      "order": 11,
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -961,16 +856,16 @@
       "type": "gaze",
       "value": "AVERT-DOWN_LEFT",
       "text": "And so on, and so on. Now...",
-      "reason": "Down-left aversion covers the filler “and so on.”",
+      "reason": "Down-left aversion covers the filler “and so on” as a controlled reset.",
       "span": {
         "start": 253,
         "end": 281,
         "raw_start": 253,
         "raw_end": 281
       },
-      "order": 16,
+      "order": 14,
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 22.799999,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -982,14 +877,14 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "...you'd better close your eyes, my child,",
-      "reason": "Direct gaze makes the instruction controlled.",
+      "reason": "Direct listener gaze makes the close-your-eyes instruction controlled.",
       "span": {
         "start": 282,
         "end": 324,
         "raw_start": 282,
         "raw_end": 324
       },
-      "order": 20,
+      "order": 18,
       "resolved_time": {
         "start": 23.809999,
         "end": 26.439999,
@@ -1010,7 +905,7 @@
         "raw_start": 325,
         "raw_end": 340
       },
-      "order": 24,
+      "order": 21,
       "resolved_time": {
         "start": 26.439999,
         "end": 27.1,
@@ -1031,7 +926,7 @@
         "raw_start": 341,
         "raw_end": 393
       },
-      "order": 25,
+      "order": 22,
       "resolved_time": {
         "start": 27.1,
         "end": 31.209999,
@@ -1045,14 +940,14 @@
       "type": "gaze",
       "value": "GAZE-LISTENER",
       "text": "We can't do these things",
-      "reason": "Return to listener to reassert shared belief.",
+      "reason": "Return to listener gaze reasserts shared belief.",
       "span": {
         "start": 394,
         "end": 418,
         "raw_start": 394,
         "raw_end": 418
       },
-      "order": 29,
+      "order": 24,
       "resolved_time": {
         "start": 31.66,
         "end": 33.649998,
@@ -1073,7 +968,7 @@
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 31,
+      "order": 26,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -1089,7 +984,7 @@
       "type": "lid_state",
       "value": "-1",
       "text": "That's right. Here. Sit right down here. That's it.",
-      "reason": "Alert but controlled lid state supports the Professor's calm authority.",
+      "reason": "Alert but controlled lid state gives him calm command rather than nervous energy.",
       "span": {
         "start": 0,
         "end": 51,
@@ -1099,7 +994,7 @@
       "order": 2,
       "resolved_time": {
         "start": 0.19,
-        "end": 4.14,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 0,
         "end_word_index": 8
@@ -1109,120 +1004,57 @@
       "id": "l02",
       "type": "lid_state",
       "value": "-2",
-      "text": "This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Heightened attention makes the crystal claim feel deliberate and performative.",
+      "text": "This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
+      "reason": "Heightened attention supports the theatrical sales pitch without making him look frantic.",
       "span": {
         "start": 52,
-        "end": 178,
+        "end": 252,
         "raw_start": 52,
-        "raw_end": 178
+        "raw_end": 252
       },
       "order": 8,
       "resolved_time": {
         "start": 5.16,
-        "end": 14.190001,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 9,
-        "end_word_index": 30
+        "end_word_index": 42
       }
     },
     {
       "id": "l03",
       "type": "lid_state",
-      "value": "-3",
-      "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Wide, intense lid state gives the Cleopatra vision a feverish theatrical quality.",
+      "value": "2",
+      "text": "And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things",
+      "reason": "Soft lid state shifts the strategy from theatrical selling to coaxing Dorothy into compliance.",
       "span": {
-        "start": 179,
-        "end": 252,
-        "raw_start": 179,
-        "raw_end": 252
+        "start": 253,
+        "end": 418,
+        "raw_start": 253,
+        "raw_end": 418
       },
-      "order": 14,
+      "order": 17,
       "resolved_time": {
-        "start": 14.190001,
-        "end": 19.799999,
+        "start": 19.789999,
+        "end": 33.649998,
         "source": "textgrid_words",
-        "start_word_index": 31,
-        "end_word_index": 42
+        "start_word_index": 43,
+        "end_word_index": 74
       }
     },
     {
       "id": "l04",
       "type": "lid_state",
-      "value": "0",
-      "text": "And so on, and so on. Now...",
-      "reason": "Neutral lid state resets the performance after the embellished history.",
-      "span": {
-        "start": 253,
-        "end": 281,
-        "raw_start": 253,
-        "raw_end": 281
-      },
-      "order": 19,
-      "resolved_time": {
-        "start": 19.799999,
-        "end": 22.799999,
-        "source": "textgrid_words",
-        "start_word_index": 43,
-        "end_word_index": 49
-      }
-    },
-    {
-      "id": "l05",
-      "type": "lid_state",
-      "value": "3",
-      "text": "...you'd better close your eyes, my child, for a moment...",
-      "reason": "Guarded and slightly lowered lids make the command feel coaxing but controlling.",
-      "span": {
-        "start": 282,
-        "end": 340,
-        "raw_start": 282,
-        "raw_end": 340
-      },
-      "order": 22,
-      "resolved_time": {
-        "start": 23.809999,
-        "end": 27.1,
-        "source": "textgrid_words",
-        "start_word_index": 50,
-        "end_word_index": 59
-      }
-    },
-    {
-      "id": "l06",
-      "type": "lid_state",
-      "value": "2",
-      "text": "...in order to be better in tuned with the lnfinite. We can't do these things",
-      "reason": "Soft lid state makes the mystical instruction gentler and more persuasive.",
-      "span": {
-        "start": 341,
-        "end": 418,
-        "raw_start": 341,
-        "raw_end": 418
-      },
-      "order": 27,
-      "resolved_time": {
-        "start": 27.1,
-        "end": 33.649998,
-        "source": "textgrid_words",
-        "start_word_index": 60,
-        "end_word_index": 74
-      }
-    },
-    {
-      "id": "l07",
-      "type": "lid_state",
-      "value": "-2",
+      "value": "-1",
       "text": "without reaching out into the lnfinite.",
-      "reason": "Heightened attention keeps the final Infinite line energized rather than sleepy.",
+      "reason": "Returning to alert controlled lids keeps the final line energized but not manic.",
       "span": {
         "start": 419,
         "end": 458,
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 33,
+      "order": 28,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -1238,7 +1070,7 @@
       "type": "mask",
       "value": "Friendly-66",
       "text": "That's right. Here. Sit right down here. That's it.",
-      "reason": "Friendly opening to reassure and control.",
+      "reason": "Friendly opening reassures Dorothy while preserving the Professor's control.",
       "span": {
         "start": 0,
         "end": 51,
@@ -1248,7 +1080,7 @@
       "order": 0,
       "resolved_time": {
         "start": 0.19,
-        "end": 4.14,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 0,
         "end_word_index": 8
@@ -1259,7 +1091,7 @@
       "type": "mask",
       "value": "Smug-72",
       "text": "This is the same genuine, magic, authentic crystal...",
-      "reason": "Smug confidence around the fake authenticity.",
+      "reason": "Smug confidence fits the practiced claim of authenticity.",
       "span": {
         "start": 52,
         "end": 105,
@@ -1280,14 +1112,14 @@
       "type": "mask",
       "value": "Friendly-68",
       "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
-      "reason": "Friendly delivery softens the invented history.",
+      "reason": "Friendly surface softens the invented history.",
       "span": {
         "start": 106,
         "end": 178,
         "raw_start": 106,
         "raw_end": 178
       },
-      "order": 11,
+      "order": 10,
       "resolved_time": {
         "start": 10.35,
         "end": 14.190001,
@@ -1301,17 +1133,17 @@
       "type": "mask",
       "value": "Scheming-70",
       "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
-      "reason": "Scheming marks deliberate fabrication.",
+      "reason": "Scheming marks the deliberate fabrication behind the mystical claim.",
       "span": {
         "start": 179,
         "end": 252,
         "raw_start": 179,
         "raw_end": 252
       },
-      "order": 13,
+      "order": 12,
       "resolved_time": {
         "start": 14.190001,
-        "end": 19.799999,
+        "end": 19.789999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -1322,16 +1154,16 @@
       "type": "mask",
       "value": "Polite-64",
       "text": "And so on, and so on. Now...",
-      "reason": "Polite reset before the command.",
+      "reason": "Polite reset transitions from sales pitch into command.",
       "span": {
         "start": 253,
         "end": 281,
         "raw_start": 253,
         "raw_end": 281
       },
-      "order": 17,
+      "order": 15,
       "resolved_time": {
-        "start": 19.799999,
+        "start": 19.789999,
         "end": 22.799999,
         "source": "textgrid_words",
         "start_word_index": 43,
@@ -1343,14 +1175,14 @@
       "type": "mask",
       "value": "Polite-82",
       "text": "...you'd better close your eyes, my child, for a moment...",
-      "reason": "Polite mask softens “close your eyes.”",
+      "reason": "Polite mask softens the command.",
       "span": {
         "start": 282,
         "end": 340,
         "raw_start": 282,
         "raw_end": 340
       },
-      "order": 21,
+      "order": 19,
       "resolved_time": {
         "start": 23.809999,
         "end": 27.1,
@@ -1364,14 +1196,14 @@
       "type": "mask",
       "value": "Thinking-76",
       "text": "...in order to be better in tuned with the lnfinite.",
-      "reason": "Thinking mask supports the Infinite explanation.",
+      "reason": "Thinking mask supports the Infinite explanation without needing an extra blink.",
       "span": {
         "start": 341,
         "end": 393,
         "raw_start": 341,
         "raw_end": 393
       },
-      "order": 26,
+      "order": 23,
       "resolved_time": {
         "start": 27.1,
         "end": 31.209999,
@@ -1392,7 +1224,7 @@
         "raw_start": 394,
         "raw_end": 418
       },
-      "order": 30,
+      "order": 25,
       "resolved_time": {
         "start": 31.66,
         "end": 33.649998,
@@ -1413,7 +1245,7 @@
         "raw_start": 419,
         "raw_end": 458
       },
-      "order": 32,
+      "order": 27,
       "resolved_time": {
         "start": 33.649998,
         "end": 35.240002,
@@ -1427,64 +1259,22 @@
     {
       "id": "pb01",
       "type": "performative_blink",
-      "value": "SLOW_BLINK-COGNITIVE_RETRIEVAL",
-      "text": "This is the",
-      "reason": "Slow blink marks cognitive retrieval and story construction around the crystal's supposed authenticity.",
-      "span": {
-        "start": 52,
-        "end": 63,
-        "raw_start": 52,
-        "raw_end": 63
-      },
-      "order": 9,
-      "resolved_time": {
-        "start": 5.16,
-        "end": 6.44,
-        "source": "textgrid_words",
-        "start_word_index": 9,
-        "end_word_index": 11
-      }
-    },
-    {
-      "id": "pb02",
-      "type": "performative_blink",
       "value": "EYE_CLOSE_HOLD-AVOIDANCE",
       "text": "you'd better close",
-      "reason": "Eye close hold performs avoidance/control and demonstrates the “close your eyes” instruction.",
+      "reason": "Eye close hold demonstrates and performs the requested closing of the eyes while also avoiding direct pressure.",
       "span": {
         "start": 285,
         "end": 303,
         "raw_start": 282,
         "raw_end": 303
       },
-      "order": 23,
+      "order": 20,
       "resolved_time": {
         "start": 23.809999,
         "end": 25.309999,
         "source": "textgrid_words",
         "start_word_index": 50,
         "end_word_index": 52
-      }
-    },
-    {
-      "id": "pb03",
-      "type": "performative_blink",
-      "value": "SLOW_BLINK-COGNITIVE_RETRIEVAL",
-      "text": "in order to",
-      "reason": "Slow blink marks cognitive retrieval while searching for mystical language.",
-      "span": {
-        "start": 344,
-        "end": 355,
-        "raw_start": 341,
-        "raw_end": 355
-      },
-      "order": 28,
-      "resolved_time": {
-        "start": 27.1,
-        "end": 27.939999,
-        "source": "textgrid_words",
-        "start_word_index": 60,
-        "end_word_index": 62
       }
     }
   ],
