@@ -38,10 +38,10 @@ maya_gaze:
 
   # Bounds are now for direction offsets only, NOT locator world positions.
   # z: [0, 0] means UP/DOWN/LEFT/RIGHT should not push eyeStare_world forward/back.
-  direction_offset_bounds:
-    x: [-50.0, 50.0]
-    y: [-30.0, 30.0]
-    z: [0.0, 0.0]
+  #direction_offset_bounds:
+  #  x: [-50.0, 50.0]
+  #  y: [-30.0, 30.0]
+  #  z: [0.0, 0.0]
 
   target_aliases:
     LISTENER: AIM_listener
@@ -62,11 +62,11 @@ maya_gaze:
       node: crystal_lookat_LOC
 
   direction_offsets:
-    DOWN: [0.0, -8.0, 0.0]
-    DOWN_LEFT: [-6.0, -6.0, 0.0]
-    DOWN_RIGHT: [6.0, -6.0, 0.0]
-    UP: [0.0, 8.0, 0.0]
-    UP_LEFT: [-6.0, 6.0, 0.0]
-    UP_RIGHT: [6.0, 6.0, 0.0]
-    LEFT: [-8.0, 0.0, 0.0]
-    RIGHT: [8.0, 0.0, 0.0]
+    DOWN: [0.0, -25.0, 0.0]
+    DOWN_LEFT: [-40.0, -25.0, 0.0]
+    DOWN_RIGHT: [40.0, -25.0, 0.0]
+    UP: [0.0, 25.0, 0.0]
+    UP_LEFT: [-40.0, 25.0, 0.0]
+    UP_RIGHT: [40.0, 25.0, 0.0]
+    LEFT: [-40.0, 0.0, 0.0]
+    RIGHT: [40.0, 0.0, 0.0]
