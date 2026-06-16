@@ -1,0 +1,53 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from expregaze_jali.maya_apply_gaze import (
+    clamp_position,
+    load_maya_gaze_config,
+    resolve_offset_position,
+    resolve_target_alias,
+    resolve_target_position,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+CONFIG = ROOT / "configs/maya/jali_proto_candidate_001_gaze.yaml"
+
+
+def test_load_config_and_aliases():
+    config = load_maya_gaze_config(CONFIG)
+
+    assert config["base_position"] == [0.0, 0.0, 126.0]
+    assert resolve_target_alias("LISTENER", config["target_aliases"]) == "AIM_listener"
+    assert resolve_target_alias("CRYSTAL", config["target_aliases"]) == "AIM_crystal"
+    assert resolve_target_alias("DOWN", config["target_aliases"]) == "DOWN"
+
+
+def test_offset_resolution_keeps_eye_stare_z_base():
+    config = load_maya_gaze_config(CONFIG)
+
+    assert resolve_offset_position(config["base_position"], config["direction_offsets"]["UP_RIGHT"]) == [
+        6.0,
+        6.0,
+        126.0,
+    ]
+    assert resolve_target_position(
+        target="UP_RIGHT",
+        target_map=config["targets"],
+        base_position=config["base_position"],
+        direction_offsets=config["direction_offsets"],
+        target_aliases=config["target_aliases"],
+        safe_bounds=config["safe_bounds"],
+    ) == [6.0, 6.0, 126.0]
+
+
+def test_safe_clamp_for_xy_and_fixed_z():
+    config = load_maya_gaze_config(CONFIG)
+
+    assert clamp_position([80.0, -80.0, 300.0], config["safe_bounds"]) == [50.0, -30.0, 126.0]
+    assert resolve_target_position(
+        target="AIM_manual",
+        target_map={"AIM_manual": {"position": [90.0, 40.0, 10.0]}},
+        base_position=config["base_position"],
+        safe_bounds=config["safe_bounds"],
+    ) == [50.0, 30.0, 126.0]

@@ -1,0 +1,38 @@
+maya_gaze:
+  gaze_events_path: data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json
+  fps: 24.0
+  eye_stare_node_suffix: eyeStare_world
+
+  base_position: [0.0, 0.0, 126.0]
+  safe_bounds:
+    x: [-50.0, 50.0]
+    y: [-30.0, 30.0]
+    z: [126.0, 126.0]
+
+  target_aliases:
+    LISTENER: AIM_listener
+    CRYSTAL: AIM_crystal
+    DOWN: DOWN
+    DOWN_LEFT: DOWN_LEFT
+    DOWN_RIGHT: DOWN_RIGHT
+    UP: UP
+    UP_LEFT: UP_LEFT
+    UP_RIGHT: UP_RIGHT
+    LEFT: LEFT
+    RIGHT: RIGHT
+
+  targets:
+    AIM_listener:
+      node: listener_lookat_LOC
+    AIM_crystal:
+      node: crystal_lookat_LOC
+
+  direction_offsets:
+    DOWN: [0.0, -8.0, 0.0]
+    DOWN_LEFT: [-6.0, -6.0, 0.0]
+    DOWN_RIGHT: [6.0, -6.0, 0.0]
+    UP: [0.0, 8.0, 0.0]
+    UP_LEFT: [-6.0, 6.0, 0.0]
+    UP_RIGHT: [6.0, 6.0, 0.0]
+    LEFT: [-8.0, 0.0, 0.0]
+    RIGHT: [8.0, 0.0, 0.0]
