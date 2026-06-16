@@ -1,0 +1,21 @@
+maya_jali_annotation:
+  repo_root: .
+
+  clip_name: Jali_proto_candidate_001_ProfessorCrystal
+
+  annotated_for_jali_path: data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__annotated_for_jali.txt
+
+  maya_project_root: E:/maya_project/JALI_test
+  jali_transcript_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.txt
+
+  jsync_node: jSync1
+
+  backup_original_transcript: true
+  trigger_jsync_compute: true
+
+  # Optional attrs. Missing attrs will be skipped with a warning.
+  jali_attribute_overrides:
+    calculate_blinks: true
+    blink_frequency: 1
+    long_blink_variation: true
+    ambient_gaze_intensity: 1
