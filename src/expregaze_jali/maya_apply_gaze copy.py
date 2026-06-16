@@ -69,22 +69,18 @@ def resolve_target_alias(target: str, target_aliases: dict[str, str] | None = No
     return str(alias) if alias is not None else normalized
 
 
-def clamp_position(position: Sequence[float], bounds: dict[str, Any] | None = None) -> list[float]:
-    """Clamp xyz to configured bounds.
-
-    In v1.1 this is used only for direction offsets, not for world-space
-    locator targets and not for the base eyeStare position.
-    """
+def clamp_position(position: Sequence[float], safe_bounds: dict[str, Any] | None = None) -> list[float]:
+    """Clamp xyz to configured safe bounds."""
     xyz = _as_xyz(position)
-    if not bounds:
+    if not safe_bounds:
         return xyz
 
     out = list(xyz)
     for idx, axis in enumerate(("x", "y", "z")):
-        axis_bounds = bounds.get(axis)
-        if axis_bounds is None:
+        bounds = safe_bounds.get(axis)
+        if bounds is None:
             continue
-        low, high = float(axis_bounds[0]), float(axis_bounds[1])
+        low, high = float(bounds[0]), float(bounds[1])
         out[idx] = min(max(out[idx], low), high)
     return out
 
@@ -108,17 +104,16 @@ def resolve_target_position(
     base_position: Sequence[float],
     direction_offsets: dict[str, Any] | None = None,
     target_aliases: dict[str, str] | None = None,
-    direction_offset_bounds: dict[str, Any] | None = None,
+    safe_bounds: dict[str, Any] | None = None,
     cmds_module: Any | None = None,
 ) -> list[float]:
     """
     Resolve an event target into world-space xyz for eyeStare_world.
 
-    Important:
-      - Locator targets are used as-is in world space.
-      - Fixed position targets are used as-is in world space.
-      - Direction targets such as UP / DOWN / LEFT / RIGHT use
-        base_position + clamped offset.
+    `target_map` supports:
+      {"AIM_listener": {"node": "listener_lookat_LOC"}}
+      {"AIM_crystal": {"position": [1, 2, 126]}}
+      {"DOWN": {"offset": [0, -8, 0]}}
     """
     target_key = resolve_target_alias(target, target_aliases)
     spec = _lookup_mapping(target_map, target_key)
@@ -134,32 +129,29 @@ def resolve_target_position(
             "Add it to maya_gaze.targets, maya_gaze.target_aliases, or maya_gaze.direction_offsets."
         )
 
-    if isinstance(spec, str):
+if isinstance(spec, str):
+    if cmds_module is None:
+        cmds_module = _cmds()
+    node = _find_transform_node(spec, cmds_module)
+    position = list(cmds_module.xform(node, query=True, worldSpace=True, translation=True))
+    return _as_xyz(position)
+
+if isinstance(spec, dict):
+    if "node" in spec:
         if cmds_module is None:
             cmds_module = _cmds()
-        node = _find_transform_node(spec, cmds_module)
+        node = _find_transform_node(str(spec["node"]), cmds_module)
         position = list(cmds_module.xform(node, query=True, worldSpace=True, translation=True))
         return _as_xyz(position)
 
-    if isinstance(spec, dict):
-        if "node" in spec:
-            if cmds_module is None:
-                cmds_module = _cmds()
-            node = _find_transform_node(str(spec["node"]), cmds_module)
-            position = list(cmds_module.xform(node, query=True, worldSpace=True, translation=True))
-            return _as_xyz(position)
+    if "position" in spec:
+        return _as_xyz(spec["position"])
 
-        if "position" in spec:
-            return _as_xyz(spec["position"])
-
-        if "offset" in spec:
-            offset = clamp_position(spec["offset"], direction_offset_bounds)
-            return resolve_offset_position(base_position, offset)
-
-    return _as_xyz(spec)
+    if "offset" in spec:
+        return clamp_position(resolve_offset_position(base_position, spec["offset"]), safe_bounds)
 
 
-def _key_position(node: str, frame: float, xyz: list[float]) -> None:
+def _key_position(node: str, frame: int, xyz: list[float]) -> None:
     set_world_translation(node, xyz)
     key_translate(node, frame)
 
@@ -273,127 +265,21 @@ def resolve_maya_project_path(path_value: str | Path, config: dict[str, Any]) ->
     return str(Path(str(project_root_value)) / path)
 
 
-def _clear_translate_keys(node: str) -> None:
-    cmds = _cmds()
-    try:
-        cmds.cutKey(node, attribute=["translateX", "translateY", "translateZ"], clear=True)
-        print(f"[INFO] Cleared existing translate keys on {node}")
-    except Exception as exc:
-        print(f"[WARN] Failed to clear existing translate keys on {node}: {exc}")
-
-
-def _apply_flat_weighted_tangents(node: str) -> None:
-    """Match the manual Maya commands:
-        keyTangent -edit -weightedTangents true;
-        keyTangent -itt flat -ott flat;
-    """
-    cmds = _cmds()
-    for attr in ("translateX", "translateY", "translateZ"):
-        try:
-            cmds.keyTangent(node, edit=True, attribute=attr, weightedTangents=True)
-        except Exception:
-            pass
-        try:
-            cmds.keyTangent(node, edit=True, attribute=attr, inTangentType="flat", outTangentType="flat")
-        except Exception:
-            pass
-    print("[INFO] Applied weighted flat tangents to eyeStare translate keys.")
-
-
-def _find_jsync_node(node_name: str) -> str:
-    cmds = _cmds()
-    if cmds.objExists(node_name):
-        return node_name
-    return find_node_by_suffix(node_name)
-
-
-def apply_jali_attribute_overrides(overrides: dict[str, Any] | None = None) -> None:
-    """Apply simple jSync setAttr overrides before writing the gaze overlay."""
-    if not overrides:
-        return
-
-    cmds = _cmds()
-    for node_name, attrs in overrides.items():
-        node = _find_jsync_node(str(node_name))
-        if not isinstance(attrs, dict):
-            raise ValueError(f"JALI override for {node_name!r} must be a mapping of attributes.")
-        for attr, value in attrs.items():
-            plug = f"{node}.{attr}"
-            if not cmds.objExists(plug):
-                raise RuntimeError(f"JALI attribute does not exist: {plug}")
-            try:
-                cmds.setAttr(plug, value)
-            except TypeError:
-                cmds.setAttr(plug, value, type="string")
-            print(f"[INFO] Set {plug} = {value!r}")
-
-
-def _event_frame_range(event: dict[str, Any], fps: float) -> tuple[int, int]:
-    resolved = event["resolved_time"]
-    start_frame = sec_to_frame(float(resolved["start"]), fps)
-    end_frame = max(start_frame + 1, sec_to_frame(float(resolved["end"]), fps))
-    return start_frame, end_frame
-
-
-def _preflight_resolve_targets(
-    events: list[dict[str, Any]],
-    target_map: dict[str, Any],
-    base_position: Sequence[float],
-    direction_offsets: dict[str, Any] | None,
-    target_aliases: dict[str, str] | None,
-    direction_offset_bounds: dict[str, Any] | None,
-    cmds_module: Any,
-) -> dict[str, list[float]]:
-    """Resolve every target before writing any keyframes."""
-    positions: dict[str, list[float]] = {}
-    for event in events:
-        target = str(event.get("target", ""))
-        target_key = resolve_target_alias(target, target_aliases)
-        if target_key in positions:
-            continue
-        positions[target_key] = resolve_target_position(
-            target=target,
-            target_map=target_map,
-            base_position=base_position,
-            direction_offsets=direction_offsets,
-            target_aliases=target_aliases,
-            direction_offset_bounds=direction_offset_bounds,
-            cmds_module=cmds_module,
-        )
-    return positions
-
-
-def _safe_arrival_frame(start_frame: int, end_frame: float, transition_frames: int) -> float:
-    if end_frame <= start_frame:
-        return end_frame
-    return min(float(start_frame + max(1, transition_frames)), float(end_frame))
-
-
 def apply_gaze_events(
     gaze_events_path: str,
     target_map: dict,
     fps: float,
     direction_offsets: dict[str, Any] | None = None,
     target_aliases: dict[str, str] | None = None,
-    direction_offset_bounds: dict[str, Any] | None = None,
+    safe_bounds: dict[str, Any] | None = None,
     base_position: Sequence[float] | None = None,
     eye_stare_node_suffix: str = "eyeStare_world",
-    clip_end_frame: float | None = None,
-    clear_existing_eye_stare_translate_keys: bool = False,
-    gaze_transition_frames: int = 3,
-    glance_transition_frames: int = 3,
-    apply_weighted_flat_tangents: bool = True,
 ) -> None:
     """
     Apply resolved gaze events to eyeStare_world.
 
-    GAZE / AVERT:
-        key previous hold at event start, move over 2-3 frames, then hold
-        target until the next gaze event.
-
-    GLANCE:
-        key previous hold -> transition to glance target -> hold glance target
-        -> transition back to previous hold.
+    GAZE / AVERT hold target from event start to end. GLANCE keys previous
+    gaze position -> glance target -> previous hold.
     """
     cmds = _cmds()
 
@@ -403,76 +289,64 @@ def apply_gaze_events(
 
     eye_stare = find_node_by_suffix(eye_stare_node_suffix)
     default_position = _as_xyz(base_position) if base_position is not None else get_world_translation(eye_stare)
+    default_position = clamp_position(default_position, safe_bounds)
     current_hold_position = list(default_position)
-
-    final_hold_frame = float(clip_end_frame) if clip_end_frame is not None else None
 
     print(f"[INFO] Applying {len(events)} gaze events to {eye_stare}")
     print(f"[INFO] Base eyeStare position: {default_position}")
-    if final_hold_frame is not None:
-        print(f"[INFO] Final gaze hold frame: {final_hold_frame}")
 
-    target_positions = _preflight_resolve_targets(
-        events=events,
-        target_map=target_map,
-        base_position=default_position,
-        direction_offsets=direction_offsets,
-        target_aliases=target_aliases,
-        direction_offset_bounds=direction_offset_bounds,
-        cmds_module=cmds,
-    )
-
-    if clear_existing_eye_stare_translate_keys:
-        _clear_translate_keys(eye_stare)
-
-    for idx, event in enumerate(events):
+    for event in events:
         mode = str(event.get("mode", "")).upper()
         target = str(event.get("target", ""))
+        resolved = event["resolved_time"]
+
+        start_sec = float(resolved["start"])
+        end_sec = float(resolved["end"])
+
+        start_frame = sec_to_frame(start_sec, fps)
+        end_frame = max(start_frame + 1, sec_to_frame(end_sec, fps))
+
+        target_position = resolve_target_position(
+            target=target,
+            target_map=target_map,
+            base_position=default_position,
+            direction_offsets=direction_offsets,
+            target_aliases=target_aliases,
+            safe_bounds=safe_bounds,
+            cmds_module=cmds,
+        )
         target_key = resolve_target_alias(target, target_aliases)
-        target_position = target_positions[target_key]
-
-        start_frame, raw_end_frame = _event_frame_range(event, fps)
-        end_frame: float = float(raw_end_frame)
-
-        if idx == len(events) - 1 and final_hold_frame is not None:
-            end_frame = max(end_frame, final_hold_frame)
 
         if mode in {"GAZE", "AVERT"}:
-            arrival_frame = _safe_arrival_frame(start_frame, end_frame, gaze_transition_frames)
-
-            _key_position(eye_stare, start_frame, current_hold_position)
-            _key_position(eye_stare, arrival_frame, target_position)
+            _key_position(eye_stare, start_frame, target_position)
             _key_position(eye_stare, end_frame, target_position)
-            previous_hold = current_hold_position
             current_hold_position = target_position
 
             print(
                 f"[GAZE] {event.get('id')} {mode}-{target}->{target_key}: "
-                f"{start_frame}->{arrival_frame}->{end_frame}, "
-                f"from={previous_hold}, pos={target_position}"
+                f"{start_frame}->{end_frame}, pos={target_position}"
             )
 
         elif mode == "GLANCE":
-            transition = max(1, int(glance_transition_frames))
-            out_arrive_frame = min(float(start_frame + transition), float(end_frame))
-            back_start_frame = max(out_arrive_frame, float(end_frame - transition))
+            mid_frame = start_frame + max(1, (end_frame - start_frame) // 2)
 
             _key_position(eye_stare, start_frame, current_hold_position)
-            _key_position(eye_stare, out_arrive_frame, target_position)
-            _key_position(eye_stare, back_start_frame, target_position)
+            _key_position(eye_stare, mid_frame, target_position)
             _key_position(eye_stare, end_frame, current_hold_position)
 
             print(
                 f"[GLANCE] {event.get('id')} {mode}-{target}->{target_key}: "
-                f"{start_frame}->{out_arrive_frame}->{back_start_frame}->{end_frame}, "
+                f"{start_frame}->{mid_frame}->{end_frame}, "
                 f"out={target_position}, back={current_hold_position}"
             )
 
         else:
             print(f"[WARN] Unsupported gaze mode {mode!r}; skipped event {event.get('id')}")
 
-    if apply_weighted_flat_tangents:
-        _apply_flat_weighted_tangents(eye_stare)
+    try:
+        cmds.keyTangent(eye_stare, edit=True, inTangentType="spline", outTangentType="spline")
+    except Exception:
+        pass
 
     print("[DONE] Gaze overlay applied.")
 
@@ -480,28 +354,13 @@ def apply_gaze_events(
 def apply_gaze_events_from_config(config_path: str | Path) -> None:
     config = load_maya_gaze_config(config_path)
     gaze_events_path = resolve_repo_path(config["gaze_events_path"], config)
-
-    apply_jali_attribute_overrides(config.get("jali_attribute_overrides", {}))
-
-    direction_offset_bounds = config.get(
-        "direction_offset_bounds",
-        config.get("safe_bounds", {}),
-    )
-
     apply_gaze_events(
         gaze_events_path=gaze_events_path,
         target_map=config.get("targets", {}),
         fps=float(config.get("fps", 24.0)),
         direction_offsets=config.get("direction_offsets", {}),
         target_aliases=config.get("target_aliases", {}),
-        direction_offset_bounds=direction_offset_bounds,
+        safe_bounds=config.get("safe_bounds", {}),
         base_position=config.get("base_position"),
         eye_stare_node_suffix=str(config.get("eye_stare_node_suffix", "eyeStare_world")),
-        clip_end_frame=config.get("clip_end_frame"),
-        clear_existing_eye_stare_translate_keys=bool(
-            config.get("clear_existing_eye_stare_translate_keys", False)
-        ),
-        gaze_transition_frames=int(config.get("gaze_transition_frames", 3)),
-        glance_transition_frames=int(config.get("glance_transition_frames", 3)),
-        apply_weighted_flat_tangents=bool(config.get("apply_weighted_flat_tangents", True)),
     )

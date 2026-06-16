@@ -8,40 +8,13 @@ maya_gaze:
   jali_transcript_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.txt
 
   fps: 24.0
-  clip_end_frame: 1064.2
   eye_stare_node_suffix: eyeStare_world
 
-  # Keep this unset unless you intentionally want a fixed base.
-  # When omitted, the adapter reads the current world-space eyeStare_world position.
-  # base_position: [0.0, 0.0, 126.0]
-
-  clear_existing_eye_stare_translate_keys: true
-
-  # Look changes should not snap. A normal gaze/avert moves over 2-3 frames,
-  # then holds until the next event.
-  gaze_transition_frames: 3
-
-  # A glance also needs visible dwell time:
-  # previous hold -> transition out -> hold glance target -> transition back.
-  glance_transition_frames: 3
-
-  # Equivalent to:
-  # keyTangent -edit -weightedTangents true;
-  # keyTangent -itt flat -ott flat;
-  apply_weighted_flat_tangents: true
-
-  # Lower JALI ambient gaze so ExpreGaze's eyeStare_world overlay is readable.
-  # This runs before applying ExpreGaze gaze keys.
-  jali_attribute_overrides:
-    jSync1:
-      ambient_gaze_intensity: 0.2
-
-  # Bounds are now for direction offsets only, NOT locator world positions.
-  # z: [0, 0] means UP/DOWN/LEFT/RIGHT should not push eyeStare_world forward/back.
-  direction_offset_bounds:
+  #base_position: [0.0, 0.0, 126.0]
+  safe_bounds:
     x: [-50.0, 50.0]
     y: [-30.0, 30.0]
-    z: [0.0, 0.0]
+    z: [126.0, 126.0]
 
   target_aliases:
     LISTENER: AIM_listener
