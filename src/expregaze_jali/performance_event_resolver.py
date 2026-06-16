@@ -84,9 +84,20 @@ def resolve_events_with_textgrid(events: dict[str, Any], words: list[dict[str, A
 
     out = dict(events)
     out["events"] = resolved_events
-    out["gaze"] = [event for event in resolved_events if event["type"] == "gaze"]
-    out["mask"] = [event for event in resolved_events if event["type"] == "mask"]
-    out["heart"] = [event for event in resolved_events if event["type"] == "heart"]
+
+    event_types = sorted({event.get("type") for event in resolved_events if event.get("type")})
+    for event_type in event_types:
+        out[event_type] = [event for event in resolved_events if event["type"] == event_type]
+
+    for event_type in (
+        "gaze",
+        "mask",
+        "heart",
+        "lid_state",
+        "performative_blink",
+        "blink_suppression",
+    ):
+        out.setdefault(event_type, [])
+
     out["diagnostics"] = diagnostics
     return out
-

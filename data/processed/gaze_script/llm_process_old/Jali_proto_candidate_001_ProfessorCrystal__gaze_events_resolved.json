@@ -1,0 +1,286 @@
+{
+  "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
+  "events": [
+    {
+      "id": "g01",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "That's right.",
+      "reason": "Direct listener gaze establishes authority.",
+      "span": {
+        "start": 0,
+        "end": 13,
+        "raw_start": 0,
+        "raw_end": 14
+      },
+      "resolved_time": {
+        "start": 0.19,
+        "end": 1.0,
+        "source": "textgrid_words",
+        "start_word_index": 0,
+        "end_word_index": 1
+      }
+    },
+    {
+      "id": "g02",
+      "type": "gaze",
+      "mode": "GLANCE",
+      "target": "DOWN",
+      "text": "Here.",
+      "reason": "Downward glance cues the physical “here.”",
+      "span": {
+        "start": 14,
+        "end": 19,
+        "raw_start": 14,
+        "raw_end": 20
+      },
+      "resolved_time": {
+        "start": 1.0,
+        "end": 1.44,
+        "source": "textgrid_words",
+        "start_word_index": 2,
+        "end_word_index": 2
+      }
+    },
+    {
+      "id": "g03",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "Sit right down here.",
+      "reason": "Return to listener while instructing her to sit.",
+      "span": {
+        "start": 20,
+        "end": 40,
+        "raw_start": 20,
+        "raw_end": 41
+      },
+      "resolved_time": {
+        "start": 1.91,
+        "end": 3.36,
+        "source": "textgrid_words",
+        "start_word_index": 3,
+        "end_word_index": 6
+      }
+    },
+    {
+      "id": "g04",
+      "type": "gaze",
+      "mode": "GLANCE",
+      "target": "CRYSTAL",
+      "text": "That's it.",
+      "reason": "Quick crystal glance introduces the prop.",
+      "span": {
+        "start": 41,
+        "end": 51,
+        "raw_start": 41,
+        "raw_end": 52
+      },
+      "resolved_time": {
+        "start": 3.5,
+        "end": 4.13,
+        "source": "textgrid_words",
+        "start_word_index": 7,
+        "end_word_index": 8
+      }
+    },
+    {
+      "id": "g05",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "CRYSTAL",
+      "text": "This is the same genuine, magic, authentic crystal...",
+      "reason": "Crystal becomes the focus of the magical claim.",
+      "span": {
+        "start": 52,
+        "end": 105,
+        "raw_start": 52,
+        "raw_end": 106
+      },
+      "resolved_time": {
+        "start": 5.16,
+        "end": 9.965875,
+        "source": "textgrid_words",
+        "start_word_index": 9,
+        "end_word_index": 16
+      }
+    },
+    {
+      "id": "g06",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "...used by the priests of lsis and Osiris in the days of the Pharaohs...",
+      "reason": "Back to listener to keep persuasion social.",
+      "span": {
+        "start": 106,
+        "end": 178,
+        "raw_start": 106,
+        "raw_end": 179
+      },
+      "resolved_time": {
+        "start": 10.369625,
+        "end": 14.189626,
+        "source": "textgrid_words",
+        "start_word_index": 17,
+        "end_word_index": 30
+      }
+    },
+    {
+      "id": "g07",
+      "type": "gaze",
+      "mode": "AVERT",
+      "target": "UP_RIGHT",
+      "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
+      "reason": "Up-right aversion suggests theatrical recall.",
+      "span": {
+        "start": 179,
+        "end": 252,
+        "raw_start": 179,
+        "raw_end": 253
+      },
+      "resolved_time": {
+        "start": 14.189626,
+        "end": 19.784748,
+        "source": "textgrid_words",
+        "start_word_index": 31,
+        "end_word_index": 42
+      }
+    },
+    {
+      "id": "g08",
+      "type": "gaze",
+      "mode": "AVERT",
+      "target": "DOWN_LEFT",
+      "text": "And so on, and so on. Now...",
+      "reason": "Down-left aversion covers the filler “and so on.”",
+      "span": {
+        "start": 253,
+        "end": 281,
+        "raw_start": 253,
+        "raw_end": 282
+      },
+      "resolved_time": {
+        "start": 19.784748,
+        "end": 22.79475,
+        "source": "textgrid_words",
+        "start_word_index": 43,
+        "end_word_index": 49
+      }
+    },
+    {
+      "id": "g09",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "...you'd better close your eyes, my child,",
+      "reason": "Direct gaze makes the instruction controlled.",
+      "span": {
+        "start": 282,
+        "end": 324,
+        "raw_start": 282,
+        "raw_end": 325
+      },
+      "resolved_time": {
+        "start": 23.830997,
+        "end": 26.440998,
+        "source": "textgrid_words",
+        "start_word_index": 50,
+        "end_word_index": 56
+      }
+    },
+    {
+      "id": "g10",
+      "type": "gaze",
+      "mode": "GLANCE",
+      "target": "DOWN",
+      "text": "for a moment...",
+      "reason": "Downward glance reduces pressure on “for a moment.”",
+      "span": {
+        "start": 325,
+        "end": 340,
+        "raw_start": 325,
+        "raw_end": 341
+      },
+      "resolved_time": {
+        "start": 26.440998,
+        "end": 27.100998,
+        "source": "textgrid_words",
+        "start_word_index": 57,
+        "end_word_index": 59
+      }
+    },
+    {
+      "id": "g11",
+      "type": "gaze",
+      "mode": "AVERT",
+      "target": "UP",
+      "text": "...in order to be better in tuned with the lnfinite.",
+      "reason": "Upward aversion signals mystical abstraction.",
+      "span": {
+        "start": 341,
+        "end": 393,
+        "raw_start": 341,
+        "raw_end": 394
+      },
+      "resolved_time": {
+        "start": 27.100998,
+        "end": 31.210999,
+        "source": "textgrid_words",
+        "start_word_index": 60,
+        "end_word_index": 69
+      }
+    },
+    {
+      "id": "g12",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "We can't do these things",
+      "reason": "Return to listener to reassert shared belief.",
+      "span": {
+        "start": 394,
+        "end": 418,
+        "raw_start": 394,
+        "raw_end": 419
+      },
+      "resolved_time": {
+        "start": 31.714188,
+        "end": 33.651558,
+        "source": "textgrid_words",
+        "start_word_index": 70,
+        "end_word_index": 74
+      }
+    },
+    {
+      "id": "g13",
+      "type": "gaze",
+      "mode": "AVERT",
+      "target": "UP",
+      "text": "without reaching out into the lnfinite.",
+      "reason": "Upward aversion ends on mystical reach.",
+      "span": {
+        "start": 419,
+        "end": 458,
+        "raw_start": 419,
+        "raw_end": 458
+      },
+      "resolved_time": {
+        "start": 33.651558,
+        "end": 35.241562,
+        "source": "textgrid_words",
+        "start_word_index": 75,
+        "end_word_index": 80
+      }
+    }
+  ],
+  "diagnostics": {
+    "missing_reasons": [],
+    "parser_warnings": [],
+    "transcript_word_count": 81,
+    "textgrid_word_count": 81,
+    "alignment_warnings": [],
+    "unresolved_events": []
+  }
+}

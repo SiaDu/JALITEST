@@ -1,32 +1,45 @@
 [ANALYZE]
 scene_constraints: One speaker, one listener, one main prop: the crystal. Useful gaze targets are LISTENER, CRYSTAL, DOWN, DOWN_LEFT, UP, UP_RIGHT.
 social_interaction_structure: The Professor controls the interaction. Dorothy is being guided physically, socially, and imaginatively.
-affective_cognitive_state: Surface performance is friendly, polite, slightly smug, and theatrical. The thinking/mystical beats appear near the Infinite references.
-narrative_intent: Build trust, direct Dorothy to sit, sell the crystal as magical, then guide her into closing her eyes.
+affective_cognitive_state: Surface performance is friendly, polite, slightly smug, and theatrical. Lid state begins alert and controlled, becomes more intense during the invented mystical history, then softens into a coaxing command before returning to a heightened mystical finish.
+narrative_intent: Build trust, direct Dorothy to sit, sell the crystal as magical, then guide her into closing her eyes. Blinks should support performance beats: regulatory blinks hide gaze/expression transitions, while performative blinks mark cognitive retrieval, avoidance/control, and mystical concentration.
 
 [ANNOTATION]
-<m01=Friendly-66><g01=GAZE-LISTENER>That's right. <g02=GLANCE-DOWN>Here. <g03=GAZE-LISTENER>Sit right down here. <g04=GLANCE-CRYSTAL>That's it. <g05=GAZE-CRYSTAL><m02=Smug-72>This is the same genuine, magic, authentic crystal... <g06=GAZE-LISTENER><m03=Friendly-68>...used by the priests of lsis and Osiris in the days of the Pharaohs... <g07=AVERT-UP_RIGHT><m04=Scheming-70>...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. <g08=AVERT-DOWN_LEFT><m05=Polite-64>And so on, and so on. Now... <g09=GAZE-LISTENER><m06=Polite-82>...you'd better close your eyes, my child, <g10=GLANCE-DOWN>for a moment... <g11=AVERT-UP><m07=Thinking-76>...in order to be better in tuned with the lnfinite. <g12=GAZE-LISTENER><m08=Friendly-70>We can't do these things <g13=AVERT-UP><m09=Thinking-82>without reaching out into the lnfinite.
+<m01=Friendly-66><g01=GAZE-LISTENER><l01=-1>That's right. <g02=GLANCE-DOWN>Here. <g03=GAZE-LISTENER>Sit right down here. <g04=GLANCE-CRYSTAL>That's it. <g05=GAZE-CRYSTAL><m02=Smug-72><l02=-2><pb01=SLOW_BLINK-COGNITIVE_RETRIEVAL>This is the same genuine, magic, authentic crystal... <g06=GAZE-LISTENER><m03=Friendly-68>...used by the priests of lsis and Osiris in the days of the Pharaohs... <g07=AVERT-UP_RIGHT><m04=Scheming-70><l03=-3><bs01=SUPPRESS>...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. <g08=AVERT-DOWN_LEFT><m05=Polite-64><bs02=ALLOW><l04=0>And so on, and so on. Now... <g09=GAZE-LISTENER><m06=Polite-82><l05=3><pb02=EYE_CLOSE_HOLD-AVOIDANCE>...you'd better close your eyes, my child, <g10=GLANCE-DOWN>for a moment... <g11=AVERT-UP><m07=Thinking-76><l06=2><pb03=SLOW_BLINK-COGNITIVE_RETRIEVAL>...in order to be better in tuned with the lnfinite. <g12=GAZE-LISTENER><m08=Friendly-70>We can't do these things <g13=AVERT-UP><m09=Thinking-82><l07=-2><bs03=SUPPRESS>without reaching out into the lnfinite.
 
 [REASONS]
 m01: Friendly opening to reassure and control.
 g01: Direct listener gaze establishes authority.
+l01: Alert but controlled lid state supports the Professor's calm authority.
 g02: Downward glance cues the physical “here.”
-g03: Return to listener while instructing her to sit.
+g03: Return to listener while instructing Dorothy to sit.
 g04: Quick crystal glance introduces the prop.
 g05: Crystal becomes the focus of the magical claim.
 m02: Smug confidence around the fake authenticity.
+l02: Heightened attention makes the crystal claim feel deliberate and performative.
+pb01: Slow blink marks cognitive retrieval and story construction around the crystal's supposed authenticity.
 g06: Back to listener to keep persuasion social.
 m03: Friendly delivery softens the invented history.
 g07: Up-right aversion suggests theatrical recall.
 m04: Scheming marks deliberate fabrication.
+l03: Wide, intense lid state gives the Cleopatra vision a feverish theatrical quality.
+bs01: Suppressing blink sustains the hypnotic, visionary intensity of the invented historical claim.
 g08: Down-left aversion covers the filler “and so on.”
 m05: Polite reset before the command.
+bs02: Blink is allowed again after the intense historical vision ends.
+l04: Neutral lid state resets the performance after the embellished history.
 g09: Direct gaze makes the instruction controlled.
 m06: Polite mask softens “close your eyes.”
+l05: Guarded and slightly lowered lids make the command feel coaxing but controlling.
+pb02: Eye close hold performs avoidance/control and demonstrates the “close your eyes” instruction.
 g10: Downward glance reduces pressure on “for a moment.”
 g11: Upward aversion signals mystical abstraction.
 m07: Thinking mask supports the Infinite explanation.
+l06: Soft lid state makes the mystical instruction gentler and more persuasive.
+pb03: Slow blink marks cognitive retrieval while searching for mystical language.
 g12: Return to listener to reassert shared belief.
 m08: Friendly tone keeps the claim inviting.
 g13: Upward aversion ends on mystical reach.
 m09: Thinking mask intensifies the final abstraction.
+l07: Heightened attention keeps the final Infinite line energized rather than sleepy.
+bs03: Suppressing blink on the final Infinite claim creates sustained mystical conviction.

@@ -1,0 +1,278 @@
+{
+  "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
+  "fps": 30.0,
+  "clip_end_frame": 1064.2,
+  "clip_end_seconds": 35.473333333333336,
+  "lid_state_events": [
+    {
+      "id": "l01",
+      "type": "lid_state",
+      "value": -1,
+      "text": "That's right. Here. Sit right down here. That's it.",
+      "reason": "Alert but controlled lid state supports the Professor's calm authority.",
+      "resolved_time": {
+        "start": 0.19,
+        "end": 5.16,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "l02",
+      "type": "lid_state",
+      "value": -2,
+      "text": "This is the same genuine, magic, authentic crystal...",
+      "reason": "Heightened attention makes the crystal claim feel deliberate and performative.",
+      "resolved_time": {
+        "start": 5.16,
+        "end": 14.189626,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "l03",
+      "type": "lid_state",
+      "value": -3,
+      "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
+      "reason": "Wide, intense lid state gives the Cleopatra vision a feverish theatrical quality.",
+      "resolved_time": {
+        "start": 14.189626,
+        "end": 19.784748,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "l04",
+      "type": "lid_state",
+      "value": 0,
+      "text": "And so on, and so on. Now...",
+      "reason": "Neutral lid state resets the performance after the embellished history.",
+      "resolved_time": {
+        "start": 19.784748,
+        "end": 23.830997,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "l05",
+      "type": "lid_state",
+      "value": 3,
+      "text": "...you'd better close your eyes, my child, for a moment...",
+      "reason": "Guarded and slightly lowered lids make the command feel coaxing but controlling.",
+      "resolved_time": {
+        "start": 23.830997,
+        "end": 27.100998,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "l06",
+      "type": "lid_state",
+      "value": 2,
+      "text": "...in order to be better in tuned with the lnfinite.",
+      "reason": "Soft lid state makes the mystical instruction gentler and more persuasive.",
+      "resolved_time": {
+        "start": 27.100998,
+        "end": 31.714188,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "l07",
+      "type": "lid_state",
+      "value": -2,
+      "text": "We can't do these things without reaching out into the lnfinite.",
+      "reason": "Heightened attention keeps the final Infinite line energized rather than sleepy.",
+      "resolved_time": {
+        "start": 31.714188,
+        "end": 35.473333333333336,
+        "source": "manual_from_script_v1"
+      }
+    }
+  ],
+  "performative_blink_events": [
+    {
+      "id": "pb01",
+      "type": "blink",
+      "class": "performative",
+      "mode": "SLOW_BLINK",
+      "subtype": "COGNITIVE_RETRIEVAL",
+      "text": "This is the same genuine",
+      "reason": "Slow blink marks cognitive retrieval and story construction around the crystal's supposed authenticity.",
+      "time": 5.16,
+      "resolved_time": {
+        "start": 5.16,
+        "end": 6.2,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "pb02",
+      "type": "blink",
+      "class": "performative",
+      "mode": "EYE_CLOSE_HOLD",
+      "subtype": "AVOIDANCE",
+      "text": "you'd better close",
+      "reason": "Eye close hold performs avoidance/control and demonstrates the “close your eyes” instruction.",
+      "time": 23.830997,
+      "resolved_time": {
+        "start": 23.830997,
+        "end": 24.8,
+        "source": "manual_from_script_v1"
+      }
+    },
+    {
+      "id": "pb03",
+      "type": "blink",
+      "class": "performative",
+      "mode": "SLOW_BLINK",
+      "subtype": "COGNITIVE_RETRIEVAL",
+      "text": "in order to be",
+      "reason": "Slow blink marks cognitive retrieval while searching for mystical language.",
+      "time": 27.100998,
+      "resolved_time": {
+        "start": 27.100998,
+        "end": 28.0,
+        "source": "manual_from_script_v1"
+      }
+    }
+  ],
+  "blink_suppression_events": [
+    {
+      "id": "bs01",
+      "type": "blink_suppression",
+      "mode": "SUPPRESS",
+      "start": 14.189626,
+      "end": 19.784748,
+      "text": "in which Cleopatra saw the approach of Julius Caesar and Marc Anthony.",
+      "reason": "Suppressing blink sustains the hypnotic, visionary intensity of the invented historical claim.",
+      "source_event_id": "bs01"
+    },
+    {
+      "id": "bs03",
+      "type": "blink_suppression",
+      "mode": "SUPPRESS",
+      "start": 33.651558,
+      "end": 35.473333333333336,
+      "text": "without reaching out into the lnfinite.",
+      "reason": "Suppressing blink on the final Infinite claim creates sustained mystical conviction.",
+      "source_event_id": "bs03"
+    }
+  ],
+  "regulatory_blink_events": [
+    {
+      "id": "rb001",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g01",
+      "time": 0.22333333333333333,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb002",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g02",
+      "time": 1.0333333333333334,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb003",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g03",
+      "time": 1.9433333333333334,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb004",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g04",
+      "time": 3.533333333333333,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb005",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g06",
+      "time": 10.402958333333334,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb006",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g08",
+      "time": 19.818081333333332,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb007",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g09",
+      "time": 23.864330333333335,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb008",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g11",
+      "time": 27.134331333333336,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    },
+    {
+      "id": "rb009",
+      "type": "blink",
+      "class": "regulatory",
+      "mode": "SINGLE_BLINK",
+      "trigger": "gaze_change",
+      "source_event_id": "g12",
+      "time": 31.74752133333333,
+      "duration_frames": 4,
+      "closure": 7,
+      "reason": "Regulatory blink for gaze_change."
+    }
+  ],
+  "diagnostics": {
+    "note": "Sample generated by assistant from current ProfessorCrystal script. Regenerate with eye_performance_event_exporter after parser/compiler/resolver are wired into your pipeline.",
+    "lid_state_count": 7,
+    "performative_blink_count": 3,
+    "blink_suppression_count": 2,
+    "regulatory_blink_count": 9
+  }
+}

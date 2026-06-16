@@ -5,14 +5,28 @@ from pathlib import Path
 from typing import Any
 
 SECTION_PATTERN = re.compile(r"^\[(ANALYZE|ANNOTATION|REASONS)\]\s*$", re.MULTILINE)
-TAG_PATTERN = re.compile(r"<([gmh]\d+)=([^<>]+)>")
-REASON_PATTERN = re.compile(r"^\s*([gmh]\d+)\s*:\s*(.*?)\s*$")
+
+# Supported readable annotation ids:
+#   g01  = gaze
+#   m01  = visible mask / surface expression
+#   h01  = hidden heart / internal undercurrent
+#   l01  = lid_state
+#   pb01 = performative blink
+#   bs01 = blink suppression
+TAG_ID_PATTERN = r"(?:pb|bs|[gmhl])\d+"
+TAG_PATTERN = re.compile(rf"<({TAG_ID_PATTERN})=([^<>]+)>")
+REASON_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})\s*:\s*(.*?)\s*$")
 
 TAG_TYPES = {
     "g": "gaze",
     "m": "mask",
     "h": "heart",
+    "l": "lid_state",
+    "pb": "performative_blink",
+    "bs": "blink_suppression",
 }
+
+PREFIX_PATTERN = re.compile(r"^(pb|bs|[gmhl])\d+$")
 
 
 def _read_text(path: str | Path) -> str:
@@ -37,6 +51,18 @@ def _parse_sections(text: str) -> tuple[dict[str, str], list[str]]:
     return sections, warnings
 
 
+def _tag_prefix(tag_id: str) -> str:
+    match = PREFIX_PATTERN.match(tag_id)
+    if not match:
+        raise ValueError(f"Unsupported tag id: {tag_id!r}")
+    return match.group(1)
+
+
+def _tag_type(tag_id: str) -> str:
+    prefix = _tag_prefix(tag_id)
+    return TAG_TYPES[prefix]
+
+
 def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]]]:
     clean_parts: list[str] = []
     tags: list[dict[str, Any]] = []
@@ -52,7 +78,8 @@ def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, A
         tags.append(
             {
                 "id": tag_id,
-                "type": TAG_TYPES[tag_id[0]],
+                "prefix": _tag_prefix(tag_id),
+                "type": _tag_type(tag_id),
                 "value": match.group(2).strip(),
                 "position": clean_pos,
                 "raw_start": match.start(),
@@ -78,10 +105,15 @@ def _parse_reasons(reasons_text: str) -> dict[str, str]:
 
 def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     """
-    Parse [ANALYZE], [ANNOTATION], [REASONS] and state-change tags.
+    Parse [ANALYZE], [ANNOTATION], [REASONS] and readable performance tags.
 
-    Tags are recorded at their character position in the clean transcript, after
-    removing all readable annotation tags.
+    Supported tags:
+        g##  gaze state-change
+        m##  JALI mask state-change
+        h##  JALI heart state-change
+        l##  lid_state state-change
+        pb## performative blink anchor event
+        bs## blink_suppression state-change / gate
     """
     source_text = _read_text(path)
     sections, warnings = _parse_sections(source_text)
@@ -89,8 +121,9 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     clean_transcript, tags = _strip_tags_and_collect(annotation_text)
     reasons = _parse_reasons(sections.get("REASONS", ""))
 
+    tag_ids = {tag["id"] for tag in tags}
     missing_reasons = [tag["id"] for tag in tags if tag["id"] not in reasons]
-    extra_reasons = [tag_id for tag_id in reasons if tag_id not in {tag["id"] for tag in tags}]
+    extra_reasons = [tag_id for tag_id in reasons if tag_id not in tag_ids]
 
     for tag in tags:
         tag["reason"] = reasons.get(tag["id"], "")
@@ -100,6 +133,10 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         "missing_reasons": missing_reasons,
         "extra_reasons": extra_reasons,
         "tag_count": len(tags),
+        "tag_type_counts": {
+            tag_type: sum(1 for tag in tags if tag.get("type") == tag_type)
+            for tag_type in sorted(set(TAG_TYPES.values()))
+        },
     }
 
     return {
@@ -114,4 +151,3 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         "tags": tags,
         "diagnostics": diagnostics,
     }
-
