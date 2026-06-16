@@ -13,9 +13,10 @@ maya_jali_annotation:
   backup_original_transcript: true
   trigger_jsync_compute: true
 
-  # Optional attrs. Missing attrs will be skipped with a warning.
+  # JALI annotation injection should not turn JALI automatic blinks back on.
+  # ExpreGaze replaces blink/lid animation later on LIDS_jSync_plusMinus.Down_upLids_jSync.
+  # Ambient gaze is controlled by the gaze adapter config, not here.
   jali_attribute_overrides:
-    calculate_blinks: true
-    blink_frequency: 1
-    long_blink_variation: true
-    ambient_gaze_intensity: 1
+    calculate_blinks: false
+    blink_frequency: 0.0
+    long_blink_variation: false

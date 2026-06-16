@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 from expregaze_jali.textgrid_parser import parse_textgrid_words
 from expregaze_jali.performance_annotation_parser import parse_performance_annotation
@@ -20,6 +21,7 @@ def process_performance_annotation(
     clip_name: str,
     fps: float = 30.0,
     clip_end_frame: float | None = None,
+    regulatory_config: dict[str, Any] | None = None,
 ) -> dict:
     script_path = Path(script_path)
     textgrid_path = Path(textgrid_path)
@@ -38,6 +40,7 @@ def process_performance_annotation(
         clip_name=clip_name,
         fps=fps,
         clip_end_frame=clip_end_frame,
+        regulatory_config=regulatory_config,
     )
 
     output_paths = {
@@ -88,7 +91,29 @@ def main() -> None:
     parser.add_argument("--fps", type=float, default=30.0)
     parser.add_argument("--clip-end-frame", type=float, default=None)
 
+    # Conservative defaults: only long-gap subtle blinks are generated.
+    # Enable reset blinks explicitly after the performative blink prompt is stable.
+    parser.add_argument("--regulatory-from-gaze", action="store_true")
+    parser.add_argument("--regulatory-from-mask", action="store_true")
+    parser.add_argument("--regulatory-from-heart", action="store_true")
+    parser.add_argument("--regulatory-from-lid-state", action="store_true")
+    parser.add_argument("--no-long-gap-regulatory-blinks", action="store_true")
+    parser.add_argument("--regulatory-min-gap-frames", type=int, default=45)
+    parser.add_argument("--long-gap-seconds", type=float, default=5.0)
+    parser.add_argument("--gaze-blink-offset-frames", type=int, default=1)
+
     args = parser.parse_args()
+
+    regulatory_config = {
+        "generate_from_gaze": args.regulatory_from_gaze,
+        "generate_from_mask": args.regulatory_from_mask,
+        "generate_from_heart": args.regulatory_from_heart,
+        "generate_from_lid_state": args.regulatory_from_lid_state,
+        "generate_long_gap_blinks": not args.no_long_gap_regulatory_blinks,
+        "min_gap_frames": args.regulatory_min_gap_frames,
+        "long_gap_seconds": args.long_gap_seconds,
+        "gaze_blink_offset_frames": args.gaze_blink_offset_frames,
+    }
 
     result = process_performance_annotation(
         script_path=args.script,
@@ -97,6 +122,7 @@ def main() -> None:
         clip_name=args.clip_name,
         fps=args.fps,
         clip_end_frame=args.clip_end_frame,
+        regulatory_config=regulatory_config,
     )
 
     print("[DONE] regenerated performance outputs")
