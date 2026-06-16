@@ -226,14 +226,16 @@ def _values_from_paths_config(paths_config_path: Path) -> dict[str, Any]:
     jali_config = config.get("jali", {})
     textgrid_config = config.get("textgrid", {})
     clip_name = str(jali_config.get("clip_name", "textgrid")).strip() or "textgrid"
+    jali_project_root = _resolve_existing_path(jali_config.get("project_root", project_root), project_root)
 
     output_dir = _resolve_path(textgrid_config.get("output_dir", "data/processed/textgrid"), project_root)
     assert output_dir is not None
 
     return {
         "project_root": project_root,
+        "jali_project_root": jali_project_root,
         "clip_name": clip_name,
-        "textgrid_file": _resolve_existing_path(jali_config.get("textgrid_file"), project_root),
+        "textgrid_file": _resolve_existing_path(jali_config.get("textgrid_file"), jali_project_root),
         "tier_name": str(textgrid_config.get("tier_name", "words")),
         "words_jsonl": _resolve_path(
             textgrid_config.get("words_jsonl", f"data/processed/textgrid/{clip_name}__words.jsonl"),

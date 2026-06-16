@@ -5,7 +5,9 @@ from pathlib import Path
 from expregaze_jali.maya_apply_gaze import (
     clamp_position,
     load_maya_gaze_config,
+    resolve_maya_project_path,
     resolve_offset_position,
+    resolve_repo_path,
     resolve_target_alias,
     resolve_target_position,
 )
@@ -18,6 +20,8 @@ def test_load_config_and_aliases():
     config = load_maya_gaze_config(CONFIG)
 
     assert config["base_position"] == [0.0, 0.0, 126.0]
+    assert config["gaze_events_path"].startswith("data/processed/")
+    assert config["maya_project_root"] == "E:/maya_project/JALI_test"
     assert resolve_target_alias("LISTENER", config["target_aliases"]) == "AIM_listener"
     assert resolve_target_alias("CRYSTAL", config["target_aliases"]) == "AIM_crystal"
     assert resolve_target_alias("DOWN", config["target_aliases"]) == "DOWN"
@@ -51,3 +55,18 @@ def test_safe_clamp_for_xy_and_fixed_z():
         base_position=config["base_position"],
         safe_bounds=config["safe_bounds"],
     ) == [50.0, 30.0, 126.0]
+
+
+def test_config_path_resolution_and_windows_runner_defaults():
+    config = load_maya_gaze_config(CONFIG)
+    runner_text = (ROOT / "src/maya/run_apply_gaze_events.py").read_text(encoding="utf-8")
+
+    assert "C:\\Users\\sia\\JaliTest" not in runner_text
+    assert "\\\\wsl.localhost\\Ubuntu-24.04\\home\\sia\\JaliTest" in runner_text
+    assert resolve_repo_path(config["gaze_events_path"], config).endswith(
+        "data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json"
+    )
+    assert resolve_maya_project_path(config["jali_textgrid_path"], config).replace("\\", "/") == (
+        "E:/maya_project/JALI_test/scenes/sounds_proto1/"
+        "Jali_proto_candidate_001_ProfessorCrystal.Textgrid"
+    )

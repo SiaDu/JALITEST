@@ -4,8 +4,6 @@ import json
 from pathlib import Path
 from typing import Any, Sequence
 
-import yaml
-
 from expregaze_jali.maya_control_utils import (
     find_node_by_suffix,
     get_world_translation,
@@ -160,11 +158,76 @@ def _key_position(node: str, frame: int, xyz: list[float]) -> None:
     key_translate(node, frame)
 
 
+def _parse_scalar(value: str) -> Any:
+    text = value.strip()
+    if not text:
+        return ""
+    if text.startswith("[") and text.endswith("]"):
+        items = [item.strip() for item in text[1:-1].split(",") if item.strip()]
+        return [_parse_scalar(item) for item in items]
+    lowered = text.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    if lowered in {"null", "none"}:
+        return None
+    try:
+        if any(char in text for char in (".", "e", "E")):
+            return float(text)
+        return int(text)
+    except ValueError:
+        return text.strip("\"'")
+
+
+def _simple_yaml_load(text: str) -> dict[str, Any]:
+    """Small YAML subset reader for Maya, where PyYAML may not be installed."""
+    root: dict[str, Any] = {}
+    stack: list[tuple[int, dict[str, Any]]] = [(-1, root)]
+
+    for raw_line in text.splitlines():
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip(" "))
+        line = raw_line.strip()
+        if ":" not in line:
+            raise ValueError(f"Unsupported YAML line: {raw_line!r}")
+
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+        parent = stack[-1][1]
+
+        if value:
+            parent[key] = _parse_scalar(value)
+        else:
+            child: dict[str, Any] = {}
+            parent[key] = child
+            stack.append((indent, child))
+
+    return root
+
+
+def _load_yaml_file(path: Path) -> dict[str, Any]:
+    text = path.read_text(encoding="utf-8")
+    try:
+        import yaml  # type: ignore
+
+        data = yaml.safe_load(text) or {}
+    except ModuleNotFoundError:
+        data = _simple_yaml_load(text)
+    if not isinstance(data, dict):
+        raise ValueError(f"YAML root must be a mapping: {path}")
+    return data
+
+
 def load_maya_gaze_config(path: str | Path) -> dict[str, Any]:
     """Load a `maya_gaze` YAML config and attach path context."""
     config_path = Path(path)
-    with config_path.open("r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    data = _load_yaml_file(config_path)
 
     config = data.get("maya_gaze", data)
     if not isinstance(config, dict):
@@ -173,16 +236,35 @@ def load_maya_gaze_config(path: str | Path) -> dict[str, Any]:
     out = dict(config)
     out["_config_path"] = str(config_path)
     out["_config_dir"] = str(config_path.parent)
-    out["_project_root"] = str(config_path.parent.parent.parent)
+    repo_root = out.get("repo_root", ".")
+    repo_root_path = Path(str(repo_root))
+    inferred_project_root = config_path.parent.parent.parent
+    if repo_root_path.is_absolute():
+        project_root = repo_root_path
+    else:
+        project_root = inferred_project_root / repo_root_path
+    out["_project_root"] = str(project_root.resolve() if project_root.exists() else project_root)
     return out
 
 
-def _resolve_config_path(path_value: str | Path, config: dict[str, Any]) -> str:
+def resolve_repo_path(path_value: str | Path, config: dict[str, Any]) -> str:
+    """Resolve a repo-relative config path against the configured repo root."""
     path = Path(path_value)
     if path.is_absolute():
         return str(path)
     project_root = Path(config.get("_project_root", "."))
     return str(project_root / path)
+
+
+def resolve_maya_project_path(path_value: str | Path, config: dict[str, Any]) -> str:
+    """Resolve a Maya project-relative path against `maya_project_root`."""
+    path = Path(path_value)
+    if path.is_absolute():
+        return str(path)
+    project_root_value = config.get("maya_project_root")
+    if not project_root_value:
+        raise KeyError("maya_project_root is required to resolve Maya project paths.")
+    return str(Path(str(project_root_value)) / path)
 
 
 def apply_gaze_events(
@@ -273,7 +355,7 @@ def apply_gaze_events(
 
 def apply_gaze_events_from_config(config_path: str | Path) -> None:
     config = load_maya_gaze_config(config_path)
-    gaze_events_path = _resolve_config_path(config["gaze_events_path"], config)
+    gaze_events_path = resolve_repo_path(config["gaze_events_path"], config)
     apply_gaze_events(
         gaze_events_path=gaze_events_path,
         target_map=config.get("targets", {}),

@@ -4,9 +4,18 @@ import os
 import sys
 
 
-# Edit this path if the repo lives somewhere else on your Maya machine.
-REPO_ROOT = os.environ.get("JALITEST_REPO_ROOT", r"C:\Users\sia\JaliTest")
-CONFIG_PATH = os.path.join(REPO_ROOT, "configs", "maya", "jali_proto_candidate_001_gaze.yaml")
+# Windows Maya reads the WSL repo through its UNC path. Override this env var
+# if the distro name or checkout location changes.
+REPO_ROOT = os.environ.get(
+    "JALITEST_REPO_ROOT",
+    r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest",
+)
+CONFIG_PATH = os.path.join(
+    REPO_ROOT,
+    "configs",
+    "maya",
+    "jali_proto_candidate_001_gaze.yaml",
+)
 
 SRC_PATH = os.path.join(REPO_ROOT, "src")
 if SRC_PATH not in sys.path:

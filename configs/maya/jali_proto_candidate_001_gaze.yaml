@@ -1,5 +1,12 @@
 maya_gaze:
+  repo_root: .
   gaze_events_path: data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json
+
+  maya_project_root: E:/maya_project/JALI_test
+  jali_textgrid_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.Textgrid
+  jali_audio_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.wav
+  jali_transcript_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.txt
+
   fps: 24.0
   eye_stare_node_suffix: eyeStare_world
 
