@@ -7,7 +7,7 @@ maya_gaze:
   jali_audio_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.wav
   jali_transcript_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.txt
 
-  fps: 24.0
+  fps: 30.0
   clip_end_frame: 1064.2
   eye_stare_node_suffix: eyeStare_world
 
@@ -34,7 +34,7 @@ maya_gaze:
   # This runs before applying ExpreGaze gaze keys.
   jali_attribute_overrides:
     jSync1:
-      ambient_gaze_intensity: 0.2
+      ambient_gaze_intensity: 1
 
   # Bounds are now for direction offsets only, NOT locator world positions.
   # z: [0, 0] means UP/DOWN/LEFT/RIGHT should not push eyeStare_world forward/back.
