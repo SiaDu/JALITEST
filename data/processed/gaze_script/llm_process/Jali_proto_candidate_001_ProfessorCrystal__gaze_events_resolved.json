@@ -12,7 +12,7 @@
         "start": 0,
         "end": 13,
         "raw_start": 0,
-        "raw_end": 14
+        "raw_end": 13
       },
       "resolved_time": {
         "start": 0.19,
@@ -33,7 +33,7 @@
         "start": 14,
         "end": 19,
         "raw_start": 14,
-        "raw_end": 20
+        "raw_end": 19
       },
       "resolved_time": {
         "start": 1.0,
@@ -49,12 +49,12 @@
       "mode": "GAZE",
       "target": "LISTENER",
       "text": "Sit right down here.",
-      "reason": "Return to listener while instructing her to sit.",
+      "reason": "Return to listener while instructing Dorothy to sit.",
       "span": {
         "start": 20,
         "end": 40,
         "raw_start": 20,
-        "raw_end": 41
+        "raw_end": 40
       },
       "resolved_time": {
         "start": 1.91,
@@ -75,11 +75,11 @@
         "start": 41,
         "end": 51,
         "raw_start": 41,
-        "raw_end": 52
+        "raw_end": 51
       },
       "resolved_time": {
         "start": 3.5,
-        "end": 4.13,
+        "end": 4.14,
         "source": "textgrid_words",
         "start_word_index": 7,
         "end_word_index": 8
@@ -96,11 +96,11 @@
         "start": 52,
         "end": 105,
         "raw_start": 52,
-        "raw_end": 106
+        "raw_end": 105
       },
       "resolved_time": {
         "start": 5.16,
-        "end": 9.965875,
+        "end": 9.959999,
         "source": "textgrid_words",
         "start_word_index": 9,
         "end_word_index": 16
@@ -117,11 +117,11 @@
         "start": 106,
         "end": 178,
         "raw_start": 106,
-        "raw_end": 179
+        "raw_end": 178
       },
       "resolved_time": {
-        "start": 10.369625,
-        "end": 14.189626,
+        "start": 10.35,
+        "end": 14.190001,
         "source": "textgrid_words",
         "start_word_index": 17,
         "end_word_index": 30
@@ -138,11 +138,11 @@
         "start": 179,
         "end": 252,
         "raw_start": 179,
-        "raw_end": 253
+        "raw_end": 252
       },
       "resolved_time": {
-        "start": 14.189626,
-        "end": 19.784748,
+        "start": 14.190001,
+        "end": 19.799999,
         "source": "textgrid_words",
         "start_word_index": 31,
         "end_word_index": 42
@@ -159,11 +159,11 @@
         "start": 253,
         "end": 281,
         "raw_start": 253,
-        "raw_end": 282
+        "raw_end": 281
       },
       "resolved_time": {
-        "start": 19.784748,
-        "end": 22.79475,
+        "start": 19.799999,
+        "end": 22.799999,
         "source": "textgrid_words",
         "start_word_index": 43,
         "end_word_index": 49
@@ -180,11 +180,11 @@
         "start": 282,
         "end": 324,
         "raw_start": 282,
-        "raw_end": 325
+        "raw_end": 324
       },
       "resolved_time": {
-        "start": 23.830997,
-        "end": 26.440998,
+        "start": 23.809999,
+        "end": 26.439999,
         "source": "textgrid_words",
         "start_word_index": 50,
         "end_word_index": 56
@@ -201,11 +201,11 @@
         "start": 325,
         "end": 340,
         "raw_start": 325,
-        "raw_end": 341
+        "raw_end": 340
       },
       "resolved_time": {
-        "start": 26.440998,
-        "end": 27.100998,
+        "start": 26.439999,
+        "end": 27.1,
         "source": "textgrid_words",
         "start_word_index": 57,
         "end_word_index": 59
@@ -222,11 +222,11 @@
         "start": 341,
         "end": 393,
         "raw_start": 341,
-        "raw_end": 394
+        "raw_end": 393
       },
       "resolved_time": {
-        "start": 27.100998,
-        "end": 31.210999,
+        "start": 27.1,
+        "end": 31.209999,
         "source": "textgrid_words",
         "start_word_index": 60,
         "end_word_index": 69
@@ -243,11 +243,11 @@
         "start": 394,
         "end": 418,
         "raw_start": 394,
-        "raw_end": 419
+        "raw_end": 418
       },
       "resolved_time": {
-        "start": 31.714188,
-        "end": 33.651558,
+        "start": 31.66,
+        "end": 33.649998,
         "source": "textgrid_words",
         "start_word_index": 70,
         "end_word_index": 74
@@ -267,8 +267,8 @@
         "raw_end": 458
       },
       "resolved_time": {
-        "start": 33.651558,
-        "end": 35.241562,
+        "start": 33.649998,
+        "end": 35.240002,
         "source": "textgrid_words",
         "start_word_index": 75,
         "end_word_index": 80
@@ -276,8 +276,6 @@
     }
   ],
   "diagnostics": {
-    "missing_reasons": [],
-    "parser_warnings": [],
     "transcript_word_count": 81,
     "textgrid_word_count": 81,
     "alignment_warnings": [],
