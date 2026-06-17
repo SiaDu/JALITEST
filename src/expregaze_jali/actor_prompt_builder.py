@@ -53,7 +53,7 @@ def load_extra_config_texts(
             }
         )
     return {
-        "note": "Prompt-only configs. configs/base.yaml is intentionally excluded; it is runtime LLM config.",
+        "note": "Prompt-only configs for annotation rules and JALI emotion options.",
         "sources": sources,
     }
 

@@ -1,238 +1,35 @@
 {
   "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
-  "events": [
-    {
-      "id": "g01",
-      "type": "gaze",
-      "mode": "GAZE",
-      "target": "LISTENER",
-      "target_role": "LISTENER",
-      "target_label": "DOROTHY",
-      "target_needs_resolution": false,
-      "target_resolution_source": "target_context.role_map",
-      "text": "That's right. Here -- sit right down here. That's it. Ha ha!",
-      "reason": "",
-      "span": {
-        "start": 0,
-        "end": 60,
-        "raw_start": 0,
-        "raw_end": 60
-      },
-      "resolved_time": {
-        "start": 0.19,
-        "end": 4.75,
-        "source": "textgrid_words",
-        "start_word_index": 0,
-        "end_word_index": 10
-      }
-    },
-    {
-      "id": "g02",
-      "type": "gaze",
-      "mode": "GLANCE",
-      "target": "CRYSTAL",
-      "target_role": "OBJECT",
-      "target_label": "CRYSTAL",
-      "target_needs_resolution": false,
-      "target_resolution_source": "scene_targets.objects",
-      "text": "This -- this is the same genuine, magic, authentic crystal",
-      "reason": "",
-      "span": {
-        "start": 61,
-        "end": 119,
-        "raw_start": 61,
-        "raw_end": 119
-      },
-      "resolved_time": {
-        "start": 5.16,
-        "end": 9.959999,
-        "source": "textgrid_words",
-        "start_word_index": 11,
-        "end_word_index": 19
-      }
-    },
-    {
-      "id": "g03",
-      "type": "gaze",
-      "mode": "GAZE",
-      "target": "LISTENER",
-      "target_role": "LISTENER",
-      "target_label": "DOROTHY",
-      "target_needs_resolution": false,
-      "target_resolution_source": "target_context.role_map",
-      "text": "used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment",
-      "reason": "",
-      "span": {
-        "start": 121,
-        "end": 372,
-        "raw_start": 120,
-        "raw_end": 372
-      },
-      "resolved_time": {
-        "start": 10.35,
-        "end": 27.1,
-        "source": "textgrid_words",
-        "start_word_index": 20,
-        "end_word_index": 67
-      }
-    },
-    {
-      "id": "g04",
-      "type": "gaze",
-      "mode": "GAZE",
-      "target": "LISTENER",
-      "target_role": "LISTENER",
-      "target_label": "DOROTHY",
-      "target_needs_resolution": false,
-      "target_resolution_source": "target_context.role_map",
-      "text": "-- in order to be better in tune with the infinite.",
-      "reason": "",
-      "span": {
-        "start": 374,
-        "end": 425,
-        "raw_start": 373,
-        "raw_end": 425
-      },
-      "resolved_time": {
-        "start": 27.1,
-        "end": 31.209999,
-        "source": "textgrid_words",
-        "start_word_index": 68,
-        "end_word_index": 77
-      }
-    },
-    {
-      "id": "g05",
-      "type": "gaze",
-      "mode": "GLANCE",
-      "target": "DOWN",
-      "target_role": "DIRECTION",
-      "target_label": "DOWN",
-      "target_needs_resolution": false,
-      "target_resolution_source": "direction_target",
-      "text": "We -- we can't do these things without....",
-      "reason": "",
-      "span": {
-        "start": 426,
-        "end": 468,
-        "raw_start": 426,
-        "raw_end": 468
-      },
-      "resolved_time": {
-        "start": 31.66,
-        "end": 35.239998,
-        "source": "textgrid_words",
-        "start_word_index": 78,
-        "end_word_index": 84
-      }
-    }
-  ],
+  "events": [],
   "diagnostics": {
-    "missing_reasons": [
-      "m01",
-      "g01",
-      "pb01",
-      "g02",
-      "m02",
-      "h01",
-      "g03",
-      "m03",
-      "l01",
-      "pb02",
-      "g04",
-      "m04",
-      "g05"
-    ],
+    "missing_reasons": [],
     "parser_warnings": [],
-    "stripped_closing_tags": [
-      {
-        "id": "g01",
-        "text": "</g01>",
-        "raw_start": 96,
-        "raw_end": 102,
-        "position": 60
-      },
-      {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 102,
-        "raw_end": 108,
-        "position": 60
-      },
-      {
-        "id": "g02",
-        "text": "</g02>",
-        "raw_start": 209,
-        "raw_end": 215,
-        "position": 119
-      },
-      {
-        "id": "pb01",
-        "text": "</pb01>",
-        "raw_start": 215,
-        "raw_end": 222,
-        "position": 119
-      },
-      {
-        "id": "g03",
-        "text": "</g03>",
-        "raw_start": 461,
-        "raw_end": 467,
-        "position": 307
-      },
-      {
-        "id": "h01",
-        "text": "</h01>",
-        "raw_start": 467,
-        "raw_end": 473,
-        "position": 307
-      },
-      {
-        "id": "m02",
-        "text": "</m02>",
-        "raw_start": 473,
-        "raw_end": 479,
-        "position": 307
-      },
-      {
-        "id": "l01",
-        "text": "</l01>",
-        "raw_start": 569,
-        "raw_end": 575,
-        "position": 372
-      },
-      {
-        "id": "g04",
-        "text": "</g04>",
-        "raw_start": 668,
-        "raw_end": 674,
-        "position": 425
-      },
-      {
-        "id": "pb02",
-        "text": "</pb02>",
-        "raw_start": 674,
-        "raw_end": 681,
-        "position": 425
-      },
-      {
-        "id": "g05",
-        "text": "</g05>",
-        "raw_start": 756,
-        "raw_end": 762,
-        "position": 468
-      },
-      {
-        "id": "m04",
-        "text": "</m04>",
-        "raw_start": 762,
-        "raw_end": 768,
-        "position": 468
-      }
-    ],
-    "transcript_word_count": 85,
+    "stripped_closing_tags": [],
+    "transcript_word_count": 115,
     "textgrid_word_count": 85,
-    "alignment_warnings": [],
+    "alignment_warnings": [
+      "token count mismatch: transcript=115 textgrid=85",
+      "token mismatch at 2: transcript='g01' textgrid='here'",
+      "token mismatch at 3: transcript='glance' textgrid='sit'",
+      "token mismatch at 4: transcript='character_dorothy' textgrid='right'",
+      "token mismatch at 5: transcript='here' textgrid='down'",
+      "token mismatch at 6: transcript='g02' textgrid='here'",
+      "token mismatch at 7: transcript='glance' textgrid=\"that's\"",
+      "token mismatch at 8: transcript='object_crystal' textgrid='it'",
+      "token mismatch at 9: transcript='sit' textgrid='ha'",
+      "token mismatch at 10: transcript='right' textgrid='ha'",
+      "token mismatch at 11: transcript='down' textgrid='this'",
+      "token mismatch at 12: transcript='here' textgrid='this'",
+      "token mismatch at 13: transcript='m01' textgrid='is'",
+      "token mismatch at 14: transcript='friendly' textgrid='the'",
+      "token mismatch at 15: transcript='70' textgrid='same'",
+      "token mismatch at 16: transcript='l01' textgrid='genuine'",
+      "token mismatch at 17: transcript='2' textgrid='magic'",
+      "token mismatch at 18: transcript=\"that's\" textgrid='authentic'",
+      "token mismatch at 19: transcript='it' textgrid='crystal'",
+      "token mismatch at 20: transcript='pb01' textgrid='used'",
+      "additional token mismatches omitted"
+    ],
     "unresolved_events": [],
     "generic_targets": [],
     "unresolved_targets": []

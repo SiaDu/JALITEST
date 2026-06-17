@@ -145,6 +145,42 @@ def _unique_join(values: list[str], sep: str = " | ") -> str:
     return sep.join(out)
 
 
+def _coerce_text(value: Any, *, sep: str = " ") -> str:
+    """Convert full_context cell values into prompt-safe plain text.
+
+    The current full_context CSV stores subtitle rows as JSON-looking lists, e.g.
+    ``["line 1", "line 2"]``.  Leaving that raw makes subtitle_text noisy;
+    hand-writing JSON also breaks easily when quotes/newlines appear.  This helper
+    normalizes list-like cells while still keeping normal text unchanged.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return sep.join(_coerce_text(item, sep=sep) for item in value if _coerce_text(item, sep=sep)).strip()
+    text = str(value).strip()
+    if not text:
+        return ""
+    if text.startswith("[") and text.endswith("]"):
+        try:
+            parsed = json.loads(text)
+            if isinstance(parsed, list):
+                return sep.join(str(item).strip() for item in parsed if str(item).strip()).strip()
+        except Exception:
+            pass
+    return text
+
+
+def _strip_readable_tags(text: str) -> str:
+    """Remove prior JALI/readable annotation tags from exact transcript input.
+
+    If the local JALI transcript file was overwritten with annotated text, Step 00
+    should not feed <mask>/<heart>/<g##> tags back into the next LLM prompt.
+    """
+    if not text:
+        return ""
+    return re.sub(r"</?[^>]+>", "", text).strip()
+
+
 def _row_start_shot_idx(row: dict[str, Any]) -> int:
     value = _get(
         row,
@@ -271,7 +307,7 @@ def _row_script_text(row: dict[str, Any]) -> str:
 def _join_row_text(rows: list[dict[str, Any]], *keys: str, sep: str = "\n") -> str:
     values = []
     for row in rows:
-        value = str(_get(row, *keys)).strip()
+        value = _coerce_text(_get(row, *keys), sep=" ")
         if value:
             values.append(value)
     return sep.join(values).strip()
@@ -298,13 +334,13 @@ def _infer_sequence_id(movie_id: str | None, start_shot_idx: int, end_shot_idx: 
 def _default_exact_transcript(target_rows: list[dict[str, Any]]) -> str:
     explicit = _join_row_text(target_rows, "exact_transcript", "transcript", "speech_text", "line_text", sep="\n")
     if explicit:
-        return explicit
-    subtitle = _join_row_text(target_rows, "subtitle_text", "subtitle", sep="\n")
-    if subtitle:
-        return subtitle
+        return _strip_readable_tags(explicit)
     dialogue = _join_row_text(target_rows, "aligned_script_dialogue", "dialogue", "dialogue_text", "script_dialogue", sep="\n")
     if dialogue:
         return dialogue
+    subtitle = _join_row_text(target_rows, "annotation_subtitle", "subtitle_text", "subtitle", sep="\n")
+    if subtitle:
+        return subtitle
     return _unique_join([_row_script_text(row) for row in target_rows], sep="\n")
 
 
@@ -394,7 +430,7 @@ def build_context_pack_from_shot_range(
     inferred_movie_id = movie_id or _row_movie_id(target_rows[0]) or _row_movie_id(rows[0]) if rows else None
     resolved_movie_name = (
         movie_name
-        or _first_nonempty(rows, "movie_name", "movie_title", "title", "film_title")
+        or _first_nonempty(rows, "meta_movie_name", "movie_name", "movie_title", "title", "film_title")
         or inferred_movie_id
         or ""
     )
@@ -402,14 +438,17 @@ def build_context_pack_from_shot_range(
 
     storyline = _first_nonempty(
         rows,
+        "meta_storyline",
         "storyline",
         "movie_storyline",
         "plot_summary",
+        "meta_story_overview",
         "overview",
         "movie_overview",
     )
     current_story_description = _first_nonempty(
         target_rows + local_rows,
+        "anno_story_description",
         "current_story_description",
         "story_description",
         "local_story_description",
@@ -424,14 +463,18 @@ def build_context_pack_from_shot_range(
     )
     if not full_story_description:
         full_story_description = _unique_join(
-            [str(_get(row, "story_description", "current_story_description")).strip() for row in rows],
+            [str(_get(row, "anno_story_description", "story_description", "current_story_description")).strip() for row in rows],
             sep=" | ",
         )
 
-    current_script_text = _unique_join([_row_script_text(row) for row in local_rows], sep=" | ")
-    subtitle_text = _join_row_text(target_rows, "subtitle_text", "subtitle", sep="\n")
+    # The main current_script_text should be only the requested shot range.
+    # Neighboring shots belong only in full_context_local_window.
+    current_script_text = _unique_join([_row_script_text(row) for row in target_rows], sep=" | ")
+    subtitle_text = _join_row_text(target_rows, "annotation_subtitle", "subtitle_text", "subtitle", sep="\n")
     aligned_script_dialogue = _join_row_text(target_rows, "aligned_script_dialogue", "dialogue", "dialogue_text", sep="\n")
-    resolved_exact_transcript = (exact_transcript if exact_transcript is not None else _default_exact_transcript(target_rows)).strip()
+    resolved_exact_transcript = _strip_readable_tags(
+        exact_transcript if exact_transcript is not None else _default_exact_transcript(target_rows)
+    )
 
     return {
         "movie_name": resolved_movie_name,

@@ -10,48 +10,62 @@ from expregaze_jali.actor_context_builder import (
 from expregaze_jali.actor_prompt_builder import build_actor_annotation_prompt, load_extra_config_texts
 
 
-def test_build_context_pack_from_full_context_shot_range(tmp_path: Path):
+def test_build_context_pack_from_new_full_context_schema(tmp_path: Path):
     full_context_path = tmp_path / "full_context.csv"
+    fieldnames = [
+        "movie_id",
+        "meta_movie_name",
+        "meta_story_overview",
+        "meta_storyline",
+        "anno_story_id",
+        "anno_story_description",
+        "shot_id",
+        "annotation_subtitle",
+        "aligned_script_dialogue",
+        "aligned_speakers",
+        "aligned_script_text",
+        "shot_type",
+        "match_score",
+    ]
+    base = {
+        "movie_id": "tt0032138",
+        "meta_movie_name": "The Wizard of Oz",
+        "meta_story_overview": "Famous musical film.",
+        "meta_storyline": "Dorothy and Toto are carried to Oz after a tornado.",
+        "anno_story_id": "tt0032138_0000",
+        "anno_story_description": "Dorothy meets Professor Marvel, who tries to send her home.",
+        "aligned_speakers": '["PROFESSOR"]',
+        "shot_type": "MLS",
+        "match_score": "90",
+    }
     with full_context_path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=[
-                "movie_id",
-                "movie_name",
-                "shot_idx",
-                "shot_id",
-                "storyline",
-                "story_description",
-                "subtitle_text",
-                "aligned_script_dialogue",
-                "aligned_script_text",
-            ],
-        )
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerow(
             {
-                "movie_id": "tt0032138",
-                "movie_name": "The Wizard of Oz",
-                "shot_idx": "37",
+                **base,
                 "shot_id": "shot_0037",
-                "storyline": "Dorothy runs away and meets Professor Marvel.",
-                "story_description": "Professor is trying to send Dorothy home.",
-                "subtitle_text": "Previous subtitle.",
+                "annotation_subtitle": '["Previous subtitle."]',
                 "aligned_script_dialogue": "Previous dialogue.",
                 "aligned_script_text": "Professor leads Dorothy toward the wagon.",
             }
         )
         writer.writerow(
             {
-                "movie_id": "tt0032138",
-                "movie_name": "The Wizard of Oz",
-                "shot_idx": "38",
+                **base,
                 "shot_id": "shot_0038",
-                "storyline": "Dorothy runs away and meets Professor Marvel.",
-                "story_description": "Professor is trying to send Dorothy home.",
-                "subtitle_text": "That's right. Sit here.",
+                "annotation_subtitle": '["That\'s right. Here.", "Sit right down here."]',
                 "aligned_script_dialogue": "That's right. Here -- sit right down here.",
                 "aligned_script_text": "Professor seats Dorothy and shows the crystal.",
+            }
+        )
+        writer.writerow(
+            {
+                **base,
+                "shot_id": "shot_0039",
+                "annotation_subtitle": '["Next subtitle."]',
+                "aligned_script_dialogue": "Next dialogue.",
+                "aligned_script_text": "Next shot should stay in local window only.",
             }
         )
 
@@ -59,20 +73,26 @@ def test_build_context_pack_from_full_context_shot_range(tmp_path: Path):
     context_pack = build_context_pack_from_shot_range(
         rows,
         movie_id="tt0032138",
-        movie_name="The Wizard of Oz",
         sequence_id="clip_001",
         start_shot_idx=38,
         end_shot_idx=38,
         local_window=1,
-        exact_transcript="That's right. Here -- sit right down here.",
+        exact_transcript="<mask=Friendly-80>That's right.</mask=Friendly-80>",
     )
 
-    assert context_pack["sequence_id"] == "clip_001"
-    assert context_pack["shot_range"]["start_shot_idx"] == 38
-    assert "Professor is trying" in context_pack["current_story_description"]
-    assert "shows the crystal" in context_pack["current_script_text"]
-    assert context_pack["exact_transcript"] == "That's right. Here -- sit right down here."
-    assert [row["shot_id"] for row in context_pack["full_context_local_window"]] == ["shot_0037", "shot_0038"]
+    assert context_pack["movie_name"] == "The Wizard of Oz"
+    assert "tornado" in context_pack["storyline"]
+    assert "Professor Marvel" in context_pack["current_story_description"]
+    assert context_pack["current_script_text"] == "Professor seats Dorothy and shows the crystal."
+    assert "Next shot" not in context_pack["current_script_text"]
+    assert context_pack["subtitle_text"] == "That's right. Here. Sit right down here."
+    assert context_pack["aligned_script_dialogue"] == "That's right. Here -- sit right down here."
+    assert context_pack["exact_transcript"] == "That's right."
+    assert [row["shot_id"] for row in context_pack["full_context_local_window"]] == [
+        "shot_0037",
+        "shot_0038",
+        "shot_0039",
+    ]
 
 
 def test_prompt_builder_injects_extra_config_and_preserves_transcript(tmp_path: Path):
