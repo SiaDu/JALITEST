@@ -94,7 +94,6 @@ The project uses numbered scripts. There is intentionally no full-pipeline shell
 ```bash
 bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
-  --profile full_actor \
   --overwrite
 ```
 
@@ -147,7 +146,6 @@ You can override the transcript path manually:
 ```bash
 bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
-  --profile full_actor \
   --exact-transcript-file data/input/transcripts/Jali_proto_candidate_001_ProfessorCrystal.txt \
   --overwrite
 ```
@@ -157,7 +155,6 @@ You can disable the auto transcript lookup and force candidate subtitle text:
 ```bash
 bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
-  --profile full_actor \
   --no-auto-exact-transcript-file \
   --overwrite
 ```
@@ -166,7 +163,6 @@ Common parameters:
 
 ```text
 --sequence-id                    Candidate sequence id.
---profile                        mvp or full_actor.
 --candidate-jsonl                 Processed candidate sequence JSONL.
 --full-context-csv                Processed full-context CSV.
 --full-context-window             Number of surrounding shots to include.
@@ -409,7 +405,6 @@ Without an explicit closing tag, state-change tags fall back to ending at the ne
 # 00. Build context/prompt, then inspect exact_transcript.
 bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
-  --profile full_actor \
   --overwrite
 
 # 01. Run LLM once.

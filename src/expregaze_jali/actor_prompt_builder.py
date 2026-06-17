@@ -4,73 +4,14 @@ import json
 from pathlib import Path
 from typing import Any
 
-
-CAPABILITY_PROFILES: dict[str, dict[str, Any]] = {
-    "mvp": {
-        "name": "mvp",
-        "purpose": "Generate only tags that the current compiler/exporter can execute immediately.",
-        "enabled_tags": {
-            "gaze": "<g##=MODE-TARGET>...</g##>",
-            "mask": "<m##=MaskName-Strength>...</m##>",
-            "heart": "<h##=HeartName-Strength>...</h##>",
-        },
-        "disabled_tags": {
-            "lid_state": "<l##=VALUE>...</l##>",
-            "performative_blink": "<pb##=MODE-SUBTYPE>...</pb##>",
-            "blink_suppression": "<bs##=SUPPRESS/ALLOW>...</bs##>",
-        },
-        "note": (
-            "Do not output lid_state, performative_blink, or blink_suppression tags in [ANNOTATION]. "
-            "You may discuss eyelids/blinks in [ANALYZE] only if it helps the acting strategy."
-        ),
-    },
-    "full_actor": {
-        "name": "full_actor",
-        "purpose": "Generate full actor-style annotation for gaze, facial mask, eyelids, and intentional blinks.",
-        "enabled_tags": {
-            "gaze": "<g##=MODE-TARGET>...</g##>",
-            "mask": "<m##=MaskName-Strength>...</m##>",
-            "heart": "<h##=HeartName-Strength>...</h##>",
-            "lid_state": "<l##=VALUE>...</l##>",
-            "performative_blink": "<pb##=MODE-SUBTYPE>...</pb##>",
-            "blink_suppression": "<bs##=SUPPRESS/ALLOW>...</bs##>",
-        },
-        "disabled_tags": {},
-        "note": (
-            "Use lid_state and blink tags sparingly. They must describe actor choices, "
-            "not ordinary physiological blink behavior."
-        ),
-    },
-}
-
-
 PROMPT_CONTEXT_EXCLUDED_KEYS = {
     "exact_transcript",
     "scene_targets",
     "target_context",
 }
 
-
-CAPABILITY_PROFILE_INCLUDED_KEYS = {
-    "name",
-    "purpose",
-    "enabled_tags",
-    "disabled_tags",
-    "note",
-}
-
-
 def load_prompt_template(path: str | Path) -> str:
     return Path(path).read_text(encoding="utf-8")
-
-
-def get_capability_profile(profile_name: str) -> dict[str, Any]:
-    if profile_name not in CAPABILITY_PROFILES:
-        raise ValueError(
-            f"Unknown capability profile: {profile_name}. "
-            f"Available: {sorted(CAPABILITY_PROFILES)}"
-        )
-    return CAPABILITY_PROFILES[profile_name]
 
 
 def _read_optional_text(path: str | Path | None, *, max_chars: int = 8000) -> str:
@@ -122,20 +63,10 @@ def _compact_prompt_context(context_pack: dict[str, Any]) -> dict[str, Any]:
         out[key] = value
     return out
 
-
-def _compact_capability_profile(capability_profile: dict[str, Any]) -> dict[str, Any]:
-    return {
-        key: capability_profile[key]
-        for key in CAPABILITY_PROFILE_INCLUDED_KEYS
-        if key in capability_profile
-    }
-
-
 def build_actor_annotation_prompt(
     *,
     prompt_template: str,
     context_pack: dict[str, Any],
-    capability_profile: dict[str, Any],
     transcript: str | None = None,
     extra_config: dict[str, Any] | None = None,
 ) -> str:
@@ -146,7 +77,6 @@ def build_actor_annotation_prompt(
 
     replacements = {
         "{{context_pack}}": json.dumps(_compact_prompt_context(context_pack), ensure_ascii=False, indent=2),
-        "{{capability_profile}}": json.dumps(_compact_capability_profile(capability_profile), ensure_ascii=False, indent=2),
         "{{transcript}}": str(exact_transcript),
         "{{extra_config}}": "",
     }

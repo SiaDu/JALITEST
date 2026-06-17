@@ -14,7 +14,6 @@ from expregaze_jali.actor_context_builder import (
 )
 from expregaze_jali.actor_prompt_builder import (
     build_actor_annotation_prompt,
-    get_capability_profile,
     load_extra_config_texts,
     load_prompt_template,
 )
@@ -43,7 +42,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--base-config", type=Path, default=DEFAULT_BASE_CONFIG)
     parser.add_argument("--jali-emotion-options", type=Path, default=DEFAULT_JALI_OPTIONS)
     parser.add_argument("--paths-config", type=Path, default=DEFAULT_PATHS_CONFIG)
-    parser.add_argument("--profile", choices=["mvp", "full_actor"], default="full_actor")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--output-prompt", type=Path, default=None)
     parser.add_argument("--output-context-pack", type=Path, default=None)
@@ -157,7 +155,6 @@ def main() -> None:
     exact_transcript, exact_transcript_source = _load_exact_transcript(args)
 
     context_pack = build_actor_context_pack(candidate, full_rows, exact_transcript=exact_transcript)
-    profile = get_capability_profile(args.profile)
     template = load_prompt_template(args.prompt_template)
     extra_config = load_extra_config_texts(
         base_config=args.base_config,
@@ -167,7 +164,6 @@ def main() -> None:
     prompt = build_actor_annotation_prompt(
         prompt_template=template,
         context_pack=context_pack,
-        capability_profile=profile,
         extra_config=extra_config,
     )
 
@@ -180,7 +176,6 @@ def main() -> None:
     exact_preview = context_pack.get("exact_transcript", "").replace("\n", " ")[:120]
     print(f"Context pack: {output_context}")
     print(f"Prompt: {output_prompt}")
-    print(f"Profile: {args.profile}")
     print(f"Exact transcript source: {exact_transcript_source}")
     print(f"Transcript chars: {len(context_pack.get('exact_transcript', ''))}")
     print(f"Exact transcript preview: {exact_preview}")
