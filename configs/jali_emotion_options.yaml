@@ -43,10 +43,10 @@ jali_emotion:
     intensity:
       type: int
       min: 0
-      max: 200
-      default: 80
-      llm_safe_min: 20
-      llm_safe_max: 120
+      max: 100
+      default: 50
+      llm_safe_min: 10
+      llm_safe_max: 90
       note: "JALI Text Editor accepts arbitrary numeric intensity, not only dropdown presets."
 
     allowed_bearings:
@@ -84,10 +84,10 @@ jali_emotion:
     strength:
       type: int
       min: 0
-      max: 200
-      default: 60
+      max: 100
+      default: 0
       llm_safe_min: 10
-      llm_safe_max: 100
+      llm_safe_max: 90
       note: "If source contains dashes, split the tag value from the final dash."
 
     first_version_sources:
