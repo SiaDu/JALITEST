@@ -1,25 +1,3 @@
-You are an expert screen actor, animation director, and performance annotator.
-
-Your job is not to create animation curves.
-Your job is not to output JSON.
-Your job is not to output seconds or frames.
-
-Your job is to read the scene context and the exact transcript, then insert sparse actor-style performance tags into the exact transcript.
-
-The annotation will later be compiled by code into:
-- JALI-compatible mask / heart transcript tags
-- resolved gaze events for Maya
-- optional actor overlay events for eyelids / performative blinks / blink suppression
-
-Use the context as evidence, but annotate only the exact transcript. If the context and exact transcript disagree, preserve and annotate the exact transcript.
-
-Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OCR errors, and unusual words.
-
-
-[EXACT TRANSCRIPT - ANNOTATE THIS ONLY]
-<mask=Friendly-85>That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal</mask=Friendly-85>  <mask=Cocky-50><heart=Scheming-60>used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on.</mask=Cocky-50></heart=Scheming-60> <mask=Friendly-70>Now, you -- you'd better close your eyes, my child, for a moment  -- in order to be better in tune with the infinite.</mask=Friendly-70> <mask=Polite-60>We -- we can't do these things without....</mask=Polite-60>
-
-[SCENE CONTEXT]
 {
   "movie_id": "tt0032138",
   "sequence_id": "Jali_proto_candidate_001_ProfessorCrystal",
@@ -41,6 +19,63 @@ Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OC
   "script_action_preview": "MLS -- Professor rises -- CAMERA PANS as he and Dorothy cross\nto right to wagon -- | ...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without.... | INSERT -- CU -- photograph of Dorothy and Aunt Em --\nPROFESSOR o.s. ...reaching out into the.... MCU -- Professor\nlooks at photograph --",
   "subtitle_text": "That's right. Here. Sit right down here. That's it. This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things without reaching out into the lnfinite.",
   "aligned_script_dialogue": "...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
+  "scene_targets": {
+    "people": [
+      "DOROTHY",
+      "PROFESSOR",
+      "AUNT_EM"
+    ],
+    "objects": [
+      "CRYSTAL",
+      "PHOTOGRAPH",
+      "WAGON"
+    ],
+    "directions": [
+      "LISTENER",
+      "DOWN",
+      "DOWN_LEFT",
+      "DOWN_RIGHT",
+      "UP",
+      "UP_LEFT",
+      "UP_RIGHT",
+      "LEFT",
+      "RIGHT"
+    ]
+  },
+  "target_context": {
+    "speaking_character": "PROFESSOR",
+    "primary_listener": "DOROTHY",
+    "listener_candidates": [
+      "DOROTHY",
+      "AUNT_EM"
+    ],
+    "object_candidates": [
+      "CRYSTAL",
+      "PHOTOGRAPH",
+      "WAGON"
+    ],
+    "direction_targets": [
+      "LISTENER",
+      "DOWN",
+      "DOWN_LEFT",
+      "DOWN_RIGHT",
+      "UP",
+      "UP_LEFT",
+      "UP_RIGHT",
+      "LEFT",
+      "RIGHT"
+    ],
+    "role_map": {
+      "SPEAKER": "PROFESSOR",
+      "LISTENER": "DOROTHY",
+      "PRIMARY_OBJECT": "CRYSTAL"
+    },
+    "notes": [
+      "LISTENER most likely refers to DOROTHY.",
+      "Object targets are hints only; prefer specific targets when inferable, but generic OBJECT may be used when intentionally unresolved."
+    ]
+  },
+  "exact_transcript": "<mask=Friendly-85>That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal</mask=Friendly-85>  <mask=Cocky-50><heart=Scheming-60>used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on.</mask=Cocky-50></heart=Scheming-60> <mask=Friendly-70>Now, you -- you'd better close your eyes, my child, for a moment  -- in order to be better in tune with the infinite.</mask=Friendly-70> <mask=Polite-60>We -- we can't do these things without....</mask=Polite-60>",
   "candidate_shots": [
     {
       "shot_idx": 38,
@@ -131,52 +166,3 @@ Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OC
     }
   ]
 }
-
-[EXTRA CONFIG]
-{
-  "jali_emotion_options": {
-    "path": "configs/jali_emotion_options.yaml",
-    "text": "jali_emotion:\n  mode: transcript_annotation\n\n  node_settings_for_annotation:\n    mask_bearing:\n      attr: mask_bearing\n      enum_index: 0\n      label: from Annotation\n\n    mask_intensity:\n      attr: mask_intensity\n      enum_index: 0\n      label: From Transcript Tags\n\n    heart_source:\n      attr: heart_source\n      enum_index: 0\n      label: from Annotation\n\n    heart_strength:\n      attr: heart_strength\n      enum_index: 0\n      label: From Transcript Tags\n\n  mask:\n    tag_format: \"<mask={bearing}-{intensity}> {text} </mask={bearing}-{intensity}>\"\n\n    intensity:\n      type: int\n      min: 0\n      max: 100\n      default: 50\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"JALI Text Editor accepts arbitrary numeric intensity, not only dropdown presets.\"\n\n    allowed_bearings:\n      Nothing: 2\n      Neutral: 3\n      Polite: 4\n      Friendly: 5\n      Sassy: 6\n      Smug: 7\n      Cocky: 8\n      Nervous: 9\n      Panicky: 10\n      Thinking: 11\n      Scheming: 12\n      Devious: 13\n      Devilish: 14\n      Provoked: 15\n      Angered: 16\n      Dislike: 17\n      Disgust: 18\n      Singing_Serene: 19\n      Watchful: 20\n      Intimidating: 21\n      Confused: 22\n      Lost: 23\n\n  heart:\n    \n    tag_format: \"<heart={source}-{strength}> {text} </heart={source}-{strength}>\"\n\n    strength:\n      type: int\n      min: 0\n      max: 100\n      default: 0\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"If source contains dashes, split the tag value from the final dash.\"\n\n    first_version_sources:\n      Nothing: 121\n      Angry: 122\n      Sad: 123\n      Disgusted: 124\n      Afraid: 125\n      Contempt: 126\n      Surprised: 127\n      Happy: 128\n\n    advanced_sources_allow_for_manual_tests:\n      Pride_P-91: 91\n      Emp_Anger-2: 2"
-  },
-  "performance_rules": {
-    "path": "configs/performance_rules.yaml",
-    "text": "performance_rules:\n  schema_version: performance_rules_v1\n  \n  performance_annotation:\n    General rules:\n    - Add tags only when the performance state or local acting beat changes.\n    - Every tag must be visually meaningful and executable.\n    - Every tag must be explained in [REASONS].\n\n    tag_id_prefixes:\n      gaze: g\n      mask: m\n      heart: h\n      lid_state: l\n      performative_blink: pb\n      blink_suppression: bs\n\n    Gaze rules:\n    - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.\n    - Allowed gaze modes are GAZE, GLANCE, and AVERT.\n    - GAZE means sustained look toward target.\n    - GLANCE means brief look toward target.\n    - AVERT means sustained avoidance from the main social target.\n    - Infer gaze targets from the transcript and context. Should use concrete targets. eg. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.\n\n    # Use explicit semantic or directional targets instead.\n    Gaze allowed_targets:\n      - CHARACTER_CharacterName\n      - OBJECT_ObjectName\n      - DOWN\n      - DOWN_LEFT\n      - DOWN_RIGHT\n      - UP\n      - UP_LEFT\n      - UP_RIGHT\n      - LEFT\n      - RIGHT\n\n    Mask / heart rules:\n    - Use mask tags for visible facial performance.\n    - Use heart tags only when the inner state differs from visible mask.\n    - Do not use heart as a generic second emotion layer.\n    - Use mask and heart names from the JALI emotion options when provided.\n    - Keep strength values moderate unless the acting beat extremely demands more.\n\n    Lid / blink rules:\n    - Do not annotate ordinary regulatory blinks.\n    - set lid_state at begining, lid_state refers to how large eye open\n    - Use lid_state only for sustained eyelid baseline changes, not as a second emotion label.\n    - Use performative_blink only when the blink itself is an acting choice.\n    - Use blink_suppression only when not blinking is the acting choice.\n\n    Lid state scale, use these as energy/affective/cognitive state reference:\n    -9: fully wide, manic / possessed / extreme fear\n    -7: feverish, unstable, obsessive\n    -5: intense, neurotic, over-alert\n    -3: shocked / angry / excited\n    -2: heightened attention\n    -1: alert but controlled\n    0: default\n    1: relaxed / neutral\n    2: soft / warm / receptive\n    3: guarded / impatient / skeptical\n    4: sleepy / withdrawn / flat dislike / emotionally closed\n\n    Performative blink modes:\n    - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain\n    - EYE_CLOSE_HOLD: thinking, avoidance, unwillingness to look, emotional suppression, prayer, mystical concentration, fatigue, demonstration\n    - SLOW_BLINK: cognitive retrieval, remembering, fabricating a story, searching for words\n"
-  }
-}
-
-Output exactly three sections, in this order:
-
-[ANALYZE]
-
-Keep the analysis compact and practical. Include:
-
-scene_constraints:
-- available people / objects / gaze targets
-
-social_interaction_structure: 
-- who is speaking, who is listening
-
-affective_cognitive_state:
-- character read: social role and power position, temperament, performance style, hidden undercurrent only if relevant
-- energy, which links to lid_state
-- visible emotion, hidden emotion (heart emotion) only if relevant. what the character wants/thinks in this moment
-
-narrative_intent:
-- how this performance attibutes to storytelling
-
-performance_strategy:
-- how gaze, facial mask / heart, and optional eyelids / blinks should support the acting beat
-- where the performance actually changes
-
-[ANNOTATION]
-
-Insert readable performance tags into the original exact transcript.
-
-[REASONS]
-
-Briefly explain every tag ID.
-Reasons must be practical acting reasons, not generic emotion labels.
-Reasons should explain why the tag changes audience perception or character performance.
-Allowed reason formats:
-- g01=GAZE-LISTENER_DORTHY: reason
-- m01=Friendly-80: reason
