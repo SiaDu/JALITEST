@@ -1,0 +1,173 @@
+{
+  "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
+  "events": [
+    {
+      "id": "pb01",
+      "type": "performative_blink",
+      "value": "GLANCE-TO-CHARM",
+      "text": "This -- this is",
+      "reason": "",
+      "span": {
+        "start": 61,
+        "end": 76,
+        "raw_start": 61,
+        "raw_end": 76
+      },
+      "resolved_time": {
+        "start": 5.16,
+        "end": 6.34,
+        "source": "textgrid_words",
+        "start_word_index": 11,
+        "end_word_index": 13
+      }
+    },
+    {
+      "id": "l01",
+      "type": "lid_state",
+      "value": "-1",
+      "text": "Now, you -- you'd better close your eyes, my child, for a moment  -- in order to be better in tune with the infinite. We -- we can't do these things without....",
+      "reason": "",
+      "span": {
+        "start": 308,
+        "end": 468,
+        "raw_start": 308,
+        "raw_end": 468
+      },
+      "resolved_time": {
+        "start": 22.41,
+        "end": 35.239998,
+        "source": "textgrid_words",
+        "start_word_index": 56,
+        "end_word_index": 84
+      }
+    },
+    {
+      "id": "pb02",
+      "type": "performative_blink",
+      "value": "EYE_CLOSE_HOLD",
+      "text": "in order to",
+      "reason": "",
+      "span": {
+        "start": 377,
+        "end": 388,
+        "raw_start": 373,
+        "raw_end": 388
+      },
+      "resolved_time": {
+        "start": 27.1,
+        "end": 27.939999,
+        "source": "textgrid_words",
+        "start_word_index": 68,
+        "end_word_index": 70
+      }
+    }
+  ],
+  "diagnostics": {
+    "missing_reasons": [
+      "m01",
+      "g01",
+      "pb01",
+      "g02",
+      "m02",
+      "h01",
+      "g03",
+      "m03",
+      "l01",
+      "pb02",
+      "g04",
+      "m04",
+      "g05"
+    ],
+    "parser_warnings": [],
+    "stripped_closing_tags": [
+      {
+        "id": "g01",
+        "text": "</g01>",
+        "raw_start": 96,
+        "raw_end": 102,
+        "position": 60
+      },
+      {
+        "id": "m01",
+        "text": "</m01>",
+        "raw_start": 102,
+        "raw_end": 108,
+        "position": 60
+      },
+      {
+        "id": "g02",
+        "text": "</g02>",
+        "raw_start": 208,
+        "raw_end": 214,
+        "position": 119
+      },
+      {
+        "id": "pb01",
+        "text": "</pb01>",
+        "raw_start": 214,
+        "raw_end": 221,
+        "position": 119
+      },
+      {
+        "id": "g03",
+        "text": "</g03>",
+        "raw_start": 460,
+        "raw_end": 466,
+        "position": 307
+      },
+      {
+        "id": "h01",
+        "text": "</h01>",
+        "raw_start": 466,
+        "raw_end": 472,
+        "position": 307
+      },
+      {
+        "id": "m02",
+        "text": "</m02>",
+        "raw_start": 472,
+        "raw_end": 478,
+        "position": 307
+      },
+      {
+        "id": "l01",
+        "text": "</l01>",
+        "raw_start": 568,
+        "raw_end": 574,
+        "position": 372
+      },
+      {
+        "id": "g04",
+        "text": "</g04>",
+        "raw_start": 667,
+        "raw_end": 673,
+        "position": 425
+      },
+      {
+        "id": "pb02",
+        "text": "</pb02>",
+        "raw_start": 673,
+        "raw_end": 680,
+        "position": 425
+      },
+      {
+        "id": "g05",
+        "text": "</g05>",
+        "raw_start": 755,
+        "raw_end": 761,
+        "position": 468
+      },
+      {
+        "id": "m04",
+        "text": "</m04>",
+        "raw_start": 761,
+        "raw_end": 767,
+        "position": 468
+      }
+    ],
+    "transcript_word_count": 85,
+    "textgrid_word_count": 85,
+    "alignment_warnings": [],
+    "unresolved_events": []
+  }
+}

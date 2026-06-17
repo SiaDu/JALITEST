@@ -19,15 +19,15 @@ echo "Paths config: $PATHS_CONFIG"
 echo "LLM calls: 0"
 
 if [[ -n "${PYTHON_BIN:-}" ]]; then
-  "$PYTHON_BIN" -m expregaze.data.textgrid_parser \
+  "$PYTHON_BIN" -m expregaze_jali.textgrid_parser \
     --paths-config "$PATHS_CONFIG" \
     "${EXTRA_ARGS[@]}"
 elif command -v uv >/dev/null 2>&1; then
-  uv run python -m expregaze.data.textgrid_parser \
+  uv run python -m expregaze_jali.textgrid_parser \
     --paths-config "$PATHS_CONFIG" \
     "${EXTRA_ARGS[@]}"
 else
-  python3 -m expregaze.data.textgrid_parser \
+  python3 -m expregaze_jali.textgrid_parser \
     --paths-config "$PATHS_CONFIG" \
     "${EXTRA_ARGS[@]}"
 fi
