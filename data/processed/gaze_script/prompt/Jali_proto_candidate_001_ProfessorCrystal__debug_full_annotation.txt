@@ -1,3 +1,68 @@
+[SUMMARY]
+{
+  "annotation_path": "data/processed/gaze_script/prompt/Jali_proto_candidate_001_ProfessorCrystal__performance_annotation.txt",
+  "tag_count": 14,
+  "event_count": 14,
+  "diagnostics": {
+    "parser": {
+      "warnings": [],
+      "missing_reasons": [
+        "l01",
+        "g01",
+        "m01",
+        "h01",
+        "g02",
+        "m02",
+        "g03",
+        "g04",
+        "m03",
+        "g05",
+        "l02",
+        "pb01",
+        "g06",
+        "m04"
+      ],
+      "extra_reasons": [],
+      "tag_count": 14,
+      "tag_type_counts": {
+        "blink_suppression": 0,
+        "gaze": 6,
+        "heart": 1,
+        "lid_state": 2,
+        "mask": 4,
+        "performative_blink": 1
+      }
+    },
+    "resolver": {
+      "missing_reasons": [
+        "l01",
+        "g01",
+        "m01",
+        "h01",
+        "g02",
+        "m02",
+        "g03",
+        "g04",
+        "m03",
+        "g05",
+        "l02",
+        "pb01",
+        "g06",
+        "m04"
+      ],
+      "parser_warnings": [],
+      "transcript_word_count": 81,
+      "textgrid_word_count": 81,
+      "alignment_warnings": [],
+      "unresolved_events": []
+    }
+  }
+}
+
+[CLEAN_TRANSCRIPT]
+That's right. Here. Sit right down here. That's it. This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things without reaching out into the lnfinite.
+
+[FULL_ANNOTATION]
 [ANALYZE]
 
 scene_constraints:

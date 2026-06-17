@@ -1,0 +1,154 @@
+{
+  "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
+  "events": [
+    {
+      "id": "g01",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "That's right. Here. Sit right down here. That's it.",
+      "reason": "",
+      "span": {
+        "start": 0,
+        "end": 51,
+        "raw_start": 0,
+        "raw_end": 51
+      },
+      "resolved_time": {
+        "start": 0.19,
+        "end": 4.13,
+        "source": "textgrid_words",
+        "start_word_index": 0,
+        "end_word_index": 8
+      }
+    },
+    {
+      "id": "g02",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "OBJECT",
+      "text": "This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs...",
+      "reason": "",
+      "span": {
+        "start": 52,
+        "end": 178,
+        "raw_start": 52,
+        "raw_end": 178
+      },
+      "resolved_time": {
+        "start": 5.16,
+        "end": 14.189626,
+        "source": "textgrid_words",
+        "start_word_index": 9,
+        "end_word_index": 30
+      }
+    },
+    {
+      "id": "g03",
+      "type": "gaze",
+      "mode": "GLANCE",
+      "target": "UP_LEFT",
+      "text": "...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. And so on, and so on.",
+      "reason": "",
+      "span": {
+        "start": 179,
+        "end": 274,
+        "raw_start": 179,
+        "raw_end": 274
+      },
+      "resolved_time": {
+        "start": 14.189626,
+        "end": 21.834751,
+        "source": "textgrid_words",
+        "start_word_index": 31,
+        "end_word_index": 48
+      }
+    },
+    {
+      "id": "g04",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "LISTENER",
+      "text": "Now... ...you'd better close your eyes, my child, for a moment...",
+      "reason": "",
+      "span": {
+        "start": 275,
+        "end": 340,
+        "raw_start": 275,
+        "raw_end": 340
+      },
+      "resolved_time": {
+        "start": 22.424751,
+        "end": 27.100998,
+        "source": "textgrid_words",
+        "start_word_index": 49,
+        "end_word_index": 59
+      }
+    },
+    {
+      "id": "g05",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "DOWN",
+      "text": "...in order to be better in tuned with the lnfinite.",
+      "reason": "",
+      "span": {
+        "start": 341,
+        "end": 393,
+        "raw_start": 341,
+        "raw_end": 393
+      },
+      "resolved_time": {
+        "start": 27.100998,
+        "end": 31.210999,
+        "source": "textgrid_words",
+        "start_word_index": 60,
+        "end_word_index": 69
+      }
+    },
+    {
+      "id": "g06",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "OBJECT",
+      "text": "We can't do these things without reaching out into the lnfinite.",
+      "reason": "",
+      "span": {
+        "start": 394,
+        "end": 458,
+        "raw_start": 394,
+        "raw_end": 458
+      },
+      "resolved_time": {
+        "start": 31.714188,
+        "end": 35.241562,
+        "source": "textgrid_words",
+        "start_word_index": 70,
+        "end_word_index": 80
+      }
+    }
+  ],
+  "diagnostics": {
+    "missing_reasons": [
+      "l01",
+      "g01",
+      "m01",
+      "h01",
+      "g02",
+      "m02",
+      "g03",
+      "g04",
+      "m03",
+      "g05",
+      "l02",
+      "pb01",
+      "g06",
+      "m04"
+    ],
+    "parser_warnings": [],
+    "transcript_word_count": 81,
+    "textgrid_word_count": 81,
+    "alignment_warnings": [],
+    "unresolved_events": []
+  }
+}
