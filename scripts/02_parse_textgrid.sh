@@ -14,7 +14,7 @@ export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/jalitest-uv-cache}"
 
 cd "$PROJECT_ROOT"
 
-echo "Step 00: parse TextGrid word timings"
+echo "Step 02: parse TextGrid word timings"
 echo "Paths config: $PATHS_CONFIG"
 echo "LLM calls: 0"
 

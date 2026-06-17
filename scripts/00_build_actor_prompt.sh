@@ -10,7 +10,7 @@ export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/jalitest-uv-cache}"
 
 cd "$PROJECT_ROOT"
 
-echo "Step 01: build actor context pack and prompt"
+echo "Step 00: build actor context pack and prompt"
 echo "LLM calls: 0"
 
 if [[ -n "${PYTHON_BIN:-}" ]]; then

@@ -2,7 +2,7 @@
 
 JALITEST is a small ExpreGaze + JALI prototype for generating script-aware performance annotations and compiling them into JALI / Maya-ready outputs.
 
-The current input is **processed MovieNet / ExpreGaze data**, not raw MovieNet. The main processed inputs are candidate sequence files, processed full-context CSV files, JALI/TextGrid word timing files, and optional manually edited exact transcripts.
+The current input is **processed MovieNet / ExpreGaze data**, not raw MovieNet. The main processed inputs are candidate sequence files, processed full-context CSV files, JALI/TextGrid word timing files, and optional manually edited exact transcripts from the local JALI sound folder.
 
 ## Core idea
 
@@ -54,7 +54,7 @@ data/processed/full_context/
 data/processed/textgrid/
   {clip}__words.jsonl
 
-  Word timing extracted from JALI / TextGrid. This is required for compiling
+  Word timing extracted from JALI / TextGrid. This is required only when compiling
   readable annotation spans into resolved time ranges.
 
 data/processed/gaze_script/llm_process/
@@ -83,37 +83,16 @@ The project uses numbered scripts. There is intentionally no full-pipeline shell
 
 | Step | Script | Calls LLM? | Main purpose |
 |---:|---|---:|---|
-| 00 | `scripts/00_parse_textgrid.sh` | No | Parse TextGrid into word timing JSONL. |
-| 01 | `scripts/01_build_actor_prompt.sh` | No | Build `context_pack.json` and `actor_prompt.txt`. |
-| 02 | `scripts/02_run_actor_llm.sh` | Yes, once | Call OpenAI and write `performance_annotation.txt`. |
+| 00 | `scripts/00_build_actor_prompt.sh` | No | Build `context_pack.json` and `actor_prompt.txt`; inspect/edit exact transcript before calling the LLM. |
+| 01 | `scripts/01_run_actor_llm.sh` | Yes, once | Call OpenAI and write `performance_annotation.txt`. |
+| 02 | `scripts/02_parse_textgrid.sh` | No | Parse TextGrid into word timing JSONL. Required before Step 03, not before Step 00. |
 | 03 | `scripts/03_compile_actor_annotation.sh` | No | Compile LLM annotation into JALI / gaze / overlay outputs. |
 | 04 | `scripts/04_validate_actor_outputs.sh` | No | Validate sections, timing, targets, and output files. |
 
-
-## Step 00: parse TextGrid
-
-```bash
-bash scripts/00_parse_textgrid.sh configs/path_local.yaml
-```
-
-This wraps:
+## Step 00: build actor prompt
 
 ```bash
-python -m expregaze.data.textgrid_parser --paths-config configs/path_local.yaml
-```
-
-Expected output:
-
-```text
-data/processed/textgrid/{clip}__words.jsonl
-```
-
-This step does not call the LLM.
-
-## Step 01: build actor prompt
-
-```bash
-bash scripts/01_build_actor_prompt.sh \
+bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
   --profile full_actor \
   --overwrite
@@ -126,7 +105,7 @@ data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal
 data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__actor_prompt.txt
 ```
 
-This step does not call the LLM.
+This step does not call the LLM and does not require `data/processed/textgrid/{clip}__words.jsonl`.
 
 After this step, inspect the exact transcript before paying for an LLM call:
 
@@ -137,36 +116,78 @@ code data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCr
 
 The LLM tags only `exact_transcript`. The context pack also includes `subtitle_text` and `aligned_script_dialogue` for reference, but `exact_transcript` is the editable source of truth for annotation.
 
-Optional manually edited transcript:
+### Exact transcript source
+
+By default, Step 00 tries to load a manually edited exact transcript from `configs/path_local.yaml`:
+
+```yaml
+jali:
+  project_root: /mnt/e/maya_project/JALI_test
+  input_dir: scenes/sounds_proto1
+```
+
+For sequence id `Jali_proto_candidate_001_ProfessorCrystal`, this resolves to:
+
+```text
+/mnt/e/maya_project/JALI_test/scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.txt
+```
+
+This is the WSL path for:
+
+```text
+E:\maya_project\JALI_test\scenes\sounds_proto1\Jali_proto_candidate_001_ProfessorCrystal.txt
+```
+
+If the file exists, its content becomes `context_pack.exact_transcript`. If it is missing, Step 00 prints a warning and falls back to the candidate subtitle text.
+
+You can override the transcript path manually:
 
 ```bash
-bash scripts/01_build_actor_prompt.sh \
+bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
   --profile full_actor \
   --exact-transcript-file data/input/transcripts/Jali_proto_candidate_001_ProfessorCrystal.txt \
   --overwrite
 ```
 
+You can disable the auto transcript lookup and force candidate subtitle text:
+
+```bash
+bash scripts/00_build_actor_prompt.sh \
+  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+  --profile full_actor \
+  --no-auto-exact-transcript-file \
+  --overwrite
+```
+
 Common parameters:
 
 ```text
---sequence-id             Candidate sequence id.
---profile                 mvp or full_actor.
---candidate-jsonl          Processed candidate sequence JSONL.
---full-context-csv         Processed full-context CSV.
---full-context-window      Number of surrounding shots to include.
---no-full-context          Use only the candidate record.
---exact-transcript-file    Optional manually edited exact transcript.
---output-dir               Defaults to data/processed/gaze_script/llm_process.
---overwrite                Allow replacing existing files.
+--sequence-id                    Candidate sequence id.
+--profile                        mvp or full_actor.
+--candidate-jsonl                 Processed candidate sequence JSONL.
+--full-context-csv                Processed full-context CSV.
+--full-context-window             Number of surrounding shots to include.
+--no-full-context                 Use only the candidate record.
+--paths-config                    Defaults to configs/path_local.yaml.
+--exact-transcript-file           Optional manually edited exact transcript.
+--no-auto-exact-transcript-file   Do not auto-read JALI transcript from paths_config.
+--output-dir                      Defaults to data/processed/gaze_script/llm_process.
+--overwrite                       Allow replacing existing files.
 ```
 
-## Step 02: run actor LLM
+## Step 01: run actor LLM
 
 ```bash
-bash scripts/02_run_actor_llm.sh \
+bash scripts/01_run_actor_llm.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
   --overwrite
+```
+
+Input:
+
+```text
+data/processed/gaze_script/llm_process/{clip}__actor_prompt.txt
 ```
 
 Outputs:
@@ -197,6 +218,41 @@ llm:
 ```
 
 If the LLM response is incomplete or missing `[ANALYZE]`, `[ANNOTATION]`, or `[REASONS]`, this step fails and does not write a partial annotation.
+
+Common parameters:
+
+```text
+--sequence-id          Clip / sequence id.
+--base-config          LLM config YAML. Defaults to configs/base.yaml.
+--llm-process-dir      Directory containing actor_prompt.txt and LLM process files.
+                       Defaults to data/processed/gaze_script/llm_process.
+--prompt-path          Optional manual prompt path. If omitted, reads:
+                       {llm_process_dir}/{clip}__actor_prompt.txt
+--output-annotation    Optional annotation output path. If omitted, writes:
+                       {llm_process_dir}/{clip}__performance_annotation.txt
+--output-meta          Optional metadata output path. If omitted, writes:
+                       {llm_process_dir}/{clip}__llm_response_meta.json
+--overwrite            Allow replacing existing annotation/meta files.
+
+## Step 02: parse TextGrid
+
+```bash
+bash scripts/02_parse_textgrid.sh configs/path_local.yaml
+```
+
+This wraps:
+
+```bash
+python -m expregaze.data.textgrid_parser --paths-config configs/path_local.yaml
+```
+
+Expected output:
+
+```text
+data/processed/textgrid/{clip}__words.jsonl
+```
+
+This step does not call the LLM. It is required before Step 03 compile, but Step 00 and Step 01 can run before it.
 
 ## Step 03: compile actor annotation
 
@@ -338,19 +394,19 @@ Readable actor annotation is intended to use opening state-change tags. If the L
 ## Quick command sequence
 
 ```bash
-# 00. Parse TextGrid into words JSONL.
-bash scripts/00_parse_textgrid.sh configs/path_local.yaml
-
-# 01. Build context/prompt, then inspect exact_transcript.
-bash scripts/01_build_actor_prompt.sh \
+# 00. Build context/prompt, then inspect exact_transcript.
+bash scripts/00_build_actor_prompt.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
   --profile full_actor \
   --overwrite
 
-# 02. Run LLM once.
-bash scripts/02_run_actor_llm.sh \
+# 01. Run LLM once.
+bash scripts/01_run_actor_llm.sh \
   --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
   --overwrite
+
+# 02. Parse TextGrid into words JSONL before compiling.
+bash scripts/02_parse_textgrid.sh configs/path_local.yaml
 
 # 03. Compile outputs.
 bash scripts/03_compile_actor_annotation.sh \

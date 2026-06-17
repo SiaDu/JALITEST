@@ -10,7 +10,7 @@ export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/jalitest-uv-cache}"
 
 cd "$PROJECT_ROOT"
 
-echo "Step 02: run actor-style LLM annotator"
+echo "Step 01: run actor-style LLM annotator"
 echo "LLM calls: 1"
 
 if [[ -n "${PYTHON_BIN:-}" ]]; then
