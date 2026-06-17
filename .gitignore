@@ -25,7 +25,7 @@ Thumbs.db
 desktop.ini
 
 # Large media inputs and generated media outputs
-data/movies/
+data/MovieNet/
 data/raw/
 data/interim/
 data/processed/candidate_sequences/audio_exports/
