@@ -22,21 +22,6 @@ jali_emotion:
       enum_index: 0
       label: From Transcript Tags
 
-  tag_rules:
-    readable_annotation:
-      use_closing_tags: false
-      state_change_tags_only: true
-      tag_id_prefixes:
-        gaze: g
-        mask: m
-        heart: h
-
-    jali_export:
-      use_closing_tags: true
-      open_close_tags_must_match: true
-      tag_names_lowercase: true
-      tag_values_preserve_case: true
-
   mask:
     tag_format: "<mask={bearing}-{intensity}> {text} </mask={bearing}-{intensity}>"
 
@@ -74,10 +59,6 @@ jali_emotion:
       Lost: 23
 
   heart:
-    usage_policy:
-    use_only_when_visible_mask_and_inner_state_diverge: true
-    avoid_as_generic_second_emotion_layer: true
-    default_use: false
     
     tag_format: "<heart={source}-{strength}> {text} </heart={source}-{strength}>"
 
