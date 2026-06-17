@@ -1,6 +1,6 @@
 maya_eye_performance:
   repo_root: .
-  eye_events_path: data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__eye_performance_events_resolved.json
+  eye_events_path: data/processed/gaze_script/Jali_proto_candidate_001_ProfessorCrystal__eye_performance_events_resolved.json
 
   fps: 30.0
   clip_end_frame: 1064.2

@@ -10,31 +10,16 @@ export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/jalitest-uv-cache}"
 cd "$PROJECT_ROOT"
 
 CLIP="Jali_proto_candidate_001_ProfessorCrystal"
-BASE="data/processed/gaze_script/llm_process"
+SCRIPT_DIR_REL="data/processed/gaze_script/llm_process"
+OUT_DIR="data/processed/gaze_script"
+PATHS_CONFIG="configs/path_local.yaml"
 
-SCRIPT_PATH="${BASE}/${CLIP}__script.txt"
-OUT_DIR="${BASE}"
-
-# JALI / Maya project path mounted in WSL.
-# If your TextGrid extension is actually .TextGrid, change this line.
-TEXTGRID_PATH="/mnt/e/maya_project/JALI_test/scenes/sounds_proto1/${CLIP}.Textgrid"
-
-if [[ ! -f "$TEXTGRID_PATH" ]]; then
-  ALT_TEXTGRID_PATH="/mnt/e/maya_project/JALI_test/scenes/sounds_proto1/${CLIP}.TextGrid"
-  if [[ -f "$ALT_TEXTGRID_PATH" ]]; then
-    TEXTGRID_PATH="$ALT_TEXTGRID_PATH"
-  else
-    echo "[ERROR] TextGrid not found:"
-    echo "  $TEXTGRID_PATH"
-    echo "  $ALT_TEXTGRID_PATH"
-    exit 1
-  fi
-fi
+SCRIPT_PATH="${SCRIPT_DIR_REL}/${CLIP}__script.txt"
 
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   "$PYTHON_BIN" -m expregaze_jali.process_performance_annotation \
     --script "$SCRIPT_PATH" \
-    --textgrid "$TEXTGRID_PATH" \
+    --paths-config "$PATHS_CONFIG" \
     --out-dir "$OUT_DIR" \
     --clip-name "$CLIP" \
     --fps 30.0 \
@@ -42,7 +27,7 @@ if [[ -n "${PYTHON_BIN:-}" ]]; then
 elif command -v uv >/dev/null 2>&1; then
   uv run python -m expregaze_jali.process_performance_annotation \
     --script "$SCRIPT_PATH" \
-    --textgrid "$TEXTGRID_PATH" \
+    --paths-config "$PATHS_CONFIG" \
     --out-dir "$OUT_DIR" \
     --clip-name "$CLIP" \
     --fps 30.0 \
@@ -50,7 +35,7 @@ elif command -v uv >/dev/null 2>&1; then
 else
   python3 -m expregaze_jali.process_performance_annotation \
     --script "$SCRIPT_PATH" \
-    --textgrid "$TEXTGRID_PATH" \
+    --paths-config "$PATHS_CONFIG" \
     --out-dir "$OUT_DIR" \
     --clip-name "$CLIP" \
     --fps 30.0 \

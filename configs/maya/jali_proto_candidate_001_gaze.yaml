@@ -1,6 +1,6 @@
 maya_gaze:
   repo_root: .
-  gaze_events_path: data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json
+  gaze_events_path: data/processed/gaze_script/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json
 
   maya_project_root: E:/maya_project/JALI_test
   jali_textgrid_path: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.Textgrid

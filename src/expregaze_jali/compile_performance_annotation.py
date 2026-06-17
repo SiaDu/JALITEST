@@ -12,8 +12,9 @@ from expregaze_jali.performance_event_compiler import compile_state_change_event
 from expregaze_jali.performance_event_resolver import load_words_jsonl, resolve_events_with_textgrid
 
 DEFAULT_CLIP_NAME = "Jali_proto_candidate_001_ProfessorCrystal"
-DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script/llm_process")
-DEFAULT_ANNOTATION_PATH = DEFAULT_OUTPUT_DIR / f"{DEFAULT_CLIP_NAME}__script.txt"
+DEFAULT_ANNOTATION_DIR = Path("data/processed/gaze_script/llm_process")
+DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script")
+DEFAULT_ANNOTATION_PATH = DEFAULT_ANNOTATION_DIR / f"{DEFAULT_CLIP_NAME}__script.txt"
 DEFAULT_WORDS_JSONL = Path("data/processed/textgrid") / f"{DEFAULT_CLIP_NAME}__words.jsonl"
 
 

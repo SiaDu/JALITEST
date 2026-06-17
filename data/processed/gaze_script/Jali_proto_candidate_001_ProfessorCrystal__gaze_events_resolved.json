@@ -79,7 +79,7 @@
       },
       "resolved_time": {
         "start": 3.51,
-        "end": 4.13,
+        "end": 4.14,
         "source": "textgrid_words",
         "start_word_index": 7,
         "end_word_index": 8
@@ -100,7 +100,7 @@
       },
       "resolved_time": {
         "start": 5.16,
-        "end": 9.959999,
+        "end": 9.969999,
         "source": "textgrid_words",
         "start_word_index": 9,
         "end_word_index": 16
@@ -120,7 +120,7 @@
         "raw_end": 178
       },
       "resolved_time": {
-        "start": 10.35,
+        "start": 10.349999,
         "end": 14.190001,
         "source": "textgrid_words",
         "start_word_index": 17,

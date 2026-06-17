@@ -14,12 +14,22 @@ from expregaze_jali.maya_apply_gaze import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs/maya/jali_proto_candidate_001_gaze.yaml"
+TEST_BASE_POSITION = [0.0, 0.0, 126.0]
+TEST_SAFE_BOUNDS = {
+    "x": [-50.0, 50.0],
+    "y": [-30.0, 30.0],
+    "z": [126.0, 126.0],
+}
+TEST_DIRECTION_OFFSET_BOUNDS = {
+    "x": [-50.0, 50.0],
+    "y": [-30.0, 30.0],
+    "z": [0.0, 0.0],
+}
 
 
 def test_load_config_and_aliases():
     config = load_maya_gaze_config(CONFIG)
 
-    assert config["base_position"] == [0.0, 0.0, 126.0]
     assert config["gaze_events_path"].startswith("data/processed/")
     assert config["maya_project_root"] == "E:/maya_project/JALI_test"
     assert resolve_target_alias("LISTENER", config["target_aliases"]) == "AIM_listener"
@@ -30,31 +40,30 @@ def test_load_config_and_aliases():
 def test_offset_resolution_keeps_eye_stare_z_base():
     config = load_maya_gaze_config(CONFIG)
 
-    assert resolve_offset_position(config["base_position"], config["direction_offsets"]["UP_RIGHT"]) == [
-        6.0,
-        6.0,
+    assert resolve_offset_position(TEST_BASE_POSITION, config["direction_offsets"]["UP_RIGHT"]) == [
+        40.0,
+        25.0,
         126.0,
     ]
     assert resolve_target_position(
         target="UP_RIGHT",
         target_map=config["targets"],
-        base_position=config["base_position"],
+        base_position=TEST_BASE_POSITION,
         direction_offsets=config["direction_offsets"],
         target_aliases=config["target_aliases"],
-        safe_bounds=config["safe_bounds"],
-    ) == [6.0, 6.0, 126.0]
+        direction_offset_bounds=TEST_DIRECTION_OFFSET_BOUNDS,
+    ) == [40.0, 25.0, 126.0]
 
 
 def test_safe_clamp_for_xy_and_fixed_z():
     config = load_maya_gaze_config(CONFIG)
 
-    assert clamp_position([80.0, -80.0, 300.0], config["safe_bounds"]) == [50.0, -30.0, 126.0]
+    assert clamp_position([80.0, -80.0, 300.0], TEST_SAFE_BOUNDS) == [50.0, -30.0, 126.0]
     assert resolve_target_position(
         target="AIM_manual",
         target_map={"AIM_manual": {"position": [90.0, 40.0, 10.0]}},
-        base_position=config["base_position"],
-        safe_bounds=config["safe_bounds"],
-    ) == [50.0, 30.0, 126.0]
+        base_position=TEST_BASE_POSITION,
+    ) == [90.0, 40.0, 10.0]
 
 
 def test_config_path_resolution_and_windows_runner_defaults():
@@ -64,7 +73,7 @@ def test_config_path_resolution_and_windows_runner_defaults():
     assert "C:\\Users\\sia\\JaliTest" not in runner_text
     assert "\\\\wsl.localhost\\Ubuntu-24.04\\home\\sia\\JaliTest" in runner_text
     assert resolve_repo_path(config["gaze_events_path"], config).endswith(
-        "data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json"
+        "data/processed/gaze_script/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json"
     )
     assert resolve_maya_project_path(config["jali_textgrid_path"], config).replace("\\", "/") == (
         "E:/maya_project/JALI_test/scenes/sounds_proto1/"
