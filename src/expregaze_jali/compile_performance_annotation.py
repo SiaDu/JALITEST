@@ -14,7 +14,10 @@ from expregaze_jali.performance_event_resolver import load_words_jsonl, resolve_
 DEFAULT_CLIP_NAME = "Jali_proto_candidate_001_ProfessorCrystal"
 DEFAULT_ANNOTATION_DIR = Path("data/processed/gaze_script/llm_process")
 DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script")
-DEFAULT_ANNOTATION_PATH = DEFAULT_ANNOTATION_DIR / f"{DEFAULT_CLIP_NAME}__script.txt"
+DEFAULT_LLM_PROCESS_DIR = Path("data/processed/gaze_script/llm_process")
+DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script")
+DEFAULT_ANNOTATION_PATH = DEFAULT_LLM_PROCESS_DIR / f"{DEFAULT_CLIP_NAME}__performance_annotation.txt"
+DEFAULT_DEBUG_FULL_ANNOTATION = DEFAULT_LLM_PROCESS_DIR / f"{DEFAULT_CLIP_NAME}__debug_full_annotation.txt"
 DEFAULT_WORDS_JSONL = Path("data/processed/textgrid") / f"{DEFAULT_CLIP_NAME}__words.jsonl"
 
 

@@ -23,7 +23,7 @@ DEFAULT_FULL_CONTEXT = Path("data/processed/full_context/tt0032138__full_context
 DEFAULT_TEMPLATE = Path("prompts/actor_performance_annotation_prompt_v2.md")
 DEFAULT_BASE_CONFIG = Path("configs/base.yaml")
 DEFAULT_JALI_OPTIONS = Path("configs/jali_emotion_options.yaml")
-DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script/prompt")
+DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script/llm_process")
 
 
 def parse_args() -> argparse.Namespace:
