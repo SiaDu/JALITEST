@@ -31,8 +31,8 @@ def _anchor_span(text: str, position: int, max_words: int = 3) -> tuple[int, int
     """
     Resolve an anchor tag such as <pb01=...> to a short local text span.
 
-    If the LLM provides an explicit closing tag, compile_state_change_events uses
-    that closing tag instead. This helper is only the fallback.
+    Unlike gaze/mask/heart/lid_state, performative blinks are not persistent
+    state-change events unless the LLM provides an explicit closing tag.
     """
     tokens = iter_word_tokens(text)
     if not tokens:
@@ -53,16 +53,8 @@ def _anchor_span(text: str, position: int, max_words: int = 3) -> tuple[int, int
     return _trim_span(text, start, end)
 
 
-def _explicit_end(tag: dict[str, Any], clean_length: int) -> int | None:
-    value = tag.get("explicit_end")
-    if value is None:
-        return None
-    end = max(int(tag["position"]), min(int(value), clean_length))
-    return end
-
-
-def _make_event(tag: dict[str, Any], tag_type: str, start: int, end: int, text: str, *, used_explicit_end: bool) -> dict[str, Any]:
-    event = {
+def _make_event(tag: dict[str, Any], tag_type: str, start: int, end: int, text: str) -> dict[str, Any]:
+    return {
         "id": tag["id"],
         "type": tag_type,
         "value": tag["value"],
@@ -76,22 +68,29 @@ def _make_event(tag: dict[str, Any], tag_type: str, start: int, end: int, text: 
         },
         "order": tag["order"],
     }
-    if used_explicit_end:
-        event["span"]["explicit_end"] = int(tag["explicit_end"])
-    return event
+
+
+def _state_end(clean_len: int, typed_tags: list[dict[str, Any]], idx: int) -> int:
+    tag = typed_tags[idx]
+    explicit_end = tag.get("explicit_end")
+    if explicit_end is not None and int(explicit_end) >= int(tag["position"]):
+        return int(explicit_end)
+    return int(typed_tags[idx + 1]["position"]) if idx + 1 < len(typed_tags) else clean_len
 
 
 def compile_state_change_events(parsed: dict[str, Any]) -> dict[str, Any]:
     """
     Convert readable performance tags into structured text-span events.
 
-    End priority:
-        1. Matching explicit closing tag, e.g. <m01=...>phrase</m01>
-        2. Next tag of the same state-change type
-        3. End of clean transcript
+    State-change tags:
+        gaze / mask / heart / lid_state / blink_suppression
+        end at an explicit closing tag if present; otherwise at the next tag of
+        the same type, or the end of the transcript.
 
-    Performative blink is normally an anchor event, but an explicit closing tag
-    lets the LLM specify the intended local blink/hold phrase exactly.
+    Anchor tags:
+        performative_blink
+        use an explicit closing tag if present; otherwise resolve to a short
+        nearby phrase and do not persist until next pb tag.
     """
     clean = parsed.get("clean_transcript", "")
     tags = sorted(parsed.get("tags", []), key=lambda tag: (tag["position"], tag["order"]))
@@ -101,41 +100,19 @@ def compile_state_change_events(parsed: dict[str, Any]) -> dict[str, Any]:
         typed_tags = [tag for tag in tags if tag.get("type") == tag_type]
         for idx, tag in enumerate(typed_tags):
             raw_start = int(tag["position"])
-            fallback_end = int(typed_tags[idx + 1]["position"]) if idx + 1 < len(typed_tags) else len(clean)
-            explicit_end = _explicit_end(tag, len(clean))
-            raw_end = explicit_end if explicit_end is not None else fallback_end
+            raw_end = _state_end(len(clean), typed_tags, idx)
             start, end, span_text = _trim_span(clean, raw_start, raw_end)
-            events.append(
-                _make_event(
-                    tag,
-                    tag_type,
-                    start,
-                    end,
-                    span_text,
-                    used_explicit_end=explicit_end is not None,
-                )
-            )
+            events.append(_make_event(tag, tag_type, start, end, span_text))
 
     for tag_type in ANCHOR_TYPES:
         typed_tags = [tag for tag in tags if tag.get("type") == tag_type]
         for tag in typed_tags:
-            explicit_end = _explicit_end(tag, len(clean))
-            if explicit_end is not None:
-                start, end, span_text = _trim_span(clean, int(tag["position"]), explicit_end)
-                used_explicit_end = True
+            explicit_end = tag.get("explicit_end")
+            if explicit_end is not None and int(explicit_end) > int(tag["position"]):
+                start, end, span_text = _trim_span(clean, int(tag["position"]), int(explicit_end))
             else:
                 start, end, span_text = _anchor_span(clean, int(tag["position"]), max_words=3)
-                used_explicit_end = False
-            events.append(
-                _make_event(
-                    tag,
-                    tag_type,
-                    start,
-                    end,
-                    span_text,
-                    used_explicit_end=used_explicit_end,
-                )
-            )
+            events.append(_make_event(tag, tag_type, start, end, span_text))
 
     events = sorted(events, key=lambda event: (event["span"]["start"], event["order"], event["type"]))
 
@@ -143,9 +120,7 @@ def compile_state_change_events(parsed: dict[str, Any]) -> dict[str, Any]:
     out = {
         "clean_transcript": clean,
         "events": events,
-        "diagnostics": {
-            "explicit_end_event_count": sum(1 for event in events if "explicit_end" in event.get("span", {})),
-        },
+        "diagnostics": {},
     }
     for event_type in event_types:
         out[event_type] = [event for event in events if event["type"] == event_type]

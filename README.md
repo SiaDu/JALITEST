@@ -20,11 +20,11 @@ The LLM does **not** output JSON, seconds, frames, or Maya controls. It outputs 
 ...
 
 [ANNOTATION]
-<g1=GAZE-LISTENER><m1=Friendly-70>That's right.</m1></g1>
+<g1=GAZE-LISTENER><m1=Friendly-70>That's right. Here.</m1></g1>
 
 [REASONS]
-g1=GAZE-LISTENER: Listener gaze establishes social control.
-m1=Friendly-70: Friendly mask keeps Dorothy compliant.
+g1: Listener gaze establishes social control.
+m1: Friendly mask keeps Dorothy compliant.
 ```
 
 The code then compiles this into:
@@ -113,9 +113,7 @@ code data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCr
 code data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__actor_prompt.txt
 ```
 
-The LLM tags only `exact_transcript`. The context pack also keeps `subtitle_text` and `aligned_script_dialogue` for reference, but `exact_transcript` is the editable source of truth for annotation.
-
-The generated actor prompt is intentionally compact. `context_pack.json` still stores target/debug metadata for the compiler, but `actor_prompt.txt` does **not** inject `scene_targets`, `target_context`, raw extra config, or tag-budget rules.
+The LLM tags only `exact_transcript`. The context pack also includes `subtitle_text` and `aligned_script_dialogue` for reference, but `exact_transcript` is the editable source of truth for annotation.
 
 ### Exact transcript source
 
@@ -304,8 +302,7 @@ Checks:
 ```text
 - required annotation sections exist
 - LLM status is completed
-- closing tags were recognized and stripped from clean transcript
-- explicit closing tags can define event span ends
+- closing tags were parsed as explicit span ends if present
 - TextGrid alignment warnings
 - gaze events have resolved_time
 - LISTENER resolves to a concrete character when possible
@@ -321,33 +318,22 @@ bash scripts/04_validate_actor_outputs.sh \
   --strict
 ```
 
-## MVP vs full_actor
+## Annotation tag set
 
-`mvp` enables only currently stable tags:
+The project uses one actor-style annotation mode.
 
-```text
-gaze:  <g##=MODE-TARGET>...</g##>
-mask:  <m##=MaskName-Strength>...</m##>
-heart: <h##=HeartName-Strength>...</h##>
-```
-
-Use MVP for a conservative JALI + gaze baseline.
-
-`full_actor` additionally enables:
+Allowed tags:
 
 ```text
-lid_state:          <l##=VALUE>...</l##>
-performative_blink: <pb##=MODE-SUBTYPE>...</pb##>
-blink_suppression:  <bs##=SUPPRESS/ALLOW>...</bs##>
+<g##=MODE-TARGET>...</g##>          gaze
+<m##=MaskName-Strength>...</m##>    visible facial mask
+<h##=HeartName-Strength>...</h##>   hidden heart / inner undercurrent
+<l##=VALUE>...</l##>                sustained eyelid state
+<pb##=MODE>...</pb##>               performative blink / intentional eye-close beat
+<bs##=SUPPRESS/ALLOW>...</bs##>     blink suppression state
 ```
 
-Use full_actor for the main actor-style research direction. The extra events are exported to:
-
-```text
-data/processed/gaze_script/{clip}__actor_overlay_events.json
-```
-
-They need a later Maya overlay adapter to become visible animation.
+Lid/blink/blink-suppression tags are allowed but optional. Use them only when they express an intentional acting beat.
 
 ## Target resolution
 
@@ -358,7 +344,7 @@ Examples:
 ```text
 <g2=GLANCE-CRYSTAL>     preferred when the prop is clear
 <g3=GAZE-LISTENER>      allowed; exporter may resolve LISTENER to DOROTHY
-<g4=GLANCE-OBJECT>      allowed when genuinely uncertain; marked as needing resolution
+<g4=GLANCE-OBJECT>      allowed only when uncertain; marked as needing resolution
 ```
 
 `gaze_events_resolved.json` includes extra target fields:
@@ -389,15 +375,7 @@ This lets Maya apply code decide whether to map, skip, or ask for a manual locat
 
 ## Closing tags
 
-Readable actor annotation supports closing tags. Closing tags are removed from the clean transcript before TextGrid alignment, but they are not ignored: they define explicit event span ends when their matching opening tag exists.
-
-Example:
-
-```text
-<m01=Friendly-80>That's right.</m01> <m02=Cocky-90>This is the crystal.</m02>
-```
-
-Without an explicit closing tag, state-change tags fall back to ending at the next tag of the same type or at the end of the transcript.
+Closing tags are allowed in readable actor annotation. The parser strips the closing tag text from the clean transcript and uses the closing tag position as an explicit event end, so local beats do not have to continue until the next same-type tag.
 
 ## Quick command sequence
 

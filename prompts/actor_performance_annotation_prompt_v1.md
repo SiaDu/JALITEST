@@ -18,9 +18,6 @@ Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OC
 [CONTEXT PACK]
 {{context_pack}}
 
-[CAPABILITY PROFILE]
-{{capability_profile}}
-
 [EXTRA CONFIG]
 {{extra_config}}
 

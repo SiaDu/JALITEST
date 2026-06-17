@@ -18,9 +18,6 @@ Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OC
 [SCENE CONTEXT]
 {{context_pack}}
 
-[CAPABILITY PROFILE]
-{{capability_profile}}
-
 [EXACT TRANSCRIPT - ANNOTATE THIS ONLY]
 {{transcript}}
 

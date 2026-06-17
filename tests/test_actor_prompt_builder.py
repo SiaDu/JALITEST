@@ -9,10 +9,7 @@ from expregaze_jali.actor_context_builder import (
     find_candidate,
     load_full_context_window,
 )
-from expregaze_jali.actor_prompt_builder import (
-    build_actor_annotation_prompt,
-    get_capability_profile,
-)
+from expregaze_jali.actor_prompt_builder import build_actor_annotation_prompt
 
 
 def test_build_context_pack_uses_candidate_transcript_and_story_card(tmp_path: Path):
@@ -89,24 +86,27 @@ def test_build_context_pack_uses_candidate_transcript_and_story_card(tmp_path: P
     assert "lsis" in context_pack["exact_transcript"]
     assert "lnfinite" in context_pack["exact_transcript"]
     assert "CRYSTAL" in context_pack["scene_targets"]["objects"]
+    assert "why_selected_for_jali_proto" not in context_pack
 
 
-def test_prompt_builder_injects_profile_and_preserves_transcript():
-    template = "[CONTEXT PACK]\n{{context_pack}}\n[CAPABILITY PROFILE]\n{{capability_profile}}\n[EXTRA CONFIG]\n{{extra_config}}\n[EXACT TRANSCRIPT]\n{{transcript}}"
+def test_prompt_builder_injects_compact_context_and_preserves_transcript():
+    template = "[SCENE CONTEXT]\n{{context_pack}}\n[EXACT TRANSCRIPT]\n{{transcript}}"
     context_pack = {
         "sequence_id": "seq_001",
+        "prototype_label": "Professor crystal-ball monologue",
         "exact_transcript": "The priests of lsis saw the lnfinite.",
+        "scene_targets": {"objects": ["CRYSTAL"]},
+        "target_context": {"role_map": {"LISTENER": "DOROTHY"}},
     }
-    profile = get_capability_profile("mvp")
 
     prompt = build_actor_annotation_prompt(
         prompt_template=template,
         context_pack=context_pack,
-        capability_profile=profile,
-        extra_config={"note": "test"},
     )
 
     assert "The priests of lsis saw the lnfinite." in prompt
-    assert "performative_blink" in prompt
-    assert "disabled_tags" in prompt
-    assert "mvp" in prompt
+    assert "seq_001" in prompt
+    assert "Professor crystal-ball monologue" in prompt
+    assert "scene_targets" not in prompt
+    assert "target_context" not in prompt
+    assert "{{" not in prompt

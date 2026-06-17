@@ -14,7 +14,6 @@ from expregaze_jali.actor_context_builder import (
 )
 from expregaze_jali.actor_prompt_builder import (
     build_actor_annotation_prompt,
-    load_extra_config_texts,
     load_prompt_template,
 )
 
@@ -23,8 +22,6 @@ DEFAULT_SEQUENCE_ID = "Jali_proto_candidate_001_ProfessorCrystal"
 DEFAULT_CANDIDATES = Path("data/processed/candidate_sequences/Jali_proto_candidate_sequences.jsonl")
 DEFAULT_FULL_CONTEXT = Path("data/processed/full_context/tt0032138__full_context.csv")
 DEFAULT_TEMPLATE = Path("prompts/actor_performance_annotation_prompt_v2.md")
-DEFAULT_BASE_CONFIG = Path("configs/base.yaml")
-DEFAULT_JALI_OPTIONS = Path("configs/jali_emotion_options.yaml")
 DEFAULT_PATHS_CONFIG = Path("configs/path_local.yaml")
 DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script/llm_process")
 
@@ -39,8 +36,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--full-context-window", type=int, default=2)
     parser.add_argument("--no-full-context", action="store_true")
     parser.add_argument("--prompt-template", type=Path, default=DEFAULT_TEMPLATE)
-    parser.add_argument("--base-config", type=Path, default=DEFAULT_BASE_CONFIG)
-    parser.add_argument("--jali-emotion-options", type=Path, default=DEFAULT_JALI_OPTIONS)
     parser.add_argument("--paths-config", type=Path, default=DEFAULT_PATHS_CONFIG)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--output-prompt", type=Path, default=None)
@@ -156,15 +151,9 @@ def main() -> None:
 
     context_pack = build_actor_context_pack(candidate, full_rows, exact_transcript=exact_transcript)
     template = load_prompt_template(args.prompt_template)
-    extra_config = load_extra_config_texts(
-        base_config=args.base_config,
-        jali_emotion_options=args.jali_emotion_options,
-    )
-
     prompt = build_actor_annotation_prompt(
         prompt_template=template,
         context_pack=context_pack,
-        extra_config=extra_config,
     )
 
     output_prompt = args.output_prompt or args.output_dir / f"{args.sequence_id}__actor_prompt.txt"
@@ -176,11 +165,11 @@ def main() -> None:
     exact_preview = context_pack.get("exact_transcript", "").replace("\n", " ")[:120]
     print(f"Context pack: {output_context}")
     print(f"Prompt: {output_prompt}")
+    print("Annotation mode: actor-style full tag set")
     print(f"Exact transcript source: {exact_transcript_source}")
     print(f"Transcript chars: {len(context_pack.get('exact_transcript', ''))}")
     print(f"Exact transcript preview: {exact_preview}")
     print(f"Full-context rows: {len(full_rows)}")
-    print(f"Scene targets: {context_pack.get('scene_targets')}")
     print("LLM calls: 0")
 
 
