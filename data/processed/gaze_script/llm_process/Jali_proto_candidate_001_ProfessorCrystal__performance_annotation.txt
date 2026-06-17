@@ -28,7 +28,7 @@ performance_strategy:
 
 [ANNOTATION]
 
-<m01=Friendly-85><g01=GAZE-LISTENER>That's right. Here -- sit right down here. That's it. Ha ha!</g01></m01> <pb01=GLANCE-TO-CHARM><g02=GLANCE-OBJECT>This -- this is the same genuine, magic, authentic crystal</g02></pb01> <m02=Cocky-100><h01=Scheming-60><g03=GAZE-LISTENER> used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on.</g03></h01></m02> <m03=Friendly-70><l01=-1>Now, you -- you'd better close your eyes, my child, for a moment</l01> <pb02=EYE_CLOSE_HOLD><g04=GAZE-LISTENER> -- in order to be better in tune with the infinite.</g04></pb02> <m04=Polite-60><g05=GLANCE-DOWN>We -- we can't do these things without....</g05></m04>
+<m01=Friendly-85><g01=GAZE-LISTENER>That's right. Here -- sit right down here. That's it. Ha ha!</g01></m01> <pb01=GLANCE-TO-CHARM><g02=GLANCE-CRYSTAL>This -- this is the same genuine, magic, authentic crystal</g02></pb01> <m02=Cocky-100><h01=Scheming-60><g03=GAZE-LISTENER> used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on.</g03></h01></m02> <m03=Friendly-70><l01=-1>Now, you -- you'd better close your eyes, my child, for a moment</l01> <pb02=EYE_CLOSE_HOLD><g04=GAZE-LISTENER> -- in order to be better in tune with the infinite.</g04></pb02> <m04=Polite-60><g05=GLANCE-DOWN>We -- we can't do these things without....</g05></m04>
 
 [REASONS]
 
@@ -38,7 +38,7 @@ g01=GAZE-LISTENER: Sustained look to Dorothy on the seating/directive lines to m
 
 pb01=GLANCE-TO-CHARM: A tiny performative flick of the eyes and expression (a seller's flourish) as he pivots to the object—signals "look what I have" without breaking rhythm.
 
-g02=GLANCE-OBJECT: Brief look toward the crystal when first naming it, confirming object attribution and orienting the audience to the prop.
+g02=GLANCE-CRYSTAL: Brief look toward the crystal when first naming it, confirming object attribution and orienting the audience to the prop.
 
 m02=Cocky-100: Switch to a louder, more boastful facial mask when invoking grand history—this sells authority and spectacle; intensity is high to convince Dorothy.
 

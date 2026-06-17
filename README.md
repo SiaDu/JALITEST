@@ -20,11 +20,11 @@ The LLM does **not** output JSON, seconds, frames, or Maya controls. It outputs 
 ...
 
 [ANNOTATION]
-<g1=GAZE-LISTENER><m1=Friendly-70>That's right. Here.
+<g1=GAZE-LISTENER><m1=Friendly-70>That's right.</m1></g1>
 
 [REASONS]
-g1: Listener gaze establishes social control.
-m1: Friendly mask keeps Dorothy compliant.
+g1=GAZE-LISTENER: Listener gaze establishes social control.
+m1=Friendly-70: Friendly mask keeps Dorothy compliant.
 ```
 
 The code then compiles this into:
@@ -114,7 +114,9 @@ code data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCr
 code data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__actor_prompt.txt
 ```
 
-The LLM tags only `exact_transcript`. The context pack also includes `subtitle_text` and `aligned_script_dialogue` for reference, but `exact_transcript` is the editable source of truth for annotation.
+The LLM tags only `exact_transcript`. The context pack also keeps `subtitle_text` and `aligned_script_dialogue` for reference, but `exact_transcript` is the editable source of truth for annotation.
+
+The generated actor prompt is intentionally compact. `context_pack.json` still stores target/debug metadata for the compiler, but `actor_prompt.txt` does **not** inject `scene_targets`, `target_context`, raw extra config, or tag-budget rules.
 
 ### Exact transcript source
 
@@ -233,6 +235,7 @@ Common parameters:
 --output-meta          Optional metadata output path. If omitted, writes:
                        {llm_process_dir}/{clip}__llm_response_meta.json
 --overwrite            Allow replacing existing annotation/meta files.
+```
 
 ## Step 02: parse TextGrid
 
@@ -243,7 +246,7 @@ bash scripts/02_parse_textgrid.sh configs/path_local.yaml
 This wraps:
 
 ```bash
-python -m expregaze.data.textgrid_parser --paths-config configs/path_local.yaml
+python -m expregaze_jali.textgrid_parser --paths-config configs/path_local.yaml
 ```
 
 Expected output:
@@ -305,7 +308,8 @@ Checks:
 ```text
 - required annotation sections exist
 - LLM status is completed
-- closing tags were stripped by parser if present
+- closing tags were recognized and stripped from clean transcript
+- explicit closing tags can define event span ends
 - TextGrid alignment warnings
 - gaze events have resolved_time
 - LISTENER resolves to a concrete character when possible
@@ -326,9 +330,9 @@ bash scripts/04_validate_actor_outputs.sh \
 `mvp` enables only currently stable tags:
 
 ```text
-gaze:  <g##=MODE-TARGET>
-mask:  <m##=MaskName-Strength>
-heart: <h##=HeartName-Strength>
+gaze:  <g##=MODE-TARGET>...</g##>
+mask:  <m##=MaskName-Strength>...</m##>
+heart: <h##=HeartName-Strength>...</h##>
 ```
 
 Use MVP for a conservative JALI + gaze baseline.
@@ -336,9 +340,9 @@ Use MVP for a conservative JALI + gaze baseline.
 `full_actor` additionally enables:
 
 ```text
-lid_state:          <l##=VALUE>
-performative_blink: <pb##=MODE-SUBTYPE>
-blink_suppression:  <bs##=SUPPRESS/ALLOW>
+lid_state:          <l##=VALUE>...</l##>
+performative_blink: <pb##=MODE-SUBTYPE>...</pb##>
+blink_suppression:  <bs##=SUPPRESS/ALLOW>...</bs##>
 ```
 
 Use full_actor for the main actor-style research direction. The extra events are exported to:
@@ -358,7 +362,7 @@ Examples:
 ```text
 <g2=GLANCE-CRYSTAL>     preferred when the prop is clear
 <g3=GAZE-LISTENER>      allowed; exporter may resolve LISTENER to DOROTHY
-<g4=GLANCE-OBJECT>      allowed when uncertain; marked as needing resolution
+<g4=GLANCE-OBJECT>      allowed when genuinely uncertain; marked as needing resolution
 ```
 
 `gaze_events_resolved.json` includes extra target fields:
@@ -389,7 +393,15 @@ This lets Maya apply code decide whether to map, skip, or ask for a manual locat
 
 ## Closing tags
 
-Readable actor annotation is intended to use opening state-change tags. If the LLM accidentally writes closing tags such as `</m1>`, the parser strips them from the clean transcript and records them in diagnostics. This prevents closing tags from polluting TextGrid word alignment.
+Readable actor annotation supports closing tags. Closing tags are removed from the clean transcript before TextGrid alignment, but they are not ignored: they define explicit event span ends when their matching opening tag exists.
+
+Example:
+
+```text
+<m01=Friendly-80>That's right.</m01> <m02=Cocky-90>This is the crystal.</m02>
+```
+
+Without an explicit closing tag, state-change tags fall back to ending at the next tag of the same type or at the end of the transcript.
 
 ## Quick command sequence
 

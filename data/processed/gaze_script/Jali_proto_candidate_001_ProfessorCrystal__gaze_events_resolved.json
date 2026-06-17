@@ -30,11 +30,11 @@
       "id": "g02",
       "type": "gaze",
       "mode": "GLANCE",
-      "target": "OBJECT",
+      "target": "CRYSTAL",
       "target_role": "OBJECT",
-      "target_label": null,
-      "target_needs_resolution": true,
-      "target_resolution_source": "generic_object_target",
+      "target_label": "CRYSTAL",
+      "target_needs_resolution": false,
+      "target_resolution_source": "scene_targets.objects",
       "text": "This -- this is the same genuine, magic, authentic crystal",
       "reason": "",
       "span": {
@@ -162,71 +162,71 @@
       {
         "id": "g02",
         "text": "</g02>",
-        "raw_start": 208,
-        "raw_end": 214,
+        "raw_start": 209,
+        "raw_end": 215,
         "position": 119
       },
       {
         "id": "pb01",
         "text": "</pb01>",
-        "raw_start": 214,
-        "raw_end": 221,
+        "raw_start": 215,
+        "raw_end": 222,
         "position": 119
       },
       {
         "id": "g03",
         "text": "</g03>",
-        "raw_start": 460,
-        "raw_end": 466,
+        "raw_start": 461,
+        "raw_end": 467,
         "position": 307
       },
       {
         "id": "h01",
         "text": "</h01>",
-        "raw_start": 466,
-        "raw_end": 472,
+        "raw_start": 467,
+        "raw_end": 473,
         "position": 307
       },
       {
         "id": "m02",
         "text": "</m02>",
-        "raw_start": 472,
-        "raw_end": 478,
+        "raw_start": 473,
+        "raw_end": 479,
         "position": 307
       },
       {
         "id": "l01",
         "text": "</l01>",
-        "raw_start": 568,
-        "raw_end": 574,
+        "raw_start": 569,
+        "raw_end": 575,
         "position": 372
       },
       {
         "id": "g04",
         "text": "</g04>",
-        "raw_start": 667,
-        "raw_end": 673,
+        "raw_start": 668,
+        "raw_end": 674,
         "position": 425
       },
       {
         "id": "pb02",
         "text": "</pb02>",
-        "raw_start": 673,
-        "raw_end": 680,
+        "raw_start": 674,
+        "raw_end": 681,
         "position": 425
       },
       {
         "id": "g05",
         "text": "</g05>",
-        "raw_start": 755,
-        "raw_end": 761,
+        "raw_start": 756,
+        "raw_end": 762,
         "position": 468
       },
       {
         "id": "m04",
         "text": "</m04>",
-        "raw_start": 761,
-        "raw_end": 767,
+        "raw_start": 762,
+        "raw_end": 768,
         "position": 468
       }
     ],
@@ -234,22 +234,7 @@
     "textgrid_word_count": 85,
     "alignment_warnings": [],
     "unresolved_events": [],
-    "generic_targets": [
-      {
-        "id": "g02",
-        "target": "OBJECT",
-        "text": "This -- this is the same genuine, magic, authentic crystal",
-        "reason": ""
-      }
-    ],
-    "unresolved_targets": [
-      {
-        "id": "g02",
-        "target": "OBJECT",
-        "text": "This -- this is the same genuine, magic, authentic crystal",
-        "reason": "",
-        "target_resolution_source": "generic_object_target"
-      }
-    ]
+    "generic_targets": [],
+    "unresolved_targets": []
   }
 }
