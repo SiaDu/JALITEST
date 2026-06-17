@@ -14,6 +14,10 @@ export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/jalitest-uv-cache}"
 
 cd "$PROJECT_ROOT"
 
+echo "Step 00: parse TextGrid word timings"
+echo "Paths config: $PATHS_CONFIG"
+echo "LLM calls: 0"
+
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   "$PYTHON_BIN" -m expregaze.data.textgrid_parser \
     --paths-config "$PATHS_CONFIG" \

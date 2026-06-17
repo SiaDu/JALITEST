@@ -10,11 +10,17 @@ export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/jalitest-uv-cache}"
 
 cd "$PROJECT_ROOT"
 
+echo "Step 03: compile actor annotation into JALI / Maya outputs"
+echo "LLM calls: 0"
+
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   "$PYTHON_BIN" -m expregaze_jali.compile_performance_annotation "${EXTRA_ARGS[@]}"
+elif [[ -x "$PROJECT_ROOT/.venv_clip/bin/python" ]]; then
+  "$PROJECT_ROOT/.venv_clip/bin/python" -m expregaze_jali.compile_performance_annotation "${EXTRA_ARGS[@]}"
+elif [[ -x "$PROJECT_ROOT/.venv/bin/python" ]]; then
+  "$PROJECT_ROOT/.venv/bin/python" -m expregaze_jali.compile_performance_annotation "${EXTRA_ARGS[@]}"
 elif command -v uv >/dev/null 2>&1; then
   uv run python -m expregaze_jali.compile_performance_annotation "${EXTRA_ARGS[@]}"
 else
   python3 -m expregaze_jali.compile_performance_annotation "${EXTRA_ARGS[@]}"
 fi
-

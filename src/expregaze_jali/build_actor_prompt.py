@@ -28,7 +28,7 @@ DEFAULT_OUTPUT_DIR = Path("data/processed/gaze_script/llm_process")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build compact LLM prompt for actor-style ExpreGaze-JALI performance annotation."
+        description="Step 01: build compact context pack and actor-style LLM prompt. Does not call the LLM."
     )
     parser.add_argument("--sequence-id", default=DEFAULT_SEQUENCE_ID)
     parser.add_argument("--candidate-jsonl", type=Path, default=DEFAULT_CANDIDATES)
@@ -42,7 +42,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--output-prompt", type=Path, default=None)
     parser.add_argument("--output-context-pack", type=Path, default=None)
+    parser.add_argument(
+        "--exact-transcript-file",
+        type=Path,
+        default=None,
+        help="Optional manually edited transcript file to use as context_pack.exact_transcript.",
+    )
+    parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
+
+
+def _write_text(path: Path, text: str, *, overwrite: bool) -> None:
+    if path.exists() and not overwrite:
+        raise FileExistsError(f"Refusing to overwrite existing file without --overwrite: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def main() -> None:
@@ -59,7 +73,11 @@ def main() -> None:
             window=args.full_context_window,
         )
 
-    context_pack = build_actor_context_pack(candidate, full_rows)
+    exact_transcript = None
+    if args.exact_transcript_file is not None:
+        exact_transcript = args.exact_transcript_file.read_text(encoding="utf-8")
+
+    context_pack = build_actor_context_pack(candidate, full_rows, exact_transcript=exact_transcript)
     profile = get_capability_profile(args.profile)
     template = load_prompt_template(args.prompt_template)
     extra_config = load_extra_config_texts(
@@ -77,18 +95,18 @@ def main() -> None:
     output_prompt = args.output_prompt or args.output_dir / f"{args.sequence_id}__actor_prompt.txt"
     output_context = args.output_context_pack or args.output_dir / f"{args.sequence_id}__context_pack.json"
 
-    output_prompt.parent.mkdir(parents=True, exist_ok=True)
-    output_context.parent.mkdir(parents=True, exist_ok=True)
+    _write_text(output_prompt, prompt, overwrite=args.overwrite)
+    _write_text(output_context, json.dumps(context_pack, ensure_ascii=False, indent=2), overwrite=args.overwrite)
 
-    output_prompt.write_text(prompt, encoding="utf-8")
-    output_context.write_text(json.dumps(context_pack, ensure_ascii=False, indent=2), encoding="utf-8")
-
-    print(f"Prompt: {output_prompt}")
+    exact_preview = context_pack.get("exact_transcript", "").replace("\n", " ")[:120]
     print(f"Context pack: {output_context}")
+    print(f"Prompt: {output_prompt}")
     print(f"Profile: {args.profile}")
     print(f"Transcript chars: {len(context_pack.get('exact_transcript', ''))}")
+    print(f"Exact transcript preview: {exact_preview}")
     print(f"Full-context rows: {len(full_rows)}")
     print(f"Scene targets: {context_pack.get('scene_targets')}")
+    print("LLM calls: 0")
 
 
 if __name__ == "__main__":

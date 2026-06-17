@@ -14,8 +14,11 @@ SECTION_PATTERN = re.compile(r"^\[(ANALYZE|ANNOTATION|REASONS)\]\s*$", re.MULTIL
 #   pb01 = performative blink
 #   bs01 = blink suppression
 TAG_ID_PATTERN = r"(?:pb|bs|[gmhl])\d+"
-TAG_PATTERN = re.compile(rf"<({TAG_ID_PATTERN})=([^<>]+)>")
-REASON_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})\s*:\s*(.*?)\s*$")
+OPENING_TAG_PATTERN = re.compile(rf"<({TAG_ID_PATTERN})=([^<>]+)>")
+CLOSING_TAG_PATTERN = re.compile(rf"</({TAG_ID_PATTERN})>")
+ANY_TAG_PATTERN = re.compile(rf"</({TAG_ID_PATTERN})>|<({TAG_ID_PATTERN})=([^<>]+)>")
+REASON_COLON_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})\s*:\s*(.*?)\s*$")
+REASON_HEADER_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})(?:\s*=\s*(.*?))?\s*$")
 
 TAG_TYPES = {
     "g": "gaze",
@@ -63,43 +66,97 @@ def _tag_type(tag_id: str) -> str:
     return TAG_TYPES[prefix]
 
 
-def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]]]:
+def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]]]:
+    """Remove readable tags from transcript and collect opening tag metadata.
+
+    Closing tags such as </m1> or </g3> are tolerated and stripped. They are kept
+    only in diagnostics so LLM output remains debuggable while TextGrid alignment
+    is not polluted by stray tag ids.
+    """
     clean_parts: list[str] = []
     tags: list[dict[str, Any]] = []
+    stripped_closing_tags: list[dict[str, Any]] = []
     clean_pos = 0
     raw_pos = 0
 
-    for order, match in enumerate(TAG_PATTERN.finditer(annotation_text)):
+    for match in ANY_TAG_PATTERN.finditer(annotation_text):
         before = annotation_text[raw_pos : match.start()]
         clean_parts.append(before)
         clean_pos += len(before)
 
-        tag_id = match.group(1)
-        tags.append(
-            {
-                "id": tag_id,
-                "prefix": _tag_prefix(tag_id),
-                "type": _tag_type(tag_id),
-                "value": match.group(2).strip(),
-                "position": clean_pos,
-                "raw_start": match.start(),
-                "raw_end": match.end(),
-                "order": order,
-            }
-        )
+        if match.group(1):  # closing tag
+            tag_id = match.group(1)
+            stripped_closing_tags.append(
+                {
+                    "id": tag_id,
+                    "text": match.group(0),
+                    "raw_start": match.start(),
+                    "raw_end": match.end(),
+                    "position": clean_pos,
+                }
+            )
+        else:  # opening tag
+            tag_id = match.group(2)
+            tags.append(
+                {
+                    "id": tag_id,
+                    "prefix": _tag_prefix(tag_id),
+                    "type": _tag_type(tag_id),
+                    "value": match.group(3).strip(),
+                    "position": clean_pos,
+                    "raw_start": match.start(),
+                    "raw_end": match.end(),
+                    "order": len(tags),
+                }
+            )
+
         raw_pos = match.end()
 
     tail = annotation_text[raw_pos:]
     clean_parts.append(tail)
-    return "".join(clean_parts), tags
+    return "".join(clean_parts), tags, stripped_closing_tags
+
+
+def _clean_reason_line(line: str) -> str:
+    line = line.strip()
+    if line.startswith("-"):
+        line = line[1:].strip()
+    return line
 
 
 def _parse_reasons(reasons_text: str) -> dict[str, str]:
+    """Parse either `g1: reason` or `g1=GAZE-TARGET` followed by bullet lines."""
     reasons: dict[str, str] = {}
-    for line in reasons_text.splitlines():
-        match = REASON_PATTERN.match(line)
-        if match:
-            reasons[match.group(1)] = match.group(2)
+    current_id: str | None = None
+
+    for raw_line in reasons_text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        colon_match = REASON_COLON_PATTERN.match(line)
+        if colon_match:
+            current_id = colon_match.group(1)
+            reason = colon_match.group(2).strip()
+            if reason:
+                reasons[current_id] = reason
+            else:
+                reasons.setdefault(current_id, "")
+            continue
+
+        header_match = REASON_HEADER_PATTERN.match(line)
+        if header_match:
+            current_id = header_match.group(1)
+            # `g1=GAZE-LISTENER` is a label, not a reason. Keep waiting for bullet text.
+            reasons.setdefault(current_id, "")
+            continue
+
+        if current_id is not None:
+            reason_piece = _clean_reason_line(line)
+            if reason_piece:
+                existing = reasons.get(current_id, "")
+                reasons[current_id] = f"{existing} {reason_piece}".strip()
+
     return reasons
 
 
@@ -118,11 +175,11 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     source_text = _read_text(path)
     sections, warnings = _parse_sections(source_text)
     annotation_text = sections.get("ANNOTATION", "")
-    clean_transcript, tags = _strip_tags_and_collect(annotation_text)
+    clean_transcript, tags, stripped_closing_tags = _strip_tags_and_collect(annotation_text)
     reasons = _parse_reasons(sections.get("REASONS", ""))
 
     tag_ids = {tag["id"] for tag in tags}
-    missing_reasons = [tag["id"] for tag in tags if tag["id"] not in reasons]
+    missing_reasons = [tag["id"] for tag in tags if not reasons.get(tag["id"], "").strip()]
     extra_reasons = [tag_id for tag_id in reasons if tag_id not in tag_ids]
 
     for tag in tags:
@@ -132,6 +189,7 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         "warnings": warnings,
         "missing_reasons": missing_reasons,
         "extra_reasons": extra_reasons,
+        "stripped_closing_tags": stripped_closing_tags,
         "tag_count": len(tags),
         "tag_type_counts": {
             tag_type: sum(1 for tag in tags if tag.get("type") == tag_type)

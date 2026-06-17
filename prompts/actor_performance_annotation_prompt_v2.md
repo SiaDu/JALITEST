@@ -4,16 +4,16 @@ Your job is not to create animation curves.
 Your job is not to output JSON.
 Your job is not to output seconds or frames.
 
-Your job is to read a compact scene context pack and an exact transcript, then insert sparse actor-style performance tags into the transcript.
+Your job is to read a compact scene context pack and an exact transcript, then insert sparse actor-style performance tags into the exact transcript.
 
 The annotation will later be compiled by code into:
 - JALI-compatible mask / heart transcript tags
 - resolved gaze events for Maya
 - optional actor overlay events for eyelids / performative blinks / blink suppression
 
-Use the context as evidence, but annotate only the exact transcript. If the context and transcript disagree, preserve and annotate the exact transcript.
+Use the context as evidence, but annotate only the exact transcript. If the context and exact transcript disagree, preserve and annotate the exact transcript.
 
-Preserve the transcript exactly. Do not fix spelling, punctuation, casing, OCR errors, subtitle errors, or unusual words. For example, if the transcript says "lsis" or "lnfinite", keep those strings exactly.
+Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OCR errors, and unusual words. For example, if the transcript says "lsis" or "lnfinite", keep those strings exactly.
 
 [CONTEXT PACK]
 {{context_pack}}
@@ -24,7 +24,7 @@ Preserve the transcript exactly. Do not fix spelling, punctuation, casing, OCR e
 [EXTRA CONFIG]
 {{extra_config}}
 
-[EXACT TRANSCRIPT]
+[EXACT TRANSCRIPT - ANNOTATE THIS ONLY]
 {{transcript}}
 
 Output exactly three sections, in this order:
@@ -61,17 +61,17 @@ performance_strategy:
 
 [ANNOTATION]
 
-Insert readable performance tags into the original transcript.
+Insert readable performance tags into the original exact transcript.
 
 General rules:
-- Use state-change tags only.
-- Do not use closing tags.
+- Use state-change tags.
+- Opening tags are the intended format.
+- Do not intentionally add closing tags, but the parser can tolerate accidental closing tags.
 - Only add a tag when the performance state changes.
 - Do not tag every word.
 - Prefer phrase-level beats over word-level micromanagement.
 - Every tag must be visually meaningful and executable.
 - Every tag must be explained in [REASONS].
-- Do not introduce targets that are not in the context pack unless they are generic direction targets from the allowed target list.
 - Use the capability profile strictly. Disabled tags must not appear in [ANNOTATION].
 
 Gaze rules:
@@ -81,6 +81,15 @@ Gaze rules:
 - GAZE means sustained look toward target.
 - GLANCE means brief look, then return to previous gaze state.
 - AVERT means sustained avoidance from listener / main social target.
+
+Target rules:
+- context_pack.scene_targets and context_pack.target_context are hints, not a closed vocabulary.
+- Prefer concrete targets when they are inferable: CRYSTAL instead of OBJECT, DOROTHY instead of a vague PERSON.
+- LISTENER is allowed when the acting beat is primarily social/listener-facing. The exporter may later resolve LISTENER to a concrete character from target_context.
+- OBJECT, PROP, PERSON, and CHARACTER are allowed when the exact physical target is uncertain, but they may require later Maya target resolution.
+- If using OBJECT, explain in [REASONS] what object it likely refers to.
+- If using LISTENER, explain in [REASONS] who the listener likely is.
+- Do not invent a precise object just to satisfy the format. If the context is genuinely uncertain, use the generic target and explain it.
 
 Mask / heart rules:
 - Use mask tags for visible facial performance.

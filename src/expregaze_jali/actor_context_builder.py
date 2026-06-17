@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import json
-import re
 from pathlib import Path
 from typing import Any
 
@@ -51,7 +50,7 @@ def _as_shots(candidate: dict[str, Any]) -> list[dict[str, Any]]:
         try:
             parsed = json.loads(shots)
             if isinstance(parsed, list):
-                return parsed
+                return [shot for shot in parsed if isinstance(shot, dict)]
         except Exception:
             return []
     if isinstance(shots, list):
@@ -67,7 +66,7 @@ def load_full_context_window(
     window: int = 2,
 ) -> list[dict[str, Any]]:
     """
-    Load only a local shot window from the full-context CSV.
+    Load only a local shot window from the processed MovieNet full-context CSV.
 
     This avoids sending the entire full-context file to the LLM while still giving
     it enough story and staging information for actor-style annotation.
@@ -95,7 +94,6 @@ def load_full_context_window(
 def _candidate_blob(candidate: dict[str, Any], shots: list[dict[str, Any]]) -> str:
     parts = [
         str(candidate.get("prototype_label", "")),
-        str(candidate.get("why_selected_for_jali_proto", "")),
         str(candidate.get("script_action_preview", "")),
     ]
     for shot in shots:
@@ -104,6 +102,7 @@ def _candidate_blob(candidate: dict[str, Any], shots: list[dict[str, Any]]) -> s
                 str(shot.get("subtitle_text", "")),
                 str(shot.get("aligned_script_dialogue", "")),
                 str(shot.get("prev_other_text", "")),
+                str(shot.get("bridge_other_text", "")),
                 str(shot.get("next_other_text", "")),
             ]
         )
@@ -112,10 +111,11 @@ def _candidate_blob(candidate: dict[str, Any], shots: list[dict[str, Any]]) -> s
 
 def infer_scene_targets(candidate: dict[str, Any], shots: list[dict[str, Any]]) -> dict[str, list[str]]:
     """
-    Infer a compact target vocabulary for the LLM prompt.
+    Infer a compact target hint list for the LLM prompt.
 
-    This is intentionally conservative. The Maya adapter can later map these
-    semantic targets to locators or directional coordinates.
+    The result is only a hint, not a closed vocabulary. The LLM may still use a
+    concrete target that the keyword sweep missed, and the Maya stage can resolve
+    it with a manual target map later.
     """
     text = _candidate_blob(candidate, shots).lower()
 
@@ -124,19 +124,23 @@ def infer_scene_targets(candidate: dict[str, Any], shots: list[dict[str, Any]]) 
         "crystal": "CRYSTAL",
         "photograph": "PHOTOGRAPH",
         "photo": "PHOTOGRAPH",
+        "picture": "PHOTOGRAPH",
         "balloon": "BALLOON",
         "medal": "MEDAL",
         "door": "DOOR",
         "throne": "THRONE",
         "bag": "BAG",
         "window": "WINDOW",
+        "wagon": "WAGON",
+        "chair": "CHAIR",
+        "table": "TABLE",
+        "book": "BOOK",
+        "letter": "LETTER",
     }
     for keyword, target in keyword_targets.items():
         if keyword in text and target not in objects:
             objects.append(target)
 
-    # A small character-name sweep is useful for multi-character scenes, but
-    # avoid making this a full NER problem in the MVP.
     people: list[str] = []
     for name in (
         "DOROTHY",
@@ -160,7 +164,17 @@ def infer_scene_targets(candidate: dict[str, Any], shots: list[dict[str, Any]]) 
             if normalized and normalized not in people:
                 people.append(normalized)
 
-    directions = ["LISTENER", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT", "LEFT", "RIGHT"]
+    directions = [
+        "LISTENER",
+        "DOWN",
+        "DOWN_LEFT",
+        "DOWN_RIGHT",
+        "UP",
+        "UP_LEFT",
+        "UP_RIGHT",
+        "LEFT",
+        "RIGHT",
+    ]
 
     return {
         "people": people,
@@ -171,15 +185,23 @@ def infer_scene_targets(candidate: dict[str, Any], shots: list[dict[str, Any]]) 
 
 def _extract_exact_transcript(shots: list[dict[str, Any]]) -> str:
     """
-    Use subtitle_text as the exact annotation transcript.
+    Default exact transcript for annotation.
 
-    The TextGrid words are generated from this surface transcript, so spelling
-    oddities such as lsis / lnfinite must be preserved for span resolution.
+    This is intentionally simple: use candidate shot subtitle_text. Users may
+    override or manually edit exact_transcript before running the LLM.
     """
     return "\n".join(
         str(shot.get("subtitle_text", "")).strip()
         for shot in shots
         if str(shot.get("subtitle_text", "")).strip()
+    ).strip()
+
+
+def _join_shot_field(shots: list[dict[str, Any]], field: str) -> str:
+    return "\n".join(
+        str(shot.get(field, "")).strip()
+        for shot in shots
+        if str(shot.get(field, "")).strip()
     ).strip()
 
 
@@ -191,10 +213,60 @@ def _first_story_description(full_context_rows: list[dict[str, Any]]) -> str:
     return ""
 
 
+def build_target_context(candidate: dict[str, Any], scene_targets: dict[str, list[str]]) -> dict[str, Any]:
+    """Build semantic-to-concrete target hints for the LLM and exporter."""
+    active_speakers = [
+        str(s).strip().upper().replace(" ", "_")
+        for s in (candidate.get("active_speakers") or [])
+        if str(s).strip()
+    ]
+    speaking_character = active_speakers[0] if active_speakers else None
+
+    people = list(scene_targets.get("people", []))
+    objects = list(scene_targets.get("objects", []))
+
+    listener_candidates = [p for p in people if p != speaking_character]
+    primary_listener = listener_candidates[0] if listener_candidates else None
+
+    primary_object = None
+    if "CRYSTAL" in objects:
+        primary_object = "CRYSTAL"
+    elif len(objects) == 1:
+        primary_object = objects[0]
+
+    role_map: dict[str, str] = {}
+    if speaking_character:
+        role_map["SPEAKER"] = speaking_character
+    if primary_listener:
+        role_map["LISTENER"] = primary_listener
+    if primary_object:
+        role_map["PRIMARY_OBJECT"] = primary_object
+
+    notes: list[str] = []
+    if primary_listener:
+        notes.append(f"LISTENER most likely refers to {primary_listener}.")
+    if objects:
+        notes.append(
+            "Object targets are hints only; prefer specific targets when inferable, "
+            "but generic OBJECT may be used when intentionally unresolved."
+        )
+
+    return {
+        "speaking_character": speaking_character,
+        "primary_listener": primary_listener,
+        "listener_candidates": listener_candidates,
+        "object_candidates": objects,
+        "direction_targets": scene_targets.get("directions", []),
+        "role_map": role_map,
+        "notes": notes,
+    }
+
+
 def build_actor_context_pack(
     candidate: dict[str, Any],
     full_context_rows: list[dict[str, Any]] | None = None,
     *,
+    exact_transcript: str | None = None,
     max_story_chars: int = 900,
     max_action_chars: int = 900,
     max_dialogue_chars: int = 1200,
@@ -202,8 +274,12 @@ def build_actor_context_pack(
     """Build the compact context object that will be injected into the LLM prompt."""
     full_context_rows = full_context_rows or []
     shots = _as_shots(candidate)
-    exact_transcript = _extract_exact_transcript(shots)
+    default_exact_transcript = _extract_exact_transcript(shots)
     scene_targets = infer_scene_targets(candidate, shots)
+    target_context = build_target_context(candidate, scene_targets)
+
+    subtitle_text = _join_shot_field(shots, "subtitle_text")
+    aligned_script_dialogue = _join_shot_field(shots, "aligned_script_dialogue")
 
     candidate_shots: list[dict[str, Any]] = []
     for shot in shots:
@@ -259,16 +335,13 @@ def build_actor_context_pack(
             "shot_count": candidate.get("shot_count"),
         },
         "active_speakers": candidate.get("active_speakers"),
-        "why_selected_for_jali_proto": candidate.get("why_selected_for_jali_proto"),
         "story_card": _truncate(_first_story_description(full_context_rows), max_story_chars),
         "script_action_preview": _truncate(candidate.get("script_action_preview"), 1800),
+        "subtitle_text": subtitle_text,
+        "aligned_script_dialogue": aligned_script_dialogue,
         "scene_targets": scene_targets,
-        "exact_transcript": exact_transcript,
+        "target_context": target_context,
+        "exact_transcript": (exact_transcript if exact_transcript is not None else default_exact_transcript).strip(),
         "candidate_shots": candidate_shots,
         "full_context_local_window": full_window,
-        "context_policy": {
-            "full_context_strategy": "local_window_plus_story_card",
-            "exact_transcript_source": "candidate.shots[*].subtitle_text",
-            "preserve_transcript_errors_for_textgrid_alignment": True,
-        },
     }
