@@ -1,0 +1,27 @@
+[ANALYZE]
+
+scene_constraints:
+- available people / objects / gaze targets: PROFESSOR (speaker), DOROTHY (LISTENER), AUNT_EM (mentioned in context), CRYSTAL (OBJECT), PHOTOGRAPH (next shot), directional targets (DOWN, UP, LEFT, RIGHT, UP_RIGHT, DOWN_LEFT, etc.).
+- camera, staging, or shot constraints if available: medium-long single-shot focusing on Professor and Dorothy moving to the right toward the wagon; close-up/insert of photograph follows this shot (camera pans while they cross). The current shot is a sustained Professor-led monologue with Dorothy as the social target and the crystal as a staged prop.
+- what information is missing or uncertain: exact timing of eye closures and head turns; Dorothy's gaze state is not supplied (we assume listener attention). Precise head-blocking and camera framing percentages not provided.
+
+story_context:
+- what the character knows: Professor Marvel is a showman/phony who knows how to persuade and comfort; he knows Dorothy ran away and that Aunt Em is worried.
+- what the character wants: to soothe and control Dorothy, encourage her to trust him and follow his “reading” so he can manipulate events toward reuniting her with Aunt Em (and maintain his con).
+- what the character is hiding, performing, or controlling: hiding his opportunism and scheming intent beneath a friendly, authoritative seer mask; performing mysticism and control over Dorothy’s attention.
+- why the line is being said now: to transition into a crystal “reading” and to get Dorothy to close her eyes so he can steer her imagination and her compliance.
+
+character_read:
+- social role and power position: itinerant showman with mild social authority over an impressionable child; performs higher status by dispensing ritual instruction.
+- temperament: genial, quick-witted, performative, slightly theatrical; comfortable with mild deception.
+- visible performance style: warm, coaxing, showman’s flourish, shifting to mild reverence when invoking the “infinite.”
+- hidden undercurrent, only if relevant: opportunistic, quietly manipulative—uses kindness as a tool.
+- baseline energy: steady, medium-energy; theatrical peaks on key phrases.
+- baseline blink tempo: slightly reduced compared to a relaxed speaker (showman control); occasional deliberate eyelid play.
+- baseline lid_state: <l01=0> neutral baseline, with planned widen/close beats.
+
+performance_strategy:
+- how the character uses gaze: open and direct to the LISTENER to establish trust; shifts to the CRYSTAL for object-focus showmanship; brief upward glances for memory/recall during historical flourish; a downward/concentrated gaze and a brief enacted eye-close when invoking “the infinite” to sell mystical authority.
+- how the character uses visible mask / heart: uses a Friendly mask outwardly, switches to a showman/scheming visible mask during the “genuine crystal” flourish, then softens to Polite when giving instructions; an underlying devious heart motivates the persuasion but remains largely unexpressed.
+- how the character uses eyelids and blinks: one controlled widening when selling the crystal, followed by a performative eye-close hold as a ritual cue to Dorothy; afterward returns to an alert-but-controlled lid posture.
+- where the performance strategy actually changes: (1) shift from friendly greeting to showman-sales pitch (gaze -> OBJECT, mask -> Scheming, lid -> slight widen), (2) recall
