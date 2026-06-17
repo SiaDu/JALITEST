@@ -3,10 +3,11 @@ performance_rules:
   
   performance_annotation:
     General rules:
+    - ALWAYS set the lid_state tag, gaze tag and mask tag at the beginning of each performance segment.
     - Add tags only when the performance state or local acting beat changes.
     - Every tag must be visually meaningful and executable.
     - Every tag must be explained in [REASONS].
-
+    
     tag_id_prefixes:
       gaze: g
       mask: m
@@ -23,7 +24,6 @@ performance_rules:
     - AVERT means sustained avoidance from the main social target.
     - Infer gaze targets from the transcript and context. Should use concrete targets. eg. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.
 
-    # Use explicit semantic or directional targets instead.
     Gaze allowed_targets:
       - CHARACTER_CharacterName
       - OBJECT_ObjectName
@@ -45,12 +45,12 @@ performance_rules:
 
     Lid / blink rules:
     - Do not annotate ordinary regulatory blinks.
-    - set lid_state at begining, lid_state refers to how large eye open
-    - Use lid_state only for sustained eyelid baseline changes, not as a second emotion label.
+    - ALWAYS set lid_state scale tag at begining.
+    - Use lid_state tags change only for sustained eyelid baseline changes, not as a second emotion label.
     - Use performative_blink only when the blink itself is an acting choice.
     - Use blink_suppression only when not blinking is the acting choice.
 
-    Lid state scale, use these as energy/affective/cognitive state reference:
+    Lid_state scale, use these as energy/affective/cognitive state reference, refers to how large eye open:
     -9: fully wide, manic / possessed / extreme fear
     -7: feverish, unstable, obsessive
     -5: intense, neurotic, over-alert
