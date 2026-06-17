@@ -1,0 +1,54 @@
+{
+  "movie_name": "The Wizard of Oz",
+  "movie_id": "tt0032138",
+  "sequence_id": "Jali_proto_candidate_001_ProfessorCrystal",
+  "shot_range": {
+    "start_shot_idx": 38,
+    "end_shot_idx": 38,
+    "shot_count": 1
+  },
+  "storyline": "",
+  "current_story_description": "",
+  "current_script_text": "MCS -- Professor and Dorothy -- Dorothy scolds Toto o.s. ...polite! We haven't been asked yet. | MLS -- Professor and Dorothy -- Toto in front of them eating wiener -- Professor laughs and speaks -- puts another wiener on stick -- He's perfectly welcome. As one dog to another, huh? Here now -- let's see where were we? | MLS -- Int. Wagon -- Dorothy and Professor come in -- CAMERA TRUCKS forward -- Professor moves chair up for Dorothy -- then lights candles -- sits down -- puts on turban -- speaks to Dorothy -- she closes her eyes -- he takes her basket -- looks thru it -- takes out a photograph -- INSERT -- CU -- photograph of Dorothy and Aunt Em -- PROFESSOR o.s. ...reaching out into the.... That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without.... | MCS -- Dorothy and Professor -- he puts photograph on chair -- Dorothy opens her eyes -- CAMERA TRUCKS forward as Professor looks into the crystal -- That's -- that's all right. Now you can open them. We'll gaze into the crystal. Ahh -- what's this I see? A house -- with a picket fence.... | CU -- Dorothy -- Camera shooting past Professor at right f.g. -- Dorothy reacts -- ...and a barn -- with a weather vane and a -- of a -- of a running horse.",
+  "subtitle_text": "",
+  "aligned_script_dialogue": "That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
+  "exact_transcript": "<mask=Friendly-85>That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal</mask=Friendly-85>  <mask=Cocky-50><heart=Scheming-60>used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on.</mask=Cocky-50></heart=Scheming-60> <mask=Friendly-70>Now, you -- you'd better close your eyes, my child, for a moment  -- in order to be better in tune with the infinite.</mask=Friendly-70> <mask=Polite-60>We -- we can't do these things without....</mask=Polite-60>",
+  "full_story_description": "",
+  "full_context_local_window": [
+    {
+      "shot_id": "shot_0035",
+      "shot_idx": 35,
+      "aligned_script_text": "MCS -- Professor and Dorothy -- Dorothy scolds Toto o.s. ...polite! We haven't been asked yet."
+    },
+    {
+      "shot_id": "shot_0036",
+      "shot_idx": 36,
+      "aligned_script_text": "MLS -- Professor and Dorothy -- Toto in front of them eating wiener -- Professor laughs and speaks -- puts another wiener on stick -- He's perfectly welcome. As one dog to another, huh? Here now -- let's see where were we?"
+    },
+    {
+      "shot_id": "shot_0037",
+      "shot_idx": 37,
+      "aligned_script_text": ""
+    },
+    {
+      "shot_id": "shot_0038",
+      "shot_idx": 38,
+      "aligned_script_text": "MLS -- Int. Wagon -- Dorothy and Professor come in -- CAMERA TRUCKS forward -- Professor moves chair up for Dorothy -- then lights candles -- sits down -- puts on turban -- speaks to Dorothy -- she closes her eyes -- he takes her basket -- looks thru it -- takes out a photograph -- INSERT -- CU -- photograph of Dorothy and Aunt Em -- PROFESSOR o.s. ...reaching out into the.... That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without...."
+    },
+    {
+      "shot_id": "shot_0039",
+      "shot_idx": 39,
+      "aligned_script_text": ""
+    },
+    {
+      "shot_id": "shot_0040",
+      "shot_idx": 40,
+      "aligned_script_text": "MCS -- Dorothy and Professor -- he puts photograph on chair -- Dorothy opens her eyes -- CAMERA TRUCKS forward as Professor looks into the crystal -- That's -- that's all right. Now you can open them. We'll gaze into the crystal. Ahh -- what's this I see? A house -- with a picket fence...."
+    },
+    {
+      "shot_id": "shot_0041",
+      "shot_idx": 41,
+      "aligned_script_text": "CU -- Dorothy -- Camera shooting past Professor at right f.g. -- Dorothy reacts -- ...and a barn -- with a weather vane and a -- of a -- of a running horse."
+    }
+  ]
+}

@@ -21,127 +21,70 @@ Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OC
 
 [SCENE CONTEXT]
 {
+  "movie_name": "The Wizard of Oz",
   "movie_id": "tt0032138",
   "sequence_id": "Jali_proto_candidate_001_ProfessorCrystal",
-  "prototype_label": "Professor crystal-ball monologue",
-  "time": {
-    "start": "00:12:46.724",
-    "end": "00:13:22.010",
-    "duration_sec": 35.285
-  },
   "shot_range": {
     "start_shot_idx": 38,
     "end_shot_idx": 38,
     "shot_count": 1
   },
-  "active_speakers": [
-    "PROFESSOR"
-  ],
-  "story_card": "Dorothy Gale  is an orphaned teenager who lives with her Auntie Em  and Uncle Henry  on a Kansas farm in the early 1900s. She daydreams about going \"over the rainbow\" after Miss Gulch , a nasty neighbor, hits Dorothy's dog Toto  on the back with a rake, causing Toto to bite her. Miss Gulch shows up with an order to take Toto to the sheriff to be euthanized, but Toto jumps out of the basket on the back of Miss Gulch's bicycle and runs back to Dorothy. Fearing that Miss Gulch, who does not know that Toto has escaped, will return, Dorothy takes the dog and runs away from home. She meets an itinerant phony fortune teller, Professor Marvel , who immediately guesses that Dorothy has run away. Pretending to tell her fortune and wishing to reunite Dorothy with her aunt, he tells her that Auntie Em has fallen ill from worry over her.",
-  "script_action_preview": "MLS -- Professor rises -- CAMERA PANS as he and Dorothy cross\nto right to wagon -- | ...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without.... | INSERT -- CU -- photograph of Dorothy and Aunt Em --\nPROFESSOR o.s. ...reaching out into the.... MCU -- Professor\nlooks at photograph --",
-  "subtitle_text": "That's right. Here. Sit right down here. That's it. This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things without reaching out into the lnfinite.",
-  "aligned_script_dialogue": "...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
-  "candidate_shots": [
-    {
-      "shot_idx": 38,
-      "shot_id": "shot_0038",
-      "time": {
-        "start": "00:12:46.724",
-        "end": "00:13:22.010"
-      },
-      "subtitle_text": "That's right. Here. Sit right down here. That's it. This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things without reaching out into the lnfinite.",
-      "aligned_script_dialogue": "...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
-      "aligned_speakers": "[\"PROFESSOR\", \"PROFESSOR\"]",
-      "prev_other_text": "MLS -- Professor rises -- CAMERA PANS as he and Dorothy cross\nto right to wagon --",
-      "bridge_other_text": "",
-      "next_other_text": "INSERT -- CU -- photograph of Dorothy and Aunt Em --\nPROFESSOR o.s. ...reaching out into the.... MCU -- Professor\nlooks at photograph --",
-      "match_score": 0.8752
-    }
-  ],
+  "current_script_text": "MCS -- Professor and Dorothy -- Dorothy scolds Toto o.s. ...polite! We haven't been asked yet. | MLS -- Professor and Dorothy -- Toto in front of them eating wiener -- Professor laughs and speaks -- puts another wiener on stick -- He's perfectly welcome. As one dog to another, huh? Here now -- let's see where were we? | MLS -- Int. Wagon -- Dorothy and Professor come in -- CAMERA TRUCKS forward -- Professor moves chair up for Dorothy -- then lights candles -- sits down -- puts on turban -- speaks to Dorothy -- she closes her eyes -- he takes her basket -- looks thru it -- takes out a photograph -- INSERT -- CU -- photograph of Dorothy and Aunt Em -- PROFESSOR o.s. ...reaching out into the.... That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without.... | MCS -- Dorothy and Professor -- he puts photograph on chair -- Dorothy opens her eyes -- CAMERA TRUCKS forward as Professor looks into the crystal -- That's -- that's all right. Now you can open them. We'll gaze into the crystal. Ahh -- what's this I see? A house -- with a picket fence.... | CU -- Dorothy -- Camera shooting past Professor at right f.g. -- Dorothy reacts -- ...and a barn -- with a weather vane and a -- of a -- of a running horse.",
+  "aligned_script_dialogue": "That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
   "full_context_local_window": [
     {
-      "shot_idx": "36",
+      "shot_id": "shot_0035",
+      "shot_idx": 35,
+      "aligned_script_text": "MCS -- Professor and Dorothy -- Dorothy scolds Toto o.s. ...polite! We haven't been asked yet."
+    },
+    {
       "shot_id": "shot_0036",
-      "time": {
-        "start": "00:12:22.116",
-        "end": "00:12:30.249"
-      },
-      "subtitle_text": "Oh, he's perfectly welcome. As one dog to another, huh? Now, let's see, where were we?",
-      "aligned_script_dialogue": "He's perfectly welcome. As one dog to another, huh? Here now -- let's see where were we? | Oh, yes - you - you wanted to go home, huh? | Oh, no, I wanted to go along with you. | Oh --",
-      "aligned_speakers": "[\"PROFESSOR\", \"PROFESSOR\", \"DOROTHY\", \"PROFESSOR\"]",
-      "prev_other_text": "MLS -- Professor and Dorothy -- Toto in front of them eating\nwiener -- Professor laughs and speaks -- puts another wiener\non stick --",
-      "next_other_text": "",
-      "match_score": "0.8352"
+      "shot_idx": 36,
+      "aligned_script_text": "MLS -- Professor and Dorothy -- Toto in front of them eating wiener -- Professor laughs and speaks -- puts another wiener on stick -- He's perfectly welcome. As one dog to another, huh? Here now -- let's see where were we?"
     },
     {
-      "shot_idx": "37",
       "shot_id": "shot_0037",
-      "time": {
-        "start": "00:12:30.291",
-        "end": "00:12:46.683"
-      },
-      "subtitle_text": "Why can't we go with you and see all the crowned heads of Europe? Do you know any? Oh, you mean the thing. Yes. Well, uh, l never do anything without consulting my crystal first. Let's go inside here. We'll-- Just come along. I'll show you.",
-      "aligned_script_dialogue": "No, they won't - honestly. | Oh -- | Auntie Em was even going to let them kill Toto yesterday for biting Miss Gulch. Oh, please, Professor, why can't we go with you and see all the Crowned Heads of Europe? | Do you know any? Oh, you mean the thing - - Yes, well, I -- I never do anything without consulting my crystal first. Let's....",
-      "aligned_speakers": "[\"DOROTHY\", \"PROFESSOR\", \"DOROTHY\", \"PROFESSOR\"]",
-      "prev_other_text": "",
-      "next_other_text": "MLS -- Professor rises -- CAMERA PANS as he and Dorothy cross\nto right to wagon --",
-      "match_score": "0.7202"
+      "shot_idx": 37,
+      "aligned_script_text": ""
     },
     {
-      "shot_idx": "38",
       "shot_id": "shot_0038",
-      "time": {
-        "start": "00:12:46.724",
-        "end": "00:13:22.010"
-      },
-      "subtitle_text": "That's right. Here. Sit right down here. That's it. This is the same genuine, magic, authentic crystal... ...used by the priests of lsis and Osiris in the days of the Pharaohs... ...in which Cleopatra saw the approach of Julius Caesar and Marc Anthony. And so on, and so on. Now... ...you'd better close your eyes, my child, for a moment... ...in order to be better in tuned with the lnfinite. We can't do these things without reaching out into the lnfinite.",
-      "aligned_script_dialogue": "...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
-      "aligned_speakers": "[\"PROFESSOR\", \"PROFESSOR\"]",
-      "prev_other_text": "MLS -- Professor rises -- CAMERA PANS as he and Dorothy cross\nto right to wagon --",
-      "next_other_text": "INSERT -- CU -- photograph of Dorothy and Aunt Em --\nPROFESSOR o.s. ...reaching out into the.... MCU -- Professor\nlooks at photograph --",
-      "match_score": "0.8752"
+      "shot_idx": 38,
+      "aligned_script_text": "MLS -- Int. Wagon -- Dorothy and Professor come in -- CAMERA TRUCKS forward -- Professor moves chair up for Dorothy -- then lights candles -- sits down -- puts on turban -- speaks to Dorothy -- she closes her eyes -- he takes her basket -- looks thru it -- takes out a photograph -- INSERT -- CU -- photograph of Dorothy and Aunt Em -- PROFESSOR o.s. ...reaching out into the.... That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without...."
     },
     {
-      "shot_idx": "39",
       "shot_id": "shot_0039",
-      "time": {
-        "start": "00:13:22.051",
-        "end": "00:13:23.678"
-      },
-      "subtitle_text": "We can't do these things without reaching out into the lnfinite.",
-      "aligned_script_dialogue": "...go inside here -- we'll -- Just come along. I'll show you. There you are - right in there. | That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....",
-      "aligned_speakers": "[\"PROFESSOR\", \"PROFESSOR\"]",
-      "prev_other_text": "MLS -- Professor rises -- CAMERA PANS as he and Dorothy cross\nto right to wagon --",
-      "next_other_text": "INSERT -- CU -- photograph of Dorothy and Aunt Em --\nPROFESSOR o.s. ...reaching out into the.... MCU -- Professor\nlooks at photograph --",
-      "match_score": "0.8752"
+      "shot_idx": 39,
+      "aligned_script_text": ""
     },
     {
-      "shot_idx": "40",
       "shot_id": "shot_0040",
-      "time": {
-        "start": "00:13:23.720",
-        "end": "00:13:35.773"
-      },
-      "subtitle_text": "We can't do these things without reaching out into the lnfinite. Yes, that's all right. Now you can open them. We'll gaze into the crystal. Ah. What's this l see? A house with a picket fence...",
-      "aligned_script_dialogue": "...infinite. Yes. | That's -- that's all right. Now you can open them. We'll gaze into the crystal. Ahh -- what's this I see? A house -- with a picket fence....",
-      "aligned_speakers": "[\"PROFESSOR\", \"PROFESSOR\"]",
-      "prev_other_text": "INSERT -- CU -- photograph of Dorothy and Aunt Em --\nPROFESSOR o.s. ...reaching out into the.... MCU -- Professor\nlooks at photograph --",
-      "next_other_text": "CU -- Dorothy -- Camera shooting past Professor at right f.g.\n-- Dorothy reacts --",
-      "match_score": "0.7114"
+      "shot_idx": 40,
+      "aligned_script_text": "MCS -- Dorothy and Professor -- he puts photograph on chair -- Dorothy opens her eyes -- CAMERA TRUCKS forward as Professor looks into the crystal -- That's -- that's all right. Now you can open them. We'll gaze into the crystal. Ahh -- what's this I see? A house -- with a picket fence...."
+    },
+    {
+      "shot_id": "shot_0041",
+      "shot_idx": 41,
+      "aligned_script_text": "CU -- Dorothy -- Camera shooting past Professor at right f.g. -- Dorothy reacts -- ...and a barn -- with a weather vane and a -- of a -- of a running horse."
     }
   ]
 }
 
 [EXTRA CONFIG]
 {
-  "jali_emotion_options": {
-    "path": "configs/jali_emotion_options.yaml",
-    "text": "jali_emotion:\n  mode: transcript_annotation\n\n  node_settings_for_annotation:\n    mask_bearing:\n      attr: mask_bearing\n      enum_index: 0\n      label: from Annotation\n\n    mask_intensity:\n      attr: mask_intensity\n      enum_index: 0\n      label: From Transcript Tags\n\n    heart_source:\n      attr: heart_source\n      enum_index: 0\n      label: from Annotation\n\n    heart_strength:\n      attr: heart_strength\n      enum_index: 0\n      label: From Transcript Tags\n\n  mask:\n    tag_format: \"<mask={bearing}-{intensity}> {text} </mask={bearing}-{intensity}>\"\n\n    intensity:\n      type: int\n      min: 0\n      max: 100\n      default: 50\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"JALI Text Editor accepts arbitrary numeric intensity, not only dropdown presets.\"\n\n    allowed_bearings:\n      Nothing: 2\n      Neutral: 3\n      Polite: 4\n      Friendly: 5\n      Sassy: 6\n      Smug: 7\n      Cocky: 8\n      Nervous: 9\n      Panicky: 10\n      Thinking: 11\n      Scheming: 12\n      Devious: 13\n      Devilish: 14\n      Provoked: 15\n      Angered: 16\n      Dislike: 17\n      Disgust: 18\n      Singing_Serene: 19\n      Watchful: 20\n      Intimidating: 21\n      Confused: 22\n      Lost: 23\n\n  heart:\n    \n    tag_format: \"<heart={source}-{strength}> {text} </heart={source}-{strength}>\"\n\n    strength:\n      type: int\n      min: 0\n      max: 100\n      default: 0\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"If source contains dashes, split the tag value from the final dash.\"\n\n    first_version_sources:\n      Nothing: 121\n      Angry: 122\n      Sad: 123\n      Disgusted: 124\n      Afraid: 125\n      Contempt: 126\n      Surprised: 127\n      Happy: 128\n\n    advanced_sources_allow_for_manual_tests:\n      Pride_P-91: 91\n      Emp_Anger-2: 2"
-  },
-  "performance_rules": {
-    "path": "configs/performance_rules.yaml",
-    "text": "performance_rules:\n  schema_version: performance_rules_v1\n  \n  performance_annotation:\n    General rules:\n    - Add tags only when the performance state or local acting beat changes.\n    - Every tag must be visually meaningful and executable.\n    - Every tag must be explained in [REASONS].\n\n    tag_id_prefixes:\n      gaze: g\n      mask: m\n      heart: h\n      lid_state: l\n      performative_blink: pb\n      blink_suppression: bs\n\n    Gaze rules:\n    - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.\n    - Allowed gaze modes are GAZE, GLANCE, and AVERT.\n    - GAZE means sustained look toward target.\n    - GLANCE means brief look toward target.\n    - AVERT means sustained avoidance from the main social target.\n    - Infer gaze targets from the transcript and context. Should use concrete targets. eg. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.\n\n    # Use explicit semantic or directional targets instead.\n    Gaze allowed_targets:\n      - CHARACTER_CharacterName\n      - OBJECT_ObjectName\n      - DOWN\n      - DOWN_LEFT\n      - DOWN_RIGHT\n      - UP\n      - UP_LEFT\n      - UP_RIGHT\n      - LEFT\n      - RIGHT\n\n    Mask / heart rules:\n    - Use mask tags for visible facial performance.\n    - Use heart tags only when the inner state differs from visible mask.\n    - Do not use heart as a generic second emotion layer.\n    - Use mask and heart names from the JALI emotion options when provided.\n    - Keep strength values moderate unless the acting beat extremely demands more.\n\n    Lid / blink rules:\n    - Do not annotate ordinary regulatory blinks.\n    - set lid_state at begining, lid_state refers to how large eye open\n    - Use lid_state only for sustained eyelid baseline changes, not as a second emotion label.\n    - Use performative_blink only when the blink itself is an acting choice.\n    - Use blink_suppression only when not blinking is the acting choice.\n\n    Lid state scale, use these as energy/affective/cognitive state reference:\n    -9: fully wide, manic / possessed / extreme fear\n    -7: feverish, unstable, obsessive\n    -5: intense, neurotic, over-alert\n    -3: shocked / angry / excited\n    -2: heightened attention\n    -1: alert but controlled\n    0: default\n    1: relaxed / neutral\n    2: soft / warm / receptive\n    3: guarded / impatient / skeptical\n    4: sleepy / withdrawn / flat dislike / emotionally closed\n\n    Performative blink modes:\n    - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain\n    - EYE_CLOSE_HOLD: thinking, avoidance, unwillingness to look, emotional suppression, prayer, mystical concentration, fatigue, demonstration\n    - SLOW_BLINK: cognitive retrieval, remembering, fabricating a story, searching for words\n"
-  }
+  "note": "Prompt-only configs. configs/base.yaml is intentionally excluded; it is runtime LLM config.",
+  "sources": [
+    {
+      "path": "configs/jali_emotion_options.yaml",
+      "exists": true,
+      "text": "jali_emotion:\n  mode: transcript_annotation\n\n  node_settings_for_annotation:\n    mask_bearing:\n      attr: mask_bearing\n      enum_index: 0\n      label: from Annotation\n\n    mask_intensity:\n      attr: mask_intensity\n      enum_index: 0\n      label: From Transcript Tags\n\n    heart_source:\n      attr: heart_source\n      enum_index: 0\n      label: from Annotation\n\n    heart_strength:\n      attr: heart_strength\n      enum_index: 0\n      label: From Transcript Tags\n\n  mask:\n    tag_format: \"<mask={bearing}-{intensity}> {text} </mask={bearing}-{intensity}>\"\n\n    intensity:\n      type: int\n      min: 0\n      max: 100\n      default: 50\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"JALI Text Editor accepts arbitrary numeric intensity, not only dropdown presets.\"\n\n    allowed_bearings:\n      Nothing: 2\n      Neutral: 3\n      Polite: 4\n      Friendly: 5\n      Sassy: 6\n      Smug: 7\n      Cocky: 8\n      Nervous: 9\n      Panicky: 10\n      Thinking: 11\n      Scheming: 12\n      Devious: 13\n      Devilish: 14\n      Provoked: 15\n      Angered: 16\n      Dislike: 17\n      Disgust: 18\n      Singing_Serene: 19\n      Watchful: 20\n      Intimidating: 21\n      Confused: 22\n      Lost: 23\n\n  heart:\n    \n    tag_format: \"<heart={source}-{strength}> {text} </heart={source}-{strength}>\"\n\n    strength:\n      type: int\n      min: 0\n      max: 100\n      default: 0\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"If source contains dashes, split the tag value from the final dash.\"\n\n    first_version_sources:\n      Nothing: 121\n      Angry: 122\n      Sad: 123\n      Disgusted: 124\n      Afraid: 125\n      Contempt: 126\n      Surprised: 127\n      Happy: 128\n\n    advanced_sources_allow_for_manual_tests:\n      Pride_P-91: 91\n      Emp_Anger-2: 2"
+    },
+    {
+      "path": "configs/performance_rules.yaml",
+      "exists": true,
+      "text": "performance_rules:\n  schema_version: performance_rules_v1\n  \n  performance_annotation:\n    General rules:\n    - Add tags only when the performance state or local acting beat changes.\n    - Every tag must be visually meaningful and executable.\n    - Every tag must be explained in [REASONS].\n\n    tag_id_prefixes:\n      gaze: g\n      mask: m\n      heart: h\n      lid_state: l\n      performative_blink: pb\n      blink_suppression: bs\n\n    Gaze rules:\n    - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.\n    - Allowed gaze modes are GAZE, GLANCE, and AVERT.\n    - GAZE means sustained look toward target.\n    - GLANCE means brief look toward target.\n    - AVERT means sustained avoidance from the main social target.\n    - Infer gaze targets from the transcript and context. Should use concrete targets. eg. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.\n\n    # Use explicit semantic or directional targets instead.\n    Gaze allowed_targets:\n      - CHARACTER_CharacterName\n      - OBJECT_ObjectName\n      - DOWN\n      - DOWN_LEFT\n      - DOWN_RIGHT\n      - UP\n      - UP_LEFT\n      - UP_RIGHT\n      - LEFT\n      - RIGHT\n\n    Mask / heart rules:\n    - Use mask tags for visible facial performance.\n    - Use heart tags only when the inner state differs from visible mask.\n    - Do not use heart as a generic second emotion layer.\n    - Use mask and heart names from the JALI emotion options when provided.\n    - Keep strength values moderate unless the acting beat extremely demands more.\n\n    Lid / blink rules:\n    - Do not annotate ordinary regulatory blinks.\n    - set lid_state at begining, lid_state refers to how large eye open\n    - Use lid_state only for sustained eyelid baseline changes, not as a second emotion label.\n    - Use performative_blink only when the blink itself is an acting choice.\n    - Use blink_suppression only when not blinking is the acting choice.\n\n    Lid state scale, use these as energy/affective/cognitive state reference:\n    -9: fully wide, manic / possessed / extreme fear\n    -7: feverish, unstable, obsessive\n    -5: intense, neurotic, over-alert\n    -3: shocked / angry / excited\n    -2: heightened attention\n    -1: alert but controlled\n    0: default\n    1: relaxed / neutral\n    2: soft / warm / receptive\n    3: guarded / impatient / skeptical\n    4: sleepy / withdrawn / flat dislike / emotionally closed\n\n    Performative blink modes:\n    - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain\n    - EYE_CLOSE_HOLD: thinking, avoidance, unwillingness to look, emotional suppression, prayer, mystical concentration, fatigue, demonstration\n    - SLOW_BLINK: cognitive retrieval, remembering, fabricating a story, searching for words\n"
+    }
+  ]
 }
 
 Output exactly three sections, in this order:
@@ -151,7 +94,7 @@ Output exactly three sections, in this order:
 Keep the analysis compact and practical. Include:
 
 scene_constraints:
-- available people / objects / gaze targets
+- available people / objects / gaze targets inferred from the transcript and context
 
 social_interaction_structure: 
 - who is speaking, who is listening
@@ -171,6 +114,7 @@ performance_strategy:
 [ANNOTATION]
 
 Insert readable performance tags into the original exact transcript.
+Use the performance rules and JALI emotion options from [EXTRA CONFIG].
 
 [REASONS]
 

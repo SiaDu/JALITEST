@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -87,12 +88,26 @@ def _truncate(text: Any, max_chars: int = 1200) -> str:
 
 
 def _safe_int(value: Any, default: int = -1) -> int:
+    """Coerce common shot-index values to int.
+
+    Handles values like 38, "38", "38.0", and shot ids such as
+    "shot_0038". This is intentionally permissive because full_context files
+    can come from different preprocessing stages.
+    """
     try:
         if value is None or value == "":
             return default
-        return int(float(str(value).strip()))
+        text = str(value).strip()
+        try:
+            return int(float(text))
+        except Exception:
+            pass
+        match = re.search(r"-?\d+", text)
+        if match:
+            return int(match.group(0))
     except Exception:
-        return default
+        pass
+    return default
 
 
 def _normalize_key(value: str) -> str:
@@ -130,16 +145,57 @@ def _unique_join(values: list[str], sep: str = " | ") -> str:
     return sep.join(out)
 
 
+def _row_start_shot_idx(row: dict[str, Any]) -> int:
+    value = _get(
+        row,
+        "shot_idx",
+        "shot_index",
+        "shot",
+        "idx",
+        "start_shot_idx",
+        "shot_start_idx",
+        "start_idx",
+    )
+    parsed = _safe_int(value)
+    if parsed >= 0:
+        return parsed
+    return _safe_int(_get(row, "shot_id", "shot_name", "shot_identifier"))
+
+
+def _row_end_shot_idx(row: dict[str, Any]) -> int:
+    value = _get(row, "end_shot_idx", "shot_end_idx", "end_idx")
+    parsed = _safe_int(value)
+    if parsed >= 0:
+        return parsed
+    return _row_start_shot_idx(row)
+
+
+def _row_shot_range(row: dict[str, Any]) -> tuple[int, int]:
+    start = _row_start_shot_idx(row)
+    end = _row_end_shot_idx(row)
+    if start < 0 and end >= 0:
+        start = end
+    if end < 0 and start >= 0:
+        end = start
+    if start >= 0 and end >= 0 and end < start:
+        start, end = end, start
+    return start, end
+
+
 def _row_shot_idx(row: dict[str, Any]) -> int:
-    return _safe_int(_get(row, "shot_idx", "shot_index", "shot", "idx"))
+    return _row_start_shot_idx(row)
 
 
 def _row_shot_id(row: dict[str, Any]) -> str:
-    shot_id = str(_get(row, "shot_id", "shot_name")).strip()
+    shot_id = str(_get(row, "shot_id", "shot_name", "shot_identifier")).strip()
     if shot_id:
         return shot_id
-    shot_idx = _row_shot_idx(row)
-    return f"shot_{shot_idx:04d}" if shot_idx >= 0 else ""
+    start, end = _row_shot_range(row)
+    if start >= 0 and end >= 0 and start != end:
+        return f"shot_{start:04d}-shot_{end:04d}"
+    if start >= 0:
+        return f"shot_{start:04d}"
+    return ""
 
 
 def _row_movie_id(row: dict[str, Any]) -> str:
@@ -151,6 +207,16 @@ def _filter_movie(rows: list[dict[str, Any]], movie_id: str | None) -> list[dict
         return rows
     matched = [row for row in rows if _row_movie_id(row) in {"", movie_id}]
     return matched or rows
+
+
+def _ranges_overlap(a_start: int, a_end: int, b_start: int, b_end: int) -> bool:
+    return a_start <= b_end and b_start <= a_end
+
+
+def _sortable_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    sortable = [row for row in rows if _row_shot_range(row)[0] >= 0]
+    sortable.sort(key=lambda row: (_row_shot_range(row)[0], _row_shot_range(row)[1], _row_shot_id(row)))
+    return sortable
 
 
 def _filter_shot_window(
@@ -165,22 +231,38 @@ def _filter_shot_window(
     local_lo = target_lo - max(window, 0)
     local_hi = target_hi + max(window, 0)
 
-    sortable = [row for row in rows if _row_shot_idx(row) >= 0]
-    sortable.sort(key=_row_shot_idx)
-    target_rows = [row for row in sortable if target_lo <= _row_shot_idx(row) <= target_hi]
-    local_rows = [row for row in sortable if local_lo <= _row_shot_idx(row) <= local_hi]
+    sortable = _sortable_rows(rows)
+    target_rows: list[dict[str, Any]] = []
+    local_rows: list[dict[str, Any]] = []
+    for row in sortable:
+        row_start, row_end = _row_shot_range(row)
+        if _ranges_overlap(row_start, row_end, target_lo, target_hi):
+            target_rows.append(row)
+        if _ranges_overlap(row_start, row_end, local_lo, local_hi):
+            local_rows.append(row)
     return target_rows, local_rows
 
 
 def _row_script_text(row: dict[str, Any]) -> str:
-    explicit = str(_get(row, "aligned_script_text", "script_text", "script_action_text")).strip()
+    explicit = str(
+        _get(
+            row,
+            "aligned_script_text",
+            "script_text",
+            "script_action_text",
+            "current_script_text",
+            "script",
+            "action_text",
+            "scene_script_text",
+        )
+    ).strip()
     if explicit:
         return explicit
 
     pieces = [
-        str(_get(row, "prev_other_text", "prev_action_text")).strip(),
+        str(_get(row, "prev_other_text", "prev_action_text", "previous_action_text")).strip(),
         str(_get(row, "bridge_other_text", "bridge_action_text")).strip(),
-        str(_get(row, "aligned_script_dialogue", "dialogue", "dialogue_text")).strip(),
+        str(_get(row, "aligned_script_dialogue", "dialogue", "dialogue_text", "script_dialogue")).strip(),
         str(_get(row, "next_other_text", "next_action_text")).strip(),
     ]
     return " -- ".join(piece for piece in pieces if piece)
@@ -214,13 +296,60 @@ def _infer_sequence_id(movie_id: str | None, start_shot_idx: int, end_shot_idx: 
 
 
 def _default_exact_transcript(target_rows: list[dict[str, Any]]) -> str:
+    explicit = _join_row_text(target_rows, "exact_transcript", "transcript", "speech_text", "line_text", sep="\n")
+    if explicit:
+        return explicit
     subtitle = _join_row_text(target_rows, "subtitle_text", "subtitle", sep="\n")
     if subtitle:
         return subtitle
-    dialogue = _join_row_text(target_rows, "aligned_script_dialogue", "dialogue", "dialogue_text", sep="\n")
+    dialogue = _join_row_text(target_rows, "aligned_script_dialogue", "dialogue", "dialogue_text", "script_dialogue", sep="\n")
     if dialogue:
         return dialogue
     return _unique_join([_row_script_text(row) for row in target_rows], sep="\n")
+
+
+def _diagnose_shot_matching(rows: list[dict[str, Any]], *, start_shot_idx: int, end_shot_idx: int, max_examples: int = 8) -> str:
+    fieldnames: list[str] = []
+    seen_fields: set[str] = set()
+    for row in rows[:50]:
+        for key in row.keys():
+            if key not in seen_fields:
+                seen_fields.add(key)
+                fieldnames.append(str(key))
+
+    parsed_ranges: list[tuple[int, int, str]] = []
+    unparsed_examples: list[str] = []
+    for row in rows:
+        start, end = _row_shot_range(row)
+        if start >= 0:
+            parsed_ranges.append((start, end, _row_shot_id(row)))
+        elif len(unparsed_examples) < max_examples:
+            compact = {key: row.get(key) for key in list(row.keys())[:8]}
+            unparsed_examples.append(json.dumps(compact, ensure_ascii=False))
+
+    lines = [
+        f"Rows loaded: {len(rows)}",
+        f"Requested shot_range: {start_shot_idx}-{end_shot_idx}",
+        f"Columns: {fieldnames}",
+    ]
+    if parsed_ranges:
+        starts = [item[0] for item in parsed_ranges]
+        ends = [item[1] for item in parsed_ranges]
+        examples = [f"{start}-{end}:{shot_id}" for start, end, shot_id in parsed_ranges[:max_examples]]
+        lines.extend(
+            [
+                f"Parsed shot range coverage: {min(starts)}-{max(ends)}",
+                f"Parsed shot examples: {examples}",
+            ]
+        )
+    else:
+        lines.append(
+            "No parseable shot index found. Expected one of: shot_idx, shot_index, "
+            "shot, idx, start_shot_idx/end_shot_idx, or shot_id like shot_0038."
+        )
+    if unparsed_examples:
+        lines.append(f"Unparsed row examples: {unparsed_examples}")
+    return "\n".join(lines)
 
 
 def build_context_pack_from_shot_range(
@@ -251,9 +380,15 @@ def build_context_pack_from_shot_range(
         window=local_window,
     )
     if not target_rows:
+        diagnostics = _diagnose_shot_matching(
+            rows,
+            start_shot_idx=start_shot_idx,
+            end_shot_idx=end_shot_idx,
+        )
         raise ValueError(
             "No full_context rows matched shot_range "
-            f"{start_shot_idx}-{end_shot_idx}. Check configs/path_local.yaml."
+            f"{start_shot_idx}-{end_shot_idx}. Check configs/path_local.yaml or the full_context schema.\n"
+            f"{diagnostics}"
         )
 
     inferred_movie_id = movie_id or _row_movie_id(target_rows[0]) or _row_movie_id(rows[0]) if rows else None

@@ -220,16 +220,19 @@ def main() -> None:
 
     exact_transcript, exact_transcript_source = _load_exact_transcript(args, str(sequence_id))
     full_context_rows = load_full_context_records(full_context_file)
-    context_pack = build_context_pack_from_shot_range(
-        full_context_rows,
-        movie_id=str(movie_id) if movie_id else None,
-        movie_name=str(movie_name) if movie_name else None,
-        sequence_id=str(sequence_id),
-        start_shot_idx=start_shot_idx,
-        end_shot_idx=end_shot_idx,
-        local_window=context_window,
-        exact_transcript=exact_transcript,
-    )
+    try:
+        context_pack = build_context_pack_from_shot_range(
+            full_context_rows,
+            movie_id=str(movie_id) if movie_id else None,
+            movie_name=str(movie_name) if movie_name else None,
+            sequence_id=str(sequence_id),
+            start_shot_idx=start_shot_idx,
+            end_shot_idx=end_shot_idx,
+            local_window=context_window,
+            exact_transcript=exact_transcript,
+        )
+    except ValueError as exc:
+        raise ValueError(f"{exc}\nSource full_context: {full_context_file}") from exc
 
     template = load_prompt_template(args.prompt_template)
     extra_config_paths = args.extra_config_file if args.extra_config_file else list(DEFAULT_EXTRA_CONFIG_FILES)
