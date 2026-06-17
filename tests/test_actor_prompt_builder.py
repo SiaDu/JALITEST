@@ -9,7 +9,7 @@ from expregaze_jali.actor_context_builder import (
     find_candidate,
     load_full_context_window,
 )
-from expregaze_jali.actor_prompt_builder import build_actor_annotation_prompt
+from expregaze_jali.actor_prompt_builder import build_actor_annotation_prompt, load_extra_config_texts
 
 
 def test_build_context_pack_uses_candidate_transcript_and_story_card(tmp_path: Path):
@@ -89,8 +89,33 @@ def test_build_context_pack_uses_candidate_transcript_and_story_card(tmp_path: P
     assert "why_selected_for_jali_proto" not in context_pack
 
 
-def test_prompt_builder_injects_compact_context_and_preserves_transcript():
-    template = "[SCENE CONTEXT]\n{{context_pack}}\n[EXACT TRANSCRIPT]\n{{transcript}}"
+def test_load_extra_config_reads_jali_options_and_performance_rules_only(tmp_path: Path):
+    jali_options = tmp_path / "jali_emotion_options.yaml"
+    performance_rules = tmp_path / "performance_rules.yaml"
+    base_config = tmp_path / "base.yaml"
+
+    jali_options.write_text("jali_emotion:\n  mask:\n    allowed_bearings:\n      Friendly: 5\n", encoding="utf-8")
+    performance_rules.write_text("performance_rules:\n  schema_version: performance_rules_v1\n", encoding="utf-8")
+    base_config.write_text("llm:\n  model: should_not_be_read\n", encoding="utf-8")
+
+    extra_config = load_extra_config_texts(
+        jali_emotion_options=jali_options,
+        performance_rules=performance_rules,
+    )
+
+    rendered = json.dumps(extra_config, ensure_ascii=False)
+    assert "Friendly" in rendered
+    assert "performance_rules_v1" in rendered
+    assert "should_not_be_read" not in rendered
+    assert str(base_config) not in rendered
+
+
+def test_prompt_builder_injects_compact_context_extra_config_and_preserves_transcript():
+    template = (
+        "[SCENE CONTEXT]\n{{context_pack}}\n"
+        "[EXTRA CONFIG]\n{{extra_config}}\n"
+        "[EXACT TRANSCRIPT]\n{{transcript}}"
+    )
     context_pack = {
         "sequence_id": "seq_001",
         "prototype_label": "Professor crystal-ball monologue",
@@ -98,10 +123,15 @@ def test_prompt_builder_injects_compact_context_and_preserves_transcript():
         "scene_targets": {"objects": ["CRYSTAL"]},
         "target_context": {"role_map": {"LISTENER": "DOROTHY"}},
     }
+    extra_config = {
+        "jali_emotion_options": {"path": "configs/jali_emotion_options.yaml", "text": "Friendly: 5"},
+        "performance_rules": {"path": "configs/performance_rules.yaml", "text": "performance_rules_v1"},
+    }
 
     prompt = build_actor_annotation_prompt(
         prompt_template=template,
         context_pack=context_pack,
+        extra_config=extra_config,
     )
 
     assert "The priests of lsis saw the lnfinite." in prompt
@@ -109,4 +139,8 @@ def test_prompt_builder_injects_compact_context_and_preserves_transcript():
     assert "Professor crystal-ball monologue" in prompt
     assert "scene_targets" not in prompt
     assert "target_context" not in prompt
+    assert "configs/jali_emotion_options.yaml" in prompt
+    assert "Friendly: 5" in prompt
+    assert "configs/performance_rules.yaml" in prompt
+    assert "performance_rules_v1" in prompt
     assert "{{" not in prompt
