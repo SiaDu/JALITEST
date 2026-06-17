@@ -11,70 +11,64 @@ PROMPT_CONTEXT_EXCLUDED_KEYS = {
     "target_context",
 }
 
+DEFAULT_EXTRA_CONFIG_FILES = (
+    Path("configs/jali_emotion_options.yaml"),
+    Path("configs/performance_rules.yaml"),
+)
+
 
 def load_prompt_template(path: str | Path) -> str:
     return Path(path).read_text(encoding="utf-8")
 
 
-def _read_optional_text(path: str | Path | None, *, max_chars: int = 12000) -> str:
-    if path is None:
-        return ""
+def _read_optional_text(path: str | Path, *, max_chars: int = 20000) -> str:
     file_path = Path(path)
     if not file_path.exists():
         return ""
     text = file_path.read_text(encoding="utf-8")
-    if len(text) <= max_chars:
+    if max_chars <= 0 or len(text) <= max_chars:
         return text
     return text[: max_chars - 20].rstrip() + "\n...[truncated]"
 
 
 def load_extra_config_texts(
+    paths: list[str | Path] | tuple[str | Path, ...] | None = None,
     *,
-    jali_emotion_options: str | Path | None = None,
-    performance_rules: str | Path | None = None,
+    max_chars_per_file: int = 20000,
 ) -> dict[str, Any]:
-    """Load prompt-only config text for the actor annotator.
+    """Load prompt-only config snippets for the actor annotator.
 
-    Important: this intentionally does not read configs/base.yaml. base.yaml is a
-    runtime config for Step 01 LLM API settings. The prompt only receives acting /
-    annotation constraints and JALI mask/heart options.
+    Important: this intentionally does NOT read configs/base.yaml. base.yaml is
+    runtime configuration for Step 01 OpenAI calls, not prompt context.
     """
+    config_paths = list(paths or DEFAULT_EXTRA_CONFIG_FILES)
+    sources: list[dict[str, Any]] = []
+    for config_path in config_paths:
+        path = Path(config_path)
+        sources.append(
+            {
+                "path": str(path),
+                "exists": path.exists(),
+                "text": _read_optional_text(path, max_chars=max_chars_per_file),
+            }
+        )
     return {
-        "jali_emotion_options": {
-            "path": str(jali_emotion_options) if jali_emotion_options else None,
-            "text": _read_optional_text(jali_emotion_options),
-        },
-        "performance_rules": {
-            "path": str(performance_rules) if performance_rules else None,
-            "text": _read_optional_text(performance_rules),
-        },
+        "note": "Prompt-only configs. configs/base.yaml is intentionally excluded; it is runtime LLM config.",
+        "sources": sources,
     }
 
 
 def _compact_prompt_context(context_pack: dict[str, Any]) -> dict[str, Any]:
     """Return only context useful to the actor annotator prompt.
 
-    Keep target metadata in context_pack.json for compiler/debug use, but do not
-    inject it into the actor prompt. The LLM can infer targets from story/action/
-    transcript context; scene_targets/target_context are keyword hints and tend to
-    add noise.
+    exact_transcript is injected separately. scene_targets/target_context are kept
+    out of the prompt if they exist, because they tend to add target-vocabulary
+    noise; the model should infer targets from scene/story/script context.
     """
     out: dict[str, Any] = {}
     for key, value in context_pack.items():
         if key in PROMPT_CONTEXT_EXCLUDED_KEYS:
             continue
-        if value in (None, "", [], {}):
-            continue
-        out[key] = value
-    return out
-
-
-def _compact_extra_config(extra_config: dict[str, Any] | None) -> dict[str, Any]:
-    if not extra_config:
-        return {}
-
-    out: dict[str, Any] = {}
-    for key, value in extra_config.items():
         if value in (None, "", [], {}):
             continue
         out[key] = value
@@ -88,14 +82,14 @@ def build_actor_annotation_prompt(
     transcript: str | None = None,
     extra_config: dict[str, Any] | None = None,
 ) -> str:
-    """Inject exact transcript, compact scene context, and prompt-only configs."""
+    """Inject compact scene context, extra config, and exact transcript."""
     exact_transcript = transcript or context_pack.get("exact_transcript", "")
     if not str(exact_transcript).strip():
         raise ValueError("No exact transcript provided.")
 
     replacements = {
         "{{context_pack}}": json.dumps(_compact_prompt_context(context_pack), ensure_ascii=False, indent=2),
-        "{{extra_config}}": json.dumps(_compact_extra_config(extra_config), ensure_ascii=False, indent=2),
+        "{{extra_config}}": json.dumps(extra_config or {}, ensure_ascii=False, indent=2),
         "{{transcript}}": str(exact_transcript),
     }
 

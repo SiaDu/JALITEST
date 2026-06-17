@@ -14,50 +14,320 @@ def load_jsonl(path: str | Path) -> list[dict[str, Any]]:
             if not line.strip():
                 continue
             try:
-                records.append(json.loads(line))
+                value = json.loads(line)
             except json.JSONDecodeError as exc:
                 raise ValueError(f"Invalid JSONL at {path}:{line_no}: {exc}") from exc
+            if isinstance(value, dict):
+                records.append(value)
     return records
 
 
+def load_full_context_records(path: str | Path) -> list[dict[str, Any]]:
+    """Load the processed full-context table.
+
+    Supported formats:
+    - CSV / TSV with a header row
+    - JSONL with one shot/context record per line
+    - JSON list of records, or JSON object with a common record-list key
+
+    This replaces the old candidate_sequence dependency: context packs are now
+    generated directly from full_context + shot_range.
+    """
+    file_path = Path(path)
+    if not file_path.exists():
+        raise FileNotFoundError(f"full_context file not found: {file_path}")
+
+    suffix = file_path.suffix.lower()
+    if suffix == ".jsonl":
+        return load_jsonl(file_path)
+
+    if suffix == ".json":
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return [row for row in data if isinstance(row, dict)]
+        if isinstance(data, dict):
+            for key in (
+                "records",
+                "rows",
+                "shots",
+                "full_context",
+                "full_context_rows",
+                "full_context_local_window",
+            ):
+                value = data.get(key)
+                if isinstance(value, list):
+                    return [row for row in value if isinstance(row, dict)]
+        raise ValueError(f"Unsupported JSON full_context shape: {file_path}")
+
+    delimiter = "\t" if suffix == ".tsv" else ","
+    with file_path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f, delimiter=delimiter)
+        return [dict(row) for row in reader]
+
+
 def find_candidate(candidate_jsonl: str | Path, sequence_id: str) -> dict[str, Any]:
-    """Return one candidate sequence by sequence_id."""
-    for record in load_jsonl(candidate_jsonl):
-        if record.get("sequence_id") == sequence_id:
-            return record
-    raise ValueError(f"sequence_id not found: {sequence_id}")
+    """Deprecated compatibility helper.
+
+    The active pipeline no longer reads candidate_sequence files. This remains so
+    older tests/imports fail with a clear message instead of an ImportError.
+    """
+    raise RuntimeError(
+        "candidate_sequence input has been removed from Step 00. "
+        "Build context packs from full_context + shot_range instead."
+    )
 
 
 def _truncate(text: Any, max_chars: int = 1200) -> str:
     if text is None:
         return ""
     value = str(text).strip()
-    if len(value) <= max_chars:
+    if max_chars <= 0 or len(value) <= max_chars:
         return value
     return value[: max_chars - 20].rstrip() + " ...[truncated]"
 
 
 def _safe_int(value: Any, default: int = -1) -> int:
     try:
-        return int(value)
+        if value is None or value == "":
+            return default
+        return int(float(str(value).strip()))
     except Exception:
         return default
 
 
-def _as_shots(candidate: dict[str, Any]) -> list[dict[str, Any]]:
-    shots = candidate.get("shots") or []
-    if isinstance(shots, str):
-        try:
-            parsed = json.loads(shots)
-            if isinstance(parsed, list):
-                return [shot for shot in parsed if isinstance(shot, dict)]
-        except Exception:
-            return []
-    if isinstance(shots, list):
-        return [shot for shot in shots if isinstance(shot, dict)]
-    return []
+def _normalize_key(value: str) -> str:
+    return value.strip().lower().replace(" ", "_")
 
 
+def _get(row: dict[str, Any], *keys: str) -> Any:
+    if not row:
+        return ""
+    normalized = {_normalize_key(str(key)): value for key, value in row.items()}
+    for key in keys:
+        value = normalized.get(_normalize_key(key))
+        if value is not None and str(value).strip() != "":
+            return value
+    return ""
+
+
+def _first_nonempty(rows: list[dict[str, Any]], *keys: str) -> str:
+    for row in rows:
+        value = _get(row, *keys)
+        if str(value).strip():
+            return str(value).strip()
+    return ""
+
+
+def _unique_join(values: list[str], sep: str = " | ") -> str:
+    seen: set[str] = set()
+    out: list[str] = []
+    for value in values:
+        text = str(value).strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+    return sep.join(out)
+
+
+def _row_shot_idx(row: dict[str, Any]) -> int:
+    return _safe_int(_get(row, "shot_idx", "shot_index", "shot", "idx"))
+
+
+def _row_shot_id(row: dict[str, Any]) -> str:
+    shot_id = str(_get(row, "shot_id", "shot_name")).strip()
+    if shot_id:
+        return shot_id
+    shot_idx = _row_shot_idx(row)
+    return f"shot_{shot_idx:04d}" if shot_idx >= 0 else ""
+
+
+def _row_movie_id(row: dict[str, Any]) -> str:
+    return str(_get(row, "movie_id", "imdb_id", "film_id")).strip()
+
+
+def _filter_movie(rows: list[dict[str, Any]], movie_id: str | None) -> list[dict[str, Any]]:
+    if not movie_id:
+        return rows
+    matched = [row for row in rows if _row_movie_id(row) in {"", movie_id}]
+    return matched or rows
+
+
+def _filter_shot_window(
+    rows: list[dict[str, Any]],
+    *,
+    start_shot_idx: int,
+    end_shot_idx: int,
+    window: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    target_lo = min(start_shot_idx, end_shot_idx)
+    target_hi = max(start_shot_idx, end_shot_idx)
+    local_lo = target_lo - max(window, 0)
+    local_hi = target_hi + max(window, 0)
+
+    sortable = [row for row in rows if _row_shot_idx(row) >= 0]
+    sortable.sort(key=_row_shot_idx)
+    target_rows = [row for row in sortable if target_lo <= _row_shot_idx(row) <= target_hi]
+    local_rows = [row for row in sortable if local_lo <= _row_shot_idx(row) <= local_hi]
+    return target_rows, local_rows
+
+
+def _row_script_text(row: dict[str, Any]) -> str:
+    explicit = str(_get(row, "aligned_script_text", "script_text", "script_action_text")).strip()
+    if explicit:
+        return explicit
+
+    pieces = [
+        str(_get(row, "prev_other_text", "prev_action_text")).strip(),
+        str(_get(row, "bridge_other_text", "bridge_action_text")).strip(),
+        str(_get(row, "aligned_script_dialogue", "dialogue", "dialogue_text")).strip(),
+        str(_get(row, "next_other_text", "next_action_text")).strip(),
+    ]
+    return " -- ".join(piece for piece in pieces if piece)
+
+
+def _join_row_text(rows: list[dict[str, Any]], *keys: str, sep: str = "\n") -> str:
+    values = []
+    for row in rows:
+        value = str(_get(row, *keys)).strip()
+        if value:
+            values.append(value)
+    return sep.join(values).strip()
+
+
+def _local_window_payload(rows: list[dict[str, Any]], max_chars: int) -> list[dict[str, Any]]:
+    payload: list[dict[str, Any]] = []
+    for row in rows:
+        payload.append(
+            {
+                "shot_id": _row_shot_id(row),
+                "shot_idx": _row_shot_idx(row),
+                "aligned_script_text": _truncate(_row_script_text(row), max_chars),
+            }
+        )
+    return payload
+
+
+def _infer_sequence_id(movie_id: str | None, start_shot_idx: int, end_shot_idx: int) -> str:
+    prefix = movie_id or "sequence"
+    return f"{prefix}:shot_{start_shot_idx:04d}-shot_{end_shot_idx:04d}"
+
+
+def _default_exact_transcript(target_rows: list[dict[str, Any]]) -> str:
+    subtitle = _join_row_text(target_rows, "subtitle_text", "subtitle", sep="\n")
+    if subtitle:
+        return subtitle
+    dialogue = _join_row_text(target_rows, "aligned_script_dialogue", "dialogue", "dialogue_text", sep="\n")
+    if dialogue:
+        return dialogue
+    return _unique_join([_row_script_text(row) for row in target_rows], sep="\n")
+
+
+def build_context_pack_from_shot_range(
+    full_context_rows: list[dict[str, Any]],
+    *,
+    start_shot_idx: int,
+    end_shot_idx: int,
+    movie_id: str | None = None,
+    movie_name: str | None = None,
+    sequence_id: str | None = None,
+    local_window: int = 3,
+    exact_transcript: str | None = None,
+    max_story_chars: int = 12000,
+    max_script_chars: int = 5000,
+    max_window_script_chars: int = 2500,
+) -> dict[str, Any]:
+    """Build a context pack directly from full_context + shot_range.
+
+    The output follows the lightweight `_context_pack_templete.json` shape and is
+    generated by json.dumps, so punctuation, quotes, and newlines are escaped
+    safely. Users should edit the shot_range in YAML instead of hand-writing JSON.
+    """
+    rows = _filter_movie(full_context_rows, movie_id)
+    target_rows, local_rows = _filter_shot_window(
+        rows,
+        start_shot_idx=start_shot_idx,
+        end_shot_idx=end_shot_idx,
+        window=local_window,
+    )
+    if not target_rows:
+        raise ValueError(
+            "No full_context rows matched shot_range "
+            f"{start_shot_idx}-{end_shot_idx}. Check configs/path_local.yaml."
+        )
+
+    inferred_movie_id = movie_id or _row_movie_id(target_rows[0]) or _row_movie_id(rows[0]) if rows else None
+    resolved_movie_name = (
+        movie_name
+        or _first_nonempty(rows, "movie_name", "movie_title", "title", "film_title")
+        or inferred_movie_id
+        or ""
+    )
+    resolved_sequence_id = sequence_id or _infer_sequence_id(inferred_movie_id, start_shot_idx, end_shot_idx)
+
+    storyline = _first_nonempty(
+        rows,
+        "storyline",
+        "movie_storyline",
+        "plot_summary",
+        "overview",
+        "movie_overview",
+    )
+    current_story_description = _first_nonempty(
+        target_rows + local_rows,
+        "current_story_description",
+        "story_description",
+        "local_story_description",
+        "scene_description",
+    )
+
+    full_story_description = _first_nonempty(
+        rows,
+        "full_story_description",
+        "full_story",
+        "full_plot_summary",
+    )
+    if not full_story_description:
+        full_story_description = _unique_join(
+            [str(_get(row, "story_description", "current_story_description")).strip() for row in rows],
+            sep=" | ",
+        )
+
+    current_script_text = _unique_join([_row_script_text(row) for row in local_rows], sep=" | ")
+    subtitle_text = _join_row_text(target_rows, "subtitle_text", "subtitle", sep="\n")
+    aligned_script_dialogue = _join_row_text(target_rows, "aligned_script_dialogue", "dialogue", "dialogue_text", sep="\n")
+    resolved_exact_transcript = (exact_transcript if exact_transcript is not None else _default_exact_transcript(target_rows)).strip()
+
+    return {
+        "movie_name": resolved_movie_name,
+        "movie_id": inferred_movie_id,
+        "sequence_id": resolved_sequence_id,
+        "shot_range": {
+            "start_shot_idx": start_shot_idx,
+            "end_shot_idx": end_shot_idx,
+            "shot_count": len(target_rows),
+        },
+        "storyline": _truncate(storyline, max_story_chars),
+        "current_story_description": _truncate(current_story_description, max_story_chars),
+        "current_script_text": _truncate(current_script_text, max_script_chars),
+        "subtitle_text": subtitle_text,
+        "aligned_script_dialogue": aligned_script_dialogue,
+        "exact_transcript": resolved_exact_transcript,
+        "full_story_description": _truncate(full_story_description, max_story_chars),
+        "full_context_local_window": _local_window_payload(local_rows, max_window_script_chars),
+    }
+
+
+# Backward-compatible alias for old imports. The old implementation used a
+# candidate record; the active Step 00 no longer calls this function.
+def build_actor_context_pack(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    raise RuntimeError(
+        "build_actor_context_pack(candidate, ...) has been replaced by "
+        "build_context_pack_from_shot_range(full_context_rows, shot_range=...)."
+    )
+
+
+# Backward-compatible alias. Prefer build_context_pack_from_shot_range.
 def load_full_context_window(
     full_context_csv: str | Path,
     movie_id: str,
@@ -65,283 +335,12 @@ def load_full_context_window(
     end_shot_idx: int,
     window: int = 2,
 ) -> list[dict[str, Any]]:
-    """
-    Load only a local shot window from the processed MovieNet full-context CSV.
-
-    This avoids sending the entire full-context file to the LLM while still giving
-    it enough story and staging information for actor-style annotation.
-    """
-    path = Path(full_context_csv)
-    if not path.exists() or path.stat().st_size == 0:
-        return []
-
-    rows: list[dict[str, Any]] = []
-    lo = start_shot_idx - window
-    hi = end_shot_idx + window
-
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row.get("movie_id") != movie_id:
-                continue
-            shot_idx = _safe_int(row.get("shot_idx"))
-            if lo <= shot_idx <= hi:
-                rows.append(row)
-
-    return rows
-
-
-def _candidate_blob(candidate: dict[str, Any], shots: list[dict[str, Any]]) -> str:
-    parts = [
-        str(candidate.get("prototype_label", "")),
-        str(candidate.get("script_action_preview", "")),
-    ]
-    for shot in shots:
-        parts.extend(
-            [
-                str(shot.get("subtitle_text", "")),
-                str(shot.get("aligned_script_dialogue", "")),
-                str(shot.get("prev_other_text", "")),
-                str(shot.get("bridge_other_text", "")),
-                str(shot.get("next_other_text", "")),
-            ]
-        )
-    return "\n".join(parts)
-
-
-def infer_scene_targets(candidate: dict[str, Any], shots: list[dict[str, Any]]) -> dict[str, list[str]]:
-    """
-    Infer a compact target hint list for the LLM prompt.
-
-    The result is only a hint, not a closed vocabulary. The LLM may still use a
-    concrete target that the keyword sweep missed, and the Maya stage can resolve
-    it with a manual target map later.
-    """
-    text = _candidate_blob(candidate, shots).lower()
-
-    objects: list[str] = []
-    keyword_targets = {
-        "crystal": "CRYSTAL",
-        "photograph": "PHOTOGRAPH",
-        "photo": "PHOTOGRAPH",
-        "picture": "PHOTOGRAPH",
-        "balloon": "BALLOON",
-        "medal": "MEDAL",
-        "door": "DOOR",
-        "throne": "THRONE",
-        "bag": "BAG",
-        "window": "WINDOW",
-        "wagon": "WAGON",
-        "chair": "CHAIR",
-        "table": "TABLE",
-        "book": "BOOK",
-        "letter": "LETTER",
-    }
-    for keyword, target in keyword_targets.items():
-        if keyword in text and target not in objects:
-            objects.append(target)
-
-    people: list[str] = []
-    for name in (
-        "DOROTHY",
-        "PROFESSOR",
-        "WIZARD",
-        "SCARECROW",
-        "TIN_MAN",
-        "LION",
-        "AUNT_EM",
-        "UNCLE_HENRY",
-        "TOTO",
-    ):
-        needle = name.lower().replace("_", " ")
-        if needle in text and name not in people:
-            people.append(name)
-
-    active_speakers = candidate.get("active_speakers") or []
-    for speaker in active_speakers:
-        if isinstance(speaker, str):
-            normalized = speaker.strip().upper().replace(" ", "_")
-            if normalized and normalized not in people:
-                people.append(normalized)
-
-    directions = [
-        "LISTENER",
-        "DOWN",
-        "DOWN_LEFT",
-        "DOWN_RIGHT",
-        "UP",
-        "UP_LEFT",
-        "UP_RIGHT",
-        "LEFT",
-        "RIGHT",
-    ]
-
-    return {
-        "people": people,
-        "objects": objects,
-        "directions": directions,
-    }
-
-
-def _extract_exact_transcript(shots: list[dict[str, Any]]) -> str:
-    """
-    Default exact transcript for annotation.
-
-    This is intentionally simple: use candidate shot subtitle_text. Users may
-    override or manually edit exact_transcript before running the LLM.
-    """
-    return "\n".join(
-        str(shot.get("subtitle_text", "")).strip()
-        for shot in shots
-        if str(shot.get("subtitle_text", "")).strip()
-    ).strip()
-
-
-def _join_shot_field(shots: list[dict[str, Any]], field: str) -> str:
-    return "\n".join(
-        str(shot.get(field, "")).strip()
-        for shot in shots
-        if str(shot.get(field, "")).strip()
-    ).strip()
-
-
-def _first_story_description(full_context_rows: list[dict[str, Any]]) -> str:
-    for row in full_context_rows:
-        value = row.get("story_description")
-        if value:
-            return str(value)
-    return ""
-
-
-def build_target_context(candidate: dict[str, Any], scene_targets: dict[str, list[str]]) -> dict[str, Any]:
-    """Build semantic-to-concrete target hints for the LLM and exporter."""
-    active_speakers = [
-        str(s).strip().upper().replace(" ", "_")
-        for s in (candidate.get("active_speakers") or [])
-        if str(s).strip()
-    ]
-    speaking_character = active_speakers[0] if active_speakers else None
-
-    people = list(scene_targets.get("people", []))
-    objects = list(scene_targets.get("objects", []))
-
-    listener_candidates = [p for p in people if p != speaking_character]
-    primary_listener = listener_candidates[0] if listener_candidates else None
-
-    primary_object = None
-    if "CRYSTAL" in objects:
-        primary_object = "CRYSTAL"
-    elif len(objects) == 1:
-        primary_object = objects[0]
-
-    role_map: dict[str, str] = {}
-    if speaking_character:
-        role_map["SPEAKER"] = speaking_character
-    if primary_listener:
-        role_map["LISTENER"] = primary_listener
-    if primary_object:
-        role_map["PRIMARY_OBJECT"] = primary_object
-
-    notes: list[str] = []
-    if primary_listener:
-        notes.append(f"LISTENER most likely refers to {primary_listener}.")
-    if objects:
-        notes.append(
-            "Object targets are hints only; prefer specific targets when inferable, "
-            "but generic OBJECT may be used when intentionally unresolved."
-        )
-
-    return {
-        "speaking_character": speaking_character,
-        "primary_listener": primary_listener,
-        "listener_candidates": listener_candidates,
-        "object_candidates": objects,
-        "direction_targets": scene_targets.get("directions", []),
-        "role_map": role_map,
-        "notes": notes,
-    }
-
-
-def build_actor_context_pack(
-    candidate: dict[str, Any],
-    full_context_rows: list[dict[str, Any]] | None = None,
-    *,
-    exact_transcript: str | None = None,
-    max_story_chars: int = 900,
-    max_action_chars: int = 900,
-    max_dialogue_chars: int = 1200,
-) -> dict[str, Any]:
-    """Build the compact context object that will be injected into the LLM prompt."""
-    full_context_rows = full_context_rows or []
-    shots = _as_shots(candidate)
-    default_exact_transcript = _extract_exact_transcript(shots)
-    scene_targets = infer_scene_targets(candidate, shots)
-    target_context = build_target_context(candidate, scene_targets)
-
-    subtitle_text = _join_shot_field(shots, "subtitle_text")
-    aligned_script_dialogue = _join_shot_field(shots, "aligned_script_dialogue")
-
-    candidate_shots: list[dict[str, Any]] = []
-    for shot in shots:
-        candidate_shots.append(
-            {
-                "shot_idx": shot.get("shot_idx"),
-                "shot_id": shot.get("shot_id"),
-                "time": {
-                    "start": shot.get("shot_start_time_hms"),
-                    "end": shot.get("shot_end_time_hms"),
-                },
-                "subtitle_text": _truncate(shot.get("subtitle_text"), max_dialogue_chars),
-                "aligned_script_dialogue": _truncate(shot.get("aligned_script_dialogue"), max_dialogue_chars),
-                "aligned_speakers": shot.get("aligned_speakers"),
-                "prev_other_text": _truncate(shot.get("prev_other_text"), max_action_chars),
-                "bridge_other_text": _truncate(shot.get("bridge_other_text"), max_action_chars),
-                "next_other_text": _truncate(shot.get("next_other_text"), max_action_chars),
-                "match_score": shot.get("match_score"),
-            }
-        )
-
-    full_window: list[dict[str, Any]] = []
-    for row in full_context_rows:
-        full_window.append(
-            {
-                "shot_idx": row.get("shot_idx"),
-                "shot_id": row.get("shot_id"),
-                "time": {
-                    "start": row.get("shot_start_time_hms"),
-                    "end": row.get("shot_end_time_hms"),
-                },
-                "subtitle_text": _truncate(row.get("subtitle_text"), max_dialogue_chars),
-                "aligned_script_dialogue": _truncate(row.get("aligned_script_dialogue"), max_dialogue_chars),
-                "aligned_speakers": row.get("aligned_speakers"),
-                "prev_other_text": _truncate(row.get("prev_other_text"), max_action_chars),
-                "next_other_text": _truncate(row.get("next_other_text"), max_action_chars),
-                "match_score": row.get("match_score"),
-            }
-        )
-
-    return {
-        "movie_id": candidate.get("movie_id"),
-        "sequence_id": candidate.get("sequence_id"),
-        "prototype_label": candidate.get("prototype_label"),
-        "time": {
-            "start": candidate.get("start_time_hms"),
-            "end": candidate.get("end_time_hms"),
-            "duration_sec": candidate.get("total_sec"),
-        },
-        "shot_range": {
-            "start_shot_idx": candidate.get("start_shot_idx"),
-            "end_shot_idx": candidate.get("end_shot_idx"),
-            "shot_count": candidate.get("shot_count"),
-        },
-        "active_speakers": candidate.get("active_speakers"),
-        "story_card": _truncate(_first_story_description(full_context_rows), max_story_chars),
-        "script_action_preview": _truncate(candidate.get("script_action_preview"), 1800),
-        "subtitle_text": subtitle_text,
-        "aligned_script_dialogue": aligned_script_dialogue,
-        "scene_targets": scene_targets,
-        "target_context": target_context,
-        "exact_transcript": (exact_transcript if exact_transcript is not None else default_exact_transcript).strip(),
-        "candidate_shots": candidate_shots,
-        "full_context_local_window": full_window,
-    }
+    rows = load_full_context_records(full_context_csv)
+    rows = _filter_movie(rows, movie_id)
+    _, local_rows = _filter_shot_window(
+        rows,
+        start_shot_idx=start_shot_idx,
+        end_shot_idx=end_shot_idx,
+        window=window,
+    )
+    return local_rows

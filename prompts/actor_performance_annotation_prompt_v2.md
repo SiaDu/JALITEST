@@ -32,7 +32,7 @@ Output exactly three sections, in this order:
 Keep the analysis compact and practical. Include:
 
 scene_constraints:
-- available people / objects / gaze targets
+- available people / objects / gaze targets inferred from the transcript and context
 
 social_interaction_structure: 
 - who is speaking, who is listening
@@ -52,6 +52,7 @@ performance_strategy:
 [ANNOTATION]
 
 Insert readable performance tags into the original exact transcript.
+Use the performance rules and JALI emotion options from [EXTRA CONFIG].
 
 [REASONS]
 

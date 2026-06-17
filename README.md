@@ -381,9 +381,10 @@ Closing tags are allowed in readable actor annotation. The parser strips the clo
 
 ```bash
 # 00. Build context/prompt, then inspect exact_transcript.
-bash scripts/00_build_actor_prompt.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
-  --overwrite
+#bash scripts/00_build_actor_prompt.sh \
+#  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+#  --overwrite
+bash scripts/00_build_actor_prompt.sh --overwrite
 
 # 01. Run LLM once.
 bash scripts/01_run_actor_llm.sh \

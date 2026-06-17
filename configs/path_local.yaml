@@ -10,6 +10,19 @@ jali:
   transcript_file: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.txt
   textgrid_file: scenes/sounds_proto1/Jali_proto_candidate_001_ProfessorCrystal.Textgrid
 
+# Per-clip context-pack settings.
+# This is intentionally local/scene-specific, so it lives here rather than in
+# configs/base.yaml. base.yaml remains only for Step 01 LLM runtime settings.
+context_pack:
+  movie_id: tt0032138
+  movie_name: The Wizard of Oz
+  sequence_id: Jali_proto_candidate_001_ProfessorCrystal
+  full_context_file: data/processed/full_context/tt0032138__full_context.csv
+  local_window: 3
+  shot_range:
+    start_shot_idx: 38
+    end_shot_idx: 38
+
 textgrid:
   tier_name: words
   output_dir: data/processed/textgrid
