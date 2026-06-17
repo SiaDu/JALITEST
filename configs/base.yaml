@@ -60,14 +60,6 @@ gaze_script:
       - GAZE
       - GLANCE
       - AVERT
-    rules:
-      - "Only add a tag when the gaze, mask, or heart state changes."
-      - "Do not tag every word."
-      - "Use word-level reasoning but sparse phrase-level state changes."
-      - "Prefer mask for visible performance."
-      - "Use heart only when inner state differs from visible mask."
-      - "Do not output JSON."
-      - "Do not use closing tags."
 
   intent_policy: open_vocab
   allowed_intents: null

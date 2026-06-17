@@ -13,16 +13,16 @@ The annotation will later be compiled by code into:
 
 Use the context as evidence, but annotate only the exact transcript. If the context and exact transcript disagree, preserve and annotate the exact transcript.
 
-Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OCR errors, and unusual words. For example, if the transcript says "lsis" or "lnfinite", keep those strings exactly.
+Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OCR errors, and unusual words.
+
+[EXACT TRANSCRIPT - ANNOTATE THIS ONLY]
+{{transcript}}
 
 [CONTEXT PACK]
 {{context_pack}}
 
 [EXTRA CONFIG]
 {{extra_config}}
-
-[EXACT TRANSCRIPT - ANNOTATE THIS ONLY]
-{{transcript}}
 
 Output exactly three sections, in this order:
 
