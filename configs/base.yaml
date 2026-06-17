@@ -13,7 +13,8 @@ llm:
   provider: openai
   model: gpt-5-mini
   temperature: 0.2
-  max_output_tokens: 3000
+  max_output_tokens: 8000
+  reasoning_effort: low
   api_key_env: OPENAI_API_KEY
 
 shot_level:

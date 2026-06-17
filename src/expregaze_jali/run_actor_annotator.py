@@ -116,17 +116,24 @@ def _build_openai_request(prompt: str, llm_config: dict[str, Any]) -> dict[str, 
     model = str(llm_config.get("model") or "gpt-5-mini")
     temperature = _coerce_temperature(llm_config.get("temperature"))
     max_output_tokens = _coerce_max_output_tokens(llm_config.get("max_output_tokens"))
+    reasoning_effort = llm_config.get("reasoning_effort")
 
     request: dict[str, Any] = {
         "model": model,
         "input": prompt,
     }
+
     if temperature is not None and _supports_temperature(model):
         request["temperature"] = temperature
     elif temperature is not None:
         print(f"Skipping unsupported temperature parameter for model {model!r}.")
+
     if max_output_tokens is not None:
         request["max_output_tokens"] = max_output_tokens
+
+    if reasoning_effort:
+        request["reasoning"] = {"effort": str(reasoning_effort)}
+
     return request
 
 
@@ -354,16 +361,39 @@ def main() -> None:
     llm_config = _load_llm_config(args.base_config)
     model = str(llm_config.get("model") or "gpt-5-mini")
     response = _call_openai(prompt, llm_config)
-    annotation_text = _response_output_text(response)
-    if not annotation_text.strip():
-        raise RuntimeError("LLM response did not contain output text.")
 
-    _write_text(output_annotation, annotation_text, overwrite=args.overwrite)
+    # Always save meta first, even if the response is incomplete.
     _write_json(
         output_meta,
         _response_meta(response, model=model, prompt_path=output_prompt, output_path=output_annotation),
         overwrite=args.overwrite,
     )
+
+    status = getattr(response, "status", None)
+    if status == "incomplete":
+        details = getattr(response, "incomplete_details", None)
+        reason = getattr(details, "reason", None) if details is not None else None
+        raise RuntimeError(
+            f"LLM response incomplete before annotation was finished. "
+            f"reason={reason!r}. Increase llm.max_output_tokens and/or lower llm.reasoning_effort. "
+            f"Meta saved to: {output_meta}"
+        )
+
+    annotation_text = _response_output_text(response)
+    if not annotation_text.strip():
+        raise RuntimeError("LLM response did not contain output text.")
+
+    missing_sections = [
+        section for section in ("[ANALYZE]", "[ANNOTATION]", "[REASONS]")
+        if section not in annotation_text
+    ]
+    if missing_sections:
+        raise RuntimeError(
+            f"LLM response missing required sections: {missing_sections}. "
+            f"Not writing partial annotation. Meta saved to: {output_meta}"
+        )
+
+    _write_text(output_annotation, annotation_text, overwrite=args.overwrite)
     print(f"Annotation: {output_annotation}")
     print(f"LLM meta: {output_meta}")
 

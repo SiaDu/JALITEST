@@ -2,15 +2,46 @@
   "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
   "events": [],
   "diagnostics": {
-    "missing_reasons": [],
-    "parser_warnings": [
-      "missing section: ANNOTATION",
-      "missing section: REASONS"
+    "missing_reasons": [
+      "g1",
+      "m1",
+      "g2",
+      "m2",
+      "g3",
+      "m3",
+      "g4",
+      "m4",
+      "g5",
+      "m5",
+      "g6",
+      "g7",
+      "m6"
     ],
-    "transcript_word_count": 0,
+    "parser_warnings": [],
+    "transcript_word_count": 90,
     "textgrid_word_count": 81,
     "alignment_warnings": [
-      "token count mismatch: transcript=0 textgrid=81"
+      "token count mismatch: transcript=90 textgrid=81",
+      "token mismatch at 9: transcript='m1' textgrid='this'",
+      "token mismatch at 10: transcript='this' textgrid='is'",
+      "token mismatch at 11: transcript='is' textgrid='the'",
+      "token mismatch at 12: transcript='the' textgrid='same'",
+      "token mismatch at 13: transcript='same' textgrid='genuine'",
+      "token mismatch at 14: transcript='genuine' textgrid='magic'",
+      "token mismatch at 15: transcript='magic' textgrid='authentic'",
+      "token mismatch at 16: transcript='authentic' textgrid='crystal'",
+      "token mismatch at 17: transcript='crystal' textgrid='used'",
+      "token mismatch at 18: transcript='m2' textgrid='by'",
+      "token mismatch at 19: transcript='used' textgrid='the'",
+      "token mismatch at 20: transcript='by' textgrid='priests'",
+      "token mismatch at 21: transcript='the' textgrid='of'",
+      "token mismatch at 22: transcript='priests' textgrid='lsis'",
+      "token mismatch at 23: transcript='of' textgrid='and'",
+      "token mismatch at 24: transcript='lsis' textgrid='osiris'",
+      "token mismatch at 25: transcript='and' textgrid='in'",
+      "token mismatch at 26: transcript='osiris' textgrid='the'",
+      "token mismatch at 27: transcript='in' textgrid='days'",
+      "additional token mismatches omitted"
     ],
     "unresolved_events": []
   }
