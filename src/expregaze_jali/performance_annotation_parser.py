@@ -15,6 +15,11 @@ SECTION_PATTERN = re.compile(r"^\[(ANALYZE|ANNOTATION|REASONS)\]\s*$", re.MULTIL
 #   bs01 = blink suppression
 TAG_ID_PATTERN = r"(?:pb|bs|[gmhl])\d+"
 ANY_TAG_PATTERN = re.compile(rf"</({TAG_ID_PATTERN})>|<({TAG_ID_PATTERN})=([^<>]+)>")
+# Recovery path for LLM mistakes such as:
+#   g01=GAZE-CHARACTER_DOROTHY Hello
+# The prompt asks for <g01=...>, but this keeps Step 03 functional if the LLM
+# drops angle brackets. The recovered tag is treated as an opening tag only.
+BARE_TAG_PATTERN = re.compile(rf"(?<![</\w])({TAG_ID_PATTERN})=([A-Za-z0-9_./+-]+)")
 REASON_COLON_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})(?:\s*=\s*[^:]+)?\s*:\s*(.*?)\s*$")
 REASON_HEADER_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})(?:\s*=\s*(.*?))?\s*$")
 
@@ -62,6 +67,43 @@ def _tag_prefix(tag_id: str) -> str:
 def _tag_type(tag_id: str) -> str:
     prefix = _tag_prefix(tag_id)
     return TAG_TYPES[prefix]
+
+
+def _normalize_bare_opening_tags(annotation_text: str) -> tuple[str, list[dict[str, Any]]]:
+    """Convert bare `g01=value` style mistakes into `<g01=value>` tags.
+
+    The canonical format is XML-like angle tags. This recovery only runs inside
+    the [ANNOTATION] section, so reason lines such as `g01=VALUE: reason` are not
+    touched. It removes accidental bare tag tokens from the clean transcript and
+    prevents TextGrid alignment from trying to align fake words like `g01`.
+    """
+    normalized_parts: list[str] = []
+    diagnostics: list[dict[str, Any]] = []
+    raw_pos = 0
+
+    for match in BARE_TAG_PATTERN.finditer(annotation_text):
+        tag_id = match.group(1)
+        value = match.group(2)
+        replacement = f"<{tag_id}={value}>"
+        normalized_parts.append(annotation_text[raw_pos : match.start()])
+        normalized_parts.append(replacement)
+        diagnostics.append(
+            {
+                "id": tag_id,
+                "value": value,
+                "text": match.group(0),
+                "replacement": replacement,
+                "raw_start": match.start(),
+                "raw_end": match.end(),
+            }
+        )
+        raw_pos = match.end()
+
+    if not diagnostics:
+        return annotation_text, []
+
+    normalized_parts.append(annotation_text[raw_pos:])
+    return "".join(normalized_parts), diagnostics
 
 
 def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]]]:
@@ -185,7 +227,8 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     """
     source_text = _read_text(path)
     sections, warnings = _parse_sections(source_text)
-    annotation_text = sections.get("ANNOTATION", "")
+    raw_annotation_text = sections.get("ANNOTATION", "")
+    annotation_text, normalized_bare_tags = _normalize_bare_opening_tags(raw_annotation_text)
     clean_transcript, tags, stripped_closing_tags = _strip_tags_and_collect(annotation_text)
     reasons = _parse_reasons(sections.get("REASONS", ""))
 
@@ -196,10 +239,17 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     for tag in tags:
         tag["reason"] = reasons.get(tag["id"], "")
 
+    if normalized_bare_tags:
+        warnings.append(
+            f"normalized {len(normalized_bare_tags)} bare annotation tags; "
+            "future LLM output should use <id=value> angle-tag syntax"
+        )
+
     diagnostics = {
         "warnings": warnings,
         "missing_reasons": missing_reasons,
         "extra_reasons": extra_reasons,
+        "normalized_bare_tags": normalized_bare_tags,
         "stripped_closing_tags": stripped_closing_tags,
         "tag_count": len(tags),
         "tag_type_counts": {
@@ -213,6 +263,7 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         "source_text": source_text,
         "sections": sections,
         "analyze": sections.get("ANALYZE", ""),
+        "raw_annotation_text": raw_annotation_text,
         "annotation_text": annotation_text,
         "reasons_text": sections.get("REASONS", ""),
         "reasons": reasons,

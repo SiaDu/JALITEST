@@ -53,6 +53,9 @@ def _debug_payload(parsed: dict[str, Any], compiled: dict[str, Any], resolved: d
             "[CLEAN_TRANSCRIPT]",
             parsed.get("clean_transcript", ""),
             "",
+            "[NORMALIZED_ANNOTATION]",
+            parsed.get("annotation_text", ""),
+            "",
             "[FULL_ANNOTATION]",
             parsed.get("source_text", ""),
         ]
@@ -75,6 +78,7 @@ def compile_outputs(
     resolved["diagnostics"] = {
         "missing_reasons": parsed.get("diagnostics", {}).get("missing_reasons", []),
         "parser_warnings": parsed.get("diagnostics", {}).get("warnings", []),
+        "normalized_bare_tags": parsed.get("diagnostics", {}).get("normalized_bare_tags", []),
         "stripped_closing_tags": parsed.get("diagnostics", {}).get("stripped_closing_tags", []),
         **resolved.get("diagnostics", {}),
     }
@@ -141,9 +145,12 @@ def main() -> None:
 
     gaze_events = json.loads(outputs["gaze_events_json"].read_text(encoding="utf-8"))
     diagnostics = gaze_events.get("diagnostics", {})
+    normalized_bare_tags = diagnostics.get("normalized_bare_tags", [])
     unresolved = diagnostics.get("unresolved_events", [])
     unresolved_targets = diagnostics.get("unresolved_targets", [])
     alignment_warnings = diagnostics.get("alignment_warnings", [])
+    if normalized_bare_tags:
+        print(f"WARNING normalized bare annotation tags: {len(normalized_bare_tags)}")
     if unresolved:
         print(f"WARNING unresolved timing events: {len(unresolved)}")
     if unresolved_targets:

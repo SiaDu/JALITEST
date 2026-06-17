@@ -1,13 +1,26 @@
 performance_rules:
   schema_version: performance_rules_v1
-  
+
   performance_annotation:
     General rules:
-    - ALWAYS set the lid_state tag, gaze tag and mask tag at the beginning of each performance segment.
+    - All [ANNOTATION] tags MUST use XML-like angle syntax: <tagID=value>text</tagID>.
+    - Never write bare tags such as `g01=GAZE-CHARACTER_DOROTHY text`; bare tags become fake transcript words and break TextGrid alignment.
+    - ALWAYS set the lid_state tag, gaze tag and mask tag at the beginning of each performance segment, using angle tags.
     - Add tags only when the performance state or local acting beat changes.
     - Every tag must be visually meaningful and executable.
     - Every tag must be explained in [REASONS].
-    
+    - Prefer closing tags for local phrase-level beats. Opening-only state tags are allowed only when they should continue until the next same-type tag.
+
+    tag_syntax_examples:
+      correct:
+      - "<l01=-2>That's right.</l01>"
+      - "<g01=GAZE-CHARACTER_DOROTHY>Here -- sit right down here.</g01>"
+      - "<m01=Friendly-70>Ha ha!</m01>"
+      incorrect:
+      - "l01=-2 That's right."
+      - "g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here."
+      - "m01=Friendly-70 Ha ha!"
+
     tag_id_prefixes:
       gaze: g
       mask: m
@@ -45,7 +58,7 @@ performance_rules:
 
     Lid / blink rules:
     - Do not annotate ordinary regulatory blinks.
-    - ALWAYS set lid_state scale tag at begining.
+    - ALWAYS set lid_state scale tag at beginning.
     - Use lid_state tags change only for sustained eyelid baseline changes, not as a second emotion label.
     - Use performative_blink only when the blink itself is an acting choice.
     - Use blink_suppression only when not blinking is the acting choice.

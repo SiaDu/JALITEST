@@ -59,6 +59,29 @@ def _context_lists(context_pack: dict[str, Any] | None) -> tuple[list[str], list
     return people, objects, directions, role_map
 
 
+def _typed_target_resolution(target: str, people: list[str], objects: list[str], directions: list[str]) -> dict[str, Any] | None:
+    typed_prefixes = (
+        ("CHARACTER_", "CHARACTER", people, "typed_character_target"),
+        ("PERSON_", "CHARACTER", people, "typed_person_target"),
+        ("OBJECT_", "OBJECT", objects, "typed_object_target"),
+        ("PROP_", "OBJECT", objects, "typed_prop_target"),
+        ("DIRECTION_", "DIRECTION", directions, "typed_direction_target"),
+    )
+    for prefix, role, known_values, source in typed_prefixes:
+        if not target.startswith(prefix):
+            continue
+        label = target[len(prefix) :].strip("_")
+        if not label:
+            return None
+        return {
+            "target_role": role,
+            "target_label": label,
+            "target_needs_resolution": False,
+            "target_resolution_source": f"{source}.scene_targets" if label in known_values else source,
+        }
+    return None
+
+
 def resolve_gaze_target(raw_target: str, context_pack: dict[str, Any] | None = None) -> dict[str, Any]:
     """Resolve semantic gaze target to a concrete target label when possible.
 
@@ -84,6 +107,10 @@ def resolve_gaze_target(raw_target: str, context_pack: dict[str, Any] | None = N
             "target_needs_resolution": False,
             "target_resolution_source": "target_context.role_map",
         }
+
+    typed_resolution = _typed_target_resolution(target, people, objects, directions)
+    if typed_resolution is not None:
+        return typed_resolution
 
     if target == "OBJECT":
         if len(objects) == 1:

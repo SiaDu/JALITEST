@@ -1,3 +1,62 @@
+[SUMMARY]
+{
+  "annotation_path": "data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__performance_annotation.txt",
+  "tag_count": 0,
+  "event_count": 0,
+  "diagnostics": {
+    "parser": {
+      "warnings": [],
+      "missing_reasons": [],
+      "extra_reasons": [],
+      "stripped_closing_tags": [],
+      "tag_count": 0,
+      "tag_type_counts": {
+        "blink_suppression": 0,
+        "gaze": 0,
+        "heart": 0,
+        "lid_state": 0,
+        "mask": 0,
+        "performative_blink": 0
+      }
+    },
+    "resolver": {
+      "missing_reasons": [],
+      "parser_warnings": [],
+      "stripped_closing_tags": [],
+      "transcript_word_count": 103,
+      "textgrid_word_count": 85,
+      "alignment_warnings": [
+        "token count mismatch: transcript=103 textgrid=85",
+        "token mismatch at 0: transcript='l' textgrid=\"that's\"",
+        "token mismatch at 1: transcript='2' textgrid='right'",
+        "token mismatch at 2: transcript=\"that's\" textgrid='here'",
+        "token mismatch at 3: transcript='right' textgrid='sit'",
+        "token mismatch at 4: transcript='ggaze' textgrid='right'",
+        "token mismatch at 5: transcript='character_dorothy' textgrid='down'",
+        "token mismatch at 7: transcript='sit' textgrid=\"that's\"",
+        "token mismatch at 8: transcript='right' textgrid='it'",
+        "token mismatch at 9: transcript='down' textgrid='ha'",
+        "token mismatch at 10: transcript='here' textgrid='ha'",
+        "token mismatch at 11: transcript='mfriendly' textgrid='this'",
+        "token mismatch at 12: transcript='75' textgrid='this'",
+        "token mismatch at 13: transcript=\"that's\" textgrid='is'",
+        "token mismatch at 14: transcript='it' textgrid='the'",
+        "token mismatch at 15: transcript='pbdouble_blink' textgrid='same'",
+        "token mismatch at 16: transcript='ha' textgrid='genuine'",
+        "token mismatch at 17: transcript='ha' textgrid='magic'",
+        "token mismatch at 18: transcript='mscheming' textgrid='authentic'",
+        "token mismatch at 19: transcript='60' textgrid='crystal'",
+        "additional token mismatches omitted"
+      ],
+      "unresolved_events": []
+    }
+  }
+}
+
+[CLEAN_TRANSCRIPT]
+[l-2] That's right. [gGAZE-CHARACTER_DOROTHY] Here -- sit right down here. [mFriendly-75] That's it. [pbDOUBLE_BLINK] Ha ha! [mScheming-60] This -- this is the same genuine, magic, authentic crystal [gGAZE-OBJECT_CRYSTAL] used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. [mScheming-60] Now, you -- you'd better close your eyes, my child, for a moment -- [pbEYE_CLOSE_HOLD] [gGAZE-CHARACTER_DOROTHY] in order to be better in tune with the infinite. [mFriendly-65] We -- we can't do these things without....
+
+[FULL_ANNOTATION]
 [ANALYZE]
 
 scene_constraints:

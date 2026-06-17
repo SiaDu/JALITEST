@@ -15,8 +15,8 @@
 {"word": "the", "norm": "the", "start": 6.34, "end": 6.44}
 {"word": "same", "norm": "same", "start": 6.44, "end": 6.84}
 {"word": "genuine", "norm": "genuine", "start": 6.84, "end": 7.53}
-{"word": "magic", "norm": "magic", "start": 7.9, "end": 8.559999}
-{"word": "authentic", "norm": "authentic", "start": 8.669999, "end": 9.39}
+{"word": "magic", "norm": "magic", "start": 7.9, "end": 8.57}
+{"word": "authentic", "norm": "authentic", "start": 8.67, "end": 9.39}
 {"word": "crystal", "norm": "crystal", "start": 9.39, "end": 9.959999}
 {"word": "used", "norm": "used", "start": 10.35, "end": 10.759999}
 {"word": "by", "norm": "by", "start": 10.759999, "end": 10.96}
@@ -30,13 +30,13 @@
 {"word": "the", "norm": "the", "start": 12.98, "end": 13.089999}
 {"word": "days", "norm": "days", "start": 13.089999, "end": 13.440001}
 {"word": "of", "norm": "of", "start": 13.440001, "end": 13.53}
-{"word": "the", "norm": "the", "start": 13.53, "end": 13.63}
-{"word": "pharaohs", "norm": "pharaohs", "start": 13.63, "end": 14.17}
-{"word": "of", "norm": "of", "start": 14.17, "end": 14.3}
+{"word": "the", "norm": "the", "start": 13.53, "end": 13.639999}
+{"word": "pharaohs", "norm": "pharaohs", "start": 13.639999, "end": 14.169999}
+{"word": "of", "norm": "of", "start": 14.169999, "end": 14.3}
 {"word": "egypt", "norm": "egypt", "start": 14.3, "end": 14.779999}
 {"word": "in", "norm": "in", "start": 15.299999, "end": 15.449999}
 {"word": "which", "norm": "which", "start": 15.449999, "end": 15.79}
-{"word": "cleopatra", "norm": "cleopatra", "start": 16.01, "end": 16.73}
+{"word": "cleopatra", "norm": "cleopatra", "start": 16.02, "end": 16.73}
 {"word": "first", "norm": "first", "start": 16.73, "end": 17.029999}
 {"word": "saw", "norm": "saw", "start": 17.029999, "end": 17.249998}
 {"word": "the", "norm": "the", "start": 17.249998, "end": 17.4}
@@ -47,7 +47,7 @@
 {"word": "and", "norm": "and", "start": 18.790001, "end": 18.959999}
 {"word": "marc", "norm": "marc", "start": 18.959999, "end": 19.299999}
 {"word": "anthony", "norm": "anthony", "start": 19.299999, "end": 19.789999}
-{"word": "and", "norm": "and", "start": 19.789999, "end": 20.169998}
+{"word": "and", "norm": "and", "start": 19.789999, "end": 20.179998}
 {"word": "and", "norm": "and", "start": 20.559999, "end": 20.82}
 {"word": "so", "norm": "so", "start": 20.82, "end": 21.039999}
 {"word": "on", "norm": "on", "start": 21.039999, "end": 21.269999}

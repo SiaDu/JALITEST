@@ -9,6 +9,6 @@
   "total_interval_count": 124,
   "skipped_interval_count": 39,
   "word_count": 85,
-  "words_jsonl": "data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__words.jsonl",
-  "words_csv": "data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__words.csv"
+  "words_jsonl": "/home/sia/JaliTest/data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__words.jsonl",
+  "words_csv": "/home/sia/JaliTest/data/processed/textgrid/Jali_proto_candidate_001_ProfessorCrystal__words.csv"
 }
