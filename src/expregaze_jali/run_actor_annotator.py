@@ -47,7 +47,10 @@ DEFAULT_BASE_CONFIG = Path("configs/base.yaml")
 DEFAULT_JALI_OPTIONS = Path("configs/jali_emotion_options.yaml")
 DEFAULT_LLM_PROCESS_DIR = Path("data/processed/gaze_script/llm_process")
 DEFAULT_COMPILED_OUTPUT_DIR = Path("data/processed/gaze_script")
+DEFAULT_OUTPUT_DIR = DEFAULT_LLM_PROCESS_DIR  # backwards-compatible alias
 DEFAULT_WORDS_DIR = Path("data/processed/textgrid")
+
+
 
 
 def _read_yaml(path: str | Path) -> dict[str, Any]:
@@ -234,7 +237,9 @@ def _compile_outputs(
     clip_name: str,
     output_dir: Path,
     overwrite: bool,
+    debug_dir: Path | None = None,
 ) -> dict[str, Path]:
+    debug_dir = debug_dir or output_dir
     parsed = parse_performance_annotation(annotation_path)
     compiled = compile_state_change_events(parsed)
     resolved = resolve_events_with_textgrid(compiled, load_words_jsonl(words_jsonl))
@@ -252,7 +257,7 @@ def _compile_outputs(
     annotated_for_jali = output_dir / f"{clip_name}__annotated_for_jali.txt"
     gaze_events_json = output_dir / f"{clip_name}__gaze_events_resolved.json"
     actor_overlay_json = output_dir / f"{clip_name}__actor_overlay_events.json"
-    debug_full_annotation = output_dir / f"{clip_name}__debug_full_annotation.txt"
+    debug_full_annotation = debug_dir / f"{clip_name}__debug_full_annotation.txt"
 
     _write_text(annotated_for_jali, jali_text, overwrite=overwrite)
     _write_json(gaze_events_json, gaze_events, overwrite=overwrite)
@@ -285,7 +290,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--base-config", type=Path, default=DEFAULT_BASE_CONFIG)
     parser.add_argument("--jali-emotion-options", type=Path, default=DEFAULT_JALI_OPTIONS)
     parser.add_argument("--profile", choices=["mvp", "full_actor"], default="full_actor")
-    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--output-dir", type=Path, default=None, help="Deprecated alias for --llm-process-dir.")
+    parser.add_argument("--llm-process-dir", type=Path, default=DEFAULT_LLM_PROCESS_DIR)
+    parser.add_argument("--compiled-output-dir", type=Path, default=DEFAULT_COMPILED_OUTPUT_DIR)
     parser.add_argument("--output-prompt", type=Path, default=None)
     parser.add_argument("--output-context-pack", type=Path, default=None)
     parser.add_argument("--output-annotation", type=Path, default=None)
@@ -325,7 +332,7 @@ def main() -> None:
         extra_config=extra_config,
     )
 
-    output_dir = args.output_dir
+    output_dir = args.output_dir or args.llm_process_dir
     output_prompt = args.output_prompt or output_dir / f"{args.sequence_id}__actor_prompt.txt"
     output_context = args.output_context_pack or output_dir / f"{args.sequence_id}__context_pack.json"
     output_annotation = args.output_annotation or output_dir / f"{args.sequence_id}__performance_annotation.txt"
@@ -366,8 +373,9 @@ def main() -> None:
             annotation_path=output_annotation,
             words_jsonl=words_jsonl,
             clip_name=args.sequence_id,
-            output_dir=output_dir,
+            output_dir=args.compiled_output_dir,
             overwrite=args.overwrite,
+            debug_dir=output_dir,
         )
         for label, path in outputs.items():
             print(f"{label}: {path}")

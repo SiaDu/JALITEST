@@ -1,0 +1,16 @@
+[ANALYZE]
+
+scene_constraints:
+- available people / objects / gaze targets: LISTENER (Dorothy), OBJECT (CRYSTAL), CHARACTER (AUNT_EM referenced in context but not in transcript), generic directions allowed (UP, UP_LEFT, UP_RIGHT, DOWN, LEFT, RIGHT).
+- camera, staging, or shot constraints if available: medium-long shot -> professor and Dorothy moving; camera pans as they cross to wagon; close-up / photograph insert follows this speech (so professor can shift gaze between child and crystal and make small imaginative glances).
+- what information is missing or uncertain: exact timing of each phrase and micro-saccades; whether Dorothy is always directly in front of him (assume primary LISTENER target); eyelid/blink baseline not provided (lid tags disabled).
+
+story_context:
+- what the character knows: Professor Marvel is a showman who recognizes Dorothy ran away; he knows how to manipulate a child with a mix of charm and pseudo-mysticism.
+- what the character wants: to calm/reassure Dorothy and steer her back home (and in performance terms, to impress her with the crystal so she follows him/trusts him).
+- what the character is hiding, performing, or controlling: he is performing mystical authority; privately he enjoys the con and is scheming to direct Dorothy where he wants.
+- why the line is being said now: to establish credibility for the crystal, to create a ritual moment (closing eyes) that increases Dorothy's suggestibility and lets him control the situation.
+
+character_read:
+- social role and power position: small-time charlatan with momentary authority over a child (low-status but socially dominant in this interaction).
+- temperament: theatrical, warm

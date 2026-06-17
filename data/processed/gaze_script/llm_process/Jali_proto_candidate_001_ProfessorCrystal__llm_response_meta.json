@@ -1,0 +1,19 @@
+{
+  "response_id": "resp_023b20aed7b59c81006a32861b9930819a83c2ff5b9b173ff8",
+  "model": "gpt-5-mini",
+  "prompt_path": "data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__actor_prompt.txt",
+  "annotation_path": "data/processed/gaze_script/llm_process/Jali_proto_candidate_001_ProfessorCrystal__performance_annotation.txt",
+  "usage": {
+    "input_tokens": 5824,
+    "input_tokens_details": {
+      "cached_tokens": 2816
+    },
+    "output_tokens": 3000,
+    "output_tokens_details": {
+      "reasoning_tokens": 2624
+    },
+    "total_tokens": 8824
+  },
+  "status": "incomplete",
+  "created_at": 1781696027.0
+}

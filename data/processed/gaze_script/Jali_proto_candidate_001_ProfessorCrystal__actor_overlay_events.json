@@ -1,0 +1,17 @@
+{
+  "clip_name": "Jali_proto_candidate_001_ProfessorCrystal",
+  "events": [],
+  "diagnostics": {
+    "missing_reasons": [],
+    "parser_warnings": [
+      "missing section: ANNOTATION",
+      "missing section: REASONS"
+    ],
+    "transcript_word_count": 0,
+    "textgrid_word_count": 81,
+    "alignment_warnings": [
+      "token count mismatch: transcript=0 textgrid=81"
+    ],
+    "unresolved_events": []
+  }
+}
