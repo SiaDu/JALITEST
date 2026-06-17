@@ -1,0 +1,9 @@
+llm:
+  provider: openai
+  model: gpt-5-mini
+  temperature: 0.2
+  max_output_tokens: 8000
+  reasoning_effort: low
+  api_key_env: OPENAI_API_KEY
+  max_retries: 3
+  request_sleep_sec: 2

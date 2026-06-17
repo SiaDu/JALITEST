@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover
     APIConnectionError = None  # type: ignore[assignment]
 
 DEFAULT_SEQUENCE_ID = "Jali_proto_candidate_001_ProfessorCrystal"
-DEFAULT_BASE_CONFIG = Path("configs/base.yaml")
+DEFAULT_LLM_CONFIG = Path("configs/llm.yaml")
 DEFAULT_LLM_PROCESS_DIR = Path("data/processed/gaze_script/llm_process")
 
 
@@ -35,11 +35,11 @@ def _read_yaml(path: str | Path) -> dict[str, Any]:
     return data
 
 
-def _load_llm_config(base_config: str | Path) -> dict[str, Any]:
-    config = _read_yaml(base_config)
+def _load_llm_config(llm_config_path: str | Path) -> dict[str, Any]:
+    config = _read_yaml(llm_config_path)
     llm = config.get("llm") or {}
     if not isinstance(llm, dict):
-        raise ValueError("base config field `llm` must be a mapping")
+        raise ValueError("LLM config field `llm` must be a mapping")
     return llm
 
 
@@ -184,7 +184,7 @@ def _call_openai(prompt: str, llm_config: dict[str, Any]) -> Any:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Step 02: call OpenAI once to generate performance annotation. Does not compile.")
     parser.add_argument("--sequence-id", default=DEFAULT_SEQUENCE_ID)
-    parser.add_argument("--base-config", type=Path, default=DEFAULT_BASE_CONFIG)
+    parser.add_argument("--llm-config", "--base-config", dest="llm_config", type=Path, default=DEFAULT_LLM_CONFIG)
     parser.add_argument("--llm-process-dir", type=Path, default=DEFAULT_LLM_PROCESS_DIR)
     parser.add_argument("--prompt-path", type=Path, default=None)
     parser.add_argument("--output-annotation", type=Path, default=None)
@@ -204,7 +204,7 @@ def main() -> None:
         raise FileNotFoundError(f"Prompt not found: {prompt_path}. Run scripts/01_build_actor_prompt.sh first.")
 
     prompt = prompt_path.read_text(encoding="utf-8")
-    llm_config = _load_llm_config(args.base_config)
+    llm_config = _load_llm_config(args.llm_config)
     model = str(llm_config.get("model") or "gpt-5-mini")
 
     print(f"Prompt: {prompt_path}")

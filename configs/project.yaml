@@ -1,0 +1,15 @@
+project:
+  name: JaliTest
+  root: .
+
+data:
+  full_context_dir: data/processed/full_context
+  textgrid_output_dir: data/processed/textgrid
+  llm_process_dir: data/processed/gaze_script/llm_process
+  compiled_output_dir: data/processed/gaze_script
+
+prompt:
+  template: prompts/actor_performance_annotation_prompt_v2.md
+  extra_config_files:
+    - configs/jali_emotion_options.yaml
+    - configs/performance_rules.yaml

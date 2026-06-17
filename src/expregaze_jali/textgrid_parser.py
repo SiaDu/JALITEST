@@ -11,6 +11,17 @@ from typing import Any
 
 import yaml
 
+from expregaze_jali.config_utils import (
+    DEFAULT_PROJECT_CONFIG,
+    DEFAULT_SEQUENCE_CONFIG,
+    clip_name_from_config,
+    read_yaml,
+    repo_root_from_project_config,
+    sequence_id_from_config,
+    textgrid_output_dir,
+    textgrid_path as sequence_textgrid_path,
+)
+
 
 _NON_WORD_MARKERS = {
     "",
@@ -253,9 +264,30 @@ def _values_from_paths_config(paths_config_path: Path) -> dict[str, Any]:
     }
 
 
+def _values_from_sequence_config(project_config_path: Path, sequence_config_path: Path) -> dict[str, Any]:
+    project_config = read_yaml(project_config_path)
+    sequence_config = read_yaml(sequence_config_path)
+    project_root = repo_root_from_project_config(project_config_path, project_config)
+    clip_name = clip_name_from_config(sequence_config)
+    output_dir = textgrid_output_dir(project_config, project_root)
+    return {
+        "project_root": project_root,
+        "clip_name": clip_name,
+        "sequence_id": sequence_id_from_config(sequence_config),
+        "textgrid_file": sequence_textgrid_path(sequence_config, project_root),
+        "tier_name": str((project_config.get("textgrid") or {}).get("tier_name", "words")),
+        "words_jsonl": output_dir / f"{clip_name}__words.jsonl",
+        "words_csv": output_dir / f"{clip_name}__words.csv",
+        "summary_json": output_dir / f"{clip_name}__textgrid_summary.json",
+        "output_dir": output_dir,
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Parse JALI/Praat TextGrid word intervals.")
-    parser.add_argument("--paths-config", type=Path, default=Path("configs/path_local.yaml"))
+    parser.add_argument("--project-config", type=Path, default=DEFAULT_PROJECT_CONFIG)
+    parser.add_argument("--sequence-config", type=Path, default=DEFAULT_SEQUENCE_CONFIG)
+    parser.add_argument("--paths-config", type=Path, default=None, help=argparse.SUPPRESS)
     parser.add_argument("--textgrid-file", type=Path, default=None)
     parser.add_argument("--tier-name", type=str, default=None)
     parser.add_argument("--words-jsonl", type=Path, default=None)
@@ -266,7 +298,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    values = _values_from_paths_config(args.paths_config)
+    if args.paths_config is not None:
+        values = _values_from_paths_config(args.paths_config)
+    else:
+        values = _values_from_sequence_config(args.project_config, args.sequence_config)
     project_root = Path(values["project_root"])
 
     textgrid_file = args.textgrid_file or values["textgrid_file"]

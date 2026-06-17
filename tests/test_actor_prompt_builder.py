@@ -118,6 +118,7 @@ def test_prompt_builder_injects_extra_config_and_preserves_transcript(tmp_path: 
     assert "The priests of lsis saw the lnfinite." in prompt
     assert "performance_rules.yaml" in prompt
     assert "jali_emotion_options.yaml" in prompt
+    assert "llm.yaml" not in prompt
     assert "base.yaml" not in prompt
     assert "scene_targets" not in prompt
     assert "{{" not in prompt

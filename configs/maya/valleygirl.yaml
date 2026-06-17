@@ -1,0 +1,117 @@
+maya_common:
+  repo_root: .
+  clip_name: Jali_proto_candidate_001_ProfessorCrystal
+  maya_project_root: E:/maya_project/JALI_test
+  jali_input_dir: scenes/sounds_proto1
+  fps: 30.0
+  clip_end_frame: 1064.2
+
+maya_gaze:
+  eye_stare_node_suffix: eyeStare_world
+  clear_existing_eye_stare_translate_keys: true
+  gaze_transition_frames: 3
+  glance_transition_frames: 3
+  apply_weighted_flat_tangents: true
+
+  # Lower JALI ambient gaze so ExpreGaze's eyeStare_world overlay is readable.
+  jali_attribute_overrides:
+    jSync1:
+      ambient_gaze_intensity: 1
+
+  # Direction bounds are for offsets only, not locator world positions.
+  # direction_offset_bounds:
+  #   x: [-50.0, 50.0]
+  #   y: [-30.0, 30.0]
+  #   z: [0.0, 0.0]
+
+  target_aliases:
+    LISTENER: AIM_listener
+    CHARACTER_DOROTHY: AIM_listener
+    DOROTHY: AIM_listener
+    CRYSTAL: AIM_crystal
+    OBJECT_CRYSTAL: AIM_crystal
+    DOWN: DOWN
+    DOWN_LEFT: DOWN_LEFT
+    DOWN_RIGHT: DOWN_RIGHT
+    UP: UP
+    UP_LEFT: UP_LEFT
+    UP_RIGHT: UP_RIGHT
+    LEFT: LEFT
+    RIGHT: RIGHT
+
+  targets:
+    AIM_listener:
+      node: listener_lookat_LOC
+    AIM_crystal:
+      node: crystal_lookat_LOC
+
+  direction_offsets:
+    DOWN: [0.0, -25.0, 0.0]
+    DOWN_LEFT: [-40.0, -25.0, 0.0]
+    DOWN_RIGHT: [40.0, -25.0, 0.0]
+    UP: [0.0, 25.0, 0.0]
+    UP_LEFT: [-40.0, 25.0, 0.0]
+    UP_RIGHT: [40.0, 25.0, 0.0]
+    LEFT: [-40.0, 0.0, 0.0]
+    RIGHT: [40.0, 0.0, 0.0]
+
+maya_eye_performance:
+  eyelid_control_suffix: LIDS_jSync_plusMinus
+  eyelid_attr: Down_upLids_jSync
+  default_lid_state: 0.0
+  clear_existing_eyelid_keys: true
+  lid_state_transition_frames: 8
+  apply_weighted_flat_tangents: true
+
+  blink_presets:
+    SINGLE_BLINK:
+      closure: 7
+      close_frames: 2
+      hold_frames: 1
+      open_frames: 2
+      count: 1
+      gap_frames: 0
+    VERY_SUBTLE_BLINK:
+      closure: 4
+      close_frames: 1
+      hold_frames: 1
+      open_frames: 1
+      count: 1
+      gap_frames: 0
+    DOUBLE_BLINK:
+      closure: 7
+      close_frames: 2
+      hold_frames: 1
+      open_frames: 2
+      count: 2
+      gap_frames: 4
+    BLINK_CLUSTER:
+      closure: 6
+      close_frames: 1
+      hold_frames: 1
+      open_frames: 2
+      count: 3
+      gap_frames: 3
+    EYE_CLOSE_HOLD:
+      closure: 9
+      close_frames: 4
+      hold_frames: 16
+      open_frames: 6
+      count: 1
+      gap_frames: 0
+    SLOW_BLINK:
+      closure: 8
+      close_frames: 5
+      hold_frames: 4
+      open_frames: 6
+      count: 1
+      gap_frames: 0
+
+maya_jali_annotation:
+  jsync_node: jSync1
+  backup_original_transcript: true
+  trigger_jsync_compute: true
+  # JALI annotation injection should not turn JALI automatic blinks back on.
+  # ExpreGaze replaces blink/lid animation later.
+  # jali_attribute_overrides:
+  #   calculate_blinks: false

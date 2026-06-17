@@ -85,11 +85,16 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
 def load_maya_eye_config(path: str | Path) -> dict[str, Any]:
     config_path = Path(path)
     data = _load_yaml_file(config_path)
+    common = data.get("maya_common", {}) if isinstance(data, dict) else {}
     config = data.get("maya_eye_performance", data)
-    if not isinstance(config, dict):
+    if not isinstance(common, dict) or not isinstance(config, dict):
         raise ValueError(f"Invalid Maya eye performance config: {path}")
 
-    out = dict(config)
+    out = {**common, **config}
+    clip_name = str(out.get("clip_name", "")).strip()
+    if "eye_events_path" not in out and clip_name:
+        out["eye_events_path"] = f"data/processed/gaze_script/{clip_name}__eye_performance_events_resolved.json"
+
     out["_config_path"] = str(config_path)
     repo_root = out.get("repo_root", ".")
     repo_root_path = Path(str(repo_root))

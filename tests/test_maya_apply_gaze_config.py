@@ -13,7 +13,7 @@ from expregaze_jali.maya_apply_gaze import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG = ROOT / "configs/maya/jali_proto_candidate_001_gaze.yaml"
+CONFIG = ROOT / "configs/maya/valleygirl.yaml"
 TEST_BASE_POSITION = [0.0, 0.0, 126.0]
 TEST_SAFE_BOUNDS = {
     "x": [-50.0, 50.0],
@@ -68,14 +68,13 @@ def test_safe_clamp_for_xy_and_fixed_z():
 
 def test_config_path_resolution_and_windows_runner_defaults():
     config = load_maya_gaze_config(CONFIG)
-    runner_text = (ROOT / "src/maya/run_apply_gaze_events.py").read_text(encoding="utf-8")
+    runner_text = (ROOT / "tools/maya/run_apply_gaze_events.py").read_text(encoding="utf-8")
 
     assert "C:\\Users\\sia\\JaliTest" not in runner_text
     assert "\\\\wsl.localhost\\Ubuntu-24.04\\home\\sia\\JaliTest" in runner_text
     assert resolve_repo_path(config["gaze_events_path"], config).endswith(
         "data/processed/gaze_script/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json"
     )
-    assert resolve_maya_project_path(config["jali_textgrid_path"], config).replace("\\", "/") == (
-        "E:/maya_project/JALI_test/scenes/sounds_proto1/"
-        "Jali_proto_candidate_001_ProfessorCrystal.Textgrid"
+    assert resolve_maya_project_path("scenes/sounds_proto1/example.Textgrid", config).replace("\\", "/") == (
+        "E:/maya_project/JALI_test/scenes/sounds_proto1/example.Textgrid"
     )

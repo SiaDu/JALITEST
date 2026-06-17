@@ -84,11 +84,19 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
 def load_jali_annotation_config(path: str | Path) -> dict[str, Any]:
     config_path = Path(path)
     data = _load_yaml_file(config_path)
+    common = data.get("maya_common", {}) if isinstance(data, dict) else {}
     config = data.get("maya_jali_annotation", data)
-    if not isinstance(config, dict):
+    if not isinstance(common, dict) or not isinstance(config, dict):
         raise ValueError(f"Invalid JALI annotation config: {path}")
 
-    out = dict(config)
+    out = {**common, **config}
+    clip_name = str(out.get("clip_name", "")).strip()
+    if "annotated_for_jali_path" not in out and clip_name:
+        out["annotated_for_jali_path"] = f"data/processed/gaze_script/{clip_name}__annotated_for_jali.txt"
+    if "jali_transcript_path" not in out and clip_name:
+        input_dir = str(out.get("jali_input_dir", "")).strip()
+        out["jali_transcript_path"] = f"{input_dir}/{clip_name}.txt" if input_dir else f"{clip_name}.txt"
+
     out["_config_path"] = str(config_path)
 
     repo_root = out.get("repo_root", ".")

@@ -38,7 +38,7 @@ def load_extra_config_texts(
 ) -> dict[str, Any]:
     """Load prompt-only config snippets for the actor annotator.
 
-    Important: this intentionally does NOT read configs/base.yaml. base.yaml is
+    Important: this intentionally does NOT read configs/llm.yaml. llm.yaml is
     runtime configuration for Step 01 OpenAI calls, not prompt context.
     """
     config_paths = list(paths or DEFAULT_EXTRA_CONFIG_FILES)

@@ -1,0 +1,15 @@
+sequence:
+  sequence_id: Jali_proto_candidate_001_ProfessorCrystal
+  movie_id: tt0032138
+  movie_name: The Wizard of Oz
+  local_window: 3
+  shot_range:
+    start_shot_idx: 38
+    end_shot_idx: 38
+  fps: 30.0
+  clip_end_frame: 1064.2
+
+jali:
+  project_root: /mnt/e/maya_project/JALI_test
+  input_dir: scenes/sounds_proto1
+  clip_name: Jali_proto_candidate_001_ProfessorCrystal

@@ -12,14 +12,16 @@ from expregaze_jali.performance_event_resolver import resolve_events_with_textgr
 from expregaze_jali.jali_annotation_exporter import export_jali_annotation
 from expregaze_jali.gaze_event_exporter import export_gaze_events
 from expregaze_jali.eye_performance_event_exporter import export_eye_performance_events
-from expregaze.data.textgrid_parser import _values_from_paths_config
+from expregaze_jali.textgrid_parser import _values_from_sequence_config
+from expregaze_jali.config_utils import DEFAULT_PROJECT_CONFIG, DEFAULT_SEQUENCE_CONFIG
 
 
-DEFAULT_PATHS_CONFIG = Path("configs/path_local.yaml")
+DEFAULT_PROJECT_CONFIG_PATH = DEFAULT_PROJECT_CONFIG
+DEFAULT_SEQUENCE_CONFIG_PATH = DEFAULT_SEQUENCE_CONFIG
 
 
-def resolve_textgrid_from_paths_config(paths_config: str | Path) -> Path:
-    values = _values_from_paths_config(Path(paths_config))
+def resolve_textgrid_from_sequence_config(project_config: str | Path, sequence_config: str | Path) -> Path:
+    values = _values_from_sequence_config(Path(project_config), Path(sequence_config))
     return Path(values["textgrid_file"])
 
 
@@ -95,12 +97,8 @@ def main() -> None:
     )
     parser.add_argument("--script", required=True, help="Readable performance annotation txt.")
     parser.add_argument("--textgrid", default=None, help="JALI TextGrid path.")
-    parser.add_argument(
-        "--paths-config",
-        type=Path,
-        default=DEFAULT_PATHS_CONFIG,
-        help="Path config used to resolve TextGrid when --textgrid is omitted.",
-    )
+    parser.add_argument("--project-config", type=Path, default=DEFAULT_PROJECT_CONFIG_PATH)
+    parser.add_argument("--sequence-config", type=Path, default=DEFAULT_SEQUENCE_CONFIG_PATH)
     parser.add_argument("--out-dir", required=True, help="Output directory.")
     parser.add_argument("--clip-name", required=True, help="Clip basename.")
     parser.add_argument("--fps", type=float, default=30.0)
@@ -129,7 +127,7 @@ def main() -> None:
         "long_gap_seconds": args.long_gap_seconds,
         "gaze_blink_offset_frames": args.gaze_blink_offset_frames,
     }
-    textgrid_path = args.textgrid or resolve_textgrid_from_paths_config(args.paths_config)
+    textgrid_path = args.textgrid or resolve_textgrid_from_sequence_config(args.project_config, args.sequence_config)
 
     result = process_performance_annotation(
         script_path=args.script,

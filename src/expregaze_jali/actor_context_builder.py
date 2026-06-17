@@ -423,7 +423,7 @@ def build_context_pack_from_shot_range(
         )
         raise ValueError(
             "No full_context rows matched shot_range "
-            f"{start_shot_idx}-{end_shot_idx}. Check configs/path_local.yaml or the full_context schema.\n"
+            f"{start_shot_idx}-{end_shot_idx}. Check the sequence config or the full_context schema.\n"
             f"{diagnostics}"
         )
 
