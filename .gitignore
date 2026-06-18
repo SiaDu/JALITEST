@@ -23,11 +23,10 @@ env/
 *:Zone.Identifier
 Thumbs.db
 desktop.ini
+*.zip
 
 # Large media inputs and generated media outputs
 data/MovieNet/
-data/raw/
-data/interim/
 data/processed/candidate_sequences/audio_exports/
 data/processed/candidate_sequences/videos/
 *.mp4
@@ -36,10 +35,6 @@ data/processed/candidate_sequences/videos/
 *.avi
 *.wav
 *.mp3
-
-# Runtime outputs
-outputs/**
-!outputs/**/.gitkeep
 
 # Editor / OS noise
 .DS_Store
