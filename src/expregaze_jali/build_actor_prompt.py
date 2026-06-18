@@ -42,7 +42,7 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--project-config", type=Path, default=DEFAULT_PROJECT_CONFIG)
-    parser.add_argument("--sequence-config", type=Path, default=DEFAULT_SEQUENCE_CONFIG)
+    parser.add_argument("--sequence-config", type=Path, default=None)
 
     # Backward-compatible alias for older command lines.
     parser.add_argument("--paths-config", dest="sequence_config_alias", type=Path, default=None, help=argparse.SUPPRESS)
@@ -89,6 +89,15 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _sequence_config_path_from_args(args: argparse.Namespace) -> Path:
+    if args.sequence_config_alias is not None:
+        return args.sequence_config_alias
+    if args.sequence_config is not None:
+        return args.sequence_config
+    if args.sequence_id:
+        return Path("configs") / "sequences" / f"{args.sequence_id}.yaml"
+    return DEFAULT_SEQUENCE_CONFIG
+
 def _write_text(path: Path, text: str, *, overwrite: bool) -> None:
     if path.exists() and not overwrite:
         raise FileExistsError(f"Refusing to overwrite existing file without --overwrite: {path}")
@@ -126,7 +135,7 @@ def _resolve_shot_range(args: argparse.Namespace, sequence_config: dict[str, Any
 
 def main() -> None:
     args = parse_args()
-    sequence_config_path = args.sequence_config_alias or args.sequence_config
+    sequence_config_path = _sequence_config_path_from_args(args)
 
     project_config = read_yaml(args.project_config)
     sequence_config = read_yaml(sequence_config_path)

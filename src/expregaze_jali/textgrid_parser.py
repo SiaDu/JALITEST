@@ -286,8 +286,9 @@ def _values_from_sequence_config(project_config_path: Path, sequence_config_path
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Parse JALI/Praat TextGrid word intervals.")
     parser.add_argument("--project-config", type=Path, default=DEFAULT_PROJECT_CONFIG)
-    parser.add_argument("--sequence-config", type=Path, default=DEFAULT_SEQUENCE_CONFIG)
+    parser.add_argument("--sequence-config", type=Path, default=None)
     parser.add_argument("--paths-config", type=Path, default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--sequence-id", default=None)
     parser.add_argument("--textgrid-file", type=Path, default=None)
     parser.add_argument("--tier-name", type=str, default=None)
     parser.add_argument("--words-jsonl", type=Path, default=None)
@@ -296,12 +297,19 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _sequence_config_path_from_args(args: argparse.Namespace) -> Path:
+    if args.sequence_config is not None:
+        return args.sequence_config
+    if args.sequence_id:
+        return Path("configs") / "sequences" / f"{args.sequence_id}.yaml"
+    return DEFAULT_SEQUENCE_CONFIG
+
 def main() -> None:
     args = parse_args()
     if args.paths_config is not None:
         values = _values_from_paths_config(args.paths_config)
     else:
-        values = _values_from_sequence_config(args.project_config, args.sequence_config)
+        values = _values_from_sequence_config(args.project_config, _sequence_config_path_from_args(args))
     project_root = Path(values["project_root"])
 
     textgrid_file = args.textgrid_file or values["textgrid_file"]
