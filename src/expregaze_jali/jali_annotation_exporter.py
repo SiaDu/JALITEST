@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import re
 from typing import Any
 
 
@@ -28,6 +29,17 @@ def _close_tag(event: dict[str, Any]) -> str:
     name = _jali_tag_name(event["type"])
     return f"</{name}={_event_value(event)}>"
 
+_JALI_TAG_RE = re.compile(r"(</?(?:mask|heart)=[^>]+>)")
+
+
+def _space_jali_tags(text: str) -> str:
+    # Maya/JALI Text Editor is not a tolerant XML parser here. In practice it can
+    # misread `<mask=...>Word` or `</mask=...><mask=...>` as malformed text and
+    # report a closing tag without an opening tag. Keep every mask/heart tag as a
+    # whitespace-delimited standalone token.
+    text = re.sub(r"(?<!\s)(</?(?:mask|heart)=[^>]+>)", r" \1", text)
+    text = re.sub(r"(</?(?:mask|heart)=[^>]+>)(?!\s)", r"\1 ", text)
+    return text.strip()
 
 def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> str:
     """
@@ -76,4 +88,4 @@ def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> st
         if pos < len(clean):
             parts.append(clean[pos])
 
-    return "".join(parts)
+    return _space_jali_tags("".join(parts))
