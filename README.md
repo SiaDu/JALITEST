@@ -25,7 +25,7 @@ configs/
   jali_emotion_options.yaml                 # prompt-only JALI mask / heart reference
   performance_rules.yaml                    # prompt-only acting/tagging rules
   sequences/
-    Jali_proto_candidate_001_ProfessorCrystal.yaml
+    CustumName.yaml
     example.yaml                            # copy this for a new sequence
   maya/
     valleygirl.yaml                         # Maya adapter settings for gaze/eye/JALI injection
@@ -39,7 +39,7 @@ configs/path_local.yaml
 configs/path_local.example.yaml
 configs/tt0032138.yaml
 configs/runs/*.yaml
-configs/maya/jali_proto_candidate_001_*.yaml
+configs/maya/CustumName.yaml
 ```
 
 For a new sequence, copy `configs/sequences/example.yaml` and edit only that file:
@@ -85,7 +85,7 @@ actor_prompt      = data/processed/gaze_script/llm_process/{clip_name}__actor_pr
 
 ```bash
 bash scripts/00_build_actor_prompt.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+  --sequence-id CustumName \
   --overwrite
 ```
 
@@ -109,7 +109,7 @@ configs/performance_rules.yaml
 
 ```bash
 bash scripts/01_run_actor_llm.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+  --sequence-id CustumName \
   --overwrite
 ```
 
@@ -139,7 +139,7 @@ bash scripts/01_run_actor_llm.sh --llm-config configs/llm.yaml --overwrite
 
 ```bash
 bash scripts/02_parse_textgrid.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal
+  --sequence-id CustumName
 ```
 
 Output paths are derived from `clip_name / sequence_id` automatically.
@@ -148,7 +148,7 @@ Output paths are derived from `clip_name / sequence_id` automatically.
 
 ```bash
 bash scripts/03_compile_actor_annotation.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+  --sequence-id CustumName \
   --overwrite
 ```
 
@@ -165,14 +165,14 @@ data/processed/gaze_script/llm_process/{clip}__debug_full_annotation.txt
 
 ```bash
 bash scripts/04_validate_actor_outputs.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal
+  --sequence-id CustumName
 ```
 
 Use strict mode to fail on warnings:
 
 ```bash
 bash scripts/04_validate_actor_outputs.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+  --sequence-id CustumName \
   --strict
 ```
 
