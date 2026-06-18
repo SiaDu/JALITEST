@@ -179,6 +179,13 @@ bash scripts/04_validate_actor_outputs.sh \
 ## Maya helper scripts
 
 ```text
+import os
+
+os.environ["JALITEST_SEQUENCE_ID"] = "s029_1talk"
+os.environ.pop("JALITEST_SEQUENCE_CONFIG", None)
+```
+
+```text
 exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_create_gaze_targets.py", encoding="utf-8").read())
 
 exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_apply_gaze_events.py", encoding="utf-8").read())
