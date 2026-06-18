@@ -51,13 +51,20 @@ def _normalize_key(value: str) -> str:
     return text if text.startswith("AIM_") else text.upper()
 
 
-def _lookup_mapping(mapping: dict[str, Any], key: str) -> Any:
-    if key in mapping:
-        return mapping[key]
-    upper_key = key.upper()
+def _lookup_mapping(mapping: dict[str, Any], *keys: str) -> Any:
+    """Case-insensitive mapping lookup for one or more candidate keys."""
+    if not isinstance(mapping, dict):
+        return None
+
+    for key in keys:
+        if key in mapping:
+            return mapping[key]
+
+    upper_keys = {str(key).upper() for key in keys if str(key)}
     for candidate, value in mapping.items():
-        if str(candidate).upper() == upper_key:
+        if str(candidate).upper() in upper_keys:
             return value
+
     return None
 
 
