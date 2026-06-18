@@ -15,9 +15,10 @@ MAYA_CONFIG_PATH = os.environ.get(
     os.path.join(REPO_ROOT, "configs", "maya", "valleygirl.yaml"),
 )
 
+SEQUENCE_ID = os.environ.get("JALITEST_SEQUENCE_ID", "s038_1talk")
 SEQUENCE_CONFIG_PATH = os.environ.get(
     "JALITEST_SEQUENCE_CONFIG",
-    os.path.join(REPO_ROOT, "configs", "sequences", "s038_1talk.yaml"),
+    os.path.join(REPO_ROOT, "configs", "sequences", f"{SEQUENCE_ID}.yaml"),
 )
 
 PROJECT_CONFIG_PATH = os.environ.get(
