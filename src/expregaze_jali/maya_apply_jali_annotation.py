@@ -81,7 +81,67 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
     return data
 
 
-def load_jali_annotation_config(path: str | Path) -> dict[str, Any]:
+def _mapping(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _sequence_overrides(sequence_config_path: str | Path | None) -> dict[str, Any]:
+    if not sequence_config_path:
+        return {}
+
+    data = _load_yaml_file(Path(sequence_config_path))
+    sequence = _mapping(data.get("sequence", data))
+    jali = _mapping(data.get("jali"))
+
+    sequence_id = sequence.get("sequence_id") or jali.get("clip_name")
+    clip_name = jali.get("clip_name") or sequence_id
+
+    out: dict[str, Any] = {
+        "_sequence_config_path": str(sequence_config_path),
+    }
+    if sequence_id:
+        out["sequence_id"] = str(sequence_id)
+    if clip_name:
+        out["clip_name"] = str(clip_name)
+
+    # Sequence config owns clip-specific JALI paths.
+    if jali.get("input_dir") not in (None, ""):
+        out["jali_input_dir"] = str(jali["input_dir"])
+
+    # Keep Maya Windows project root in valleygirl.yaml when present. This
+    # fallback only supports users who move project_root into sequence config.
+    if jali.get("project_root") not in (None, ""):
+        out.setdefault("maya_project_root", str(jali["project_root"]))
+
+    return out
+
+
+def _compiled_output_dir_from_project(project_config_path: str | Path | None) -> str:
+    if not project_config_path:
+        return "data/processed/gaze_script"
+
+    path = Path(project_config_path)
+    try:
+        data = _load_yaml_file(path)
+        project_data = _mapping(data.get("data"))
+        return str(project_data.get("compiled_output_dir") or "data/processed/gaze_script")
+    except Exception:
+        # The small Maya YAML loader supports only a subset. For project.yaml we
+        # only need this scalar, so fall back to scanning the text.
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if line.startswith("compiled_output_dir:"):
+                value = line.split(":", 1)[1].strip().strip("\"'")
+                return value or "data/processed/gaze_script"
+        return "data/processed/gaze_script"
+
+
+def load_jali_annotation_config(
+    path: str | Path,
+    *,
+    sequence_config_path: str | Path | None = None,
+    project_config_path: str | Path | None = None,
+) -> dict[str, Any]:
     config_path = Path(path)
     data = _load_yaml_file(config_path)
     common = data.get("maya_common", {}) if isinstance(data, dict) else {}
@@ -90,14 +150,20 @@ def load_jali_annotation_config(path: str | Path) -> dict[str, Any]:
         raise ValueError(f"Invalid JALI annotation config: {path}")
 
     out = {**common, **config}
+    out.update(_sequence_overrides(sequence_config_path))
+
     clip_name = str(out.get("clip_name", "")).strip()
     if "annotated_for_jali_path" not in out and clip_name:
-        out["annotated_for_jali_path"] = f"data/processed/gaze_script/{clip_name}__annotated_for_jali.txt"
+        compiled_output_dir = _compiled_output_dir_from_project(project_config_path)
+        out["annotated_for_jali_path"] = f"{compiled_output_dir}/{clip_name}__annotated_for_jali.txt"
+
     if "jali_transcript_path" not in out and clip_name:
         input_dir = str(out.get("jali_input_dir", "")).strip()
         out["jali_transcript_path"] = f"{input_dir}/{clip_name}.txt" if input_dir else f"{clip_name}.txt"
 
     out["_config_path"] = str(config_path)
+    if project_config_path:
+        out["_project_config_path"] = str(project_config_path)
 
     repo_root = out.get("repo_root", ".")
     repo_root_path = Path(str(repo_root))
@@ -109,7 +175,6 @@ def load_jali_annotation_config(path: str | Path) -> dict[str, Any]:
 
     out["_project_root"] = str(project_root.resolve() if project_root.exists() else project_root)
     return out
-
 
 def resolve_repo_path(path_value: str | Path, config: dict[str, Any]) -> str:
     path = Path(path_value)
@@ -265,11 +330,27 @@ def apply_jali_annotation(
     print("[DONE] JALI annotation applied.")
 
 
-def apply_jali_annotation_from_config(config_path: str | Path) -> None:
-    config = load_jali_annotation_config(config_path)
+def apply_jali_annotation_from_config(
+    config_path: str | Path,
+    *,
+    sequence_config_path: str | Path | None = None,
+    project_config_path: str | Path | None = None,
+) -> None:
+    config = load_jali_annotation_config(
+        config_path,
+        sequence_config_path=sequence_config_path,
+        project_config_path=project_config_path,
+    )
 
     annotated_path = resolve_repo_path(config["annotated_for_jali_path"], config)
     transcript_path = resolve_maya_project_path(config["jali_transcript_path"], config)
+
+    print(f"[INFO] Maya JALI config: {config_path}")
+    if sequence_config_path:
+        print(f"[INFO] Sequence config: {sequence_config_path}")
+    print(f"[INFO] Clip name: {config.get('clip_name', '')}")
+    print(f"[INFO] Annotated JALI path: {annotated_path}")
+    print(f"[INFO] JALI transcript path: {transcript_path}")
 
     apply_jali_annotation(
         annotated_for_jali_path=annotated_path,

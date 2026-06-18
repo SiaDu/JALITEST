@@ -1,7 +1,6 @@
 maya_common:
   repo_root: .
   maya_project_root: E:/maya_project/JALI_test
-  jali_input_dir: scenes/sounds_proto1
 
 maya_gaze:
   eye_stare_node_suffix: eyeStare_world
