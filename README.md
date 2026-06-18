@@ -83,14 +83,6 @@ actor_prompt      = data/processed/gaze_script/llm_process/{clip_name}__actor_pr
 
 ## Step 00: build actor prompt
 
-Default sequence:
-
-```bash
-bash scripts/00_build_actor_prompt.sh --overwrite
-```
-
-Specific sequence config:
-
 ```bash
 bash scripts/00_build_actor_prompt.sh \
   --sequence-config configs/sequences/Jali_proto_candidate_001_ProfessorCrystal.yaml \
@@ -112,8 +104,6 @@ configs/sequences/<sequence>.yaml
 configs/jali_emotion_options.yaml
 configs/performance_rules.yaml
 ```
-
-It does not read `candidate_sequence` files and does not read `configs/llm.yaml`.
 
 ## Step 01: run actor LLM
 
@@ -149,7 +139,7 @@ bash scripts/01_run_actor_llm.sh --llm-config configs/llm.yaml --overwrite
 
 ```bash
 bash scripts/02_parse_textgrid.sh \
-  --sequence-config configs/sequences/Jali_proto_candidate_001_ProfessorCrystal.yaml
+  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
 ```
 
 Output paths are derived from `clip_name / sequence_id` automatically.
