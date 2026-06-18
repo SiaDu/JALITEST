@@ -1,0 +1,242 @@
+[SUMMARY]
+{
+  "annotation_path": "data/processed/gaze_script/llm_process/s0234-235_1sing__performance_annotation.txt",
+  "tag_count": 11,
+  "event_count": 11,
+  "diagnostics": {
+    "parser": {
+      "warnings": [],
+      "missing_reasons": [],
+      "extra_reasons": [],
+      "normalized_bare_tags": [],
+      "renumbered_duplicate_tag_ids": [],
+      "stripped_closing_tags": [
+        {
+          "id": "pb01",
+          "text": "</pb01>",
+          "raw_start": 160,
+          "raw_end": 167,
+          "position": 81
+        },
+        {
+          "id": "h01",
+          "text": "</h01>",
+          "raw_start": 167,
+          "raw_end": 173,
+          "position": 81
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 173,
+          "raw_end": 179,
+          "position": 81
+        },
+        {
+          "id": "g01",
+          "text": "</g01>",
+          "raw_start": 179,
+          "raw_end": 185,
+          "position": 81
+        },
+        {
+          "id": "h02",
+          "text": "</h02>",
+          "raw_start": 330,
+          "raw_end": 336,
+          "position": 161
+        },
+        {
+          "id": "m02",
+          "text": "</m02>",
+          "raw_start": 336,
+          "raw_end": 342,
+          "position": 161
+        },
+        {
+          "id": "g02",
+          "text": "</g02>",
+          "raw_start": 342,
+          "raw_end": 348,
+          "position": 161
+        },
+        {
+          "id": "h03",
+          "text": "</h03>",
+          "raw_start": 517,
+          "raw_end": 523,
+          "position": 269
+        },
+        {
+          "id": "m03",
+          "text": "</m03>",
+          "raw_start": 523,
+          "raw_end": 529,
+          "position": 269
+        },
+        {
+          "id": "g03",
+          "text": "</g03>",
+          "raw_start": 529,
+          "raw_end": 535,
+          "position": 269
+        },
+        {
+          "id": "l01",
+          "text": "</l01>",
+          "raw_start": 535,
+          "raw_end": 541,
+          "position": 269
+        }
+      ],
+      "tag_count": 11,
+      "tag_type_counts": {
+        "blink_suppression": 0,
+        "gaze": 3,
+        "heart": 3,
+        "lid_state": 1,
+        "mask": 3,
+        "performative_blink": 1
+      }
+    },
+    "resolver": {
+      "missing_reasons": [],
+      "parser_warnings": [],
+      "normalized_bare_tags": [],
+      "stripped_closing_tags": [
+        {
+          "id": "pb01",
+          "text": "</pb01>",
+          "raw_start": 160,
+          "raw_end": 167,
+          "position": 81
+        },
+        {
+          "id": "h01",
+          "text": "</h01>",
+          "raw_start": 167,
+          "raw_end": 173,
+          "position": 81
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 173,
+          "raw_end": 179,
+          "position": 81
+        },
+        {
+          "id": "g01",
+          "text": "</g01>",
+          "raw_start": 179,
+          "raw_end": 185,
+          "position": 81
+        },
+        {
+          "id": "h02",
+          "text": "</h02>",
+          "raw_start": 330,
+          "raw_end": 336,
+          "position": 161
+        },
+        {
+          "id": "m02",
+          "text": "</m02>",
+          "raw_start": 336,
+          "raw_end": 342,
+          "position": 161
+        },
+        {
+          "id": "g02",
+          "text": "</g02>",
+          "raw_start": 342,
+          "raw_end": 348,
+          "position": 161
+        },
+        {
+          "id": "h03",
+          "text": "</h03>",
+          "raw_start": 517,
+          "raw_end": 523,
+          "position": 269
+        },
+        {
+          "id": "m03",
+          "text": "</m03>",
+          "raw_start": 523,
+          "raw_end": 529,
+          "position": 269
+        },
+        {
+          "id": "g03",
+          "text": "</g03>",
+          "raw_start": 529,
+          "raw_end": 535,
+          "position": 269
+        },
+        {
+          "id": "l01",
+          "text": "</l01>",
+          "raw_start": 535,
+          "raw_end": 541,
+          "position": 269
+        }
+      ],
+      "transcript_word_count": 52,
+      "textgrid_word_count": 52,
+      "alignment_warnings": [],
+      "unresolved_events": []
+    }
+  }
+}
+
+[CLEAN_TRANSCRIPT]
+When a man's an empty kettle, He should be on his mettle. And yet I'm torn apart. Just because I'm presumin' That I could be kind-a human, If I only had a heart. I'd be tender -- I'd be gentle And awful sentimental Regarding Love and Art I'd be friends with sparrows...
+
+[NORMALIZED_ANNOTATION]
+<l01=2><g01=AVERT-DOWN><m01=Singing_Serene-60><h01=Sad-35>When a man's an empty kettle, He should be on his mettle. <pb01=EYE_CLOSE_HOLD>And yet I'm torn apart.</pb01></h01></m01></g01> <g02=GAZE-CHARACTER_DOROTHY><m02=Singing_Serene-70><h02=Happy-30>Just because I'm presumin' That I could be kind-a human, If I only had a heart.</h02></m02></g02> <g03=GLANCE-CHARACTER_DOROTHY><m03=Friendly-70><h03=Happy-40>I'd be tender -- I'd be gentle And awful sentimental Regarding Love and Art I'd be friends with sparrows...</h03></m03></g03></l01>
+
+[FULL_ANNOTATION]
+[ANALYZE]
+
+scene_constraints:
+- Available people / gaze targets: Tin Man is the singer; Dorothy and Scarecrow are nearby listeners. Usable gaze targets are CHARACTER_DOROTHY, CHARACTER_SCARECROW, and direction targets such as DOWN for inward/self-reflective beats.
+- Available performance objects: Tin Man's hollow chest / lack of heart is the central dramatic idea, but no concrete prop target needs to be annotated in this short span.
+
+social_interaction_structure:
+- Tin Man is performing a vulnerable confession through song. Dorothy and Scarecrow listen and receive his self-revelation.
+- The first beat is inward and self-aware; the second beat opens outward toward Dorothy as he imagines what having a heart would make possible.
+
+affective_cognitive_state:
+- Character read: gentle, newly mobile, emotionally innocent, theatrical but sincere.
+- Energy / eyelids: soft, open, lyrical; lid baseline should be warm rather than alert or suspicious.
+- Visible emotion: serene singing with tender hope.
+- Hidden undercurrent: sadness about hollowness in the first beat, then modest hope as he imagines tenderness and friendship.
+
+narrative_intent:
+- This song explains Tin Man's core want: he lacks a heart but already behaves as if he has emotional depth.
+- The performance should make the audience read him as fragile, kind, and worthy of Dorothy's sympathy.
+
+performance_strategy:
+- Begin with a soft lid state and an inward/downward gaze for self-description.
+- Use a single performative eye-close hold on the most vulnerable phrase.
+- Shift gaze toward Dorothy when the lyric becomes a plea / wish to be human.
+- Slightly brighten the mask and heart in the final imagined-social beat.
+
+[ANNOTATION]
+
+<l01=2><g01=AVERT-DOWN><m01=Singing_Serene-60><h01=Sad-35>When a man's an empty kettle, He should be on his mettle. <pb01=EYE_CLOSE_HOLD>And yet I'm torn apart.</pb01></h01></m01></g01> <g02=GAZE-CHARACTER_DOROTHY><m02=Singing_Serene-70><h02=Happy-30>Just because I'm presumin' That I could be kind-a human, If I only had a heart.</h02></m02></g02> <g03=GLANCE-CHARACTER_DOROTHY><m03=Friendly-70><h03=Happy-40>I'd be tender -- I'd be gentle And awful sentimental Regarding Love and Art I'd be friends with sparrows...</h03></m03></g03></l01>
+
+[REASONS]
+
+l01=2: Keeps Tin Man's eyelids soft and receptive across the sung confession, supporting a gentle, vulnerable performance instead of a sharp spoken delivery.
+g01=AVERT-DOWN: The opening thought is self-reflective; looking down / away keeps the first beat inward and exposes his insecurity about being hollow.
+m01=Singing_Serene-60: Gives the first phrase a controlled lyrical singing face, not a spoken sadness grimace.
+h01=Sad-35: Adds a quiet inner ache underneath the calm singing mask; the sadness is about his lack of a heart rather than external conflict.
+pb01=EYE_CLOSE_HOLD: Marks “torn apart” as the most exposed emotional beat, making the pain visible as a brief inward withdrawal.
+g02=GAZE-CHARACTER_DOROTHY: When he imagines becoming human, he opens the thought toward Dorothy, asking for sympathy and connection.
+m02=Singing_Serene-70: Slightly raises the singing warmth as the lyric becomes aspirational rather than purely self-pitying.
+h02=Happy-30: Adds a small hopeful undercurrent as he imagines the possibility of having a heart.
+g03=GLANCE-CHARACTER_DOROTHY: The final imagined tenderness is shared outward, but a glance keeps it modest and shy rather than demanding.
+m03=Friendly-70: The fantasy of being tender and sentimental should read as socially warm and approachable.
+h03=Happy-40: The inner state brightens more clearly as he imagines friendship, love, and gentleness.

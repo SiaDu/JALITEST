@@ -1,0 +1,14 @@
+{
+  "clip_name": "s0234-235_1sing",
+  "textgrid_file": "/mnt/e/maya_project/JALI_test/scenes/s0234-235_1sing/s0234-235_1sing.Textgrid",
+  "tier_name": "words",
+  "available_tiers": [
+    "words",
+    "phones"
+  ],
+  "total_interval_count": 70,
+  "skipped_interval_count": 18,
+  "word_count": 52,
+  "words_jsonl": "/home/sia/JaliTest/data/processed/textgrid/s0234-235_1sing__words.jsonl",
+  "words_csv": "/home/sia/JaliTest/data/processed/textgrid/s0234-235_1sing__words.csv"
+}

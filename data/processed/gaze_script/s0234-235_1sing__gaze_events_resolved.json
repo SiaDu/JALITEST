@@ -1,0 +1,170 @@
+{
+  "clip_name": "s0234-235_1sing",
+  "events": [
+    {
+      "id": "g01",
+      "type": "gaze",
+      "mode": "AVERT",
+      "target": "DOWN",
+      "target_role": "DIRECTION",
+      "target_label": "DOWN",
+      "target_needs_resolution": false,
+      "target_resolution_source": "direction_target",
+      "text": "When a man's an empty kettle, He should be on his mettle. And yet I'm torn apart.",
+      "reason": "The opening thought is self-reflective; looking down / away keeps the first beat inward and exposes his insecurity about being hollow.",
+      "span": {
+        "start": 0,
+        "end": 81,
+        "raw_start": 0,
+        "raw_end": 81
+      },
+      "resolved_time": {
+        "start": 0.0,
+        "end": 10.28,
+        "source": "textgrid_words",
+        "start_word_index": 0,
+        "end_word_index": 16
+      }
+    },
+    {
+      "id": "g02",
+      "type": "gaze",
+      "mode": "GAZE",
+      "target": "CHARACTER_DOROTHY",
+      "target_role": "CHARACTER",
+      "target_label": "DOROTHY",
+      "target_needs_resolution": false,
+      "target_resolution_source": "typed_character_target",
+      "text": "Just because I'm presumin' That I could be kind-a human, If I only had a heart.",
+      "reason": "When he imagines becoming human, he opens the thought toward Dorothy, asking for sympathy and connection.",
+      "span": {
+        "start": 82,
+        "end": 161,
+        "raw_start": 82,
+        "raw_end": 161
+      },
+      "resolved_time": {
+        "start": 11.99,
+        "end": 21.23,
+        "source": "textgrid_words",
+        "start_word_index": 17,
+        "end_word_index": 33
+      }
+    },
+    {
+      "id": "g03",
+      "type": "gaze",
+      "mode": "GLANCE",
+      "target": "CHARACTER_DOROTHY",
+      "target_role": "CHARACTER",
+      "target_label": "DOROTHY",
+      "target_needs_resolution": false,
+      "target_resolution_source": "typed_character_target",
+      "text": "I'd be tender -- I'd be gentle And awful sentimental Regarding Love and Art I'd be friends with sparrows...",
+      "reason": "The final imagined tenderness is shared outward, but a glance keeps it modest and shy rather than demanding.",
+      "span": {
+        "start": 162,
+        "end": 269,
+        "raw_start": 162,
+        "raw_end": 269
+      },
+      "resolved_time": {
+        "start": 21.23,
+        "end": 31.939999,
+        "source": "textgrid_words",
+        "start_word_index": 34,
+        "end_word_index": 51
+      }
+    }
+  ],
+  "diagnostics": {
+    "missing_reasons": [],
+    "parser_warnings": [],
+    "normalized_bare_tags": [],
+    "stripped_closing_tags": [
+      {
+        "id": "pb01",
+        "text": "</pb01>",
+        "raw_start": 160,
+        "raw_end": 167,
+        "position": 81
+      },
+      {
+        "id": "h01",
+        "text": "</h01>",
+        "raw_start": 167,
+        "raw_end": 173,
+        "position": 81
+      },
+      {
+        "id": "m01",
+        "text": "</m01>",
+        "raw_start": 173,
+        "raw_end": 179,
+        "position": 81
+      },
+      {
+        "id": "g01",
+        "text": "</g01>",
+        "raw_start": 179,
+        "raw_end": 185,
+        "position": 81
+      },
+      {
+        "id": "h02",
+        "text": "</h02>",
+        "raw_start": 330,
+        "raw_end": 336,
+        "position": 161
+      },
+      {
+        "id": "m02",
+        "text": "</m02>",
+        "raw_start": 336,
+        "raw_end": 342,
+        "position": 161
+      },
+      {
+        "id": "g02",
+        "text": "</g02>",
+        "raw_start": 342,
+        "raw_end": 348,
+        "position": 161
+      },
+      {
+        "id": "h03",
+        "text": "</h03>",
+        "raw_start": 517,
+        "raw_end": 523,
+        "position": 269
+      },
+      {
+        "id": "m03",
+        "text": "</m03>",
+        "raw_start": 523,
+        "raw_end": 529,
+        "position": 269
+      },
+      {
+        "id": "g03",
+        "text": "</g03>",
+        "raw_start": 529,
+        "raw_end": 535,
+        "position": 269
+      },
+      {
+        "id": "l01",
+        "text": "</l01>",
+        "raw_start": 535,
+        "raw_end": 541,
+        "position": 269
+      }
+    ],
+    "transcript_word_count": 52,
+    "textgrid_word_count": 52,
+    "alignment_warnings": [],
+    "unresolved_events": [],
+    "generic_targets": [],
+    "unresolved_targets": []
+  }
+}

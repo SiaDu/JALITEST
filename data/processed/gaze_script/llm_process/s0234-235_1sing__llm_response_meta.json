@@ -1,0 +1,22 @@
+{
+  "response_id": "resp_0cb556aa15b669f3006a3377732d2881989c3194e34187a17e",
+  "model": "gpt-5.4-mini",
+  "prompt_path": "data/processed/gaze_script/llm_process/s0234-235_1sing__actor_prompt.txt",
+  "annotation_path": "data/processed/gaze_script/llm_process/s0234-235_1sing__performance_annotation.txt",
+  "usage": {
+    "input_tokens": 0,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 0,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 0
+  },
+  "status": "incomplete",
+  "incomplete_details": {
+    "reason": "content_filter"
+  },
+  "created_at": 1781757811.0
+}
