@@ -151,7 +151,7 @@ def load_maya_eye_config(
     clip_name = str(out.get("clip_name", "")).strip()
     if "eye_events_path" not in out and clip_name:
         compiled_output_dir = _compiled_output_dir_from_project(project_config_path)
-        out["eye_events_path"] = f"{compiled_output_dir}/{clip_name}__eye_performance_events_resolved.json"
+        out["eye_events_path"] = f"{compiled_output_dir}/{clip_name}__actor_overlay_events.json"
 
     out["_config_path"] = str(config_path)
     if project_config_path:
@@ -204,8 +204,52 @@ def apply_jali_attribute_overrides(overrides: dict[str, Any] | None = None) -> N
 
 
 def _load_eye_events(path: str | Path) -> dict[str, Any]:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
 
+    # Current Step 03 writes actor overlay events as:
+    #   {clip}__actor_overlay_events.json
+    # with one flat `events` list containing lid_state / performative_blink /
+    # blink_suppression entries. The Maya eyelid adapter still consumes the older
+    # grouped shape, so normalize it here.
+    if isinstance(data, dict) and "events" in data and (
+        "lid_state_events" not in data
+        and "performative_blink_events" not in data
+        and "regulatory_blink_events" not in data
+    ):
+        lid_state_events: list[dict[str, Any]] = []
+        performative_blink_events: list[dict[str, Any]] = []
+        blink_suppression_events: list[dict[str, Any]] = []
+
+        for event in data.get("events", []):
+            if not isinstance(event, dict):
+                continue
+
+            event_type = str(event.get("type", "")).strip()
+            normalized = dict(event)
+
+            if event_type == "lid_state":
+                lid_state_events.append(normalized)
+
+            elif event_type == "performative_blink":
+                # `value` stores the blink preset name, e.g. DOUBLE_BLINK or
+                # EYE_CLOSE_HOLD. The Maya blink applier expects `mode`.
+                normalized.setdefault("mode", str(normalized.get("value") or "SINGLE_BLINK").upper())
+                normalized.setdefault("class", "performative")
+                performative_blink_events.append(normalized)
+
+            elif event_type == "blink_suppression":
+                blink_suppression_events.append(normalized)
+
+        return {
+            "clip_name": data.get("clip_name", ""),
+            "lid_state_events": lid_state_events,
+            "performative_blink_events": performative_blink_events,
+            "regulatory_blink_events": [],
+            "blink_suppression_events": blink_suppression_events,
+            "diagnostics": data.get("diagnostics", {}),
+        }
+
+    return data
 
 def _plug(node: str, attr: str) -> str:
     return f"{node}.{attr}"
@@ -491,7 +535,7 @@ def apply_eye_performance_events_from_config(
     # Preflight before mutating jSync / eyelid keys.
     if not Path(eye_events_path).exists():
         raise FileNotFoundError(
-            "Eye performance events JSON not found: "
+            "Actor overlay events JSON not found: "
             + str(eye_events_path)
             + ". Run Step 03 compile for the same sequence first."
         )
