@@ -77,6 +77,39 @@ def test_jali_exporter_removes_gaze_and_pairs_mask_tags(tmp_path: Path):
     assert "Hello there" in jali_text
 
 
+def test_jali_exporter_closes_same_position_tags_in_jali_order():
+    parsed = {
+        "clean_transcript": "This is the crystal.",
+    }
+    events = {
+        "events": [
+            {
+                "id": "m01",
+                "type": "mask",
+                "value": "Smug-60",
+                "span": {"start": 0, "end": len("This is the crystal.")},
+                "order": 0,
+            },
+            {
+                "id": "h01",
+                "type": "heart",
+                "value": "Contempt-20",
+                "span": {"start": 0, "end": len("This is the crystal.")},
+                "order": 1,
+            },
+        ]
+    }
+
+    jali_text = export_jali_annotation(parsed, events)
+
+    assert (
+        jali_text
+        == "<mask=Smug-60><heart=Contempt-20>"
+        "This is the crystal."
+        "</mask=Smug-60></heart=Contempt-20>"
+    )
+
+
 def test_gaze_exporter_splits_mode_target_and_is_json_serializable(tmp_path: Path):
     _parsed, _compiled, resolved = _pipeline(tmp_path)
     exported = export_gaze_events(resolved, clip_name="clip")

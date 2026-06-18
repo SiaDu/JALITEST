@@ -33,8 +33,22 @@ def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> st
     """
     Export a JALI-compatible transcript annotation.
 
-    Gaze tags are omitted. Mask and heart state changes are converted to paired
-    tags while preserving tag values.
+    Gaze / lid / blink tags are omitted. Mask and heart state-change events are
+    converted to JALI transcript tags while preserving values.
+
+    Important JALI Text Editor convention:
+    when multiple JALI tags close at the same transcript position, close them in
+    the same order they opened, not XML stack order. For example, if the span
+    begins as:
+
+        <mask=Friendly-70><heart=Warm-30>text
+
+    the JALI-facing transcript should end that shared span as:
+
+        text</mask=Friendly-70></heart=Warm-30>
+
+    This intentionally differs from well-formed XML (`</heart></mask>`), but it
+    matches the ordering expected by the JALI tag workflow used in this project.
     """
     clean = parsed.get("clean_transcript", "")
     opens: dict[int, list[dict[str, Any]]] = defaultdict(list)
@@ -53,7 +67,8 @@ def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> st
     parts: list[str] = []
     for pos in range(len(clean) + 1):
         if pos in closes:
-            for event in sorted(closes[pos], key=lambda item: item["order"], reverse=True):
+            # JALI tag order: close in opening/order order, not reverse stack order.
+            for event in sorted(closes[pos], key=lambda item: item["order"]):
                 parts.append(_close_tag(event))
         if pos in opens:
             for event in sorted(opens[pos], key=lambda item: item["order"]):
