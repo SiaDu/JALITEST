@@ -5,40 +5,40 @@
       "id": "l01",
       "type": "lid_state",
       "value": "-1",
-      "text": "That's right.",
-      "reason": "sets slightly heightened eye openness to communicate alert theatricality and mild excitement.",
+      "text": "That's right. Here -- sit right down here. That's it.",
+      "reason": "establishes an alert but controlled eyelid baseline so the professor reads as focused and purposeful rather than sleepy or distracted.",
       "span": {
         "start": 0,
-        "end": 13,
+        "end": 53,
         "raw_start": 0,
-        "raw_end": 13
+        "raw_end": 53
       },
       "resolved_time": {
         "start": 0.18,
-        "end": 1.0,
+        "end": 4.13,
         "source": "textgrid_words",
         "start_word_index": 0,
-        "end_word_index": 1
+        "end_word_index": 8
       }
     },
     {
       "id": "pb01",
       "type": "performative_blink",
-      "value": "EYE_CLOSE_HOLD",
-      "text": "in order to be better in tune with the infinite.",
-      "reason": "a performative model blink/eye-close when asking Dorothy to close her eyes to physically demonstrate the action and heighten ritual feel.",
+      "value": "DOUBLE_BLINK",
+      "text": "Ha ha!",
+      "reason": "a punctuating performative blink tied to the laugh; sells affable charm and a practiced, slightly nervous flourish.",
       "span": {
-        "start": 378,
-        "end": 426,
-        "raw_start": 378,
-        "raw_end": 426
+        "start": 54,
+        "end": 60,
+        "raw_start": 54,
+        "raw_end": 60
       },
       "resolved_time": {
-        "start": 27.1,
-        "end": 31.199999,
+        "start": 4.25,
+        "end": 4.76,
         "source": "textgrid_words",
-        "start_word_index": 68,
-        "end_word_index": 77
+        "start_word_index": 9,
+        "end_word_index": 10
       }
     }
   ],
@@ -50,128 +50,65 @@
       {
         "id": "m01",
         "text": "</m01>",
-        "raw_start": 66,
-        "raw_end": 72,
-        "position": 13
+        "raw_start": 106,
+        "raw_end": 112,
+        "position": 53
       },
       {
         "id": "g01",
         "text": "</g01>",
-        "raw_start": 72,
-        "raw_end": 78,
-        "position": 13
+        "raw_start": 112,
+        "raw_end": 118,
+        "position": 53
       },
       {
         "id": "l01",
         "text": "</l01>",
-        "raw_start": 78,
-        "raw_end": 84,
-        "position": 13
-      },
-      {
-        "id": "g02",
-        "text": "</g02>",
-        "raw_start": 141,
-        "raw_end": 147,
-        "position": 42
-      },
-      {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 175,
-        "raw_end": 181,
+        "raw_start": 118,
+        "raw_end": 124,
         "position": 53
       },
       {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 205,
-        "raw_end": 211,
+        "id": "pb01",
+        "text": "</pb01>",
+        "raw_start": 150,
+        "raw_end": 157,
         "position": 60
       },
       {
         "id": "h01",
         "text": "</h01>",
-        "raw_start": 408,
-        "raw_end": 414,
-        "position": 198
+        "raw_start": 458,
+        "raw_end": 464,
+        "position": 306
       },
       {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 414,
-        "raw_end": 420,
-        "position": 198
+        "id": "m02",
+        "text": "</m02>",
+        "raw_start": 464,
+        "raw_end": 470,
+        "position": 306
+      },
+      {
+        "id": "g02",
+        "text": "</g02>",
+        "raw_start": 470,
+        "raw_end": 476,
+        "position": 306
+      },
+      {
+        "id": "m03",
+        "text": "</m03>",
+        "raw_start": 681,
+        "raw_end": 687,
+        "position": 466
       },
       {
         "id": "g03",
         "text": "</g03>",
-        "raw_start": 420,
-        "raw_end": 426,
-        "position": 198
-      },
-      {
-        "id": "g04",
-        "text": "</g04>",
-        "raw_start": 536,
-        "raw_end": 542,
-        "position": 278
-      },
-      {
-        "id": "g05",
-        "text": "</g05>",
-        "raw_start": 593,
-        "raw_end": 599,
-        "position": 309
-      },
-      {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 712,
-        "raw_end": 718,
-        "position": 377
-      },
-      {
-        "id": "g06",
-        "text": "</g06>",
-        "raw_start": 718,
-        "raw_end": 724,
-        "position": 377
-      },
-      {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 839,
-        "raw_end": 845,
-        "position": 426
-      },
-      {
-        "id": "g06",
-        "text": "</g06>",
-        "raw_start": 845,
-        "raw_end": 851,
-        "position": 426
-      },
-      {
-        "id": "pb01",
-        "text": "</pb01>",
-        "raw_start": 851,
-        "raw_end": 858,
-        "position": 426
-      },
-      {
-        "id": "g07",
-        "text": "</g07>",
-        "raw_start": 935,
-        "raw_end": 941,
-        "position": 469
-      },
-      {
-        "id": "m01",
-        "text": "</m01>",
-        "raw_start": 941,
-        "raw_end": 947,
-        "position": 469
+        "raw_start": 687,
+        "raw_end": 693,
+        "position": 466
       }
     ],
     "transcript_word_count": 85,
