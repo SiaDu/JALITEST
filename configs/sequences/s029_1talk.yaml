@@ -1,0 +1,16 @@
+sequence:
+  sequence_id: s029_1talk
+  movie_id: tt0032138
+  movie_name: The Wizard of Oz
+  local_window: 3
+  shot_range:
+    start_shot_idx: 29
+    end_shot_idx: 29
+  fps: 30.0
+  clip_end_frame: null
+
+jali:
+  project_root: /mnt/e/maya_project/JALI_test
+  input_dir: scenes/s029_1talk
+  # Optional. If omitted, clip_name defaults to sequence.sequence_id.
+  # clip_name: YOUR_SEQUENCE_ID
