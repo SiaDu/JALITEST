@@ -1,0 +1,170 @@
+[SUMMARY]
+{
+  "annotation_path": "data/processed/gaze_script/llm_process/s029_1talk__performance_annotation.txt",
+  "tag_count": 6,
+  "event_count": 6,
+  "diagnostics": {
+    "parser": {
+      "warnings": [],
+      "missing_reasons": [],
+      "extra_reasons": [],
+      "normalized_bare_tags": [],
+      "renumbered_duplicate_tag_ids": [],
+      "stripped_closing_tags": [
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 239,
+          "raw_end": 245,
+          "position": 181
+        },
+        {
+          "id": "g01",
+          "text": "</g01>",
+          "raw_start": 245,
+          "raw_end": 251,
+          "position": 181
+        },
+        {
+          "id": "pb01",
+          "text": "</pb01>",
+          "raw_start": 361,
+          "raw_end": 368,
+          "position": 238
+        },
+        {
+          "id": "m02",
+          "text": "</m02>",
+          "raw_start": 368,
+          "raw_end": 374,
+          "position": 238
+        },
+        {
+          "id": "g02",
+          "text": "</g02>",
+          "raw_start": 374,
+          "raw_end": 380,
+          "position": 238
+        },
+        {
+          "id": "l01",
+          "text": "</l01>",
+          "raw_start": 380,
+          "raw_end": 386,
+          "position": 238
+        }
+      ],
+      "tag_count": 6,
+      "tag_type_counts": {
+        "blink_suppression": 0,
+        "gaze": 2,
+        "heart": 0,
+        "lid_state": 1,
+        "mask": 2,
+        "performative_blink": 1
+      }
+    },
+    "resolver": {
+      "missing_reasons": [],
+      "parser_warnings": [],
+      "normalized_bare_tags": [],
+      "stripped_closing_tags": [
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 239,
+          "raw_end": 245,
+          "position": 181
+        },
+        {
+          "id": "g01",
+          "text": "</g01>",
+          "raw_start": 245,
+          "raw_end": 251,
+          "position": 181
+        },
+        {
+          "id": "pb01",
+          "text": "</pb01>",
+          "raw_start": 361,
+          "raw_end": 368,
+          "position": 238
+        },
+        {
+          "id": "m02",
+          "text": "</m02>",
+          "raw_start": 368,
+          "raw_end": 374,
+          "position": 238
+        },
+        {
+          "id": "g02",
+          "text": "</g02>",
+          "raw_start": 374,
+          "raw_end": 380,
+          "position": 238
+        },
+        {
+          "id": "l01",
+          "text": "</l01>",
+          "raw_start": 380,
+          "raw_end": 386,
+          "position": 238
+        }
+      ],
+      "transcript_word_count": 47,
+      "textgrid_word_count": 47,
+      "alignment_warnings": [],
+      "unresolved_events": []
+    }
+  }
+}
+
+[CLEAN_TRANSCRIPT]
+Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you!And now -- well, being a Christian woman, I can't say it!
+
+[NORMALIZED_ANNOTATION]
+<l01=-2><g01=GAZE-CHARACTER_ALMIRA_GULCH><m01=Provoked-85>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you!</m01></g01><g02=AVERT-DOWN><m02=Dislike-65><pb01=EYE_CLOSE_HOLD>And now -- well, being a Christian woman, I can't say it!</pb01></m02></g02></l01>
+
+[FULL_ANNOTATION]
+[ANALYZE]
+
+scene_constraints:
+- People in play: Dorothy speaking directly at Almira/Miss Gulch; Aunt Em and Uncle Henry are present in the wider moment but not the immediate addressee.
+- Primary gaze target: CHARACTER_ALMIRA_GULCH.
+- No key objects in the line; the only “object” is Dorothy’s self-censored insult / moral restraint.
+
+social_interaction_structure:
+- Dorothy is the speaker.
+- Almira Gulch is the confrontational listener, off-camera or opposite Dorothy.
+- The line is a public accusation followed by self-imposed restraint.
+
+affective_cognitive_state:
+- Dorothy reads as a young person briefly claiming power against a social bully; righteous, indignant, and finally self-restraining.
+- Energy is high and compressed, suggesting lid_state around -2.
+- Visible emotion: anger / provoked contempt.
+- Hidden emotion: withheld disgust and moral superiority; she wants to land the insult but refuses to say the final words out loud.
+
+narrative_intent:
+- This beat gives Dorothy a rare moment of outspoken defiance.
+- The comedy comes from the sharp buildup and the final “I can’t say it” moral stop.
+- It also reinforces Gulch as oppressive and Dorothy as ethically stubborn.
+
+performance_strategy:
+- Hold a direct stare at Gulch through the accusation.
+- Keep the first half open, frontal, and heated.
+- On “being a Christian woman, I can’t say it!” let the gaze drop away and clamp the eyes briefly to show self-censorship and swallowed insult.
+- The performance change happens at the final clause, where raw anger becomes restrained, socially framed contempt.
+
+[ANNOTATION]
+
+<l01=-2><g01=GAZE-CHARACTER_ALMIRA_GULCH><m01=Provoked-85>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you!</m01></g01><g02=AVERT-DOWN><m02=Dislike-65><pb01=EYE_CLOSE_HOLD>And now -- well, being a Christian woman, I can't say it!</pb01></m02></g02></l01>
+
+[REASONS]
+
+l01=-2: Slightly heightened eye alertness supports Dorothy’s heated, braced-up indignation without making her look frantic.
+g01=GAZE-CHARACTER_ALMIRA_GULCH: Sustained direct look keeps the speech aimed like a confrontation, not a memory or aside.
+m01=Provoked-85: The first sentence is open accusation and moral challenge, so the face should read as openly angered and bristling.
+g02=AVERT-DOWN: Dropping the gaze on the final clause shows she is withdrawing from direct attack and self-policing the insult.
+m02=Dislike-65: The energy tightens into socially constrained contempt; she is still cutting, but no longer fully unleashed.
+pb01=EYE_CLOSE_HOLD: The eye-clamp sells the swallowed final insult and makes “I can’t say it” land as an acting beat, not just a line ending.

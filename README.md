@@ -139,7 +139,7 @@ bash scripts/01_run_actor_llm.sh --llm-config configs/llm.yaml --overwrite
 
 ```bash
 bash scripts/02_parse_textgrid.sh \
-  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
+  --sequence-id Jali_proto_candidate_001_ProfessorCrystal
 ```
 
 Output paths are derived from `clip_name / sequence_id` automatically.

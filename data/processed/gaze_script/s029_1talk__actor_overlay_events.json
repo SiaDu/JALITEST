@@ -1,0 +1,98 @@
+{
+  "clip_name": "s029_1talk",
+  "events": [
+    {
+      "id": "l01",
+      "type": "lid_state",
+      "value": "-2",
+      "text": "Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you!And now -- well, being a Christian woman, I can't say it!",
+      "reason": "Slightly heightened eye alertness supports Dorothy’s heated, braced-up indignation without making her look frantic.",
+      "span": {
+        "start": 0,
+        "end": 238,
+        "raw_start": 0,
+        "raw_end": 238
+      },
+      "resolved_time": {
+        "start": 0.45,
+        "end": 13.309999,
+        "source": "textgrid_words",
+        "start_word_index": 0,
+        "end_word_index": 46
+      }
+    },
+    {
+      "id": "pb01",
+      "type": "performative_blink",
+      "value": "EYE_CLOSE_HOLD",
+      "text": "And now -- well, being a Christian woman, I can't say it!",
+      "reason": "The eye-clamp sells the swallowed final insult and makes “I can’t say it” land as an acting beat, not just a line ending.",
+      "span": {
+        "start": 181,
+        "end": 238,
+        "raw_start": 181,
+        "raw_end": 238
+      },
+      "resolved_time": {
+        "start": 9.47,
+        "end": 13.309999,
+        "source": "textgrid_words",
+        "start_word_index": 36,
+        "end_word_index": 46
+      }
+    }
+  ],
+  "diagnostics": {
+    "missing_reasons": [],
+    "parser_warnings": [],
+    "normalized_bare_tags": [],
+    "stripped_closing_tags": [
+      {
+        "id": "m01",
+        "text": "</m01>",
+        "raw_start": 239,
+        "raw_end": 245,
+        "position": 181
+      },
+      {
+        "id": "g01",
+        "text": "</g01>",
+        "raw_start": 245,
+        "raw_end": 251,
+        "position": 181
+      },
+      {
+        "id": "pb01",
+        "text": "</pb01>",
+        "raw_start": 361,
+        "raw_end": 368,
+        "position": 238
+      },
+      {
+        "id": "m02",
+        "text": "</m02>",
+        "raw_start": 368,
+        "raw_end": 374,
+        "position": 238
+      },
+      {
+        "id": "g02",
+        "text": "</g02>",
+        "raw_start": 374,
+        "raw_end": 380,
+        "position": 238
+      },
+      {
+        "id": "l01",
+        "text": "</l01>",
+        "raw_start": 380,
+        "raw_end": 386,
+        "position": 238
+      }
+    ],
+    "transcript_word_count": 47,
+    "textgrid_word_count": 47,
+    "alignment_warnings": [],
+    "unresolved_events": []
+  }
+}

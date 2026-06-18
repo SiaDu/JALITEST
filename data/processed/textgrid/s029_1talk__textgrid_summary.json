@@ -1,0 +1,14 @@
+{
+  "clip_name": "s029_1talk",
+  "textgrid_file": "/mnt/e/maya_project/JALI_test/scenes/s029_1talk/s029_1talk.Textgrid",
+  "tier_name": "words",
+  "available_tiers": [
+    "words",
+    "phones"
+  ],
+  "total_interval_count": 59,
+  "skipped_interval_count": 12,
+  "word_count": 47,
+  "words_jsonl": "/home/sia/JaliTest/data/processed/textgrid/s029_1talk__words.jsonl",
+  "words_csv": "/home/sia/JaliTest/data/processed/textgrid/s029_1talk__words.csv"
+}
