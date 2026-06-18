@@ -85,7 +85,7 @@ actor_prompt      = data/processed/gaze_script/llm_process/{clip_name}__actor_pr
 
 ```bash
 bash scripts/00_build_actor_prompt.sh \
-  --sequence-config configs/sequences/Jali_proto_candidate_001_ProfessorCrystal.yaml \
+  --sequence-id Jali_proto_candidate_001_ProfessorCrystal \
   --overwrite
 ```
 
