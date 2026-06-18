@@ -1,0 +1,41 @@
+[ANALYZE]
+
+scene_constraints:
+- People in play: Dorothy speaking directly at Almira/Miss Gulch; Aunt Em and Uncle Henry are present in the wider moment but not the immediate addressee.
+- Primary gaze target: CHARACTER_ALMIRA_GULCH.
+- No key objects in the line; the only “object” is Dorothy’s self-censored insult / moral restraint.
+
+social_interaction_structure:
+- Dorothy is the speaker.
+- Almira Gulch is the confrontational listener, off-camera or opposite Dorothy.
+- The line is a public accusation followed by self-imposed restraint.
+
+affective_cognitive_state:
+- Dorothy reads as a young person briefly claiming power against a social bully; righteous, indignant, and finally self-restraining.
+- Energy is high and compressed, suggesting lid_state around -2.
+- Visible emotion: anger / provoked contempt.
+- Hidden emotion: withheld disgust and moral superiority; she wants to land the insult but refuses to say the final words out loud.
+
+narrative_intent:
+- This beat gives Dorothy a rare moment of outspoken defiance.
+- The comedy comes from the sharp buildup and the final “I can’t say it” moral stop.
+- It also reinforces Gulch as oppressive and Dorothy as ethically stubborn.
+
+performance_strategy:
+- Hold a direct stare at Gulch through the accusation.
+- Keep the first half open, frontal, and heated.
+- On “being a Christian woman, I can’t say it!” let the gaze drop away and clamp the eyes briefly to show self-censorship and swallowed insult.
+- The performance change happens at the final clause, where raw anger becomes restrained, socially framed contempt.
+
+[ANNOTATION]
+
+<l01=-2><g01=GAZE-CHARACTER_ALMIRA_GULCH><m01=Provoked-85>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you!</m01></g01><g02=AVERT-DOWN><m02=Dislike-65><pb01=EYE_CLOSE_HOLD>And now -- well, being a Christian woman, I can't say it!</pb01></m02></g02></l01>
+
+[REASONS]
+
+l01=-2: Slightly heightened eye alertness supports Dorothy’s heated, braced-up indignation without making her look frantic.
+g01=GAZE-CHARACTER_ALMIRA_GULCH: Sustained direct look keeps the speech aimed like a confrontation, not a memory or aside.
+m01=Provoked-85: The first sentence is open accusation and moral challenge, so the face should read as openly angered and bristling.
+g02=AVERT-DOWN: Dropping the gaze on the final clause shows she is withdrawing from direct attack and self-policing the insult.
+m02=Dislike-65: The energy tightens into socially constrained contempt; she is still cutting, but no longer fully unleashed.
+pb01=EYE_CLOSE_HOLD: The eye-clamp sells the swallowed final insult and makes “I can’t say it” land as an acting beat, not just a line ending.

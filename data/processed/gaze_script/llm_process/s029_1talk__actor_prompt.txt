@@ -1,0 +1,146 @@
+You are an expert screen actor, animation director, and performance annotator.
+
+Your job is not to create animation curves.
+Your job is not to output JSON.
+Your job is not to output seconds or frames.
+
+Your job is to read the scene context and the exact transcript, then insert sparse actor-style performance tags into the exact transcript.
+
+The annotation will later be compiled by code into:
+- JALI-compatible mask / heart transcript tags
+- resolved gaze events for Maya
+- optional actor overlay events for eyelids / performative blinks / blink suppression
+
+Use the context as evidence, but annotate only the exact transcript. If the context and exact transcript disagree, preserve and annotate the exact transcript.
+
+Preserve the exact transcript spelling, punctuation, casing, subtitle errors, OCR errors, and unusual words.
+
+[EXACT TRANSCRIPT - ANNOTATE THIS ONLY]
+Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you! And now -- well, being a Christian woman, I can't say it!
+
+[SCENE CONTEXT]
+{
+  "movie_name": "The Wizard of Oz",
+  "movie_id": "tt0032138",
+  "sequence_id": "s029_1talk",
+  "shot_range": {
+    "start_shot_idx": 29,
+    "end_shot_idx": 29,
+    "shot_count": 1
+  },
+  "storyline": "In this charming film based on the popular L. Frank Baum stories, Dorothy and her dog Toto are caught in a tornado's path and somehow end up in the land of Oz. Here she meets some memorable friends and foes in her journey to meet the Wizard of Oz who everyone says can help her return home and possibly grant her new friends their goals of a brain, heart and courage.",
+  "current_story_description": "Dorothy Gale  is an orphaned teenager who lives with her Auntie Em  and Uncle Henry  on a Kansas farm in the early 1900s. She daydreams about going \"over the rainbow\" after Miss Gulch , a nasty neighbor, hits Dorothy's dog Toto  on the back with a rake, causing Toto to bite her. Miss Gulch shows up with an order to take Toto to the sheriff to be euthanized, but Toto jumps out of the basket on the back of Miss Gulch's bicycle and runs back to Dorothy. Fearing that Miss Gulch, who does not know that Toto has escaped, will return, Dorothy takes the dog and runs away from home. She meets an itinerant phony fortune teller, Professor Marvel , who immediately guesses that Dorothy has run away. Pretending to tell her fortune and wishing to reunite Dorothy with her aunt, he tells her that Auntie Em has fallen ill from worry over her.",
+  "current_script_text": "MCU -- Dorothy crying -- looks o.s. to Aunt Em -- then to Uncle Henry then turns and starts out -- MS -- Dorothy runs out of the room -- Aunt Em rises -- looks after Dorothy -- then turns to Miss Gulch and Uncle Henry -- Aunt Em speaks to Miss Gulch -- CAMERA TRUCKS forward -- Aunt Em exits left -- Uncle Henry sits in chair at right f.g. -- grins -- LAP DISSOLVE TO: Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you! And now -- well, being a Christian woman, I can't say it!",
+  "subtitle_text": "[DOROTHY SOBBlNG] [DOOR SLAMS] Almira Gulch, just because you own half the county... ...doesn't mean you can run the rest of us! For 23 years l've been dying to tell you what l thought of you! And now-- Well, being a Christian woman, I can't say it!",
+  "aligned_script_dialogue": "Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you! And now -- well, being a Christian woman, I can't say it!",
+  "full_story_description": "Dorothy Gale  is an orphaned teenager who lives with her Auntie Em  and Uncle Henry  on a Kansas farm in the early 1900s. She daydreams about going \"over the rainbow\" after Miss Gulch , a nasty neighbor, hits Dorothy's dog Toto  on the back with a rake, causing Toto to bite her. Miss Gulch shows up with an order to take Toto to the sheriff to be euthanized, but Toto jumps out of the basket on the back of Miss Gulch's bicycle and runs back to Dorothy. Fearing that Miss Gulch, who does not know that Toto has escaped, will return, Dorothy takes the dog and runs away from home. She meets an itinerant phony fortune teller, Professor Marvel , who immediately guesses that Dorothy has run away. Pretending to tell her fortune and wishing to reunite Dorothy with her aunt, he tells her that Auntie Em has fallen ill from worry over her. | Dorothy immediately returns home with Toto, only to find a tornado approaching. Unable to reach her family in their storm cellar, Dorothy enters the house, is knocked unconscious by a loose window, and apparently begins to dream. Along with her house and Toto, she's swept from her sepia-toned world to the magical, beautiful, dangerous and technicolor land of Oz. The tornado drops Dorothy's house on the Wicked Witch of the East, killing her. The witch ruled the Land of the Munchkins, little people who think at first that Dorothy herself must be a witch. The Wicked Witch of the West again), who is the sister of the dead witch, threatens Dorothy. But Glinda , the Good Witch of the North, gives Dorothy the dead witch's enchanted Ruby Slippers, and the slippers protect her. Glinda advises that if Dorothy wants to go home to Kansas, she should seek the aid of the Wizard of Oz, who lives in the Emerald City. To get there, Dorothy sets off down the Yellow Brick Road. | Before she's followed the road very far, Dorothy meets a talking scarecrow whose dearest wish is to have a brain. Hoping that the wizard can help him, the Scarecrow  joins Dorothy on her journey. They come upon the Tin Woodman , who was caught in the rain and is so rusty he can't move. When they oil his joints so he can walk and talk again, he confesses that he longs for a heart; he too joins Dorothy. As they walk through a dense forest, they encounter the Cowardly Lion , who wishes for courage and joins the quest in the hope that the wizard will give him some. Dorothy's three friends resemble the three farmhands who work for Dorothy's aunt and uncle back in Kansas. | On the way to the Emerald City, Dorothy and her friends are hindered and menaced by the Wicked Witch of the West. She incites trees to throw apples at them, then tries to set the scarecrow on fire. Within sight of the city, the witch conjures up a field of poppies that cause Dorothy, Toto, and the lion to fall asleep. Glinda saves them by making it snow, which counteracts the effects of the poppies. | The witch sends winged monkeys to attack Dorothy's party before they reach her castle; the monkeys snatch Dorothy and Toto and scatter the others. When the witch finds that the Ruby Slippers can't be taken against Dorothy's will as long as the girl is alive, she turns her hourglass and threatens that Dorothy will die when it runs out. Meanwhile, Toto has escaped and run for help. Dressed as guardsmen, the Lion, the Tin Man, and the Scarecrow sneak into the castle and free Dorothy. They're discovered before they can escape, however, and the witch and her guards corner them and set the Scarecrow on fire. Dorothy douses him with a pail of water, splashing the witch by accident. The water causes the witch to disintegrate (\"I'm melting!\"). The guards are happy to let Dorothy have the witch's broomstick, and Dorothy and her friends return to the Emerald City. | The wizard isn't pleased to see them again. He blusters until Toto pulls aside a curtain in the corner of the audience chamber to reveal an old man who resembles Professor Marvel pulling levers and speaking into a microphone -- the so-called wizard, as the Scarecrow says, is a humbug. He's abashed and apologetic, but quickly finds ways to help Dorothy's friends: a diploma for the Scarecrow, a medal of valor for the Lion, and a testimonial heart-shaped watch for the Tin Man. Then he reveals that he's from Kansas himself and came to Oz in a hot-air balloon, in which he proposes to take Dorothy home. | The wizard appoints the Scarecrow, Tin Man, and Lion rulers of Oz in his absence. Just as the balloon is about to take off Toto runs after a cat and Dorothy follows him. Unable to stop, the wizard leaves without Dorothy. But Glinda appears and explains that Dorothy has always had the power to get home; Glinda didn't tell her before because Dorothy wouldn't have believed it. Bidding her friends a tearful good-bye, Dorothy taps her heels together three times, repeats \"There's no place like home,\" and the Ruby Slippers take her and Toto back to Kansas. | Dorothy wakes up in her own bed with Auntie Em and Uncle Henry fussing over her. Professor Marvel and the farmhands Hunk again), Hickory again), and Zeke again) stop by to see how she's doing. She raises indulgent laughter when she tells them about Oz, but she's so happy to be home she doesn't mind that they don't believe her. Miss Gulch is never mentioned again.",
+  "full_context_local_window": [
+    {
+      "shot_id": "shot_0026",
+      "shot_idx": 26,
+      "aligned_script_text": ""
+    },
+    {
+      "shot_id": "shot_0027",
+      "shot_idx": 27,
+      "aligned_script_text": ""
+    },
+    {
+      "shot_id": "shot_0029",
+      "shot_idx": 29,
+      "aligned_script_text": "MCU -- Dorothy crying -- looks o.s. to Aunt Em -- then to Uncle Henry then turns and starts out -- MS -- Dorothy runs out of the room -- Aunt Em rises -- looks after Dorothy -- then turns to Miss Gulch and Uncle Henry -- Aunt Em speaks to Miss Gulch -- CAMERA TRUCKS forward -- Aunt Em exits left -- Uncle Henry sits in chair at right f.g. -- grins -- LAP DISSOLVE TO: Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us! For twenty- three years, I've been dying to tell you what I thought of you! And now -- well, being a Christian woman, I can't say it!"
+    },
+    {
+      "shot_id": "shot_0030",
+      "shot_idx": 30,
+      "aligned_script_text": "MS -- Int. Dorothy's room -- Dorothy sitting on floor by bed - - crying -- Toto jumps in thru window and onto bed -- CAMERA TRUCKS forward as Dorothy hugs him -- reacts -- speaks to him -- then takes suitcase from under bed -- starts packing it -- (Toto barks) LAP DISSOLVE TO: Toto, darling! Oh, I got you back! You came back! Oh, I'm so glad! Toto! (MORE) Oh, they'll be coming back for you in a minute. We've got to get away! We've got to run away -- quick!"
+    },
+    {
+      "shot_id": "shot_0031",
+      "shot_idx": 31,
+      "aligned_script_text": ""
+    },
+    {
+      "shot_id": "shot_0032",
+      "shot_idx": 32,
+      "aligned_script_text": ""
+    }
+  ]
+}
+
+[EXTRA CONFIG]
+{
+  "note": "Prompt-only configs for annotation rules and JALI emotion options.",
+  "sources": [
+    {
+      "path": "/home/sia/JaliTest/configs/jali_emotion_options.yaml",
+      "exists": true,
+      "text": "jali_emotion:\n  mode: transcript_annotation\n\n  node_settings_for_annotation:\n    mask_bearing:\n      attr: mask_bearing\n      enum_index: 0\n      label: from Annotation\n\n    mask_intensity:\n      attr: mask_intensity\n      enum_index: 0\n      label: From Transcript Tags\n\n    heart_source:\n      attr: heart_source\n      enum_index: 0\n      label: from Annotation\n\n    heart_strength:\n      attr: heart_strength\n      enum_index: 0\n      label: From Transcript Tags\n\n  mask:\n    tag_format: \"<mask={bearing}-{intensity}> {text} </mask={bearing}-{intensity}>\"\n\n    intensity:\n      type: int\n      min: 0\n      max: 100\n      default: 50\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"JALI Text Editor accepts arbitrary numeric intensity, not only dropdown presets.\"\n\n    allowed_bearings:\n      Nothing: 2\n      Neutral: 3\n      Polite: 4\n      Friendly: 5\n      Sassy: 6\n      Smug: 7\n      Cocky: 8\n      Nervous: 9\n      Panicky: 10\n      Thinking: 11\n      Scheming: 12\n      Devious: 13\n      Devilish: 14\n      Provoked: 15\n      Angered: 16\n      Dislike: 17\n      Disgust: 18\n      Singing_Serene: 19\n      Watchful: 20\n      Intimidating: 21\n      Confused: 22\n      Lost: 23\n\n  heart:\n    \n    tag_format: \"<heart={source}-{strength}> {text} </heart={source}-{strength}>\"\n\n    strength:\n      type: int\n      min: 0\n      max: 100\n      default: 0\n      llm_safe_min: 10\n      llm_safe_max: 90\n      note: \"If source contains dashes, split the tag value from the final dash.\"\n\n    first_version_sources:\n      Nothing: 121\n      Angry: 122\n      Sad: 123\n      Disgusted: 124\n      Afraid: 125\n      Contempt: 126\n      Surprised: 127\n      Happy: 128\n\n    advanced_sources_allow_for_manual_tests:\n      Pride_P-91: 91\n      Emp_Anger-2: 2"
+    },
+    {
+      "path": "/home/sia/JaliTest/configs/performance_rules.yaml",
+      "exists": true,
+      "text": "performance_rules:\n  schema_version: performance_rules_v2\n\n  performance_annotation:\n    General rules:\n    - Use XML-like tags only, for example <g01=GAZE-CHARACTER_DOROTHY>text</g01>.\n    - Never output naked tags such as g01=GAZE-CHARACTER_DOROTHY text.\n    - Every tag occurrence must have a unique tag ID. Never reuse m01/g01/h01/l01/pb01/bs01 for a second span.\n    - Add tags only when the performance state or local acting beat changes.\n    - Do not restate the same mask, gaze, heart, lid_state, or blink_suppression state if it is already active.\n    - Do not wrap every phrase with the same mask tag. A repeated value such as Friendly-70 should be one span unless the performance truly stops and restarts.\n    - Every tag must be visually meaningful and executable.\n    - Every tag must be explained in [REASONS].\n    - Set lid_state at the beginning of the clip if the eyelid baseline is meaningful. Do not keep re-setting it unless the eyelid baseline changes.\n    - Set initial gaze and mask at the beginning of a performance segment, then change them only when the acting beat changes.\n\n    tag_id_prefixes:\n      gaze: g\n      mask: m\n      heart: h\n      lid_state: l\n      performative_blink: pb\n      blink_suppression: bs\n\n    Syntax examples:\n      correct:\n      - <l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01>\n      - <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>\n      incorrect:\n      - l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.\n      - <m01=Friendly-70>That's right.</m01> <m01=Friendly-70>Ha ha!</m01>\n      - <g06=GAZE-CHARACTER_DOROTHY>Now...</g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY>in order...</g06></pb01>\n\n    Gaze rules:\n    - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.\n    - Allowed gaze modes are GAZE, GLANCE, and AVERT.\n    - GAZE means sustained look toward target.\n    - GLANCE means brief look toward target.\n    - AVERT means sustained avoidance from the main social target.\n    - Infer gaze targets from the transcript and context. Use concrete targets, e.g. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.\n    - If the same gaze target continues, do not create a new gaze tag.\n\n    Gaze allowed_targets:\n      - CHARACTER_CharacterName\n      - OBJECT_ObjectName\n      - DOWN\n      - DOWN_LEFT\n      - DOWN_RIGHT\n      - UP\n      - UP_LEFT\n      - UP_RIGHT\n      - LEFT\n      - RIGHT\n\n    Mask / heart rules:\n    - Use mask tags for visible facial performance.\n    - Use heart tags only when the inner state differs from visible mask.\n    - Do not use heart as a generic second emotion layer.\n    - Use mask and heart names from the JALI emotion options when provided.\n    - Keep strength values moderate unless the acting beat extremely demands more.\n    - If the visible mask remains the same, keep one mask span instead of re-opening the same mask again.\n\n    Lid / blink rules:\n    - Do not annotate ordinary regulatory blinks.\n    - Use one lid_state scale tag at the beginning if the baseline is important.\n    - Use lid_state tags only for sustained eyelid baseline changes, not as a second emotion label.\n    - Use performative_blink only when the blink itself is an acting choice.\n    - Use blink_suppression only when not blinking is the acting choice.\n\n    Lid_state scale, use these as energy/affective/cognitive state reference, refers to how large eye open:\n    -9: fully wide, manic / possessed / extreme fear\n    -7: feverish, unstable, obsessive\n    -5: intense, neurotic, over-alert\n    -3: shocked / angry / excited\n    -2: heightened attention\n    -1: alert but controlled\n    0: default\n    1: relaxed / neutral\n    2: soft / warm / receptive\n    3: guarded / impatient / skeptical\n    4: sleepy / withdrawn / flat dislike / emotionally closed\n\n    Performative blink modes:\n    - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain\n    - EYE_CLOSE_HOLD: thinking, avoidance, unwillingness to look, emotional suppression, prayer, mystical concentration, fatigue, demonstration\n    - SLOW_BLINK: cognitive retrieval, remembering, fabricating a story, searching for words\n"
+    }
+  ]
+}
+
+Output exactly three sections, in this order:
+
+[ANALYZE]
+
+Keep the analysis compact and practical. Include:
+
+scene_constraints:
+- available people / objects / gaze targets inferred from the transcript and context
+
+social_interaction_structure:
+- who is speaking, who is listening
+
+affective_cognitive_state:
+- character read: social role and power position, temperament, performance style, hidden undercurrent only if relevant
+- energy, which links to lid_state
+- visible emotion, hidden emotion (heart emotion) only if relevant. what the character wants/thinks in this moment
+
+narrative_intent:
+- how this performance attributes to storytelling
+
+performance_strategy:
+- how gaze, facial mask / heart, and optional eyelids / blinks should support the acting beat
+- where the performance actually changes
+
+[ANNOTATION]
+
+Insert readable performance tags into the original exact transcript.
+Use the performance rules and JALI emotion options from [EXTRA CONFIG].
+
+Hard syntax contract:
+- Use XML-like tags only: <tagID=value>text span</tagID>.
+- Never output naked tags such as `g01=GAZE-CHARACTER_DOROTHY text`.
+- Every tag occurrence must have a unique tag ID. Never reuse m01, g01, h01, l01, pb01, or bs01 for a second span.
+- If you need another mask span, use m02, then m03, etc.
+- If you need another gaze span, use g02, then g03, etc.
+- Opening tags start a span. Closing tags end that exact span.
+- Use closing tags whenever the span is local.
+- State tags such as gaze, mask, heart, lid_state, and blink_suppression persist until their close tag or until the next tag of the same type.
+- Do not restate the same state. If the character remains Friendly-70, do not open another Friendly-70 mask tag.
+- Only create a new mask / heart / gaze / lid tag when the performance actually changes.
+- Avoid wrapping every sentence with the same mask tag.
+- Nested tags are allowed, but each nested tag still needs its own unique ID.
+
+Correct example:
+<l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01> <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>
+
+Incorrect examples:
+- l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.
+- <m01=Friendly-70>That's right.</m01> <m01=Friendly-70>Ha ha!</m01>
+- <g06=GAZE-CHARACTER_DOROTHY>Now...</g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY>in order...</g06></pb01>
+
+[REASONS]
+
+Briefly explain every tag ID.
+Reasons must be practical acting reasons, not generic emotion labels.
+Reasons should explain why the tag changes audience perception or character performance.
+Allowed reason formats:
+- g01=GAZE-CHARACTER_DOROTHY: reason
+- m01=Friendly-80: reason
