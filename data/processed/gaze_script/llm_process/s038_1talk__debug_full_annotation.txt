@@ -1,0 +1,338 @@
+[SUMMARY]
+{
+  "annotation_path": "data/processed/gaze_script/llm_process/s038_1talk__performance_annotation.txt",
+  "tag_count": 18,
+  "event_count": 18,
+  "diagnostics": {
+    "parser": {
+      "warnings": [],
+      "missing_reasons": [],
+      "extra_reasons": [],
+      "normalized_bare_tags": [],
+      "stripped_closing_tags": [
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 66,
+          "raw_end": 72,
+          "position": 13
+        },
+        {
+          "id": "g01",
+          "text": "</g01>",
+          "raw_start": 72,
+          "raw_end": 78,
+          "position": 13
+        },
+        {
+          "id": "l01",
+          "text": "</l01>",
+          "raw_start": 78,
+          "raw_end": 84,
+          "position": 13
+        },
+        {
+          "id": "g02",
+          "text": "</g02>",
+          "raw_start": 141,
+          "raw_end": 147,
+          "position": 42
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 175,
+          "raw_end": 181,
+          "position": 53
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 205,
+          "raw_end": 211,
+          "position": 60
+        },
+        {
+          "id": "h01",
+          "text": "</h01>",
+          "raw_start": 408,
+          "raw_end": 414,
+          "position": 198
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 414,
+          "raw_end": 420,
+          "position": 198
+        },
+        {
+          "id": "g03",
+          "text": "</g03>",
+          "raw_start": 420,
+          "raw_end": 426,
+          "position": 198
+        },
+        {
+          "id": "g04",
+          "text": "</g04>",
+          "raw_start": 536,
+          "raw_end": 542,
+          "position": 278
+        },
+        {
+          "id": "g05",
+          "text": "</g05>",
+          "raw_start": 593,
+          "raw_end": 599,
+          "position": 309
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 712,
+          "raw_end": 718,
+          "position": 377
+        },
+        {
+          "id": "g06",
+          "text": "</g06>",
+          "raw_start": 718,
+          "raw_end": 724,
+          "position": 377
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 839,
+          "raw_end": 845,
+          "position": 426
+        },
+        {
+          "id": "g06",
+          "text": "</g06>",
+          "raw_start": 845,
+          "raw_end": 851,
+          "position": 426
+        },
+        {
+          "id": "pb01",
+          "text": "</pb01>",
+          "raw_start": 851,
+          "raw_end": 858,
+          "position": 426
+        },
+        {
+          "id": "g07",
+          "text": "</g07>",
+          "raw_start": 935,
+          "raw_end": 941,
+          "position": 469
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 941,
+          "raw_end": 947,
+          "position": 469
+        }
+      ],
+      "tag_count": 18,
+      "tag_type_counts": {
+        "blink_suppression": 0,
+        "gaze": 8,
+        "heart": 1,
+        "lid_state": 1,
+        "mask": 7,
+        "performative_blink": 1
+      }
+    },
+    "resolver": {
+      "missing_reasons": [],
+      "parser_warnings": [],
+      "normalized_bare_tags": [],
+      "stripped_closing_tags": [
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 66,
+          "raw_end": 72,
+          "position": 13
+        },
+        {
+          "id": "g01",
+          "text": "</g01>",
+          "raw_start": 72,
+          "raw_end": 78,
+          "position": 13
+        },
+        {
+          "id": "l01",
+          "text": "</l01>",
+          "raw_start": 78,
+          "raw_end": 84,
+          "position": 13
+        },
+        {
+          "id": "g02",
+          "text": "</g02>",
+          "raw_start": 141,
+          "raw_end": 147,
+          "position": 42
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 175,
+          "raw_end": 181,
+          "position": 53
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 205,
+          "raw_end": 211,
+          "position": 60
+        },
+        {
+          "id": "h01",
+          "text": "</h01>",
+          "raw_start": 408,
+          "raw_end": 414,
+          "position": 198
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 414,
+          "raw_end": 420,
+          "position": 198
+        },
+        {
+          "id": "g03",
+          "text": "</g03>",
+          "raw_start": 420,
+          "raw_end": 426,
+          "position": 198
+        },
+        {
+          "id": "g04",
+          "text": "</g04>",
+          "raw_start": 536,
+          "raw_end": 542,
+          "position": 278
+        },
+        {
+          "id": "g05",
+          "text": "</g05>",
+          "raw_start": 593,
+          "raw_end": 599,
+          "position": 309
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 712,
+          "raw_end": 718,
+          "position": 377
+        },
+        {
+          "id": "g06",
+          "text": "</g06>",
+          "raw_start": 718,
+          "raw_end": 724,
+          "position": 377
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 839,
+          "raw_end": 845,
+          "position": 426
+        },
+        {
+          "id": "g06",
+          "text": "</g06>",
+          "raw_start": 845,
+          "raw_end": 851,
+          "position": 426
+        },
+        {
+          "id": "pb01",
+          "text": "</pb01>",
+          "raw_start": 851,
+          "raw_end": 858,
+          "position": 426
+        },
+        {
+          "id": "g07",
+          "text": "</g07>",
+          "raw_start": 935,
+          "raw_end": 941,
+          "position": 469
+        },
+        {
+          "id": "m01",
+          "text": "</m01>",
+          "raw_start": 941,
+          "raw_end": 947,
+          "position": 469
+        }
+      ],
+      "transcript_word_count": 85,
+      "textgrid_word_count": 85,
+      "alignment_warnings": [],
+      "unresolved_events": []
+    }
+  }
+}
+
+[CLEAN_TRANSCRIPT]
+That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt -- -- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony, and -- and so on -- and so on. Now, you -- you'd better close your eyes, my child, for a moment -- in order to be better in tune with the infinite. We -- we can't do these things without....
+
+[NORMALIZED_ANNOTATION]
+<l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right.</m01></g01></l01> <g02=GAZE-CHARACTER_DOROTHY>Here -- sit right down here.</g02> <m01=Friendly-70>That's it.</m01> <m01=Friendly-70>Ha ha!</m01> <g03=GAZE-OBJECT_CRYSTAL><m01=Friendly-70><h01=Scheming-40>This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt --</h01></m01></g03> <g04=GLANCE-OBJECT_PHOTOGRAPH>-- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony,</g04> <g05=GLANCE-UP_LEFT>and -- and so on -- and so on.</g05> <g06=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>Now, you -- you'd better close your eyes, my child, for a moment --</m01></g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>in order to be better in tune with the infinite.</m01></g06></pb01> <m01=Friendly-70><g07=GLANCE-DOWN>We -- we can't do these things without....</g07></m01>
+
+[FULL_ANNOTATION]
+[ANALYZE]
+
+scene_constraints:
+- available people/objects/gaze targets: CHARACTER_DOROTHY, OBJECT_CRYSTAL, OBJECT_PHOTOGRAPH (photograph of Dorothy and Aunt Em), UP_LEFT (dramatic storytelling gesture), DOWN (closing eyes).
+- props/actions: Professor manipulates a crystal, takes Dorothy's basket and photograph, lights candles, wears a turban. Dorothy is sitting/closing eyes.
+
+social_interaction_structure:
+- Who is speaking: Professor Marvel (speaking to Dorothy, persuading/performing).
+- Who is listening: Dorothy (the child, receptive and trusting), implied audience (camera).
+
+affective_cognitive_state:
+- character read: Professor Marvel is a charming, theatrical little con-man — outwardly warm and reassuring, inwardly scheming to manipulate Dorothy into going home (role: social performer with low power but a confident showman).
+- energy / lid_state: slightly heightened attention / mildly excited (lid_state ~ -1).
+- visible emotion: warm, playful reassurance; hidden emotion (heart): scheming/performative deception (he wants to convince Dorothy and steer her actions).
+
+narrative_intent:
+- This beat establishes Professor's charisma and persuasive fakery — sells mystical authority via the crystal and story (sets up why Dorothy trusts him and returns home).
+- The performance should make him seem sincere enough to fool Dorothy while hinting to the audience that it's a put-on.
+
+performance_strategy:
+- Gaze: alternate between Dorothy (social control/reassurance), the crystal (object emphasis), and the photograph (evidence/prop). Use a brief upward glance for rhetorical flourish when invoking Cleopatra/Caesar. End with direct gaze to Dorothy to prompt closing her eyes.
+- Mask (facial): Friendly baseline to charm; overlay mild Scheming heart during the patter about crystal to hint at fakery.
+- Lid/blink: keep slightly alert (l01=-1). Use a performative micro eye-close hold when he asks Dorothy to close her eyes to model the action (pb01=EYE_CLOSE_HOLD) for a brief paragraph-level beat.
+- Performance changes: switch gaze to OBJECT_CRYSTAL when describing it; switch to UP_LEFT for the Cleopatra line; switch back to CHARACTER_DOROTHY for the instruction to close eyes. Add heart tag during the crystal patter only.
+
+[ANNOTATION]
+
+<l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right.</m01></g01></l01> <g02=GAZE-CHARACTER_DOROTHY>Here -- sit right down here.</g02> <m01=Friendly-70>That's it.</m01> <m01=Friendly-70>Ha ha!</m01> <g03=GAZE-OBJECT_CRYSTAL><m01=Friendly-70><h01=Scheming-40>This -- this is the same genuine, magic, authentic crystal used by the Priests of Isis and Osiris in the days of the Pharaohs of Egypt --</h01></m01></g03> <g04=GLANCE-OBJECT_PHOTOGRAPH>-- in which Cleopatra first saw the approach of Julius Caesar and Marc Anthony,</g04> <g05=GLANCE-UP_LEFT>and -- and so on -- and so on.</g05> <g06=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>Now, you -- you'd better close your eyes, my child, for a moment --</m01></g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>in order to be better in tune with the infinite.</m01></g06></pb01> <m01=Friendly-70><g07=GLANCE-DOWN>We -- we can't do these things without....</g07></m01>
+
+[REASONS]
+
+l01=-1: sets slightly heightened eye openness to communicate alert theatricality and mild excitement.
+g01=GAZE-CHARACTER_DOROTHY: initial social anchoring — establishes rapport and directs Dorothy to sit.
+m01=Friendly-70: outward friendly, reassuring facial performance to sell the fortune-teller persona.
+g02=GAZE-CHARACTER_DOROTHY: continued social control while seating Dorothy.
+g03=GAZE-OBJECT_CRYSTAL: directs audience and Dorothy to the prop as the focus of the magical patter.
+h01=Scheming-40: subtle inner intent during the crystal pitch to hint to the audience that the warmth is a con (not overtly large so Dorothy remains convinced).
+g04=GLANCE-OBJECT_PHOTOGRAPH: quick reference to the photograph as a "proof" prop in his narrative (he actually pulls it earlier).
+g05=GLANCE-UP_LEFT: rhetorical, slightly comic upward glance for the historical name-dropping flourish (Cleopatra/Caesar).
+g06=GAZE-CHARACTER_DOROTHY: direct instruction to Dorothy to close her eyes — reasserts social control and intimacy.
+pb01=EYE_CLOSE_HOLD: a performative model blink/eye-close when asking Dorothy to close her eyes to physically demonstrate the action and heighten ritual feel.
+g07=GLANCE-DOWN: finishing the line by looking down/away to imply mystical concentration as he trails off.
