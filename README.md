@@ -188,6 +188,12 @@ bash scripts/04_validate_actor_outputs.sh \
 
 ## Maya helper scripts
 
+```text
+exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_apply_gaze_events.py", encoding="utf-8").read())
+
+exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_apply_eye_performance_events.py", encoding="utf-8").read())
+```
+
 Maya-side runner scripts live in:
 
 ```text

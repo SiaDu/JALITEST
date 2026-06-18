@@ -22,7 +22,7 @@ That's right. Here -- sit right down here. That's it. Ha ha! This -- this is the
 {
   "movie_name": "The Wizard of Oz",
   "movie_id": "tt0032138",
-  "sequence_id": "s038_professor_singletalk",
+  "sequence_id": "s038_1talk",
   "shot_range": {
     "start_shot_idx": 38,
     "end_shot_idx": 38,

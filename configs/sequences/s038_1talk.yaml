@@ -1,5 +1,5 @@
 sequence:
-  sequence_id: s038_professor_singletalk
+  sequence_id: s038_1talk
   movie_id: tt0032138
   movie_name: The Wizard of Oz
   local_window: 3
@@ -12,4 +12,4 @@ sequence:
 jali:
   project_root: /mnt/e/maya_project/JALI_test
   input_dir: scenes/sounds_proto1
-  clip_name: s038_professor_singletalk
+  clip_name: s038_1talk
