@@ -1,10 +1,7 @@
 maya_common:
   repo_root: .
-  clip_name: Jali_proto_candidate_001_ProfessorCrystal
   maya_project_root: E:/maya_project/JALI_test
   jali_input_dir: scenes/sounds_proto1
-  fps: 30.0
-  clip_end_frame: 1064.2
 
 maya_gaze:
   eye_stare_node_suffix: eyeStare_world
@@ -30,6 +27,8 @@ maya_gaze:
     DOROTHY: AIM_listener
     CRYSTAL: AIM_crystal
     OBJECT_CRYSTAL: AIM_crystal
+    PHOTOGRAPH: AIM_photograph
+    OBJECT_PHOTOGRAPH: AIM_photograph
     DOWN: DOWN
     DOWN_LEFT: DOWN_LEFT
     DOWN_RIGHT: DOWN_RIGHT
@@ -44,6 +43,8 @@ maya_gaze:
       node: listener_lookat_LOC
     AIM_crystal:
       node: crystal_lookat_LOC
+    AIM_photograph:
+      node: photograph_lookat_LOC
 
   direction_offsets:
     DOWN: [0.0, -25.0, 0.0]

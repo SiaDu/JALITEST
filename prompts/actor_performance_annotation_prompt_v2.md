@@ -53,34 +53,27 @@ performance_strategy:
 Insert readable performance tags into the original exact transcript.
 Use the performance rules and JALI emotion options from [EXTRA CONFIG].
 
-CRITICAL TAG SYNTAX:
-- All annotation tags must be XML-like angle tags inside the transcript.
-- Opening tag format: <tagID=value>
-- Closing tag format: </tagID>
-- Correct: <l01=-2>That's right.</l01>
-- Correct: <g01=GAZE-CHARACTER_DOROTHY>Here -- sit right down here.</g01>
-- Correct: <m01=Friendly-70>Ha ha!</m01>
-- Incorrect: l01=-2 That's right.
-- Incorrect: g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.
-- Incorrect: m01=Friendly-70 Ha ha!
+Hard syntax contract:
+- Use XML-like tags only: <tagID=value>text span</tagID>.
+- Never output naked tags such as `g01=GAZE-CHARACTER_DOROTHY text`.
+- Every tag occurrence must have a unique tag ID. Never reuse m01, g01, h01, l01, pb01, or bs01 for a second span.
+- If you need another mask span, use m02, then m03, etc.
+- If you need another gaze span, use g02, then g03, etc.
+- Opening tags start a span. Closing tags end that exact span.
+- Use closing tags whenever the span is local.
+- State tags such as gaze, mask, heart, lid_state, and blink_suppression persist until their close tag or until the next tag of the same type.
+- Do not restate the same state. If the character remains Friendly-70, do not open another Friendly-70 mask tag.
+- Only create a new mask / heart / gaze / lid tag when the performance actually changes.
+- Avoid wrapping every sentence with the same mask tag.
+- Nested tags are allowed, but each nested tag still needs its own unique ID.
 
-Allowed tag formats:
-- <g##=GAZE-CHARACTER_Name>...</g##>
-- <g##=GLANCE-OBJECT_Name>...</g##>
-- <g##=AVERT-DOWN>...</g##>
-- <m##=MaskName-Strength>...</m##>
-- <h##=HeartName-Strength>...</h##>
-- <l##=VALUE>...</l##>
-- <pb##=MODE>...</pb##>
-- <bs##=SUPPRESS>...</bs##> or <bs##=ALLOW>...</bs##>
+Correct example:
+<l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01> <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>
 
-Rules:
-- Do not write bare tag tokens as plain text.
-- Do not put tags in a separate list.
-- Do not alter, summarize, or rewrite the transcript.
-- Use closing tags whenever the tag applies to a local phrase or acting beat.
-- If a state-change tag should continue until the next same-type tag, an opening tag without a close is allowed, but angle brackets are still required.
-- Gaze targets should be concrete when possible: CHARACTER_DOROTHY, OBJECT_CRYSTAL, DOWN, UP_LEFT, etc.
+Incorrect examples:
+- l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.
+- <m01=Friendly-70>That's right.</m01> <m01=Friendly-70>Ha ha!</m01>
+- <g06=GAZE-CHARACTER_DOROTHY>Now...</g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY>in order...</g06></pb01>
 
 [REASONS]
 

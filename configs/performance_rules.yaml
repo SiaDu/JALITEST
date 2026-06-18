@@ -1,25 +1,18 @@
 performance_rules:
-  schema_version: performance_rules_v1
+  schema_version: performance_rules_v2
 
   performance_annotation:
     General rules:
-    - All [ANNOTATION] tags MUST use XML-like angle syntax: <tagID=value>text</tagID>.
-    - Never write bare tags such as `g01=GAZE-CHARACTER_DOROTHY text`; bare tags become fake transcript words and break TextGrid alignment.
-    - ALWAYS set the lid_state tag, gaze tag and mask tag at the beginning of each performance segment, using angle tags.
+    - Use XML-like tags only, for example <g01=GAZE-CHARACTER_DOROTHY>text</g01>.
+    - Never output naked tags such as g01=GAZE-CHARACTER_DOROTHY text.
+    - Every tag occurrence must have a unique tag ID. Never reuse m01/g01/h01/l01/pb01/bs01 for a second span.
     - Add tags only when the performance state or local acting beat changes.
+    - Do not restate the same mask, gaze, heart, lid_state, or blink_suppression state if it is already active.
+    - Do not wrap every phrase with the same mask tag. A repeated value such as Friendly-70 should be one span unless the performance truly stops and restarts.
     - Every tag must be visually meaningful and executable.
     - Every tag must be explained in [REASONS].
-    - Prefer closing tags for local phrase-level beats. Opening-only state tags are allowed only when they should continue until the next same-type tag.
-
-    tag_syntax_examples:
-      correct:
-      - "<l01=-2>That's right.</l01>"
-      - "<g01=GAZE-CHARACTER_DOROTHY>Here -- sit right down here.</g01>"
-      - "<m01=Friendly-70>Ha ha!</m01>"
-      incorrect:
-      - "l01=-2 That's right."
-      - "g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here."
-      - "m01=Friendly-70 Ha ha!"
+    - Set lid_state at the beginning of the clip if the eyelid baseline is meaningful. Do not keep re-setting it unless the eyelid baseline changes.
+    - Set initial gaze and mask at the beginning of a performance segment, then change them only when the acting beat changes.
 
     tag_id_prefixes:
       gaze: g
@@ -29,13 +22,23 @@ performance_rules:
       performative_blink: pb
       blink_suppression: bs
 
+    Syntax examples:
+      correct:
+      - <l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01>
+      - <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>
+      incorrect:
+      - l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.
+      - <m01=Friendly-70>That's right.</m01> <m01=Friendly-70>Ha ha!</m01>
+      - <g06=GAZE-CHARACTER_DOROTHY>Now...</g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY>in order...</g06></pb01>
+
     Gaze rules:
     - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.
     - Allowed gaze modes are GAZE, GLANCE, and AVERT.
     - GAZE means sustained look toward target.
     - GLANCE means brief look toward target.
     - AVERT means sustained avoidance from the main social target.
-    - Infer gaze targets from the transcript and context. Should use concrete targets. eg. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.
+    - Infer gaze targets from the transcript and context. Use concrete targets, e.g. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.
+    - If the same gaze target continues, do not create a new gaze tag.
 
     Gaze allowed_targets:
       - CHARACTER_CharacterName
@@ -55,25 +58,27 @@ performance_rules:
     - Do not use heart as a generic second emotion layer.
     - Use mask and heart names from the JALI emotion options when provided.
     - Keep strength values moderate unless the acting beat extremely demands more.
+    - If the visible mask remains the same, keep one mask span instead of re-opening the same mask again.
 
     Lid / blink rules:
     - Do not annotate ordinary regulatory blinks.
-    - ALWAYS set lid_state scale tag at beginning.
-    - Use lid_state tags change only for sustained eyelid baseline changes, not as a second emotion label.
+    - Use one lid_state scale tag at the beginning if the baseline is important.
+    - Use lid_state tags only for sustained eyelid baseline changes, not as a second emotion label.
     - Use performative_blink only when the blink itself is an acting choice.
     - Use blink_suppression only when not blinking is the acting choice.
 
     Lid_state scale, use these as energy/affective/cognitive state reference, refers to how large eye open:
-    -5: fully wide, manic / possessed / extreme fear (extremely open)
-    -4: feverish, unstable, obsessive
-    -3: intense, neurotic, over-alert
-    -2: shocked / angry / excited
-    -1: heightened attention
-    0: default (eye open)
+    -9: fully wide, manic / possessed / extreme fear
+    -7: feverish, unstable, obsessive
+    -5: intense, neurotic, over-alert
+    -3: shocked / angry / excited
+    -2: heightened attention
+    -1: alert but controlled
+    0: default
     1: relaxed / neutral
     2: soft / warm / receptive
     3: guarded / impatient / skeptical
-    4: sleepy / withdrawn / flat dislike / emotionally closed (eye close)
+    4: sleepy / withdrawn / flat dislike / emotionally closed
 
     Performative blink modes:
     - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain

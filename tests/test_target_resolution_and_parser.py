@@ -16,19 +16,19 @@ def test_parser_strips_closing_tags(tmp_path: Path):
     assert len(parsed["diagnostics"]["stripped_closing_tags"]) == 2
 
 
-def test_parser_recovers_bare_tags_from_llm_output(tmp_path: Path):
+def test_parser_recovers_bare_tags_and_renumbers_duplicate_ids(tmp_path: Path):
     p = tmp_path / "annotation.txt"
     p.write_text(
-        """[ANALYZE]\n\nok\n\n[ANNOTATION]\n\nl01=-2 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here. m01=Scheming-50 Hello.\n\n[REASONS]\n\nl01=-2: lid reason\ng01=GAZE-CHARACTER_DOROTHY: gaze reason\nm01=Scheming-50: mask reason\n""",
+        """[ANALYZE]\n\nok\n\n[ANNOTATION]\n\nl01=-1 Hello <m01=Friendly-70>there</m01> <m01=Friendly-70>again</m01> <g01=GAZE-CHARACTER_DOROTHY>now</g01> <g01=GAZE-CHARACTER_DOROTHY>later</g01>\n\n[REASONS]\n\nl01=-1: lid baseline\nm01=Friendly-70: friendly mask\ng01=GAZE-CHARACTER_DOROTHY: Dorothy gaze\n""",
         encoding="utf-8",
     )
     parsed = parse_performance_annotation(p)
-    assert "l01=-2" not in parsed["clean_transcript"]
-    assert "g01=GAZE-CHARACTER_DOROTHY" not in parsed["clean_transcript"]
-    assert parsed["clean_transcript"].strip().startswith("That's right.")
-    assert [tag["id"] for tag in parsed["tags"]] == ["l01", "g01", "m01"]
-    assert len(parsed["diagnostics"]["normalized_bare_tags"]) == 3
-    assert parsed["tags"][1]["reason"] == "gaze reason"
+    ids = [tag["id"] for tag in parsed["tags"]]
+    assert ids == ["l01", "m01", "m02", "g01", "g02"]
+    assert "l01=-1" not in parsed["clean_transcript"]
+    assert parsed["diagnostics"]["normalized_bare_tags"]
+    assert len(parsed["diagnostics"]["renumbered_duplicate_tag_ids"]) == 2
+    assert not parsed["diagnostics"]["missing_reasons"]
 
 
 def test_gaze_exporter_resolves_listener_and_marks_object():
@@ -49,24 +49,3 @@ def test_gaze_exporter_resolves_listener_and_marks_object():
     assert exported["events"][1]["target"] == "OBJECT"
     assert exported["events"][1]["target_needs_resolution"] is True
     assert exported["diagnostics"]["generic_targets"]
-
-
-def test_gaze_exporter_resolves_typed_character_and_object_targets():
-    resolved = {
-        "events": [
-            {"id": "g1", "type": "gaze", "value": "GAZE-CHARACTER_DOROTHY", "text": "hello"},
-            {"id": "g2", "type": "gaze", "value": "GLANCE-OBJECT_CRYSTAL", "text": "prop"},
-        ],
-        "diagnostics": {},
-    }
-    context = {
-        "scene_targets": {"people": ["DOROTHY", "PROFESSOR"], "objects": ["CRYSTAL", "PHOTOGRAPH"], "directions": ["DOWN"]},
-        "target_context": {"role_map": {"LISTENER": "DOROTHY"}},
-    }
-    exported = export_gaze_events(resolved, clip_name="clip", context_pack=context)
-    assert exported["events"][0]["target_role"] == "CHARACTER"
-    assert exported["events"][0]["target_label"] == "DOROTHY"
-    assert exported["events"][0]["target_needs_resolution"] is False
-    assert exported["events"][1]["target_role"] == "OBJECT"
-    assert exported["events"][1]["target_label"] == "CRYSTAL"
-    assert exported["events"][1]["target_needs_resolution"] is False

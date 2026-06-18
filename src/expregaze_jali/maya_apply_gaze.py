@@ -230,11 +230,65 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
     return data
 
 
-def load_maya_gaze_config(path: str | Path) -> dict[str, Any]:
-    """Load a `maya_gaze` YAML config and attach path context.
+def _mapping(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
 
-    A single Maya config may contain a shared `maya_common` section plus
-    `maya_gaze`, `maya_eye_performance`, and `maya_jali_annotation` sections.
+
+def _sequence_overrides(sequence_config_path: str | Path | None) -> dict[str, Any]:
+    if not sequence_config_path:
+        return {}
+    data = _load_yaml_file(Path(sequence_config_path))
+    sequence = _mapping(data.get("sequence", data))
+    jali = _mapping(data.get("jali"))
+
+    sequence_id = sequence.get("sequence_id") or jali.get("clip_name")
+    clip_name = jali.get("clip_name") or sequence_id
+
+    out: dict[str, Any] = {
+        "_sequence_config_path": str(sequence_config_path),
+    }
+    if sequence_id:
+        out["sequence_id"] = str(sequence_id)
+    if clip_name:
+        out["clip_name"] = str(clip_name)
+    if sequence.get("fps") not in (None, ""):
+        out["fps"] = float(sequence["fps"])
+    if sequence.get("clip_end_frame") not in (None, ""):
+        out["clip_end_frame"] = float(sequence["clip_end_frame"])
+    return out
+
+
+def _compiled_output_dir_from_project(project_config_path: str | Path | None) -> str:
+    if not project_config_path:
+        return "data/processed/gaze_script"
+    path = Path(project_config_path)
+    try:
+        data = _load_yaml_file(path)
+        project_data = _mapping(data.get("data"))
+        return str(project_data.get("compiled_output_dir") or "data/processed/gaze_script")
+    except Exception:
+        # Maya often does not have PyYAML. The fallback YAML reader intentionally
+        # supports only the small subset needed by Maya configs and may fail on
+        # project.yaml list values. For this function, we only need one scalar.
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if line.startswith("compiled_output_dir:"):
+                return line.split(":", 1)[1].strip().strip("\"'") or "data/processed/gaze_script"
+        return "data/processed/gaze_script"
+
+
+def load_maya_gaze_config(
+    path: str | Path,
+    *,
+    sequence_config_path: str | Path | None = None,
+    project_config_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Load a Maya gaze config and optionally merge the active sequence config.
+
+    `configs/maya/valleygirl.yaml` should describe the rig / locator setup.
+    `configs/sequences/*.yaml` should describe the active clip/sequence id,
+    fps, and clip_end_frame. Sequence values override stale clip values in the
+    Maya rig config.
     """
     config_path = Path(path)
     data = _load_yaml_file(config_path)
@@ -245,12 +299,18 @@ def load_maya_gaze_config(path: str | Path) -> dict[str, Any]:
         raise ValueError(f"Invalid Maya gaze config: {path}")
 
     out = {**common, **config}
+    out.update(_sequence_overrides(sequence_config_path))
+
     clip_name = str(out.get("clip_name", "")).strip()
     if "gaze_events_path" not in out and clip_name:
-        out["gaze_events_path"] = f"data/processed/gaze_script/{clip_name}__gaze_events_resolved.json"
+        compiled_output_dir = _compiled_output_dir_from_project(project_config_path)
+        out["gaze_events_path"] = f"{compiled_output_dir}/{clip_name}__gaze_events_resolved.json"
 
     out["_config_path"] = str(config_path)
     out["_config_dir"] = str(config_path.parent)
+    if project_config_path:
+        out["_project_config_path"] = str(project_config_path)
+
     repo_root = out.get("repo_root", ".")
     repo_root_path = Path(str(repo_root))
     inferred_project_root = config_path.parent.parent.parent
@@ -486,9 +546,33 @@ def apply_gaze_events(
     print("[DONE] Gaze overlay applied.")
 
 
-def apply_gaze_events_from_config(config_path: str | Path) -> None:
-    config = load_maya_gaze_config(config_path)
+def apply_gaze_events_from_config(
+    config_path: str | Path,
+    *,
+    sequence_config_path: str | Path | None = None,
+    project_config_path: str | Path | None = None,
+) -> None:
+    config = load_maya_gaze_config(
+        config_path,
+        sequence_config_path=sequence_config_path,
+        project_config_path=project_config_path,
+    )
     gaze_events_path = resolve_repo_path(config["gaze_events_path"], config)
+
+    print(f"[INFO] Maya gaze config: {config_path}")
+    if sequence_config_path:
+        print(f"[INFO] Sequence config: {sequence_config_path}")
+    print(f"[INFO] Clip name: {config.get('clip_name', '')}")
+    print(f"[INFO] Gaze events path: {gaze_events_path}")
+
+    # Preflight before mutating Maya attributes. This avoids half-applied scenes
+    # when the wrong sequence_id/clip_name points at a missing JSON file.
+    if not Path(gaze_events_path).exists():
+        raise FileNotFoundError(
+            f"Gaze events JSON not found: {gaze_events_path}\n"
+            "Run Step 03 compile for the same sequence config first, or set "
+            "JALITEST_SEQUENCE_CONFIG to the matching configs/sequences/*.yaml."
+        )
 
     apply_jali_attribute_overrides(config.get("jali_attribute_overrides", {}))
 

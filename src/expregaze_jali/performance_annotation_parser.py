@@ -15,11 +15,9 @@ SECTION_PATTERN = re.compile(r"^\[(ANALYZE|ANNOTATION|REASONS)\]\s*$", re.MULTIL
 #   bs01 = blink suppression
 TAG_ID_PATTERN = r"(?:pb|bs|[gmhl])\d+"
 ANY_TAG_PATTERN = re.compile(rf"</({TAG_ID_PATTERN})>|<({TAG_ID_PATTERN})=([^<>]+)>")
-# Recovery path for LLM mistakes such as:
-#   g01=GAZE-CHARACTER_DOROTHY Hello
-# The prompt asks for <g01=...>, but this keeps Step 03 functional if the LLM
-# drops angle brackets. The recovered tag is treated as an opening tag only.
-BARE_TAG_PATTERN = re.compile(rf"(?<![</\w])({TAG_ID_PATTERN})=([A-Za-z0-9_./+-]+)")
+# Compatibility only: recover accidental naked tags such as `g01=GAZE-CHARACTER_DOROTHY`.
+# Prompt rules now forbid this, but old LLM outputs can still be compiled safely.
+BARE_TAG_PATTERN = re.compile(rf"(?<![<\w/])({TAG_ID_PATTERN})=([^\s<>]+)")
 REASON_COLON_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})(?:\s*=\s*[^:]+)?\s*:\s*(.*?)\s*$")
 REASON_HEADER_PATTERN = re.compile(rf"^\s*({TAG_ID_PATTERN})(?:\s*=\s*(.*?))?\s*$")
 
@@ -32,7 +30,7 @@ TAG_TYPES = {
     "bs": "blink_suppression",
 }
 
-PREFIX_PATTERN = re.compile(r"^(pb|bs|[gmhl])\d+$")
+PREFIX_PATTERN = re.compile(r"^(pb|bs|[gmhl])(\d+)$")
 
 
 def _read_text(path: str | Path) -> str:
@@ -69,49 +67,40 @@ def _tag_type(tag_id: str) -> str:
     return TAG_TYPES[prefix]
 
 
-def _normalize_bare_opening_tags(annotation_text: str) -> tuple[str, list[dict[str, Any]]]:
-    """Convert bare `g01=value` style mistakes into `<g01=value>` tags.
+def _normalize_bare_tags(annotation_text: str) -> tuple[str, list[dict[str, Any]]]:
+    """Convert accidental naked tags into opening tags.
 
-    The canonical format is XML-like angle tags. This recovery only runs inside
-    the [ANNOTATION] section, so reason lines such as `g01=VALUE: reason` are not
-    touched. It removes accidental bare tag tokens from the clean transcript and
-    prevents TextGrid alignment from trying to align fake words like `g01`.
+    Desired syntax is XML-like: `<g01=GAZE-CHARACTER_DOROTHY>text</g01>`.
+    Older/bad LLM output may produce `g01=GAZE-CHARACTER_DOROTHY text`.
+    We recover by converting it to `<g01=GAZE-CHARACTER_DOROTHY> text`.
     """
-    normalized_parts: list[str] = []
-    diagnostics: list[dict[str, Any]] = []
-    raw_pos = 0
+    normalized: list[dict[str, Any]] = []
 
-    for match in BARE_TAG_PATTERN.finditer(annotation_text):
+    def repl(match: re.Match[str]) -> str:
         tag_id = match.group(1)
         value = match.group(2)
-        replacement = f"<{tag_id}={value}>"
-        normalized_parts.append(annotation_text[raw_pos : match.start()])
-        normalized_parts.append(replacement)
-        diagnostics.append(
+        normalized.append(
             {
                 "id": tag_id,
                 "value": value,
                 "text": match.group(0),
-                "replacement": replacement,
                 "raw_start": match.start(),
                 "raw_end": match.end(),
             }
         )
-        raw_pos = match.end()
+        return f"<{tag_id}={value}>"
 
-    if not diagnostics:
-        return annotation_text, []
-
-    normalized_parts.append(annotation_text[raw_pos:])
-    return "".join(normalized_parts), diagnostics
+    return BARE_TAG_PATTERN.sub(repl, annotation_text), normalized
 
 
-def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]]]:
+def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Remove readable tags from transcript and collect opening/closing metadata.
 
-    Closing tags such as </m1> or </g3> are stripped from the clean transcript and
+    Closing tags such as </m01> or </g03> are stripped from the clean transcript and
     used as explicit span ends for matching opening tags.
     """
+    annotation_text, normalized_bare_tags = _normalize_bare_tags(annotation_text)
+
     clean_parts: list[str] = []
     tags: list[dict[str, Any]] = []
     stripped_closing_tags: list[dict[str, Any]] = []
@@ -168,7 +157,7 @@ def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, A
                 tag["explicit_end_source"] = close["text"]
                 break
 
-    return "".join(clean_parts), tags, stripped_closing_tags
+    return "".join(clean_parts), tags, stripped_closing_tags, normalized_bare_tags
 
 
 def _clean_reason_line(line: str) -> str:
@@ -179,7 +168,7 @@ def _clean_reason_line(line: str) -> str:
 
 
 def _parse_reasons(reasons_text: str) -> dict[str, str]:
-    """Parse `g1: reason`, `g1=VALUE: reason`, or header+bullet reason blocks."""
+    """Parse `g01: reason`, `g01=VALUE: reason`, or header+bullet reason blocks."""
     reasons: dict[str, str] = {}
     current_id: str | None = None
 
@@ -213,6 +202,54 @@ def _parse_reasons(reasons_text: str) -> dict[str, str]:
     return reasons
 
 
+def _renumber_duplicate_tag_ids(tags: list[dict[str, Any]], reasons: dict[str, str]) -> list[dict[str, Any]]:
+    """Ensure every tag occurrence has a unique id.
+
+    The LLM sometimes reuses ids like m01 for multiple mask spans. That is bad for
+    diagnostics and downstream event identity. Keep the first occurrence and
+    renumber later duplicates by prefix, copying the original reason when needed.
+    """
+    original_ids = {str(tag.get("id", "")) for tag in tags}
+    assigned: set[str] = set()
+    renumbered: list[dict[str, Any]] = []
+
+    def next_free_id(prefix: str) -> str:
+        idx = 1
+        while True:
+            candidate = f"{prefix}{idx:02d}"
+            if candidate not in assigned and candidate not in original_ids:
+                return candidate
+            idx += 1
+
+    for tag in tags:
+        old_id = str(tag["id"])
+        if old_id not in assigned:
+            assigned.add(old_id)
+            continue
+
+        prefix = str(tag["prefix"])
+        new_id = next_free_id(prefix)
+        tag["original_id"] = old_id
+        tag["id"] = new_id
+        tag["renumbered_duplicate_id"] = True
+        assigned.add(new_id)
+
+        if old_id in reasons and new_id not in reasons:
+            reasons[new_id] = reasons[old_id]
+
+        renumbered.append(
+            {
+                "old_id": old_id,
+                "new_id": new_id,
+                "type": tag.get("type"),
+                "value": tag.get("value"),
+                "position": tag.get("position"),
+            }
+        )
+
+    return renumbered
+
+
 def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     """
     Parse [ANALYZE], [ANNOTATION], [REASONS] and readable performance tags.
@@ -223,14 +260,14 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         h##  JALI heart state-change
         l##  lid_state state-change
         pb## performative blink anchor/local event
-        bs## blink_suppression state-change / gate
+        bs## blink suppression state-change / gate
     """
     source_text = _read_text(path)
     sections, warnings = _parse_sections(source_text)
-    raw_annotation_text = sections.get("ANNOTATION", "")
-    annotation_text, normalized_bare_tags = _normalize_bare_opening_tags(raw_annotation_text)
-    clean_transcript, tags, stripped_closing_tags = _strip_tags_and_collect(annotation_text)
+    annotation_text = sections.get("ANNOTATION", "")
+    clean_transcript, tags, stripped_closing_tags, normalized_bare_tags = _strip_tags_and_collect(annotation_text)
     reasons = _parse_reasons(sections.get("REASONS", ""))
+    renumbered_duplicate_tag_ids = _renumber_duplicate_tag_ids(tags, reasons)
 
     tag_ids = {tag["id"] for tag in tags}
     missing_reasons = [tag["id"] for tag in tags if not reasons.get(tag["id"], "").strip()]
@@ -239,17 +276,12 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
     for tag in tags:
         tag["reason"] = reasons.get(tag["id"], "")
 
-    if normalized_bare_tags:
-        warnings.append(
-            f"normalized {len(normalized_bare_tags)} bare annotation tags; "
-            "future LLM output should use <id=value> angle-tag syntax"
-        )
-
     diagnostics = {
         "warnings": warnings,
         "missing_reasons": missing_reasons,
         "extra_reasons": extra_reasons,
         "normalized_bare_tags": normalized_bare_tags,
+        "renumbered_duplicate_tag_ids": renumbered_duplicate_tag_ids,
         "stripped_closing_tags": stripped_closing_tags,
         "tag_count": len(tags),
         "tag_type_counts": {
@@ -263,7 +295,6 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         "source_text": source_text,
         "sections": sections,
         "analyze": sections.get("ANALYZE", ""),
-        "raw_annotation_text": raw_annotation_text,
         "annotation_text": annotation_text,
         "reasons_text": sections.get("REASONS", ""),
         "reasons": reasons,
