@@ -64,17 +64,16 @@ performance_rules:
     - Use blink_suppression only when not blinking is the acting choice.
 
     Lid_state scale, use these as energy/affective/cognitive state reference, refers to how large eye open:
-    -9: fully wide, manic / possessed / extreme fear
-    -7: feverish, unstable, obsessive
-    -5: intense, neurotic, over-alert
-    -3: shocked / angry / excited
-    -2: heightened attention
-    -1: alert but controlled
-    0: default
+    -5: fully wide, manic / possessed / extreme fear (extremely open)
+    -4: feverish, unstable, obsessive
+    -3: intense, neurotic, over-alert
+    -2: shocked / angry / excited
+    -1: heightened attention
+    0: default (eye open)
     1: relaxed / neutral
     2: soft / warm / receptive
     3: guarded / impatient / skeptical
-    4: sleepy / withdrawn / flat dislike / emotionally closed
+    4: sleepy / withdrawn / flat dislike / emotionally closed (eye close)
 
     Performative blink modes:
     - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain
