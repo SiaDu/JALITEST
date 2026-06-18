@@ -545,6 +545,270 @@ def apply_gaze_events(
 
     print("[DONE] Gaze overlay applied.")
 
+_DIRECTION_TARGETS = {
+    "DOWN",
+    "DOWN_LEFT",
+    "DOWN_RIGHT",
+    "UP",
+    "UP_LEFT",
+    "UP_RIGHT",
+    "LEFT",
+    "RIGHT",
+    "CENTER",
+}
+
+
+def _sanitize_locator_label(value: str) -> str:
+    text = str(value or "").strip().upper()
+    for prefix in ("CHARACTER_", "OBJECT_", "PROP_", "PERSON_"):
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+            break
+
+    chars: list[str] = []
+    previous_underscore = False
+    for char in text:
+        if char.isalnum():
+            chars.append(char.lower())
+            previous_underscore = False
+        elif not previous_underscore:
+            chars.append("_")
+            previous_underscore = True
+
+    out = "".join(chars).strip("_")
+    return out or "target"
+
+
+def _dynamic_event_target_label(event: dict[str, Any]) -> str:
+    label = str(event.get("target_label") or "").strip()
+    target = str(event.get("target") or "").strip()
+    role = str(event.get("target_role") or "").strip().upper()
+
+    if label and label.upper() not in _DIRECTION_TARGETS:
+        return label
+    if role and role not in {"DIRECTION", "UNKNOWN"} and target:
+        return target
+    return target or label
+
+
+def _is_direction_gaze_event(event: dict[str, Any], direction_offsets: dict[str, Any] | None = None) -> bool:
+    role = str(event.get("target_role") or "").strip().upper()
+    target = str(event.get("target") or "").strip().upper()
+    label = str(event.get("target_label") or "").strip().upper()
+
+    directions = set(_DIRECTION_TARGETS)
+    directions.update(str(key).upper() for key in (direction_offsets or {}).keys())
+    return role == "DIRECTION" or target in directions or label in directions
+
+
+def _dynamic_locator_node_name(label: str, config: dict[str, Any]) -> str:
+    names = _mapping(config.get("dynamic_target_locator_names"))
+    explicit = _lookup_mapping(names, label)
+    if explicit:
+        return str(explicit)
+
+    suffix = str(config.get("dynamic_target_locator_suffix", "_lookat_LOC"))
+    return f"{_sanitize_locator_label(label)}{suffix}"
+
+
+def _dynamic_target_keys(event: dict[str, Any], label: str) -> list[str]:
+    out: list[str] = []
+    for value in (event.get("target"), event.get("target_label"), label):
+        text = str(value or "").strip()
+        if text and text not in out:
+            out.append(text)
+    return out
+
+
+def build_dynamic_gaze_target_map(events: list[dict[str, Any]], config: dict[str, Any]) -> dict[str, dict[str, str]]:
+    direction_offsets = _mapping(config.get("direction_offsets"))
+    target_map: dict[str, dict[str, str]] = {}
+    label_to_node: dict[str, str] = {}
+
+    for event in events:
+        if event.get("type") != "gaze":
+            continue
+        if _is_direction_gaze_event(event, direction_offsets):
+            continue
+
+        label = _dynamic_event_target_label(event)
+        if not label:
+            continue
+
+        node_name = label_to_node.get(label)
+        if node_name is None:
+            node_name = _dynamic_locator_node_name(label, config)
+            label_to_node[label] = node_name
+
+        for key in _dynamic_target_keys(event, label):
+            if key.upper() in _DIRECTION_TARGETS:
+                continue
+            target_map[key] = {"node": node_name}
+
+    return target_map
+
+
+def _find_transform_node_or_none(node_name: str, cmds_module: Any) -> str | None:
+    matches = cmds_module.ls(node_name, long=True) or cmds_module.ls(f"*:{node_name}", long=True) or []
+    return matches[0] if matches else None
+
+
+def _set_locator_display_size(locator: str, size: float, cmds_module: Any) -> None:
+    for attr in ("localScaleX", "localScaleY", "localScaleZ"):
+        plug = f"{locator}.{attr}"
+        if cmds_module.objExists(plug):
+            cmds_module.setAttr(plug, float(size))
+
+
+def _ensure_locator_group(group_name: str, cmds_module: Any) -> str | None:
+    group_name = str(group_name or "").strip()
+    if not group_name:
+        return None
+
+    existing = _find_transform_node_or_none(group_name, cmds_module)
+    if existing:
+        return existing
+
+    group = cmds_module.group(empty=True, name=group_name)
+    print(f"[INFO] Created gaze target group: {group}")
+    return group
+
+
+def _dynamic_locator_initial_position(
+    *,
+    config: dict[str, Any],
+    key: str,
+    node_name: str,
+    base_position: Sequence[float],
+    index: int,
+    total: int,
+) -> list[float]:
+    offsets = _mapping(config.get("dynamic_target_locator_offsets"))
+    explicit_offset = _lookup_mapping(offsets, key, node_name)
+    if explicit_offset is not None:
+        return resolve_offset_position(base_position, _as_xyz(explicit_offset))
+
+    role = "EXPLICIT"
+    upper_key = str(key).upper()
+    if upper_key.startswith("CHARACTER_"):
+        role = "CHARACTER"
+    elif upper_key.startswith("OBJECT_") or upper_key.startswith("PROP_"):
+        role = "OBJECT"
+
+    role_offsets = _mapping(config.get("dynamic_target_locator_role_offsets"))
+    role_offset = _lookup_mapping(role_offsets, role)
+    if role_offset is not None:
+        pos = resolve_offset_position(base_position, _as_xyz(role_offset))
+        spread = float(config.get("dynamic_target_locator_spread", 8.0))
+        pos[0] += (float(index) - (float(total) - 1.0) / 2.0) * spread
+        return pos
+
+    spacing = float(config.get("dynamic_target_locator_spacing", 12.0))
+    x_offset = (float(index) - (float(total) - 1.0) / 2.0) * spacing
+    return [float(base_position[0]) + x_offset, float(base_position[1]), float(base_position[2])]
+
+
+def ensure_dynamic_gaze_target_locators(
+    *,
+    gaze_events_path: str | Path,
+    config: dict[str, Any],
+) -> list[str]:
+    cmds = _cmds()
+    events = _load_gaze_events(gaze_events_path)
+    target_map = build_dynamic_gaze_target_map(events, config)
+
+    if not target_map:
+        print("[INFO] No non-direction gaze targets found in gaze events JSON.")
+        return []
+
+    eye_stare_suffix = str(config.get("eye_stare_node_suffix", "eyeStare_world"))
+    try:
+        if config.get("base_position") is not None:
+            base_position = _as_xyz(config.get("base_position"))
+        else:
+            eye_stare = find_node_by_suffix(eye_stare_suffix)
+            base_position = get_world_translation(eye_stare)
+    except Exception as exc:
+        print(f"[WARN] Could not read {eye_stare_suffix}; using [0, 0, 0] for new locator placement: {exc}")
+        base_position = [0.0, 0.0, 0.0]
+
+    group = _ensure_locator_group(str(config.get("dynamic_target_locator_group", "JALITEST_gaze_targets_GRP")), cmds)
+    size = float(config.get("dynamic_target_locator_size", 4.0))
+
+    unique_nodes: list[tuple[str, str]] = []
+    seen_nodes: set[str] = set()
+    for key, spec in target_map.items():
+        node_name = str(spec.get("node") or "").strip()
+        if node_name and node_name not in seen_nodes:
+            unique_nodes.append((key, node_name))
+            seen_nodes.add(node_name)
+
+    created: list[str] = []
+    for idx, (key, node_name) in enumerate(unique_nodes):
+        existing = _find_transform_node_or_none(node_name, cmds)
+        if existing:
+            print(f"[INFO] Dynamic gaze target exists: {key} -> {existing}")
+            continue
+
+        position = _dynamic_locator_initial_position(
+            config=config,
+            key=key,
+            node_name=node_name,
+            base_position=base_position,
+            index=idx,
+            total=len(unique_nodes),
+        )
+        locator = cmds.spaceLocator(name=node_name)[0]
+        cmds.xform(locator, worldSpace=True, translation=position)
+        _set_locator_display_size(locator, size, cmds)
+
+        if group:
+            try:
+                cmds.parent(locator, group)
+            except Exception as exc:
+                print(f"[WARN] Could not parent {locator} under {group}: {exc}")
+
+        created.append(locator)
+        print(f"[INFO] Created dynamic gaze target locator: {locator} at {position} for {key}")
+
+    if created:
+        print("[INFO] Created target locators are placeholders. Move them manually, then run run_apply_gaze_events.py.")
+    else:
+        print("[INFO] All dynamic gaze target locators already exist.")
+
+    return created
+
+
+def ensure_dynamic_gaze_target_locators_from_config(
+    config_path: str | Path,
+    *,
+    sequence_config_path: str | Path | None = None,
+    project_config_path: str | Path | None = None,
+) -> list[str]:
+    config = load_maya_gaze_config(
+        config_path,
+        sequence_config_path=sequence_config_path,
+        project_config_path=project_config_path,
+    )
+    gaze_events_path = resolve_repo_path(config["gaze_events_path"], config)
+
+    print(f"[INFO] Maya gaze config: {config_path}")
+    if sequence_config_path:
+        print(f"[INFO] Sequence config: {sequence_config_path}")
+    print(f"[INFO] Clip name: {config.get('clip_name', '')}")
+    print(f"[INFO] Gaze events path: {gaze_events_path}")
+
+    if not Path(gaze_events_path).exists():
+        raise FileNotFoundError(
+            "Gaze events JSON not found: "
+            + str(gaze_events_path)
+            + ". Run Step 03 compile for the same sequence first."
+        )
+
+    return ensure_dynamic_gaze_target_locators(
+        gaze_events_path=gaze_events_path,
+        config=config,
+    )
 
 def apply_gaze_events_from_config(
     config_path: str | Path,
@@ -565,14 +829,23 @@ def apply_gaze_events_from_config(
     print(f"[INFO] Clip name: {config.get('clip_name', '')}")
     print(f"[INFO] Gaze events path: {gaze_events_path}")
 
-    # Preflight before mutating Maya attributes. This avoids half-applied scenes
-    # when the wrong sequence_id/clip_name points at a missing JSON file.
     if not Path(gaze_events_path).exists():
         raise FileNotFoundError(
-            f"Gaze events JSON not found: {gaze_events_path}\n"
-            "Run Step 03 compile for the same sequence config first, or set "
-            "JALITEST_SEQUENCE_CONFIG to the matching configs/sequences/*.yaml."
+            "Gaze events JSON not found: "
+            + str(gaze_events_path)
+            + ". Run Step 03 compile for the same sequence config first, or set "
+            + "JALITEST_SEQUENCE_CONFIG to the matching configs/sequences/*.yaml."
         )
+
+    events = _load_gaze_events(gaze_events_path)
+    target_map = build_dynamic_gaze_target_map(events, config)
+
+    print(f"[INFO] Dynamic gaze target entries: {len(target_map)}")
+    if target_map:
+        for key, spec in sorted(target_map.items()):
+            print(f"[INFO]   {key} -> {spec.get('node')}")
+    else:
+        print("[INFO] No non-direction dynamic gaze targets. Direction offsets only.")
 
     apply_jali_attribute_overrides(config.get("jali_attribute_overrides", {}))
 
@@ -583,10 +856,10 @@ def apply_gaze_events_from_config(
 
     apply_gaze_events(
         gaze_events_path=gaze_events_path,
-        target_map=config.get("targets", {}),
+        target_map=target_map,
         fps=float(config.get("fps", 24.0)),
         direction_offsets=config.get("direction_offsets", {}),
-        target_aliases=config.get("target_aliases", {}),
+        target_aliases={},
         direction_offset_bounds=direction_offset_bounds,
         base_position=config.get("base_position"),
         eye_stare_node_suffix=str(config.get("eye_stare_node_suffix", "eyeStare_world")),

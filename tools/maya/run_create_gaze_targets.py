@@ -28,11 +28,10 @@ SRC_PATH = os.path.join(REPO_ROOT, "src")
 if SRC_PATH not in sys.path:
     sys.path.insert(0, SRC_PATH)
 
-from expregaze_jali.maya_apply_gaze import apply_gaze_events_from_config
+from expregaze_jali.maya_apply_gaze import ensure_dynamic_gaze_target_locators_from_config
 
 
-# Apply only. This does not create or move target locators.
-apply_gaze_events_from_config(
+ensure_dynamic_gaze_target_locators_from_config(
     MAYA_CONFIG_PATH,
     sequence_config_path=SEQUENCE_CONFIG_PATH,
     project_config_path=PROJECT_CONFIG_PATH,

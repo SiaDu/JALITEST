@@ -10,41 +10,33 @@ maya_gaze:
   glance_transition_frames: 3
   apply_weighted_flat_tangents: true
 
+  # Gaze targets are not listed here. They are read dynamically from:
+  #   data/processed/gaze_script/{sequence_id}__gaze_events_resolved.json
+  #
+  # Workflow:
+  #   1) run tools/maya/run_create_gaze_targets.py
+  #   2) move created locators manually in Maya
+  #   3) run tools/maya/run_apply_gaze_events.py
+  dynamic_target_locator_group: JALITEST_gaze_targets_GRP
+  dynamic_target_locator_size: 4.0
+  dynamic_target_locator_suffix: _lookat_LOC
+  dynamic_target_locator_role_offsets:
+    CHARACTER: [-35.0, 0.0, 0.0]
+    OBJECT: [35.0, -10.0, 0.0]
+    EXPLICIT: [0.0, 0.0, 0.0]
+
+  dynamic_target_locator_offsets:
+    DOROTHY: [-35.0, 0.0, 0.0]
+    CHARACTER_DOROTHY: [-35.0, 0.0, 0.0]
+    CRYSTAL: [0.0, -22.0, 0.0]
+    OBJECT_CRYSTAL: [0.0, -22.0, 0.0]
+    PHOTOGRAPH: [35.0, -10.0, 0.0]
+    OBJECT_PHOTOGRAPH: [35.0, -10.0, 0.0]
+
   # Lower JALI ambient gaze so ExpreGaze's eyeStare_world overlay is readable.
-  jali_attribute_overrides:
-    jSync1:
-      ambient_gaze_intensity: 1
-
-  # Direction bounds are for offsets only, not locator world positions.
-  # direction_offset_bounds:
-  #   x: [-50.0, 50.0]
-  #   y: [-30.0, 30.0]
-  #   z: [0.0, 0.0]
-
-  target_aliases:
-    LISTENER: AIM_listener
-    CHARACTER_DOROTHY: AIM_listener
-    DOROTHY: AIM_listener
-    CRYSTAL: AIM_crystal
-    OBJECT_CRYSTAL: AIM_crystal
-    PHOTOGRAPH: AIM_photograph
-    OBJECT_PHOTOGRAPH: AIM_photograph
-    DOWN: DOWN
-    DOWN_LEFT: DOWN_LEFT
-    DOWN_RIGHT: DOWN_RIGHT
-    UP: UP
-    UP_LEFT: UP_LEFT
-    UP_RIGHT: UP_RIGHT
-    LEFT: LEFT
-    RIGHT: RIGHT
-
-  targets:
-    AIM_listener:
-      node: listener_lookat_LOC
-    AIM_crystal:
-      node: crystal_lookat_LOC
-    AIM_photograph:
-      node: photograph_lookat_LOC
+  # jali_attribute_overrides:
+  #   jSync1:
+  #     ambient_gaze_intensity: 1
 
   direction_offsets:
     DOWN: [0.0, -25.0, 0.0]
