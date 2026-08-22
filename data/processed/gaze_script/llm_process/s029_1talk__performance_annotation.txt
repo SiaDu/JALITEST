@@ -1,40 +1,43 @@
 [ANALYZE]
 
 scene_constraints:
-- Available people: Aunt Em speaking; Almira Gulch listening; Dorothy has just exited; Uncle Henry is present but not the social target.
-- Primary gaze target: CHARACTER_ALMIRA_GULCH. Secondary avoidance target: DOWN.
+- Available people: Aunt Em (speaker), Almira Gulch (addressed listener), Uncle Henry (present listener).
+- Primary gaze target: CHARACTER_ALMIRA_GULCH. Secondary possible target: CHARACTER_UNCLE_HENRY, but the speech is socially directed at Gulch.
+- No objects are relevant to the spoken performance.
 
 social_interaction_structure:
-- Aunt Em directly confronts Miss Gulch after Dorothy leaves.
-- Miss Gulch is the addressed listener and the source of the power imbalance.
+- Aunt Em confronts Miss Gulch directly.
+- Gulch is the dominant social adversary; Uncle Henry is a silent witness.
 
 affective_cognitive_state:
-- Aunt Em is socially restrained but finally emboldened, confronting a domineering neighbor from a lower power position.
-- Energy is intense and over-alert, with controlled anger; lid baseline is -3.
-- Visible emotion: provoked anger shifting into constrained dislike. Hidden emotion: contempt and moral self-suppression at the final thought.
-- She wants Gulch to recognize that ownership and status do not grant the right to control everyone else.
+- Aunt Em is socially constrained but morally resolute. She has accumulated resentment and is finally voicing it.
+- Energy is high and controlled, with angry focus and deliberate verbal precision; eyelids should be narrowed/alert rather than wide.
+- Visible emotion: provoked, indignant, increasingly controlled.
+- Hidden emotion: anger held beneath Christian propriety, especially in the final refusal.
+- She wants Gulch to recognize that ownership and status do not grant her authority over everyone.
 
 narrative_intent:
-- The speech gives Aunt Em a rare assertive moment and establishes that her apparent gentleness contains long-suppressed anger.
-- The final interruption preserves her Christian propriety while making the unsaid insult more forceful.
+- The speech establishes Aunt Em’s backbone and long-suppressed hostility while making her restraint part of the joke and characterization.
+- The final line turns anger into socially polished avoidance, revealing that she is censoring herself rather than lacking an opinion.
 
 performance_strategy:
-- Begin with direct, sustained eye contact and a sharp, accusatory mask.
-- Intensify through the twenty-three-year admission, then shift toward controlled, pointed contempt.
-- On “And now -- well,” briefly avert downward as she stops herself, allowing the withheld words to register as stronger than a spoken insult.
-- No performative blink is necessary; sustained alert eyelids support the confrontation.
+- Begin with sustained direct eye contact and an angry, controlled mask.
+- Intensify on “power to run the rest of us!” and “dying to tell you,” then shift toward restrained politeness on “being a Christian woman.”
+- Keep the inner anger active only under the final polite surface; avert slightly at “I can't say it!” as a performative act of self-control.
+- Use a single heightened lid baseline; no performative blink is necessary.
 
 [ANNOTATION]
 
-<l01=-3><g01=GAZE-CHARACTER_ALMIRA_GULCH><m01=Provoked-78>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us!</m01><m02=Angered-84> <g02=GAZE-CHARACTER_ALMIRA_GULCH>For twenty- three years, I've been dying to tell you what I thought of you!</g02></m02> <g03=AVERT-DOWN><m03=Dislike-58><h01=Contempt-68>And now -- well, being a Christian woman, I can't say it!</h01></h01></g03></l01>
+<l01=-3><g01=GAZE-CHARACTER_ALMIRA_GULCH><m01=Angered-76><h01=Angry-62>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us!</h01></m01> <m02=Provoked-82><g02=GAZE-CHARACTER_ALMIRA_GULCH>For twenty- three years, I've been dying to tell you what I thought of you!</g02></m02> <m03=Polite-58><h02=Angry-58><g03=AVERT-RIGHT>And now -- well, being a Christian woman, I can't say it!</g03></h02></m03></l01>
 
 [REASONS]
 
-- l01=-3: Aunt Em is intensely alert and energized by the confrontation, with anger held under deliberate control.
-- g01=GAZE-CHARACTER_ALMIRA_GULCH: Direct eye contact establishes that Aunt Em is openly challenging Gulch rather than merely complaining.
-- m01=Provoked-78: The opening attacks Gulch’s assumed authority and makes the social challenge immediately visible.
-- m02=Angered-84: The long-suppressed grievance peaks as Aunt Em admits how long she has wanted to speak plainly.
-- g02=GAZE-CHARACTER_ALMIRA_GULCH: Sustained eye contact makes the personal accusation unavoidable and increases the pressure on Gulch.
-- g03=AVERT-DOWN: Aunt Em breaks eye contact when conscience and propriety interrupt the insult she is about to deliver.
-- m03=Dislike-58: The visible anger tightens into controlled, socially proper dislike rather than continuing to escalate.
-- h01=Contempt-68: The withheld final judgment remains internally sharper than the restrained words Aunt Em allows herself to say.
+- l01=-3: Aunt Em is intensely alert and angry but still controlled, supporting a forceful confrontation without making her appear hysterical.
+- g01=GAZE-CHARACTER_ALMIRA_GULCH: Direct sustained eye contact establishes that the accusation is aimed squarely at Gulch.
+- m01=Angered-76: The opening exposes Aunt Em’s indignation at Gulch’s abuse of social power.
+- h01=Angry-62: The visible anger is backed by long-held resentment rather than a momentary flare-up.
+- m02=Provoked-82: The second sentence raises the pressure from criticism into a personal admission of accumulated grievance.
+- g02=GAZE-CHARACTER_ALMIRA_GULCH: Maintaining the stare makes “what I thought of you” feel like a deliberate challenge.
+- m03=Polite-58: Aunt Em visibly reins herself in when invoking Christian propriety, replacing open anger with formal restraint.
+- h02=Angry-58: The anger remains active beneath the polite surface, showing that the restraint is self-censorship.
+- g03=AVERT-RIGHT: A slight sustained aversion at the final refusal performs her decision not to voice the insult she clearly has in mind.

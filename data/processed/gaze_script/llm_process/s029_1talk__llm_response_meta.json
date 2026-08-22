@@ -1,5 +1,5 @@
 {
-  "response_id": "resp_0eceffc8ab928ff6006a8a243306d487d08d562439fa5db4fb",
+  "response_id": "resp_0282314a1f762bd9006a8a30e2dcb887d0a9b7ce30dc93b4bd",
   "model": "gpt-5.6-luna",
   "prompt_path": "data\\processed\\gaze_script\\llm_process\\s029_1talk__actor_prompt.txt",
   "annotation_path": "data\\processed\\gaze_script\\llm_process\\s029_1talk__performance_annotation.txt",
@@ -9,13 +9,13 @@
       "cache_write_tokens": 5046,
       "cached_tokens": 0
     },
-    "output_tokens": 1032,
+    "output_tokens": 1052,
     "output_tokens_details": {
-      "reasoning_tokens": 316
+      "reasoning_tokens": 245
     },
-    "total_tokens": 6081
+    "total_tokens": 6101
   },
   "status": "completed",
   "incomplete_details": null,
-  "created_at": 1787438131.0
+  "created_at": 1787441378.0
 }

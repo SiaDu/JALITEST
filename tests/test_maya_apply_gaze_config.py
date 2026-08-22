@@ -14,6 +14,8 @@ from expregaze_jali.maya_apply_gaze import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs/maya/valleygirl.yaml"
+SEQUENCE_CONFIG = ROOT / "configs/sequences/s038_1talk.yaml"
+PROJECT_CONFIG = ROOT / "configs/project.yaml"
 TEST_BASE_POSITION = [0.0, 0.0, 126.0]
 TEST_SAFE_BOUNDS = {
     "x": [-50.0, 50.0],
@@ -28,13 +30,18 @@ TEST_DIRECTION_OFFSET_BOUNDS = {
 
 
 def test_load_config_and_aliases():
-    config = load_maya_gaze_config(CONFIG)
+    config = load_maya_gaze_config(
+        CONFIG,
+        sequence_config_path=SEQUENCE_CONFIG,
+        project_config_path=PROJECT_CONFIG,
+    )
 
     assert config["gaze_events_path"].startswith("data/processed/")
+    assert config["gaze_events_path"].endswith("s038_1talk__gaze_events_resolved.json")
     assert config["maya_project_root"] == "E:/maya_project/JALI_test"
-    assert resolve_target_alias("LISTENER", config["target_aliases"]) == "AIM_listener"
-    assert resolve_target_alias("CRYSTAL", config["target_aliases"]) == "AIM_crystal"
-    assert resolve_target_alias("DOWN", config["target_aliases"]) == "DOWN"
+    assert config["dynamic_target_locator_group"] == "JALITEST_gaze_targets_GRP"
+    assert resolve_target_alias("LISTENER") == "LISTENER"
+    assert resolve_target_alias("DOWN") == "DOWN"
 
 
 def test_offset_resolution_keeps_eye_stare_z_base():
@@ -47,10 +54,10 @@ def test_offset_resolution_keeps_eye_stare_z_base():
     ]
     assert resolve_target_position(
         target="UP_RIGHT",
-        target_map=config["targets"],
+        target_map={},
         base_position=TEST_BASE_POSITION,
         direction_offsets=config["direction_offsets"],
-        target_aliases=config["target_aliases"],
+        target_aliases={},
         direction_offset_bounds=TEST_DIRECTION_OFFSET_BOUNDS,
     ) == [40.0, 25.0, 126.0]
 
@@ -67,13 +74,17 @@ def test_safe_clamp_for_xy_and_fixed_z():
 
 
 def test_config_path_resolution_and_windows_runner_defaults():
-    config = load_maya_gaze_config(CONFIG)
+    config = load_maya_gaze_config(
+        CONFIG,
+        sequence_config_path=SEQUENCE_CONFIG,
+        project_config_path=PROJECT_CONFIG,
+    )
     runner_text = (ROOT / "tools/maya/run_apply_gaze_events.py").read_text(encoding="utf-8")
 
     assert "C:\\Users\\sia\\JaliTest" not in runner_text
     assert "\\\\wsl.localhost\\Ubuntu-24.04\\home\\sia\\JaliTest" in runner_text
-    assert resolve_repo_path(config["gaze_events_path"], config).endswith(
-        "data/processed/gaze_script/Jali_proto_candidate_001_ProfessorCrystal__gaze_events_resolved.json"
+    assert resolve_repo_path(config["gaze_events_path"], config).replace("\\", "/").endswith(
+        "data/processed/gaze_script/s038_1talk__gaze_events_resolved.json"
     )
     assert resolve_maya_project_path("scenes/sounds_proto1/example.Textgrid", config).replace("\\", "/") == (
         "E:/maya_project/JALI_test/scenes/sounds_proto1/example.Textgrid"

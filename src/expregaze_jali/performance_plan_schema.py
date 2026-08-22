@@ -11,28 +11,64 @@ class TextSpan(TypedDict):
     char_end: int
 
 
-class AffectLayer(TypedDict):
+class AffectStateSpan(TypedDict):
+    source_tag: str
+    char_start: int
+    char_end: int
+    value: str
     state: str | None
     intensity: float | None
 
 
-class Affect(TypedDict):
-    visible: AffectLayer
-    hidden: AffectLayer
-
-
-class Gaze(TypedDict):
+class GazeStateSpan(TypedDict):
+    source_tag: str
+    char_start: int
+    char_end: int
+    value: str
     mode: str | None
     target: str | None
 
 
-class Head(TypedDict):
+class HeadInvolvementSpan(TypedDict):
+    source_tag: str
+    char_start: int
+    char_end: int
+    value: str
     involvement: float | None
 
 
-class Blink(TypedDict):
-    performative: str | None
-    suppression: str | None
+class LidStateSpan(TypedDict):
+    source_tag: str
+    char_start: int
+    char_end: int
+    value: str
+    lid_state: int | float | str | None
+
+
+class BlinkSpan(TypedDict):
+    source_tag: str
+    char_start: int
+    char_end: int
+    value: str
+
+
+class RationaleEntry(TypedDict):
+    source_tag: str
+    reason: str | None
+
+
+class BlinkRationale(TypedDict):
+    performative: list[RationaleEntry]
+    suppression: list[RationaleEntry]
+
+
+class Rationale(TypedDict):
+    intent: RationaleEntry | None
+    affect: dict[str, list[RationaleEntry]]
+    gaze: list[RationaleEntry]
+    head: list[RationaleEntry]
+    lid_state: list[RationaleEntry]
+    blink: BlinkRationale
 
 
 class Evidence(TypedDict):
@@ -52,12 +88,12 @@ class PerformancePlanEvent(TypedDict):
     source_intent_tag: str
     span: TextSpan
     intent: str | None
-    affect: Affect
-    gaze: Gaze
-    head: Head
-    lid_state: int | float | str | None
-    blink: Blink
-    rationale: str | None
+    affect: dict[str, list[AffectStateSpan]]
+    gaze: list[GazeStateSpan]
+    head: list[HeadInvolvementSpan]
+    lid_state: list[LidStateSpan]
+    blink: dict[str, list[BlinkSpan]]
+    rationale: Rationale
     evidence: Evidence
     locks: Locks
 

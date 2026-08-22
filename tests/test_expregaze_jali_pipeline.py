@@ -77,7 +77,7 @@ def test_jali_exporter_removes_gaze_and_pairs_mask_tags(tmp_path: Path):
     assert "Hello there" in jali_text
 
 
-def test_jali_exporter_closes_same_position_tags_in_jali_order():
+def test_jali_exporter_closes_same_position_tags_in_jali_order_with_delimited_tags():
     parsed = {
         "clean_transcript": "This is the crystal.",
     }
@@ -102,11 +102,10 @@ def test_jali_exporter_closes_same_position_tags_in_jali_order():
 
     jali_text = export_jali_annotation(parsed, events)
 
-    assert (
-        jali_text
-        == "<mask=Smug-60><heart=Contempt-20>"
-        "This is the crystal."
-        "</mask=Smug-60></heart=Contempt-20>"
+    assert jali_text == (
+        "<mask=Smug-60> <heart=Contempt-20> "
+        "This is the crystal. "
+        "</mask=Smug-60> </heart=Contempt-20>"
     )
 
 

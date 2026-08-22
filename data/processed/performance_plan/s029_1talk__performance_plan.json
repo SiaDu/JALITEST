@@ -1,0 +1,16 @@
+{
+  "schema_version": "performance_plan_v0",
+  "sequence_id": "s029_1talk",
+  "target_character": "AUNT_EM",
+  "source_annotation": "data\\processed\\gaze_script\\llm_process\\s029_1talk__performance_annotation.txt",
+  "events": [],
+  "diagnostics": {
+    "errors": [
+      "no intent tags found; Performance Plan has no events"
+    ],
+    "warnings": [
+      "opening tag has no closing tag: <g01=GAZE-CHARACTER_ALMIRA_GULCH>",
+      "redundant consecutive gaze state: g01 and g02=GAZE-CHARACTER_ALMIRA_GULCH"
+    ]
+  }
+}
