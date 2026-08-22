@@ -1,20 +1,21 @@
 {
-  "response_id": "resp_0863171effb4b0eb006a33565187288199a46878558a456f43",
-  "model": "gpt-5.4-mini",
-  "prompt_path": "data/processed/gaze_script/llm_process/s029_1talk__actor_prompt.txt",
-  "annotation_path": "data/processed/gaze_script/llm_process/s029_1talk__performance_annotation.txt",
+  "response_id": "resp_0eceffc8ab928ff6006a8a243306d487d08d562439fa5db4fb",
+  "model": "gpt-5.6-luna",
+  "prompt_path": "data\\processed\\gaze_script\\llm_process\\s029_1talk__actor_prompt.txt",
+  "annotation_path": "data\\processed\\gaze_script\\llm_process\\s029_1talk__performance_annotation.txt",
   "usage": {
-    "input_tokens": 5031,
+    "input_tokens": 5049,
     "input_tokens_details": {
+      "cache_write_tokens": 5046,
       "cached_tokens": 0
     },
-    "output_tokens": 4234,
+    "output_tokens": 1032,
     "output_tokens_details": {
-      "reasoning_tokens": 3558
+      "reasoning_tokens": 316
     },
-    "total_tokens": 9265
+    "total_tokens": 6081
   },
   "status": "completed",
   "incomplete_details": null,
-  "created_at": 1781749329.0
+  "created_at": 1787438131.0
 }
