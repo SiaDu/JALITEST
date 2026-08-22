@@ -13,7 +13,9 @@ SECTION_PATTERN = re.compile(r"^\[(ANALYZE|ANNOTATION|REASONS)\]\s*$", re.MULTIL
 #   l01  = lid_state
 #   pb01 = performative blink
 #   bs01 = blink suppression
-TAG_ID_PATTERN = r"(?:pb|bs|[gmhl])\d+"
+#   i01  = communicative intent / performance beat
+#   hd01 = head involvement
+TAG_ID_PATTERN = r"(?:pb|bs|hd|[gmhli])\d+"
 ANY_TAG_PATTERN = re.compile(rf"</({TAG_ID_PATTERN})>|<({TAG_ID_PATTERN})=([^<>]+)>")
 # Compatibility only: recover accidental naked tags such as `g01=GAZE-CHARACTER_DOROTHY`.
 # Prompt rules now forbid this, but old LLM outputs can still be compiled safely.
@@ -28,9 +30,12 @@ TAG_TYPES = {
     "l": "lid_state",
     "pb": "performative_blink",
     "bs": "blink_suppression",
+    "i": "intent",
+    "hd": "head_involvement",
 }
 
-PREFIX_PATTERN = re.compile(r"^(pb|bs|[gmhl])(\d+)$")
+PREFIX_PATTERN = re.compile(r"^(pb|bs|hd|[gmhli])(\d+)$")
+ALLOWED_HEAD_VALUES = {"NONE", "LOW", "MEDIUM", "HIGH", "FULL"}
 
 
 def _read_text(path: str | Path) -> str:
@@ -93,7 +98,15 @@ def _normalize_bare_tags(annotation_text: str) -> tuple[str, list[dict[str, Any]
     return BARE_TAG_PATTERN.sub(repl, annotation_text), normalized
 
 
-def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+def _strip_tags_and_collect(
+    annotation_text: str,
+) -> tuple[
+    str,
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, list[dict[str, Any]]],
+]:
     """Remove readable tags from transcript and collect opening/closing metadata.
 
     Closing tags such as </m01> or </g03> are stripped from the clean transcript and
@@ -104,6 +117,10 @@ def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, A
     clean_parts: list[str] = []
     tags: list[dict[str, Any]] = []
     stripped_closing_tags: list[dict[str, Any]] = []
+    unmatched_by_id: dict[str, list[dict[str, Any]]] = {}
+    seen_closing_ids: set[str] = set()
+    unmatched_closing_tags: list[dict[str, Any]] = []
+    duplicate_closing_tags: list[dict[str, Any]] = []
     clean_pos = 0
     raw_pos = 0
 
@@ -114,50 +131,90 @@ def _strip_tags_and_collect(annotation_text: str) -> tuple[str, list[dict[str, A
 
         if match.group(1):  # closing tag
             tag_id = match.group(1)
-            stripped_closing_tags.append(
-                {
-                    "id": tag_id,
-                    "text": match.group(0),
-                    "raw_start": match.start(),
-                    "raw_end": match.end(),
-                    "position": clean_pos,
-                }
-            )
+            closing = {
+                "id": tag_id,
+                "text": match.group(0),
+                "raw_start": match.start(),
+                "raw_end": match.end(),
+                "position": clean_pos,
+            }
+            stripped_closing_tags.append(closing)
+            candidates = unmatched_by_id.get(tag_id, [])
+            if candidates:
+                opening = candidates.pop()
+                opening["explicit_end"] = clean_pos
+                opening["explicit_end_source"] = match.group(0)
+                closing["matched_opening_order"] = opening["order"]
+            elif tag_id in seen_closing_ids:
+                closing["diagnostic"] = "duplicate_closing_tag"
+                duplicate_closing_tags.append(closing)
+            else:
+                closing["diagnostic"] = "unmatched_closing_tag"
+                unmatched_closing_tags.append(closing)
+            seen_closing_ids.add(tag_id)
         else:  # opening tag
             tag_id = match.group(2)
-            tags.append(
-                {
-                    "id": tag_id,
-                    "prefix": _tag_prefix(tag_id),
-                    "type": _tag_type(tag_id),
-                    "value": match.group(3).strip(),
-                    "position": clean_pos,
-                    "raw_start": match.start(),
-                    "raw_end": match.end(),
-                    "order": len(tags),
-                }
-            )
+            tag = {
+                "id": tag_id,
+                "prefix": _tag_prefix(tag_id),
+                "type": _tag_type(tag_id),
+                "value": match.group(3).strip(),
+                "position": clean_pos,
+                "raw_start": match.start(),
+                "raw_end": match.end(),
+                "order": len(tags),
+            }
+            tags.append(tag)
+            unmatched_by_id.setdefault(tag_id, []).append(tag)
 
         raw_pos = match.end()
 
     tail = annotation_text[raw_pos:]
     clean_parts.append(tail)
 
-    closing_by_id: dict[str, list[dict[str, Any]]] = {}
-    for close in stripped_closing_tags:
-        closing_by_id.setdefault(str(close["id"]), []).append(close)
+    unclosed_opening_tags = [
+        {
+            "id": tag["id"],
+            "type": tag["type"],
+            "value": tag["value"],
+            "position": tag["position"],
+            "raw_start": tag["raw_start"],
+        }
+        for openings in unmatched_by_id.values()
+        for tag in openings
+    ]
+    structure_diagnostics = {
+        "unmatched_closing_tags": unmatched_closing_tags,
+        "duplicate_closing_tags": duplicate_closing_tags,
+        "unclosed_opening_tags": unclosed_opening_tags,
+    }
 
+    return "".join(clean_parts), tags, stripped_closing_tags, normalized_bare_tags, structure_diagnostics
+
+
+def _redundant_same_state_tags(tags: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    redundant: list[dict[str, Any]] = []
+    previous_by_type: dict[str, dict[str, Any]] = {}
     for tag in tags:
-        tag_id = str(tag["id"])
-        tag_pos = int(tag["position"])
-        for close in closing_by_id.get(tag_id, []):
-            close_pos = int(close["position"])
-            if close_pos >= tag_pos:
-                tag["explicit_end"] = close_pos
-                tag["explicit_end_source"] = close["text"]
-                break
-
-    return "".join(clean_parts), tags, stripped_closing_tags, normalized_bare_tags
+        tag_type = str(tag["type"])
+        if tag_type in {"intent", "performative_blink"}:
+            continue
+        previous = previous_by_type.get(tag_type)
+        if (
+            previous is not None
+            and str(previous["value"]).strip().upper() == str(tag["value"]).strip().upper()
+        ):
+            redundant.append(
+                {
+                    "previous_id": previous["id"],
+                    "id": tag["id"],
+                    "type": tag_type,
+                    "value": tag["value"],
+                    "position": tag["position"],
+                }
+            )
+        previous_by_type[tag_type] = tag
+    return redundant
 
 
 def _clean_reason_line(line: str) -> str:
@@ -173,7 +230,7 @@ def _parse_reasons(reasons_text: str) -> dict[str, str]:
     current_id: str | None = None
 
     for raw_line in reasons_text.splitlines():
-        line = raw_line.strip()
+        line = _clean_reason_line(raw_line)
         if not line:
             continue
 
@@ -261,13 +318,43 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         l##  lid_state state-change
         pb## performative blink anchor/local event
         bs## blink suppression state-change / gate
+        i##  communicative intent / performance beat
+        hd## head involvement
     """
     source_text = _read_text(path)
     sections, warnings = _parse_sections(source_text)
     annotation_text = sections.get("ANNOTATION", "")
-    clean_transcript, tags, stripped_closing_tags, normalized_bare_tags = _strip_tags_and_collect(annotation_text)
+    clean_transcript, tags, stripped_closing_tags, normalized_bare_tags, structure_diagnostics = (
+        _strip_tags_and_collect(annotation_text)
+    )
     reasons = _parse_reasons(sections.get("REASONS", ""))
     renumbered_duplicate_tag_ids = _renumber_duplicate_tag_ids(tags, reasons)
+    invalid_head_values = [
+        {"id": tag["id"], "value": tag["value"], "position": tag["position"]}
+        for tag in tags
+        if tag.get("type") == "head_involvement"
+        and str(tag.get("value", "")).strip().upper() not in ALLOWED_HEAD_VALUES
+    ]
+    redundant_same_state_tags = _redundant_same_state_tags(tags)
+
+    for item in structure_diagnostics["unmatched_closing_tags"]:
+        warnings.append(f"unmatched closing tag: </{item['id']}>")
+    for item in structure_diagnostics["duplicate_closing_tags"]:
+        warnings.append(f"duplicate closing tag: </{item['id']}>")
+    for item in structure_diagnostics["unclosed_opening_tags"]:
+        warnings.append(f"opening tag has no closing tag: <{item['id']}={item['value']}>")
+    for item in renumbered_duplicate_tag_ids:
+        warnings.append(f"duplicate tag id: {item['old_id']} (recovered as {item['new_id']})")
+    for item in redundant_same_state_tags:
+        warnings.append(
+            f"redundant consecutive {item['type']} state: "
+            f"{item['previous_id']} and {item['id']}={item['value']}"
+        )
+
+    errors = [
+        f"invalid hd value: {item['id']}={item['value']}"
+        for item in invalid_head_values
+    ]
 
     tag_ids = {tag["id"] for tag in tags}
     missing_reasons = [tag["id"] for tag in tags if not reasons.get(tag["id"], "").strip()]
@@ -277,12 +364,16 @@ def parse_performance_annotation(path: str | Path) -> dict[str, Any]:
         tag["reason"] = reasons.get(tag["id"], "")
 
     diagnostics = {
+        "errors": errors,
         "warnings": warnings,
         "missing_reasons": missing_reasons,
         "extra_reasons": extra_reasons,
         "normalized_bare_tags": normalized_bare_tags,
         "renumbered_duplicate_tag_ids": renumbered_duplicate_tag_ids,
         "stripped_closing_tags": stripped_closing_tags,
+        **structure_diagnostics,
+        "invalid_head_values": invalid_head_values,
+        "redundant_same_state_tags": redundant_same_state_tags,
         "tag_count": len(tags),
         "tag_type_counts": {
             tag_type: sum(1 for tag in tags if tag.get("type") == tag_type)

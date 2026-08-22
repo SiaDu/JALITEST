@@ -1,11 +1,14 @@
 performance_rules:
-  schema_version: performance_rules_v2
+  schema_version: performance_rules_v3
 
   performance_annotation:
     General rules:
     - Use XML-like tags only, for example <g01=GAZE-CHARACTER_DOROTHY>text</g01>.
     - Never output naked tags such as g01=GAZE-CHARACTER_DOROTHY text.
-    - Every tag occurrence must have a unique tag ID. Never reuse m01/g01/h01/l01/pb01/bs01 for a second span.
+    - Every tag occurrence must have a unique tag ID. Never reuse i01/hd01/m01/g01/h01/l01/pb01/bs01 for a second span.
+    - Create sparse communicative-intent beats with i## tags. Each i## span is one meaningful acting beat.
+    - Do not create a new intent beat unless the communicative intent changes.
+    - Add hd## only when head involvement is meaningful.
     - Add tags only when the performance state or local acting beat changes.
     - Do not restate the same mask, gaze, heart, lid_state, or blink_suppression state if it is already active.
     - Do not wrap every phrase with the same mask tag. A repeated value such as Friendly-70 should be one span unless the performance truly stops and restarts.
@@ -21,6 +24,15 @@ performance_rules:
       lid_state: l
       performative_blink: pb
       blink_suppression: bs
+      intent: i
+      head_involvement: hd
+
+    Head involvement values:
+      NONE: 0.0
+      LOW: 0.25
+      MEDIUM: 0.5
+      HIGH: 0.75
+      FULL: 1.0
 
     Syntax examples:
       correct:
@@ -59,6 +71,11 @@ performance_rules:
     - Use mask and heart names from the JALI emotion options when provided.
     - Keep strength values moderate unless the acting beat extremely demands more.
     - If the visible mask remains the same, keep one mask span instead of re-opening the same mask again.
+
+    Intent / head rules:
+    - Intent tags define Performance Plan event boundaries.
+    - Keep intent values concise, actor-readable, and semantic, for example CONFRONT_AUTHORITY.
+    - Head involvement is not a direction or rig control. Use only NONE, LOW, MEDIUM, HIGH, or FULL.
 
     Lid / blink rules:
     - Do not annotate ordinary regulatory blinks.
