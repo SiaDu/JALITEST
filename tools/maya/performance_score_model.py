@@ -1,0 +1,661 @@
+"""Maya-independent Semantic Performance Score model.
+
+The structured Performance Plan remains canonical.  This module provides a
+human-facing projection and applies validated semantic edits without importing
+Maya, Qt, or the backend package.
+"""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from dataclasses import dataclass, field
+import re
+from typing import Any, Iterable
+
+
+GAZE_MODES = {"GAZE", "GLANCE", "AVERT"}
+DEFAULT_GAZE_TARGETS = {
+    "A", "B", "SPEAKER", "LISTENER", "DOWN", "DOWN_LEFT", "DOWN_RIGHT",
+    "UP", "UP_LEFT", "UP_RIGHT", "LEFT", "RIGHT", "CRYSTAL", "DOOR",
+}
+DEFAULT_AFFECTS = {
+    "Angered", "Angry", "Curious", "Dislike", "Friendly", "Happy",
+    "Polite", "Provoked", "Sad", "Scheming", "Singing_Serene", "Smug",
+    "Thinking", "Warm",
+}
+BLINK_VALUES = {
+    "SLOW_BLINK", "EYE_CLOSE_HOLD", "SUPPRESS", "DOUBLE_BLINK", "BLINK_CLUSTER",
+}
+_HEADER = re.compile(r"^\s*(\d+)\.\s*(.*?)\s*$")
+_TAG = re.compile(r"<([^<>]+)>")
+_AFFECT = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
+_LID = re.compile(r"^l(-?\d+(?:\.\d+)?)$", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class ValidationIssue:
+    phrase_number: int | None
+    message: str
+
+    def __str__(self) -> str:
+        prefix = f"Phrase {self.phrase_number}: " if self.phrase_number is not None else ""
+        return prefix + self.message
+
+
+@dataclass(frozen=True)
+class SemanticState:
+    lid: float | None = None
+    affect: tuple[str, int] | None = None
+    gaze: tuple[str, str] | None = None
+    blinks: tuple[str, ...] = ()
+
+
+@dataclass
+class ScorePhrase:
+    number: int
+    text: str
+    event_index: int
+    char_start: int
+    char_end: int
+    states: dict[str, SemanticState]
+    speaker: str = "A"
+    references: dict[str, dict[str, Any] | list[dict[str, Any]] | None] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ParsedPhrase:
+    number: int
+    text: str
+    states: dict[str, SemanticState]
+    speaker: str = "A"
+
+
+@dataclass(frozen=True)
+class ParseResult:
+    phrases: tuple[ParsedPhrase, ...]
+    errors: tuple[ValidationIssue, ...]
+
+    @property
+    def valid(self) -> bool:
+        return not self.errors
+
+
+@dataclass(frozen=True)
+class RationaleItem:
+    category: str
+    behavior: str
+    reason: str
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _as_list(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
+def _number(value: Any) -> float | None:
+    try:
+        return float(value) if value is not None and value != "" else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _span_start(span: dict[str, Any]) -> int | None:
+    try:
+        return int(span.get("char_start"))
+    except (TypeError, ValueError):
+        return None
+
+
+def _span_end(span: dict[str, Any]) -> int | None:
+    try:
+        return int(span.get("char_end"))
+    except (TypeError, ValueError):
+        return None
+
+
+def _all_spans(plan: dict[str, Any], path: tuple[str, ...]) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for event in _as_list(plan.get("events")):
+        value: Any = event
+        for key in path:
+            value = _as_dict(value).get(key)
+        result.extend(item for item in _as_list(value) if isinstance(item, dict))
+    return sorted(result, key=lambda item: (_span_start(item) if _span_start(item) is not None else 10**18))
+
+
+def _latest(spans: list[dict[str, Any]], position: int) -> dict[str, Any] | None:
+    candidates = [span for span in spans if _span_start(span) is not None and _span_start(span) <= position]
+    return candidates[-1] if candidates else None
+
+
+def _active(spans: list[dict[str, Any]], start: int, end: int) -> list[dict[str, Any]]:
+    return [
+        span for span in spans
+        if _span_start(span) is not None and _span_end(span) is not None
+        and int(span["char_start"]) < end and int(span["char_end"]) > start
+    ]
+
+
+def _human_target(value: str) -> str:
+    target = value.strip()
+    for prefix in ("CHARACTER_", "OBJECT_"):
+        if target.upper().startswith(prefix):
+            return target[len(prefix):].upper()
+    return target.upper()
+
+
+def _affect_state(span: dict[str, Any] | None) -> tuple[str, int] | None:
+    if not span:
+        return None
+    state = str(span.get("state") or "").strip()
+    intensity = _number(span.get("intensity"))
+    if not state:
+        match = _AFFECT.match(str(span.get("value") or "").strip())
+        if match:
+            state, intensity = match.group(1), int(match.group(2)) / 100.0
+    if not state:
+        return None
+    return state, int(round((intensity or 0.0) * 100))
+
+
+def _gaze_state(span: dict[str, Any] | None) -> tuple[str, str] | None:
+    if not span:
+        return None
+    mode = str(span.get("mode") or "").strip().upper()
+    target = str(span.get("target") or "").strip()
+    if not mode:
+        mode, separator, target_from_value = str(span.get("value") or "").partition("-")
+        target = target or (target_from_value if separator else "")
+    return (mode.upper(), _human_target(target)) if mode and target else None
+
+
+def _lid_state(span: dict[str, Any] | None) -> float | None:
+    if not span:
+        return None
+    return _number(span.get("lid_state", span.get("value")))
+
+
+def _event_bounds(event: dict[str, Any]) -> tuple[int, int] | None:
+    span = _as_dict(event.get("span"))
+    try:
+        return int(span["char_start"]), int(span["char_end"])
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _phrase_text(event: dict[str, Any], start: int, end: int) -> str:
+    span = _as_dict(event.get("span"))
+    text = str(span.get("text") or "")
+    bounds = _event_bounds(event)
+    if bounds is None:
+        return text.strip()
+    event_start, event_end = bounds
+    if len(text) == event_end - event_start:
+        return text[max(0, start - event_start):max(0, end - event_start)].strip()
+    return text.strip() if (start, end) == bounds else ""
+
+
+def derive_phrases(plan: dict[str, Any], *, alias: str = "A") -> list[ScorePhrase]:
+    """Derive deterministic phrases with complete resolved persistent state."""
+    affect = _all_spans(plan, ("affect", "visible"))
+    gaze = _all_spans(plan, ("gaze",))
+    lid = _all_spans(plan, ("lid_state",))
+    performative = _all_spans(plan, ("blink", "performative"))
+    suppression = _all_spans(plan, ("blink", "suppression"))
+    semantic_spans = affect + gaze + lid + performative + suppression
+    phrases: list[ScorePhrase] = []
+
+    for event_index, raw_event in enumerate(_as_list(plan.get("events"))):
+        if not isinstance(raw_event, dict):
+            continue
+        bounds = _event_bounds(raw_event)
+        if bounds is None:
+            continue
+        event_start, event_end = bounds
+        boundaries = {event_start, event_end}
+        for span in semantic_spans:
+            start, end = _span_start(span), _span_end(span)
+            if start is not None and event_start < start < event_end:
+                boundaries.add(start)
+            if end is not None and event_start < end < event_end:
+                boundaries.add(end)
+        ordered = sorted(boundaries)
+        for start, end in zip(ordered, ordered[1:]):
+            text = _phrase_text(raw_event, start, end)
+            if not text:
+                continue
+            affect_ref = _latest(affect, start)
+            hidden_ref = _latest(_all_spans(plan, ("affect", "hidden")), start)
+            gaze_ref = _latest(gaze, start)
+            head_ref = _latest(_all_spans(plan, ("head",)), start)
+            lid_ref = _latest(lid, start)
+            blink_refs = _active(performative, start, end) + _active(suppression, start, end)
+            blink_values = tuple(
+                dict.fromkeys(str(span.get("value") or "").strip().upper() for span in blink_refs if span.get("value"))
+            )
+            state = SemanticState(
+                lid=_lid_state(lid_ref),
+                affect=_affect_state(affect_ref),
+                gaze=_gaze_state(gaze_ref),
+                blinks=blink_values,
+            )
+            phrases.append(ScorePhrase(
+                number=len(phrases) + 1,
+                text=text,
+                event_index=event_index,
+                char_start=start,
+                char_end=end,
+                states={alias: state},
+                speaker=alias,
+                references={
+                    "affect": affect_ref, "hidden_affect": hidden_ref, "gaze": gaze_ref,
+                    "head": head_ref, "lid": lid_ref, "blinks": blink_refs,
+                },
+            ))
+    return phrases
+
+
+def _format_number(value: float) -> str:
+    return str(int(value)) if float(value).is_integer() else format(value, ".12g")
+
+
+def format_state(state: SemanticState) -> str:
+    tags: list[str] = []
+    if state.lid is not None:
+        tags.append(f"<l{_format_number(state.lid)}>")
+    if state.affect is not None:
+        tags.append(f"<{state.affect[0]}-{state.affect[1]}>")
+    if state.gaze is not None:
+        tags.append(f"<{state.gaze[0]}-{state.gaze[1]}>")
+    tags.extend(f"<{value}>" for value in state.blinks)
+    return "".join(tags)
+
+
+def format_single_score(phrases_or_plan: list[ScorePhrase] | dict[str, Any]) -> str:
+    phrases = derive_phrases(phrases_or_plan) if isinstance(phrases_or_plan, dict) else phrases_or_plan
+    return "\n\n".join(
+        f"{phrase.number}. {format_state(phrase.states['A'])}\n   {phrase.text}" for phrase in phrases
+    )
+
+
+def format_dual_score(
+    plan_a: dict[str, Any],
+    plan_b: dict[str, Any],
+    *,
+    speakers: Iterable[str] | None = None,
+) -> str:
+    a_phrases = derive_phrases(plan_a, alias="A")
+    b_phrases = derive_phrases(plan_b, alias="B")
+    if len(a_phrases) != len(b_phrases):
+        raise ValueError("Dual-character plans must derive the same number of phrases.")
+    speaker_values = list(speakers) if speakers is not None else ["A"] * len(a_phrases)
+    if len(speaker_values) != len(a_phrases) or any(value not in {"A", "B"} for value in speaker_values):
+        raise ValueError("Dual-character speakers must provide one A/B label per phrase.")
+    blocks: list[str] = []
+    for index, (a_phrase, b_phrase, speaker) in enumerate(zip(a_phrases, b_phrases, speaker_values), start=1):
+        text = a_phrase.text if speaker == "A" else b_phrase.text
+        blocks.append(
+            f"{index}. A:{format_state(a_phrase.states['A'])} | B:{format_state(b_phrase.states['B'])}\n"
+            f"   {speaker}: {text}"
+        )
+    return "\n\n".join(blocks)
+
+
+def known_vocabulary(
+    plans: Iterable[dict[str, Any]], *, extra_targets: Iterable[str] = ()
+) -> tuple[set[str], set[str]]:
+    affects = set(DEFAULT_AFFECTS)
+    targets = set(DEFAULT_GAZE_TARGETS)
+    for plan in plans:
+        for span in _all_spans(plan, ("affect", "visible")) + _all_spans(plan, ("affect", "hidden")):
+            state = _affect_state(span)
+            if state:
+                affects.add(state[0])
+        for span in _all_spans(plan, ("gaze",)):
+            state = _gaze_state(span)
+            if state:
+                targets.add(state[1])
+    targets.update(_human_target(str(value)) for value in extra_targets if str(value).strip())
+    return affects, targets
+
+
+def _parse_tags(
+    raw: str,
+    phrase_number: int,
+    known_affects: set[str],
+    known_targets: set[str],
+) -> tuple[SemanticState, list[ValidationIssue]]:
+    issues: list[ValidationIssue] = []
+    tags = _TAG.findall(raw)
+    leftover = _TAG.sub("", raw).strip()
+    if leftover or raw.count("<") != len(tags) or raw.count(">") != len(tags):
+        issues.append(ValidationIssue(phrase_number, "Malformed or unclosed semantic tag."))
+    lid: float | None = None
+    affect: tuple[str, int] | None = None
+    gaze: tuple[str, str] | None = None
+    blinks: list[str] = []
+    for value in tags:
+        token = value.strip()
+        lid_match = _LID.match(token)
+        affect_match = _AFFECT.match(token)
+        mode, separator, target = token.partition("-")
+        if lid_match:
+            if lid is not None:
+                issues.append(ValidationIssue(phrase_number, "Duplicate lid state."))
+            lid = float(lid_match.group(1))
+        elif token in BLINK_VALUES:
+            if token in blinks:
+                issues.append(ValidationIssue(phrase_number, f"Duplicate behavior <{token}>"))
+            else:
+                blinks.append(token)
+        elif separator and mode in GAZE_MODES:
+            if gaze is not None:
+                issues.append(ValidationIssue(phrase_number, "Duplicate gaze behavior."))
+            human_target = _human_target(target)
+            if human_target not in known_targets:
+                issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+            gaze = (mode, human_target)
+        elif affect_match:
+            name, strength = affect_match.group(1), int(affect_match.group(2))
+            if name not in known_affects or not 0 <= strength <= 100:
+                issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+            if affect is not None:
+                issues.append(ValidationIssue(phrase_number, "Duplicate affect state."))
+            affect = (name, strength)
+        else:
+            issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+    if not tags:
+        issues.append(ValidationIssue(phrase_number, "At least one semantic tag is required."))
+    return SemanticState(lid=lid, affect=affect, gaze=gaze, blinks=tuple(blinks)), issues
+
+
+def parse_score(
+    text: str,
+    *,
+    mode: str = "single",
+    known_affects: Iterable[str] = DEFAULT_AFFECTS,
+    known_targets: Iterable[str] = DEFAULT_GAZE_TARGETS,
+) -> ParseResult:
+    if mode not in {"single", "dual"}:
+        raise ValueError("mode must be 'single' or 'dual'")
+    affect_names, gaze_targets = set(known_affects), {_human_target(value) for value in known_targets}
+    lines = text.splitlines()
+    phrases: list[ParsedPhrase] = []
+    issues: list[ValidationIssue] = []
+    index = 0
+    while index < len(lines):
+        if not lines[index].strip():
+            index += 1
+            continue
+        match = _HEADER.match(lines[index])
+        if not match:
+            issues.append(ValidationIssue(None, f"Expected a numbered phrase near line {index + 1}."))
+            index += 1
+            continue
+        number, header = int(match.group(1)), match.group(2)
+        index += 1
+        dialogue_lines: list[str] = []
+        while index < len(lines) and not _HEADER.match(lines[index]):
+            if lines[index].strip():
+                dialogue_lines.append(lines[index].strip())
+            index += 1
+        if not dialogue_lines:
+            issues.append(ValidationIssue(number, "Dialogue text is required."))
+            dialogue = ""
+        else:
+            dialogue = " ".join(dialogue_lines)
+        states: dict[str, SemanticState] = {}
+        speaker = "A"
+        if mode == "single":
+            state, tag_issues = _parse_tags(header, number, affect_names, gaze_targets)
+            states["A"] = state
+            issues.extend(tag_issues)
+        else:
+            dual_match = re.match(r"^A:\s*(.*?)\s*\|\s*B:\s*(.*?)\s*$", header)
+            if not dual_match:
+                issues.append(ValidationIssue(number, "Dual state must use A:<...> | B:<...>."))
+                states = {"A": SemanticState(), "B": SemanticState()}
+            else:
+                for alias, raw_tags in zip(("A", "B"), dual_match.groups()):
+                    states[alias], tag_issues = _parse_tags(raw_tags, number, affect_names, gaze_targets)
+                    issues.extend(tag_issues)
+            speaker_match = re.match(r"^([AB]):\s*(.*)$", dialogue)
+            if not speaker_match:
+                issues.append(ValidationIssue(number, "Dialogue must begin with speaker A: or B:."))
+            else:
+                speaker, dialogue = speaker_match.group(1), speaker_match.group(2).strip()
+                if not dialogue:
+                    issues.append(ValidationIssue(number, "Dialogue text is required."))
+        phrases.append(ParsedPhrase(number, dialogue, states, speaker))
+
+    expected = list(range(1, len(phrases) + 1))
+    actual = [phrase.number for phrase in phrases]
+    if actual != expected:
+        issues.append(ValidationIssue(None, "Phrase numbers must be unique, contiguous, and ordered from 1."))
+    return ParseResult(tuple(phrases), tuple(issues))
+
+
+def _set_affect(span: dict[str, Any], state: tuple[str, int]) -> None:
+    span["state"], strength = state
+    span["intensity"] = strength / 100.0
+    span["value"] = f"{state[0]}-{strength}"
+
+
+def _set_gaze(span: dict[str, Any], state: tuple[str, str]) -> None:
+    span["mode"], span["target"] = state
+    span["value"] = f"{state[0]}-{state[1]}"
+
+
+def _set_lid(span: dict[str, Any], value: float) -> None:
+    numeric: int | float = int(value) if float(value).is_integer() else value
+    span["lid_state"] = numeric
+    span["value"] = str(numeric)
+
+
+def _human_span(phrase: ScorePhrase, value: str) -> dict[str, Any]:
+    return {
+        "source_tag": f"human_phrase_{phrase.number}",
+        "char_start": phrase.char_start,
+        "char_end": phrase.char_end,
+        "value": value,
+        "author": "human",
+    }
+
+
+class PerformanceScoreModel:
+    """Editable single-character score backed by a canonical plan copy."""
+
+    def __init__(self, plan: dict[str, Any], *, extra_targets: Iterable[str] = ()) -> None:
+        self.plan = deepcopy(plan)
+        self.phrases = derive_phrases(self.plan)
+        self.original_states = [deepcopy(phrase.states["A"]) for phrase in self.phrases]
+        self.affects, self.targets = known_vocabulary([self.plan], extra_targets=extra_targets)
+
+    @property
+    def score_text(self) -> str:
+        return format_single_score(self.phrases)
+
+    def validate(self, text: str) -> ParseResult:
+        result = parse_score(text, known_affects=self.affects, known_targets=self.targets)
+        errors = list(result.errors)
+        if len(result.phrases) != len(self.phrases):
+            errors.append(ValidationIssue(None, f"Expected {len(self.phrases)} phrases, found {len(result.phrases)}."))
+        for parsed, source in zip(result.phrases, self.phrases):
+            if parsed.text != source.text:
+                errors.append(ValidationIssue(parsed.number, "Dialogue text must match the canonical transcript."))
+        return ParseResult(result.phrases, tuple(errors))
+
+    def apply(self, text: str) -> dict[str, Any]:
+        result = self.validate(text)
+        if not result.valid:
+            raise ValueError("\n".join(str(error) for error in result.errors))
+        edited_records: list[dict[str, Any]] = []
+        requires_rebuild = False
+        for parsed, phrase, original in zip(result.phrases, self.phrases, self.original_states):
+            new = parsed.states["A"]
+            event = self.plan["events"][phrase.event_index]
+            requires_rebuild = requires_rebuild or new != phrase.states["A"]
+            if new != original:
+                changed_from_original = [
+                    name for name in ("affect", "gaze", "lid", "blinks")
+                    if getattr(new, name) != getattr(original, name)
+                ]
+                edited_records.append({
+                    "phrase_number": phrase.number,
+                    "event_id": event.get("event_id"),
+                    "char_start": phrase.char_start,
+                    "char_end": phrase.char_end,
+                    "changed_categories": changed_from_original,
+                })
+        authoring = self.plan.setdefault("authoring", {})
+        authoring["semantic_score_version"] = "semantic_score_v1"
+        authoring["manually_edited_phrases"] = edited_records
+        if requires_rebuild:
+            authoring.setdefault("original_semantic_proposal", {
+                "events": [
+                    {
+                        "event_id": event.get("event_id"),
+                        "affect": deepcopy(event.get("affect", {})),
+                        "gaze": deepcopy(event.get("gaze", [])),
+                        "lid_state": deepcopy(event.get("lid_state", [])),
+                        "blink": deepcopy(event.get("blink", {})),
+                    }
+                    for event in self.plan.get("events", []) if isinstance(event, dict)
+                ]
+            })
+            self._rebuild_edited_semantics(result.phrases)
+            self.phrases = derive_phrases(self.plan)
+        return self.plan
+
+    def _rebuild_edited_semantics(self, parsed_phrases: tuple[ParsedPhrase, ...]) -> None:
+        """Materialize phrase-local edits as canonical spans, retaining originals in authoring."""
+        parsed_by_number = {phrase.number: phrase for phrase in parsed_phrases}
+
+        def groups(event_phrases: list[ScorePhrase], attribute: str) -> list[tuple[int, int, Any, dict[str, Any] | None, bool]]:
+            values: list[tuple[ScorePhrase, Any]] = [
+                (phrase, getattr(parsed_by_number[phrase.number].states["A"], attribute))
+                for phrase in event_phrases
+            ]
+            result_groups: list[tuple[int, int, Any, dict[str, Any] | None, bool]] = []
+            for phrase, value in values:
+                if value is None:
+                    continue
+                reference_name = "lid" if attribute == "lid" else attribute
+                reference = phrase.references.get(reference_name)
+                template = reference if isinstance(reference, dict) else None
+                changed = value != getattr(phrase.states["A"], attribute)
+                if result_groups and result_groups[-1][1] == phrase.char_start and result_groups[-1][2] == value:
+                    old = result_groups[-1]
+                    result_groups[-1] = (old[0], phrase.char_end, value, old[3] or template, old[4] or changed)
+                else:
+                    result_groups.append((phrase.char_start, phrase.char_end, value, template, changed))
+            return result_groups
+
+        def materialize(
+            event_phrases: list[ScorePhrase], attribute: str, setter: Any
+        ) -> list[dict[str, Any]]:
+            spans: list[dict[str, Any]] = []
+            for start, end, value, template, changed in groups(event_phrases, attribute):
+                span = deepcopy(template) if template is not None else _human_span(event_phrases[0], "")
+                span["char_start"], span["char_end"] = start, end
+                if changed:
+                    original_tag = str(span.get("source_tag") or "")
+                    span["original_source_tag"] = original_tag or None
+                    span["source_tag"] = f"human_phrase_{next(p.number for p in event_phrases if p.char_start == start)}_{attribute}"
+                    span["author"] = "human"
+                setter(span, value)
+                spans.append(span)
+            return spans
+
+        for event_index, event in enumerate(self.plan.get("events", [])):
+            if not isinstance(event, dict):
+                continue
+            event_phrases = [phrase for phrase in self.phrases if phrase.event_index == event_index]
+            if not event_phrases:
+                continue
+            event.setdefault("affect", {})["visible"] = materialize(event_phrases, "affect", _set_affect)
+            event["gaze"] = materialize(event_phrases, "gaze", _set_gaze)
+            event["lid_state"] = materialize(event_phrases, "lid", _set_lid)
+            blink_output = {"performative": [], "suppression": []}
+            for blink_value in BLINK_VALUES:
+                active = [
+                    phrase for phrase in event_phrases
+                    if blink_value in parsed_by_number[phrase.number].states["A"].blinks
+                ]
+                run: list[ScorePhrase] = []
+                for phrase in active + [None]:
+                    if phrase is not None and (not run or run[-1].char_end == phrase.char_start):
+                        run.append(phrase)
+                        continue
+                    if run:
+                        original_refs = run[0].references.get("blinks")
+                        template = next(
+                            (ref for ref in original_refs if isinstance(ref, dict) and str(ref.get("value", "")).upper() == blink_value),
+                            None,
+                        ) if isinstance(original_refs, list) else None
+                        span = deepcopy(template) if template else _human_span(run[0], blink_value)
+                        span["char_start"], span["char_end"], span["value"] = run[0].char_start, run[-1].char_end, blink_value
+                        original_values = {value for item in run for value in item.states["A"].blinks}
+                        if blink_value not in original_values or template is None:
+                            span["original_source_tag"] = span.get("source_tag")
+                            span["source_tag"] = f"human_phrase_{run[0].number}_blink"
+                            span["author"] = "human"
+                        kind = "suppression" if blink_value == "SUPPRESS" else "performative"
+                        blink_output[kind].append(span)
+                    run = [phrase] if phrase is not None else []
+            event["blink"] = blink_output
+
+    def is_manually_edited(self, phrase_number: int) -> bool:
+        records = _as_dict(self.plan.get("authoring")).get("manually_edited_phrases", [])
+        return any(item.get("phrase_number") == phrase_number for item in records if isinstance(item, dict))
+
+    def rationale_for_phrase(self, phrase_number: int) -> list[RationaleItem]:
+        if not 1 <= phrase_number <= len(self.phrases):
+            return []
+        event = self.plan["events"][self.phrases[phrase_number - 1].event_index]
+        phrase = self.phrases[phrase_number - 1]
+        rationale = _as_dict(event.get("rationale"))
+        items: list[RationaleItem] = []
+        relevant_tags = {str(event.get("source_intent_tag") or "")}
+        for reference in phrase.references.values():
+            rows = reference if isinstance(reference, list) else [reference]
+            for row in rows:
+                if isinstance(row, dict):
+                    relevant_tags.add(str(row.get("original_source_tag") or row.get("source_tag") or ""))
+
+        def add(category: str, value: Any) -> None:
+            rows = value if isinstance(value, list) else [value]
+            for row in rows:
+                if isinstance(row, dict) and row.get("reason") and str(row.get("source_tag") or "") in relevant_tags:
+                    items.append(RationaleItem(category, str(row.get("source_tag") or category), str(row["reason"])))
+
+        add("Intent", rationale.get("intent"))
+        affect = _as_dict(rationale.get("affect"))
+        add("Visible Affect", affect.get("visible"))
+        add("Hidden Affect", affect.get("hidden"))
+        add("Gaze", rationale.get("gaze"))
+        add("Head", rationale.get("head"))
+        add("Lid", rationale.get("lid_state"))
+        blink = _as_dict(rationale.get("blink"))
+        add("Performative Blink", blink.get("performative"))
+        add("Blink Suppression", blink.get("suppression"))
+        seen: set[tuple[str, str, str]] = set()
+        return [item for item in items if not ((item.category, item.behavior, item.reason) in seen or seen.add((item.category, item.behavior, item.reason)))]
+
+
+def format_rationale_view(model: PerformanceScoreModel, phrase_number: int) -> str:
+    if not 1 <= phrase_number <= len(model.phrases):
+        return "No such phrase."
+    phrase = model.phrases[phrase_number - 1]
+    lines = [f"Phrase {phrase_number}", "", f'"{phrase.text}"', ""]
+    if model.is_manually_edited(phrase_number):
+        lines.extend(["Phrase manually edited. AI rationale corresponds to the original proposal.", ""])
+    items = model.rationale_for_phrase(phrase_number)
+    if not items:
+        lines.append("No original AI rationale is associated with this phrase.")
+    for item in items:
+        lines.extend([f"{item.category} ({item.behavior})", f"Reason: {item.reason}", ""])
+    return "\n".join(lines).rstrip()
