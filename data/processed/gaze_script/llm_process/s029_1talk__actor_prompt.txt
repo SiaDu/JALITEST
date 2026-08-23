@@ -3,13 +3,11 @@ You are an expert screen actor, animation director, and performance annotator.
 Your job is not to create animation curves.
 Your job is not to output JSON.
 Your job is not to output seconds or frames.
+Your job is not to output Maya commands or rig controls.
 
 Your job is to read the scene context and the exact transcript, then insert sparse actor-style performance tags into the exact transcript.
 
-The annotation will later be compiled by code into:
-- JALI-compatible mask / heart transcript tags
-- resolved gaze events for Maya
-- optional actor overlay events for eyelids / performative blinks / blink suppression
+The annotation will later be normalized deterministically into a Performance Plan.
 
 Use the context as evidence, but annotate only the exact transcript. If the context and exact transcript disagree, preserve and annotate the exact transcript.
 
@@ -80,7 +78,7 @@ Almira Gulch, just because you own half the county doesn't mean you have the pow
     {
       "path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\configs\\performance_rules.yaml",
       "exists": true,
-      "text": "performance_rules:\n  schema_version: performance_rules_v2\n\n  performance_annotation:\n    General rules:\n    - Use XML-like tags only, for example <g01=GAZE-CHARACTER_DOROTHY>text</g01>.\n    - Never output naked tags such as g01=GAZE-CHARACTER_DOROTHY text.\n    - Every tag occurrence must have a unique tag ID. Never reuse m01/g01/h01/l01/pb01/bs01 for a second span.\n    - Add tags only when the performance state or local acting beat changes.\n    - Do not restate the same mask, gaze, heart, lid_state, or blink_suppression state if it is already active.\n    - Do not wrap every phrase with the same mask tag. A repeated value such as Friendly-70 should be one span unless the performance truly stops and restarts.\n    - Every tag must be visually meaningful and executable.\n    - Every tag must be explained in [REASONS].\n    - Set lid_state at the beginning of the clip if the eyelid baseline is meaningful. Do not keep re-setting it unless the eyelid baseline changes.\n    - Set initial gaze and mask at the beginning of a performance segment, then change them only when the acting beat changes.\n\n    tag_id_prefixes:\n      gaze: g\n      mask: m\n      heart: h\n      lid_state: l\n      performative_blink: pb\n      blink_suppression: bs\n\n    Syntax examples:\n      correct:\n      - <l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01>\n      - <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>\n      incorrect:\n      - l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.\n      - <m01=Friendly-70>That's right.</m01> <m01=Friendly-70>Ha ha!</m01>\n      - <g06=GAZE-CHARACTER_DOROTHY>Now...</g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY>in order...</g06></pb01>\n\n    Gaze rules:\n    - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.\n    - Allowed gaze modes are GAZE, GLANCE, and AVERT.\n    - GAZE means sustained look toward target.\n    - GLANCE means brief look toward target.\n    - AVERT means sustained avoidance from the main social target.\n    - Infer gaze targets from the transcript and context. Use concrete targets, e.g. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.\n    - If the same gaze target continues, do not create a new gaze tag.\n\n    Gaze allowed_targets:\n      - CHARACTER_CharacterName\n      - OBJECT_ObjectName\n      - DOWN\n      - DOWN_LEFT\n      - DOWN_RIGHT\n      - UP\n      - UP_LEFT\n      - UP_RIGHT\n      - LEFT\n      - RIGHT\n\n    Mask / heart rules:\n    - Use mask tags for visible facial performance.\n    - Use heart tags only when the inner state differs from visible mask.\n    - Do not use heart as a generic second emotion layer.\n    - Use mask and heart names from the JALI emotion options when provided.\n    - Keep strength values moderate unless the acting beat extremely demands more.\n    - If the visible mask remains the same, keep one mask span instead of re-opening the same mask again.\n\n    Lid / blink rules:\n    - Do not annotate ordinary regulatory blinks.\n    - Use one lid_state scale tag at the beginning if the baseline is important.\n    - Use lid_state tags only for sustained eyelid baseline changes, not as a second emotion label.\n    - Use performative_blink only when the blink itself is an acting choice.\n    - Use blink_suppression only when not blinking is the acting choice.\n\n    Lid_state scale, use these as energy/affective/cognitive state reference, refers to how large eye open:\n    -9: fully wide, manic / possessed / extreme fear\n    -7: feverish, unstable, obsessive\n    -5: intense, neurotic, over-alert\n    -3: shocked / angry / excited\n    -2: heightened attention\n    -1: alert but controlled\n    0: default\n    1: relaxed / neutral\n    2: soft / warm / receptive\n    3: guarded / impatient / skeptical\n    4: sleepy / withdrawn / flat dislike / emotionally closed\n\n    Performative blink modes:\n    - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain\n    - EYE_CLOSE_HOLD: thinking, avoidance, unwillingness to look, emotional suppression, prayer, mystical concentration, fatigue, demonstration\n    - SLOW_BLINK: cognitive retrieval, remembering, fabricating a story, searching for words\n"
+      "text": "performance_rules:\n  schema_version: performance_rules_v3\n\n  performance_annotation:\n    General rules:\n    - Use XML-like tags only, for example <g01=GAZE-CHARACTER_DOROTHY>text</g01>.\n    - Never output naked tags such as g01=GAZE-CHARACTER_DOROTHY text.\n    - Every tag occurrence must have a unique tag ID. Never reuse i01/hd01/m01/g01/h01/l01/pb01/bs01 for a second span.\n    - Create sparse communicative-intent beats with i## tags. Each i## span is one meaningful acting beat.\n    - Do not create a new intent beat unless the communicative intent changes.\n    - Add hd## only when head involvement is meaningful.\n    - Add tags only when the performance state or local acting beat changes.\n    - Do not restate the same mask, gaze, heart, lid_state, or blink_suppression state if it is already active.\n    - Do not wrap every phrase with the same mask tag. A repeated value such as Friendly-70 should be one span unless the performance truly stops and restarts.\n    - Every tag must be visually meaningful and executable.\n    - Every tag must be explained in [REASONS].\n    - Set lid_state at the beginning of the clip if the eyelid baseline is meaningful. Do not keep re-setting it unless the eyelid baseline changes.\n    - Set initial gaze and mask at the beginning of a performance segment, then change them only when the acting beat changes.\n\n    tag_id_prefixes:\n      gaze: g\n      mask: m\n      heart: h\n      lid_state: l\n      performative_blink: pb\n      blink_suppression: bs\n      intent: i\n      head_involvement: hd\n\n    Head involvement values:\n      NONE: 0.0\n      LOW: 0.25\n      MEDIUM: 0.5\n      HIGH: 0.75\n      FULL: 1.0\n\n    Syntax examples:\n      correct:\n      - <l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01>\n      - <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>\n      incorrect:\n      - l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.\n      - <m01=Friendly-70>That's right.</m01> <m01=Friendly-70>Ha ha!</m01>\n      - <g06=GAZE-CHARACTER_DOROTHY>Now...</g06> <pb01=EYE_CLOSE_HOLD><g06=GAZE-CHARACTER_DOROTHY>in order...</g06></pb01>\n\n    Gaze rules:\n    - Use gaze tags for semantic attention, social control, avoidance, thought, and object focus.\n    - Allowed gaze modes are GAZE, GLANCE, and AVERT.\n    - GAZE means sustained look toward target.\n    - GLANCE means brief look toward target.\n    - AVERT means sustained avoidance from the main social target.\n    - Infer gaze targets from the transcript and context. Use concrete targets, e.g. OBJECT_CRYSTAL instead of OBJECT; CHARACTER_DOROTHY instead of CHARACTER.\n    - If the same gaze target continues, do not create a new gaze tag.\n\n    Gaze allowed_targets:\n      - CHARACTER_CharacterName\n      - OBJECT_ObjectName\n      - DOWN\n      - DOWN_LEFT\n      - DOWN_RIGHT\n      - UP\n      - UP_LEFT\n      - UP_RIGHT\n      - LEFT\n      - RIGHT\n\n    Mask / heart rules:\n    - Use mask tags for visible facial performance.\n    - Use heart tags only when the inner state differs from visible mask.\n    - Do not use heart as a generic second emotion layer.\n    - Use mask and heart names from the JALI emotion options when provided.\n    - Keep strength values moderate unless the acting beat extremely demands more.\n    - If the visible mask remains the same, keep one mask span instead of re-opening the same mask again.\n\n    Intent / head rules:\n    - Intent tags define Performance Plan event boundaries.\n    - Keep intent values concise, actor-readable, and semantic, for example CONFRONT_AUTHORITY.\n    - Head involvement is not a direction or rig control. Use only NONE, LOW, MEDIUM, HIGH, or FULL.\n\n    Lid / blink rules:\n    - Do not annotate ordinary regulatory blinks.\n    - Use one lid_state scale tag at the beginning if the baseline is important.\n    - Use lid_state tags only for sustained eyelid baseline changes, not as a second emotion label.\n    - Use performative_blink only when the blink itself is an acting choice.\n    - Use blink_suppression only when not blinking is the acting choice.\n\n    Lid_state scale, use these as energy/affective/cognitive state reference, refers to how large eye open:\n    -9: fully wide, manic / possessed / extreme fear\n    -7: feverish, unstable, obsessive\n    -5: intense, neurotic, over-alert\n    -3: shocked / angry / excited\n    -2: heightened attention\n    -1: alert but controlled\n    0: default\n    1: relaxed / neutral\n    2: soft / warm / receptive\n    3: guarded / impatient / skeptical\n    4: sleepy / withdrawn / flat dislike / emotionally closed\n\n    Performative blink modes:\n    - DOUBLE_BLINK or BLINK_CLUSTER: guilty / nervous / uncertain\n    - EYE_CLOSE_HOLD: thinking, avoidance, unwillingness to look, emotional suppression, prayer, mystical concentration, fatigue, demonstration\n    - SLOW_BLINK: cognitive retrieval, remembering, fabricating a story, searching for words\n"
     }
   ]
 }
@@ -106,7 +104,7 @@ narrative_intent:
 - how this performance attributes to storytelling
 
 performance_strategy:
-- how gaze, facial mask / heart, and optional eyelids / blinks should support the acting beat
+- how communicative intent, gaze, facial mask / heart, optional head involvement, and optional eyelids / blinks should support the acting beat
 - where the performance actually changes
 
 [ANNOTATION]
@@ -117,7 +115,13 @@ Use the performance rules and JALI emotion options from [EXTRA CONFIG].
 Hard syntax contract:
 - Use XML-like tags only: <tagID=value>text span</tagID>.
 - Never output naked tags such as `g01=GAZE-CHARACTER_DOROTHY text`.
-- Every tag occurrence must have a unique tag ID. Never reuse m01, g01, h01, l01, pb01, or bs01 for a second span.
+- Every tag occurrence must have a unique tag ID. Never reuse i01, hd01, m01, g01, h01, l01, pb01, or bs01 for a second span.
+- Create sparse communicative-intent beats with i## tags.
+- Each i## span represents one meaningful acting beat and defines one Performance Plan event boundary.
+- Do not create a new intent beat unless the communicative intent changes.
+- Add hd## only when head involvement is meaningful.
+- Allowed hd## values are NONE, LOW, MEDIUM, HIGH, and FULL.
+- Head involvement is semantic acting guidance, not a direction, Maya command, or rig control.
 - If you need another mask span, use m02, then m03, etc.
 - If you need another gaze span, use g02, then g03, etc.
 - Opening tags start a span. Closing tags end that exact span.
@@ -129,7 +133,7 @@ Hard syntax contract:
 - Nested tags are allowed, but each nested tag still needs its own unique ID.
 
 Correct example:
-<l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01> <g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02>
+<i01=REASSURE_AND_INVITE><hd01=MEDIUM><l01=-1><g01=GAZE-CHARACTER_DOROTHY><m01=Friendly-70>That's right. Here -- sit right down here.</m01></g01></l01></hd01></i01> <i02=SELL_THE_PROOF><g02=GAZE-OBJECT_CRYSTAL>This is the same genuine, magic, authentic crystal...</g02></i02>
 
 Incorrect examples:
 - l01=-1 That's right. g01=GAZE-CHARACTER_DOROTHY Here -- sit right down here.
@@ -139,8 +143,13 @@ Incorrect examples:
 [REASONS]
 
 Briefly explain every tag ID.
+This includes every i## and hd## tag, just like gaze, mask, heart, lid, and blink tags.
 Reasons must be practical acting reasons, not generic emotion labels.
 Reasons should explain why the tag changes audience perception or character performance.
 Allowed reason formats:
 - g01=GAZE-CHARACTER_DOROTHY: reason
 - m01=Friendly-80: reason
+- i01=REASSURE_AND_INVITE: reason
+- hd01=MEDIUM: reason
+
+Do not output JSON, seconds, frames, Maya commands, or rig controls anywhere in the response.
