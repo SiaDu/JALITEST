@@ -25,7 +25,7 @@ performance_strategy:
 
 [ANNOTATION]
 
-<l01=-3><g01=GAZE-CHARACTER_Almira_Gulch><m01=Angered-75><i01=CONFRONT_AUTHORITY><hd01=HIGH>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us!</hd01></i01> <i02=RELEASE_LONG_SUPPRESSED_GRIEVANCE><hd02=MEDIUM>For twenty- three years, I've been dying to tell you what I thought of you!</hd02></i02></m01><m02=Polite-50><h01=Angry-70><i03=WITHHOLD_THE_INSULT><hd03=LOW>And now -- well, being a Christian woman, I can't say it!</hd03></i03></h01></m02></g01></l01>
+<l01=-3><g01=GAZE-CHARACTER_Almira_Gulch><m01=Angered-75><i01=CONFRONT_AUTHORITY><hd01=HIGH>Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us!</hd01></i01> <i02=RELEASE_LONG_SUPPRESSED_GRIEVANCE><hd02=MEDIUM>For twenty- three years, I've been dying to tell you what I thought of you!</hd02></i02> </m01><m02=Polite-50><h01=Angry-70><i03=WITHHOLD_THE_INSULT><hd03=LOW>And now -- well, being a Christian woman, I can't say it!</hd03></i03></h01></m02></g01></l01>
 
 [REASONS]
 

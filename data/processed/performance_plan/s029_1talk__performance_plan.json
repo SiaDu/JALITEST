@@ -213,16 +213,16 @@
       "source_intent_tag": "i03",
       "span": {
         "text": "And now -- well, being a Christian woman, I can't say it!",
-        "char_start": 181,
-        "char_end": 238
+        "char_start": 182,
+        "char_end": 239
       },
       "intent": "WITHHOLD_THE_INSULT",
       "affect": {
         "visible": [
           {
             "source_tag": "m02",
-            "char_start": 181,
-            "char_end": 238,
+            "char_start": 182,
+            "char_end": 239,
             "value": "Polite-50",
             "state": "Polite",
             "intensity": 0.5
@@ -231,8 +231,8 @@
         "hidden": [
           {
             "source_tag": "h01",
-            "char_start": 181,
-            "char_end": 238,
+            "char_start": 182,
+            "char_end": 239,
             "value": "Angry-70",
             "state": "Angry",
             "intensity": 0.7
@@ -242,8 +242,8 @@
       "gaze": [
         {
           "source_tag": "g01",
-          "char_start": 181,
-          "char_end": 238,
+          "char_start": 182,
+          "char_end": 239,
           "value": "GAZE-CHARACTER_Almira_Gulch",
           "mode": "GAZE",
           "target": "CHARACTER_Almira_Gulch"
@@ -252,8 +252,8 @@
       "head": [
         {
           "source_tag": "hd03",
-          "char_start": 181,
-          "char_end": 238,
+          "char_start": 182,
+          "char_end": 239,
           "value": "LOW",
           "involvement": 0.25
         }
@@ -261,8 +261,8 @@
       "lid_state": [
         {
           "source_tag": "l01",
-          "char_start": 181,
-          "char_end": 238,
+          "char_start": 182,
+          "char_end": 239,
           "value": "-3",
           "lid_state": -3
         }
@@ -326,9 +326,7 @@
     }
   ],
   "diagnostics": {
-    "errors": [
-      "exact transcript mismatch at character 181: annotation='A', context=' '"
-    ],
+    "errors": [],
     "warnings": []
   }
 }
