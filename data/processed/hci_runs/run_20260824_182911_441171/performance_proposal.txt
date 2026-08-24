@@ -1,0 +1,123 @@
+[ANALYZE]
+Agnes begins with formal courtesy while quietly assessing the unfamiliar man. Her questions are direct but not hostile; she is curious about his presence and tests whether he has a defensible reason for entering the garden. Recognition of his role gives her a little more confidence, allowing a subtle shift toward personal interest. When he hesitates, she lightly punctures his uncertainty rather than threatening him. Her final correction is composed and gently assertive, redirecting attention to the hawk as a safer shared subject.
+
+[PERFORMANCE]
+S01
+start: w0001
+intent: Offer formal courtesy while assessing the unfamiliar man.
+affect: Polite-28
+heart: NONE
+gaze: GAZE-B
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S02
+start: w0008
+intent: Directly investigate why he has come to the estate.
+affect: Watchful-44
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -2
+blink: NONE
+blink_suppression: NONE
+
+S03
+start: w0018
+intent: Place his identity in context and show that she has already noticed him.
+affect: Watchful-52
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -2
+blink: NONE
+blink_suppression: NONE
+
+S04
+start: w0021
+intent: Let personal curiosity emerge beneath her controlled introduction.
+affect: Friendly-30
+heart: NONE
+gaze: GAZE-B
+head: LOW
+lid: -1
+blink: SLOW_BLINK
+blink_suppression: NONE
+
+S05
+start: w0025
+intent: Press him for the real reason he entered the garden.
+affect: Sassy-34
+heart: NONE
+gaze: GAZE-B
+head: HIGH
+lid: -2
+blink: NONE
+blink_suppression: NONE
+
+S06
+start: w0032
+intent: Reassure him that the question is ordinary while retaining control of the exchange.
+affect: Sassy-27
+heart: NONE
+gaze: GAZE-B
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S07
+start: w0057
+intent: Correct his imprecise reference with calm, confident expertise.
+affect: Neutral-36
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -2
+blink: NONE
+blink_suppression: NONE
+
+[REASONS]
+S01.intent: Agnes establishes civilized distance while making an immediate first assessment of Will.
+S01.affect: Polite restraint suits a first meeting and prevents the greeting from revealing too much interest.
+S01.gaze: Direct focus keeps her attentive to his response and signals self-possession.
+S01.head: A low head position adds formal reserve without becoming submissive.
+S01.lid: Slightly lowered lids support cautious observation during the courteous opening.
+
+S02.intent: Her question is an active inquiry into his motives, not casual conversation.
+S02.affect: Watchful concern reflects her caution about an unknown man appearing in her private outdoor space.
+S02.gaze: Direct focus makes the question feel intentional and difficult to evade.
+S02.head: Medium head involvement gives the inquiry clear social weight.
+S02.lid: Mild narrowing reinforces scrutiny without becoming accusatory.
+
+S03.intent: Agnes identifies his position and signals that he has already attracted her attention.
+S03.affect: Watchfulness remains because recognition does not yet equal trust.
+S03.gaze: Continued focus lets her study how he reacts to being recognized.
+S03.head: Medium involvement marks a more deliberate appraisal of him.
+
+S04.intent: She briefly softens the assessment and permits a restrained trace of interest.
+S04.affect: Friendly warmth acknowledges curiosity while remaining carefully contained.
+S04.gaze: Direct focus allows the personal interest to register without overt flirtation.
+S04.head: A slight lowering makes the shift intimate and less confrontational.
+S04.lid: A slow blink gives the moment composure and subtly relaxes her guardedness.
+S04.blink: The slow blink marks a controlled softening as she admits familiarity with him.
+
+S05.intent: Agnes brings the conversation back to his unexplained presence and invites a more honest answer.
+S05.affect: Light sass turns the pressure into a manageable social challenge rather than an accusation.
+S05.gaze: Direct focus holds him to the question while preserving her authority.
+S05.head: The raised head makes the challenge confident and faintly teasing.
+S05.lid: Slight narrowing supports the playful skepticism of the challenge.
+
+S06.intent: She lowers the stakes of the inquiry while reminding him that she expects an answer.
+S06.affect: Mild sass keeps the line gently teasing and prevents the reassurance from sounding apologetic.
+S06.gaze: Direct focus maintains control even as she makes the exchange safer for him.
+S06.head: Low involvement softens the pressure and signals conversational patience.
+S06.lid: Slightly lowered lids preserve the knowing, lightly teasing quality.
+
+S07.intent: Agnes supplies the precise name of the bird and redirects the interaction toward a subject she understands.
+S07.affect: Neutral composure makes the correction confident rather than scolding.
+S07.gaze: Direct focus ensures he registers the correction and keeps their shared attention connected.
+S07.head: Medium involvement gives the factual correction quiet authority.
+S07.lid: Mild narrowing conveys certainty about the distinction.

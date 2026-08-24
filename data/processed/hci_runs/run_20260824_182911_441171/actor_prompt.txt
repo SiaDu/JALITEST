@@ -1,0 +1,137 @@
+# Anchor-Grounded Actor Performance Proposal v3
+
+You are proposing semantic acting choices for one target character. The script is immutable.
+Choose where each Performance Phrase starts using anchor IDs, including multiple phrases inside one utterance when the acting changes.
+
+Target character: AGNES
+Character aliases: {"A": "AGNES", "B": "WILL"}
+Optional context:
+Scene:
+Will and Agnes meet for the first time in the garden at Hewlands. Will has just left the study where he is tutoring the boys after noticing Agnes outside with her hawk.
+
+Story:
+Will is working as a Latin tutor at Hewlands to help repay his father's debt. He feels trapped by his circumstances. Agnes lives at Hewlands and has an independent, unconventional relationship with the natural world.
+
+Character:
+WILL is educated, restless, curious, and somewhat socially uncertain around Agnes.
+AGNES is independent, intuitive, self-possessed, and cautious about this unfamiliar man.
+
+Performance Context:
+There is an immediate mutual attraction, but neither character knows the other yet. Their conversation is tentative and slightly awkward. Will is searching for a reason to remain near Agnes, while Agnes is curious about why he approached her. The hawk provides a safer subject through which they can continue the interaction.
+
+[IMMUTABLE SCRIPT]
+AGNES: Good day, sir.
+WILL: Good day to you.
+AGNES: What brings you to Hewlands?
+WILL: I'm tutoring the boys here.
+AGNES: The Latin tutor. I've heard of you.
+AGNES: What brought you into the garden?
+WILL: Uh...
+AGNES: It's just a question, master tutor.
+WILL: Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.
+AGNES: It's a hawk.
+WILL: Ah.
+
+[ANCHORED SCRIPT]
+T01 AGNES:
+[w0001 Good] [w0002 day,] [w0003 sir.]
+
+T02 WILL:
+[w0004 Good] [w0005 day] [w0006 to] [w0007 you.]
+
+T03 AGNES:
+[w0008 What] [w0009 brings] [w0010 you] [w0011 to] [w0012 Hewlands?]
+
+T04 WILL:
+[w0013 I'm] [w0014 tutoring] [w0015 the] [w0016 boys] [w0017 here.]
+
+T05 AGNES:
+[w0018 The] [w0019 Latin] [w0020 tutor.] [w0021 I've] [w0022 heard] [w0023 of] [w0024 you.]
+
+T06 AGNES:
+[w0025 What] [w0026 brought] [w0027 you] [w0028 into] [w0029 the] [w0030 garden?]
+
+T07 WILL:
+[w0031 Uh...]
+
+T08 AGNES:
+[w0032 It's] [w0033 just] [w0034 a] [w0035 question,] [w0036 master] [w0037 tutor.]
+
+T09 WILL:
+[w0038 Yes,] [w0039 I,] [w0040 uh...] [w0041 I] [w0042 suppose] [w0043 the] [w0044 air] [w0045 was] [w0046 fresh] [w0047 out] [w0048 here,] [w0049 and...] [w0050 uh,] [w0051 I] [w0052 saw] [w0053 you] [w0054 with] [w0055 your] [w0056 bird.]
+
+T10 AGNES:
+[w0057 It's] [w0058 a] [w0059 hawk.]
+
+T11 WILL:
+[w0060 Ah.]
+
+[SEMANTIC VOCABULARY]
+Affect states: Neutral, Polite, Friendly, Sassy, Smug, Cocky, Nervous, Panicky, Thinking, Scheming, Devious, Devilish, Provoked, Angered, Dislike, Disgust, Singing_Serene, Watchful, Intimidating, Confused, Lost
+Heart states: Angry, Sad, Disgusted, Afraid, Contempt, Surprised, Happy
+Inactive affect or heart channel: NONE
+Head values: NONE, LOW, MEDIUM, HIGH, FULL
+Lid values: -9, -7, -5, -3, -2, -1, 0, 1, 2, 3, 4
+Blink values: BLINK_CLUSTER, DOUBLE_BLINK, EYE_CLOSE_HOLD, NONE, SLOW_BLINK
+Blink suppression: NONE, SUPPRESS
+Direction targets: DOWN, DOWN_LEFT, DOWN_RIGHT, LEFT, RIGHT, UP, UP_LEFT, UP_RIGHT
+
+Return exactly three sections in this order: `[ANALYZE]`, `[PERFORMANCE]`, `[REASONS]`.
+
+Never copy dialogue into the response. Never output XML, JSON, source-tag IDs, character offsets,
+closing tags, timing, frames, seconds, or Maya controls. The deterministic program owns all of those.
+
+Only propose phrases for the target character. Every target-character dialogue turn needs at least one
+phrase, whose first `start` must be that turn's first anchor. Add another phrase only when the
+acting/performance meaningfully changes; do not create one merely because punctuation occurs.
+Phrase starts must be in transcript order and cannot belong to another character's dialogue.
+
+You only choose where each new Performance Phrase **STARTS**. Do not provide phrase end anchors.
+The deterministic program extends each phrase until the next phrase start or the end of the current
+dialogue turn, preserving all original text, whitespace, and punctuation.
+
+Every phrase must contain all nine fields below. Do not inherit omitted state. Use `NONE` for an
+inactive affect, heart, gaze, lid, blink, or blink_suppression channel. `head: NONE` is a valid explicit
+head-involvement decision, not an omitted field.
+
+Use exactly `NONE` when an affect or heart channel is inactive. Do not output `Nothing`; `Nothing` is
+an internal JALI backend value. Every phrase is a complete resolved state: do not omit a channel, write
+`inherit`, or rely on a previous phrase. For example, `heart: Happy-28` followed by `heart: NONE` means
+the Happy heart state ends at that later phrase boundary.
+
+For affect and heart intensities, use digit integers only: write `Smug-30`, not `Smug-thirty`, and
+`Happy-28`, not `Happy-twenty-eight`.
+
+Exact grammar:
+
+```text
+[ANALYZE]
+free-text acting interpretation (no copied dialogue)
+
+[PERFORMANCE]
+S01
+start: w0001
+intent: ACTOR_READABLE_INTENT
+affect: STATE-INTEGER_0_TO_100 | NONE
+heart: STATE-INTEGER_0_TO_100 | NONE
+gaze: MODE-TARGET | NONE
+head: NONE | LOW | MEDIUM | HIGH | FULL
+lid: SUPPORTED_INTEGER | NONE
+blink: NONE | SLOW_BLINK | EYE_CLOSE_HOLD | DOUBLE_BLINK | BLINK_CLUSTER
+blink_suppression: NONE | SUPPRESS
+
+[REASONS]
+S01.intent: reason
+S01.affect: reason for an active affect
+S01.heart: reason for an active heart
+S01.gaze: reason for active gaze
+S01.head: reason
+S01.lid: reason for an active lid state
+S01.blink: reason for an active performative blink
+S01.blink_suppression: reason for active suppression
+```
+
+Repeat the S-block for every proposed phrase. In `[REASONS]`, explain intent, head, and each active
+optional channel. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
+character targets; known character names and `CHARACTER_NAME` are also accepted and normalize to
+their A/B alias. Object targets use `OBJECT_NAME`; direction targets use the supplied directions.

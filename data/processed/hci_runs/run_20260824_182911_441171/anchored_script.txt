@@ -1,0 +1,32 @@
+T01 AGNES:
+[w0001 Good] [w0002 day,] [w0003 sir.]
+
+T02 WILL:
+[w0004 Good] [w0005 day] [w0006 to] [w0007 you.]
+
+T03 AGNES:
+[w0008 What] [w0009 brings] [w0010 you] [w0011 to] [w0012 Hewlands?]
+
+T04 WILL:
+[w0013 I'm] [w0014 tutoring] [w0015 the] [w0016 boys] [w0017 here.]
+
+T05 AGNES:
+[w0018 The] [w0019 Latin] [w0020 tutor.] [w0021 I've] [w0022 heard] [w0023 of] [w0024 you.]
+
+T06 AGNES:
+[w0025 What] [w0026 brought] [w0027 you] [w0028 into] [w0029 the] [w0030 garden?]
+
+T07 WILL:
+[w0031 Uh...]
+
+T08 AGNES:
+[w0032 It's] [w0033 just] [w0034 a] [w0035 question,] [w0036 master] [w0037 tutor.]
+
+T09 WILL:
+[w0038 Yes,] [w0039 I,] [w0040 uh...] [w0041 I] [w0042 suppose] [w0043 the] [w0044 air] [w0045 was] [w0046 fresh] [w0047 out] [w0048 here,] [w0049 and...] [w0050 uh,] [w0051 I] [w0052 saw] [w0053 you] [w0054 with] [w0055 your] [w0056 bird.]
+
+T10 AGNES:
+[w0057 It's] [w0058 a] [w0059 hawk.]
+
+T11 WILL:
+[w0060 Ah.]
