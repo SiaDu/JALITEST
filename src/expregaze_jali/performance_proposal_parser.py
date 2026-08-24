@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 import re
 from typing import Any
-
-import yaml
 
 from expregaze_jali.transcript_anchor_model import TranscriptAnchorModel, speaker_key
 
@@ -62,6 +61,8 @@ _TENS_WORDS = {
     "eighty": 80,
     "ninety": 90,
 }
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_SEMANTIC_VOCABULARY_PATH = REPO_ROOT / "configs" / "semantic_vocabulary.json"
 
 
 class ProposalValidationError(ValueError):
@@ -78,19 +79,23 @@ def _name_key(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
 
 
-def load_semantic_vocabulary(jali_config_path: str | Path) -> SemanticVocabulary:
-    data = yaml.safe_load(Path(jali_config_path).read_text(encoding="utf-8")) or {}
-    root = data.get("jali_emotion", {})
-    mask = root.get("mask", {}).get("allowed_bearings", {})
-    heart = root.get("heart", {}).get("first_version_sources", {})
-    if not isinstance(mask, dict) or not isinstance(heart, dict):
-        raise ValueError("JALI emotion configuration is missing mask/heart vocabularies.")
+def load_semantic_vocabulary(
+    path: str | Path = DEFAULT_SEMANTIC_VOCABULARY_PATH,
+) -> SemanticVocabulary:
+    """Load the dependency-free shared HCI executable vocabulary artifact."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    if data.get("schema_version") != "semantic_vocabulary_v1":
+        raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1.")
+    visible = data.get("visible_affect")
+    heart = data.get("heart")
+    if not isinstance(visible, list) or not isinstance(heart, list):
+        raise ValueError("Semantic vocabulary must contain visible_affect and heart lists.")
+    if not all(isinstance(name, str) and name.strip() for name in visible + heart):
+        raise ValueError("Semantic vocabulary values must be non-empty strings.")
     return SemanticVocabulary(
-        affect_states={
-            _name_key(name): str(name) for name in mask if _name_key(name) != "nothing"
-        },
+        affect_states={_name_key(name): name for name in visible},
         heart_states={
-            _name_key(name): str(name) for name in heart if _name_key(name) != "nothing"
+            _name_key(name): name for name in heart
         },
     )
 

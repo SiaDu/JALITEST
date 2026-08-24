@@ -38,9 +38,12 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
         raise ValueError("A JALI emotion vocabulary config is required.")
     vocabulary = load_semantic_vocabulary(paths[0])
     return "\n".join((
-        "Affect states: " + ", ".join(vocabulary.affect_states.values()),
-        "Heart states: " + ", ".join(vocabulary.heart_states.values()),
-        "Inactive affect or heart channel: NONE",
+        "VISIBLE AFFECT — CLOSED VOCABULARY: "
+        + " | ".join(vocabulary.affect_states.values()) + " | NONE",
+        "HEART — CLOSED VOCABULARY: "
+        + " | ".join(vocabulary.heart_states.values()) + " | NONE",
+        "Any other value is invalid in these two executable fields.",
+        "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.",
         "Head values: " + ", ".join(HEAD_VALUES),
         "Lid values: " + ", ".join(str(value) for value in sorted(LID_VALUES)),
         "Blink values: " + ", ".join(sorted(BLINK_VALUES)),

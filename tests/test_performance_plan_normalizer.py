@@ -136,7 +136,7 @@ def test_intent_uses_stable_span_lists_for_single_and_multiple_states(tmp_path: 
 def test_state_spans_are_exact_and_rationale_is_field_addressable(tmp_path: Path):
     annotation = (
         "<i01=CONNECT><hd01=MEDIUM><l01=-1><m01=Friendly-66>"
-        "Hello.</m01></l01></hd01><h01=Warm-30> Goodbye.</h01></i01>"
+        "Hello.</m01></l01></hd01><h01=Happy-30> Goodbye.</h01></i01>"
     )
     reasons = "\n".join(
         [
@@ -144,7 +144,7 @@ def test_state_spans_are_exact_and_rationale_is_field_addressable(tmp_path: Path
             "hd01=MEDIUM: gives the greeting physical weight",
             "l01=-1: keeps the attention alert",
             "m01=Friendly-66: makes the greeting open",
-            "h01=Warm-30: retains private warmth at the goodbye",
+            "h01=Happy-30: retains private warmth at the goodbye",
         ]
     )
     _parsed, plan = _parse_and_normalize(

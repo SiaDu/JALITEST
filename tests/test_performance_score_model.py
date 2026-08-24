@@ -207,7 +207,7 @@ def test_score_round_trip_applies_affect_gaze_lid_and_blink_edits():
     model = PerformanceScoreModel(original)
     edited = model.score_text.replace(
         "<l-1><Smug-72><HEART-Angry-70><GLANCE-DOWN><HEAD-MEDIUM><SLOW_BLINK>",
-        "<l2><Thinking-76><HEART-Curious-40><GAZE-CRYSTAL><HEAD-HIGH><EYE_CLOSE_HOLD>",
+        "<l2><Thinking-76><HEART-Happy-40><GAZE-CRYSTAL><HEAD-HIGH><EYE_CLOSE_HOLD>",
     )
     result = model.apply(edited)
     event = result["events"][0]
@@ -215,7 +215,7 @@ def test_score_round_trip_applies_affect_gaze_lid_and_blink_edits():
     assert event["affect"]["visible"][1]["intensity"] == 0.76
     assert event["gaze"][1]["mode"] == "GAZE"
     assert event["gaze"][1]["target"] == "CRYSTAL"
-    assert event["affect"]["hidden"][0]["state"] == "Curious"
+    assert event["affect"]["hidden"][0]["state"] == "Happy"
     assert event["affect"]["hidden"][0]["intensity"] == 0.4
     assert [span["value"] for span in event["head"]] == ["MEDIUM", "HIGH"]
     assert event["head"][1]["involvement"] == 0.75
@@ -232,7 +232,7 @@ def test_score_round_trip_applies_affect_gaze_lid_and_blink_edits():
     ]
     reloaded = PerformanceScoreModel(result)
     assert (
-        "2. {WELCOME}\n   <l2><Thinking-76><HEART-Curious-40>"
+        "2. {WELCOME}\n   <l2><Thinking-76><HEART-Happy-40>"
         "<GAZE-CRYSTAL><HEAD-HIGH><EYE_CLOSE_HOLD>"
     ) in reloaded.score_text
 
@@ -251,6 +251,15 @@ def test_invalid_unknown_tag_has_phrase_specific_error_and_does_not_mutate_plan(
     else:
         raise AssertionError("invalid score must not apply")
     assert model.plan == before
+
+
+def test_older_unsupported_state_loads_for_display_but_requires_a_correction():
+    old_plan = _plan(second_state="Curious")
+    model = PerformanceScoreModel(old_plan)
+    assert "<Curious-72>" in model.score_text
+    assert 'Phrase 2: Unknown visible affect "Curious"' in [
+        str(error) for error in model.validate(model.score_text).errors
+    ]
 
 
 def test_intent_edit_round_trip_updates_canonical_event():
@@ -329,7 +338,7 @@ def test_event_intent_boundary_always_creates_a_phrase_boundary():
 def test_parser_rejects_bad_numbering_and_out_of_range_affect():
     result = parse_score("2. {TEST}\n<Friendly-101><GAZE-LISTENER>\nA line.")
     messages = [str(error) for error in result.errors]
-    assert "Phrase 2: Unknown behavior <Friendly-101>" in messages
+    assert "Phrase 2: Visible affect intensity must be between 0 and 100: <Friendly-101>" in messages
     assert "Phrase numbers must be unique, contiguous, and ordered from 1." in messages
 
 
@@ -358,18 +367,18 @@ def test_manual_edit_tracking_and_original_rationale_preservation():
 
 
 def test_dual_character_format_and_parser_use_shared_area_grammar():
-    score = format_dual_score(_plan(character="PROFESSOR"), _plan(character="DOROTHY", second_state="Curious"), speakers=["A", "B"])
+    score = format_dual_score(_plan(character="PROFESSOR"), _plan(character="DOROTHY", second_state="Thinking"), speakers=["A", "B"])
     assert "1. {WELCOME}" in score
     assert "A:<l-1><Friendly-66><GAZE-DOROTHY><HEAD-MEDIUM> |" in score
     assert "B:<l-1><Friendly-66><GAZE-DOROTHY><HEAD-MEDIUM>" in score
     assert "   A: That's right." in score
     assert "A:<l-1><Smug-72><HEART-Angry-70><GLANCE-DOWN><HEAD-MEDIUM><SLOW_BLINK> |" in score
-    assert "B:<l-1><Curious-72><HEART-Angry-70><GLANCE-DOWN><HEAD-MEDIUM><SLOW_BLINK>" in score
+    assert "B:<l-1><Thinking-72><HEART-Angry-70><GLANCE-DOWN><HEAD-MEDIUM><SLOW_BLINK>" in score
     assert "   B: Here." in score
     parsed = parse_score(score, mode="dual", known_targets={"DOROTHY", "DOWN"})
     assert parsed.valid
     assert [phrase.speaker for phrase in parsed.phrases] == ["A", "B"]
-    assert parsed.phrases[1].states["B"].affect == ("Curious", 72)
+    assert parsed.phrases[1].states["B"].affect == ("Thinking", 72)
     assert all(phrase.states["A"].intent == "WELCOME" for phrase in parsed.phrases)
 
 

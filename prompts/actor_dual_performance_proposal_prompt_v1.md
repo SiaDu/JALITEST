@@ -27,6 +27,48 @@ Every phrase has one shared conversational beat intent and a complete resolved s
 Do not omit fields, use inheritance, or output `Nothing`; use `NONE` for inactive channels.
 Use digit integers only for affect and heart intensity: `Smug-30`, not `Smug-thirty`.
 
+Actor-level interpretation is open vocabulary. In `[ANALYZE]`, intent, and `[REASONS]`, freely describe
+acting with concepts such as curious, warm, suspicious, hesitant, interested, affectionate, or guarded.
+However, `affect` and `heart` are executable JALI channels with closed vocabularies. For `affect`, use
+only a visible affect listed in `[SEMANTIC VOCABULARY]`; for `heart`, use only a listed heart state.
+Do not put descriptive concepts such as Curious, Warm, Interested, Concerned, or Suspicious directly in
+`affect` unless they explicitly appear in the supplied visible-affect list. Any other value is invalid in
+these executable fields. If an acting concept has no direct JALI Mask label, preserve it in intent/reasoning
+and realize it with an appropriate supported combination of visible affect, gaze, head, lid, blink, and heart.
+
+Example: Agnes may become increasingly curious about Will in `[ANALYZE]`, have the shared intent
+`GROWING_CURIOSITY_ABOUT_WILL`, and use `A.affect: Watchful-35`, `A.gaze: GAZE-B`, and `A.head: MEDIUM`.
+This is an acting choice for the scene, not a fixed Curious-to-Watchful mapping.
+
+```text
+[ANALYZE]
+Agnes becomes increasingly curious about Will, but keeps the curiosity socially contained.
+
+[PERFORMANCE]
+S09
+start: w0042
+intent: GROWING_CURIOSITY_ABOUT_WILL
+A.affect: Watchful-35
+A.heart: NONE
+A.gaze: GAZE-B
+A.head: MEDIUM
+A.lid: -1
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Thinking-30
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: LOW
+B.lid: NONE
+B.blink: NONE
+B.blink_suppression: NONE
+
+[REASONS]
+S09.intent: Curiosity becomes a shared conversational beat.
+S09.A.affect: Her curiosity appears outwardly as attentive, contained observation.
+S09.A.gaze: She studies Will more directly as her interest grows.
+```
+
 Exact grammar:
 
 ```text

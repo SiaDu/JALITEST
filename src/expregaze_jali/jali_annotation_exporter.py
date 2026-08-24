@@ -53,11 +53,11 @@ def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> st
     the same order they opened, not XML stack order. For example, if the span
     begins as:
 
-        <mask=Friendly-70><heart=Warm-30>text
+        <mask=Friendly-70><heart=Happy-30>text
 
     the JALI-facing transcript should end that shared span as:
 
-        text</mask=Friendly-70></heart=Warm-30>
+        text</mask=Friendly-70></heart=Happy-30>
 
     This intentionally differs from well-formed XML (`</heart></mask>`), but it
     matches the ordering expected by the JALI tag workflow used in this project.

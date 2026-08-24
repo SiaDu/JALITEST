@@ -43,6 +43,40 @@ the Happy heart state ends at that later phrase boundary.
 For affect and heart intensities, use digit integers only: write `Smug-30`, not `Smug-thirty`, and
 `Happy-28`, not `Happy-twenty-eight`.
 
+Actor-level interpretation is open vocabulary. In `[ANALYZE]`, intent, and `[REASONS]`, freely describe
+acting with concepts such as curious, warm, suspicious, hesitant, interested, affectionate, or guarded.
+However, `affect` and `heart` are executable JALI channels with closed vocabularies. For `affect`, use
+only a visible affect listed in `[SEMANTIC VOCABULARY]`; for `heart`, use only a listed heart state.
+Do not put descriptive concepts such as Curious, Warm, Interested, Concerned, or Suspicious directly in
+`affect` unless they explicitly appear in the supplied visible-affect list. Any other value is invalid in
+these executable fields. If an acting concept has no direct JALI Mask label, preserve it in intent/reasoning
+and realize it with an appropriate supported combination of visible affect, gaze, head, lid, blink, and heart.
+
+For example, the analysis may say "Agnes becomes increasingly curious about Will" and the intent may be
+`GROWING_CURIOSITY_ABOUT_WILL`, while the executable state is `affect: Watchful-35`, `gaze: GAZE-B`, and
+`head: MEDIUM`. This is an acting choice for the scene, not a fixed Curious-to-Watchful mapping.
+
+```text
+[ANALYZE]
+Agnes becomes increasingly curious about Will, but keeps the curiosity socially contained.
+
+[PERFORMANCE]
+S09
+start: w0042
+intent: GROWING_CURIOSITY_ABOUT_WILL
+affect: Watchful-35
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+[REASONS]
+S09.affect: Her curiosity appears outwardly as attentive, contained observation.
+S09.gaze: She studies Will more directly as her interest grows.
+```
+
 Exact grammar:
 
 ```text

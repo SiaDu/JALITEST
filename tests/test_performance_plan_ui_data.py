@@ -53,8 +53,8 @@ def _plan() -> dict:
                             "source_tag": "m02",
                             "char_start": 16,
                             "char_end": 22,
-                            "value": "Warm-60",
-                            "state": "Warm",
+                            "value": "Friendly-60",
+                            "state": "Friendly",
                             "intensity": 0.6,
                         },
                     ],
@@ -338,13 +338,13 @@ def test_multiline_editors_share_score_font_and_use_larger_sizes():
 
 def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path: Path):
     model = PerformanceScoreModel(_plan())
-    edited_score = model.score_text.replace("<Friendly-50>", "<Angry-80>", 1)
+    edited_score = model.score_text.replace("<Friendly-50>", "<Angered-80>", 1)
     runtime_path = tmp_path / "animation" / "performance_plan_runtime.json"
 
     updated = save_animation_runtime_plan(model, edited_score, runtime_path)
     saved = json.loads(runtime_path.read_text(encoding="utf-8"))
 
-    assert updated["events"][0]["affect"]["visible"][0]["value"] == "Angry-80"
+    assert updated["events"][0]["affect"]["visible"][0]["value"] == "Angered-80"
     assert saved == updated
     assert saved["authoring"]["manually_edited_phrases"][0]["changed_categories"] == [
         "affect"

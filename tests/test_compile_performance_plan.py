@@ -150,7 +150,7 @@ def test_timing_discovery_fails_clearly_without_alignment(tmp_path: Path):
 
 
 def test_compiler_uses_edited_plan_and_never_original_annotation(tmp_path: Path):
-    plan_path = _write_plan(tmp_path / "performance_plan.json", _plan("Angry-80"))
+    plan_path = _write_plan(tmp_path / "performance_plan.json", _plan("Angered-80"))
     (tmp_path / "performance_annotation.txt").write_text(
         "<m01=Friendly-10>Hello</m01> there.", encoding="utf-8"
     )
@@ -167,7 +167,7 @@ def test_compiler_uses_edited_plan_and_never_original_annotation(tmp_path: Path)
     )
 
     jali = (output / "annotated_for_jali.txt").read_text(encoding="utf-8")
-    assert "<mask=Angry-80>" in jali
+    assert "<mask=Angered-80>" in jali
     assert "Friendly-10" not in jali
     assert manifest["source"] == "canonical_performance_plan"
     debug = json.loads((output / "compile_from_plan_debug.txt").read_text(encoding="utf-8"))

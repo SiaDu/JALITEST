@@ -1,0 +1,12 @@
+{
+  "schema_version": "semantic_vocabulary_v1",
+  "visible_affect": [
+    "Neutral", "Polite", "Friendly", "Sassy", "Smug", "Cocky", "Nervous",
+    "Panicky", "Thinking", "Scheming", "Devious", "Devilish", "Provoked",
+    "Angered", "Dislike", "Disgust", "Singing_Serene", "Watchful",
+    "Intimidating", "Confused", "Lost"
+  ],
+  "heart": [
+    "Angry", "Sad", "Disgusted", "Afraid", "Contempt", "Surprised", "Happy"
+  ]
+}

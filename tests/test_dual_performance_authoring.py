@@ -38,7 +38,7 @@ SCRIPT = (
 )
 VOCAB = SemanticVocabulary(
     affect_states={
-        "watchful": "Watchful", "nervous": "Nervous", "curious": "Curious",
+        "watchful": "Watchful", "nervous": "Nervous",
         "thinking": "Thinking", "friendly": "Friendly", "polite": "Polite",
     },
     heart_states={"happy": "Happy", "nervous": "Nervous"},
@@ -242,6 +242,9 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "one shared conversational beat intent" in prompt
     assert "A.affect: STATE-INTEGER_0_TO_100 | NONE" in prompt
     assert "Never copy dialogue" in prompt
+    assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
+    assert "HEART — CLOSED VOCABULARY:" in prompt
+    assert "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons." in prompt
     calls = []
 
     def runner(**kwargs):

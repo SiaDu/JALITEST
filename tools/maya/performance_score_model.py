@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
+import json
+from pathlib import Path
 import re
 from typing import Any, Iterable
 
@@ -18,13 +20,8 @@ DEFAULT_GAZE_TARGETS = {
     "A", "B", "SPEAKER", "LISTENER", "DOWN", "DOWN_LEFT", "DOWN_RIGHT",
     "UP", "UP_LEFT", "UP_RIGHT", "LEFT", "RIGHT", "CRYSTAL", "DOOR",
 }
-DEFAULT_AFFECTS = {
-    "Afraid", "Angered", "Angry", "Cocky", "Confused", "Contempt", "Curious",
-    "Devious", "Devilish", "Disgust", "Disgusted", "Dislike", "Friendly", "Happy",
-    "Intimidating", "Lost", "Nervous", "Neutral", "Panicky", "Polite", "Provoked",
-    "Sad", "Sassy", "Scheming", "Singing_Serene", "Smug", "Surprised", "Thinking",
-    "Warm", "Watchful",
-}
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SEMANTIC_VOCABULARY_PATH = REPO_ROOT / "configs" / "semantic_vocabulary.json"
 BLINK_VALUES = {
     "SLOW_BLINK", "EYE_CLOSE_HOLD", "SUPPRESS", "DOUBLE_BLINK", "BLINK_CLUSTER",
 }
@@ -37,6 +34,22 @@ _AFFECT = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
 _HEART = re.compile(r"^HEART-([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
 _HEAD = re.compile(r"^HEAD-([A-Z]+)$")
 _LID = re.compile(r"^l(-?\d+(?:\.\d+)?)$", re.IGNORECASE)
+
+
+def load_score_vocabulary(path: str | Path = SEMANTIC_VOCABULARY_PATH) -> tuple[set[str], set[str]]:
+    """Read the shared JSON vocabulary without backend or YAML dependencies."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    if data.get("schema_version") != "semantic_vocabulary_v1":
+        raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1.")
+    visible, heart = data.get("visible_affect"), data.get("heart")
+    if not isinstance(visible, list) or not isinstance(heart, list):
+        raise ValueError("Semantic vocabulary must contain visible_affect and heart lists.")
+    if not all(isinstance(name, str) and name.strip() for name in visible + heart):
+        raise ValueError("Semantic vocabulary values must be non-empty strings.")
+    return set(visible), set(heart)
+
+
+DEFAULT_VISIBLE_AFFECTS, DEFAULT_HEART_STATES = load_score_vocabulary()
 
 
 @dataclass(frozen=True)
@@ -422,29 +435,34 @@ def format_dual_plan_score(plan_or_phrases: dict[str, Any] | list[ScorePhrase]) 
 
 def known_vocabulary(
     plans: Iterable[dict[str, Any]], *, extra_targets: Iterable[str] = ()
-) -> tuple[set[str], set[str]]:
-    affects = set(DEFAULT_AFFECTS)
+) -> tuple[set[str], set[str], set[str]]:
+    """Return closed executable vocabularies plus semantic gaze targets.
+
+    Existing plan values deliberately do not expand either closed affect list:
+    an older unsupported human edit must load and display, then validate as
+    invalid rather than becoming silently accepted.
+    """
+    visible_affects = set(DEFAULT_VISIBLE_AFFECTS)
+    heart_states = set(DEFAULT_HEART_STATES)
     targets = set(DEFAULT_GAZE_TARGETS)
     for plan in plans:
-        for span in _all_spans(plan, ("affect", "visible")) + _all_spans(plan, ("affect", "hidden")):
-            state = _affect_state(span)
-            if state:
-                affects.add(state[0])
         for span in _all_spans(plan, ("gaze",)):
             state = _gaze_state(span)
             if state:
                 targets.add(state[1])
     targets.update(_human_target(str(value)) for value in extra_targets if str(value).strip())
-    return affects, targets
+    return visible_affects, heart_states, targets
 
 
 def _parse_tags(
     raw: str,
     phrase_number: int,
-    known_affects: set[str],
+    known_visible_affects: set[str],
+    known_heart_states: set[str],
     known_targets: set[str],
     *,
     intent: str | None,
+    alias: str | None = None,
 ) -> tuple[SemanticState, list[ValidationIssue]]:
     issues: list[ValidationIssue] = []
     tags = _TAG.findall(raw)
@@ -475,8 +493,11 @@ def _parse_tags(
                 blinks.append(token)
         elif heart_match:
             name, strength = heart_match.group(1), int(heart_match.group(2))
-            if name not in known_affects or not 0 <= strength <= 100:
-                issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+            subject = f"{alias} " if alias else ""
+            if name not in known_heart_states:
+                issues.append(ValidationIssue(phrase_number, f'Unknown {subject}heart state "{name}"'))
+            elif not 0 <= strength <= 100:
+                issues.append(ValidationIssue(phrase_number, f"Heart intensity must be between 0 and 100: <{token}>"))
             if hidden_affect is not None:
                 issues.append(ValidationIssue(phrase_number, "Duplicate hidden affect state."))
             hidden_affect = (name, strength)
@@ -496,8 +517,11 @@ def _parse_tags(
             gaze = (mode, human_target)
         elif affect_match:
             name, strength = affect_match.group(1), int(affect_match.group(2))
-            if name not in known_affects or not 0 <= strength <= 100:
-                issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+            subject = f"{alias} " if alias else ""
+            if name not in known_visible_affects:
+                issues.append(ValidationIssue(phrase_number, f'Unknown {subject}visible affect "{name}"'))
+            elif not 0 <= strength <= 100:
+                issues.append(ValidationIssue(phrase_number, f"Visible affect intensity must be between 0 and 100: <{token}>"))
             if affect is not None:
                 issues.append(ValidationIssue(phrase_number, "Duplicate affect state."))
             affect = (name, strength)
@@ -518,12 +542,15 @@ def parse_score(
     text: str,
     *,
     mode: str = "single",
-    known_affects: Iterable[str] = DEFAULT_AFFECTS,
+    known_visible_affects: Iterable[str] = DEFAULT_VISIBLE_AFFECTS,
+    known_heart_states: Iterable[str] = DEFAULT_HEART_STATES,
     known_targets: Iterable[str] = DEFAULT_GAZE_TARGETS,
 ) -> ParseResult:
     if mode not in {"single", "dual"}:
         raise ValueError("mode must be 'single' or 'dual'")
-    affect_names, gaze_targets = set(known_affects), {_human_target(value) for value in known_targets}
+    visible_affect_names = set(known_visible_affects)
+    heart_names = set(known_heart_states)
+    gaze_targets = {_human_target(value) for value in known_targets}
     lines = text.splitlines()
     phrases: list[ParsedPhrase] = []
     issues: list[ValidationIssue] = []
@@ -558,7 +585,7 @@ def parse_score(
             if not dialogue:
                 issues.append(ValidationIssue(number, "Dialogue text is required."))
             state, tag_issues = _parse_tags(
-                state_line, number, affect_names, gaze_targets, intent=intent
+                state_line, number, visible_affect_names, heart_names, gaze_targets, intent=intent
             )
             states["A"] = state
             issues.extend(tag_issues)
@@ -579,7 +606,8 @@ def parse_score(
             else:
                 for alias, raw_tags in zip(("A", "B"), dual_match.groups()):
                     states[alias], tag_issues = _parse_tags(
-                        raw_tags, number, affect_names, gaze_targets, intent=intent
+                        raw_tags, number, visible_affect_names, heart_names, gaze_targets,
+                        intent=intent, alias=alias,
                     )
                     issues.extend(tag_issues)
             speaker_match = re.match(r"^([AB]):\s*(.*)$", dialogue_line)
@@ -639,14 +667,11 @@ class DualPerformanceScoreModel:
             raise ValueError("DualPerformanceScoreModel requires dual_performance_plan_v0.")
         self.plan = deepcopy(plan)
         self.phrases = derive_dual_plan_phrases(self.plan)
-        self.affects = set(DEFAULT_AFFECTS)
+        self.visible_affects = set(DEFAULT_VISIBLE_AFFECTS)
+        self.heart_states = set(DEFAULT_HEART_STATES)
         self.targets = set(DEFAULT_GAZE_TARGETS)
         for phrase in self.phrases:
             for state in phrase.states.values():
-                if state.affect:
-                    self.affects.add(state.affect[0])
-                if state.hidden_affect:
-                    self.affects.add(state.hidden_affect[0])
                 if state.gaze:
                     self.targets.add(state.gaze[1])
         self.targets.update(_human_target(str(value)) for value in extra_targets if str(value).strip())
@@ -670,7 +695,10 @@ class DualPerformanceScoreModel:
         return format_dual_plan_score(self.phrases)
 
     def validate(self, text: str) -> ParseResult:
-        result = parse_score(text, mode="dual", known_affects=self.affects, known_targets=self.targets)
+        result = parse_score(
+            text, mode="dual", known_visible_affects=self.visible_affects,
+            known_heart_states=self.heart_states, known_targets=self.targets,
+        )
         errors = list(result.errors)
         if len(result.phrases) != len(self.phrases):
             errors.append(ValidationIssue(None, f"Expected {len(self.phrases)} phrases, found {len(result.phrases)}."))
@@ -773,7 +801,9 @@ class PerformanceScoreModel:
         self.plan = deepcopy(plan)
         self.phrases = derive_phrases(self.plan)
         self.original_states = self._original_proposal_states()
-        self.affects, self.targets = known_vocabulary([self.plan], extra_targets=extra_targets)
+        self.visible_affects, self.heart_states, self.targets = known_vocabulary(
+            [self.plan], extra_targets=extra_targets
+        )
 
     def _original_proposal_states(self) -> list[SemanticState]:
         snapshot = _as_dict(_as_dict(self.plan.get("authoring")).get("original_semantic_proposal"))
@@ -812,7 +842,10 @@ class PerformanceScoreModel:
         return format_single_score(self.phrases)
 
     def validate(self, text: str) -> ParseResult:
-        result = parse_score(text, known_affects=self.affects, known_targets=self.targets)
+        result = parse_score(
+            text, known_visible_affects=self.visible_affects,
+            known_heart_states=self.heart_states, known_targets=self.targets,
+        )
         errors = list(result.errors)
         if len(result.phrases) != len(self.phrases):
             errors.append(ValidationIssue(None, f"Expected {len(self.phrases)} phrases, found {len(result.phrases)}."))

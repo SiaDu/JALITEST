@@ -23,6 +23,7 @@ from expregaze_jali.performance_proposal_parser import (
     HEAD_VALUES,
     LID_VALUES,
     SUPPRESSION_VALUES,
+    DEFAULT_SEMANTIC_VOCABULARY_PATH,
     load_semantic_vocabulary,
     parse_performance_proposal,
 )
@@ -36,7 +37,7 @@ from expregaze_jali.transcript_anchor_model import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_performance_proposal_prompt_v3.md"
 DEFAULT_EXTRA_CONFIG_FILES = (
-    REPO_ROOT / "configs" / "jali_emotion_options.yaml",
+    DEFAULT_SEMANTIC_VOCABULARY_PATH,
     REPO_ROOT / "configs" / "performance_rules.yaml",
 )
 DEFAULT_LLM_CONFIG = REPO_ROOT / "configs" / "llm.yaml"
@@ -134,9 +135,12 @@ def _render_hci_prompt(
     vocabulary = load_semantic_vocabulary(config_paths[0])
     semantic_reference = "\n".join(
         (
-            "Affect states: " + ", ".join(vocabulary.affect_states.values()),
-            "Heart states: " + ", ".join(vocabulary.heart_states.values()),
-            "Inactive affect or heart channel: NONE",
+            "VISIBLE AFFECT — CLOSED VOCABULARY: "
+            + " | ".join(vocabulary.affect_states.values()) + " | NONE",
+            "HEART — CLOSED VOCABULARY: "
+            + " | ".join(vocabulary.heart_states.values()) + " | NONE",
+            "Any other value is invalid in these two executable fields.",
+            "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.",
             "Head values: " + ", ".join(HEAD_VALUES),
             "Lid values: " + ", ".join(str(value) for value in sorted(LID_VALUES)),
             "Blink values: " + ", ".join(sorted(BLINK_VALUES)),

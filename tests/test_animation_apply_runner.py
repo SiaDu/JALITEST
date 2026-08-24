@@ -99,7 +99,7 @@ def test_apply_uses_explicit_manifest_paths_and_ui_mapping(monkeypatch, tmp_path
         "head_events": tmp_path / "head_events_resolved.json",
         "runtime_transcript": tmp_path / "jali_runtime_transcript.txt",
     }
-    artifacts["annotated_for_jali"].write_text("<mask=Warm-50> Hi </mask=Warm-50>", encoding="utf-8")
+    artifacts["annotated_for_jali"].write_text("<mask=Friendly-50> Hi </mask=Friendly-50>", encoding="utf-8")
     artifacts["runtime_transcript"].write_text("Hi", encoding="utf-8")
     artifacts["gaze_events"].write_text(
         json.dumps({

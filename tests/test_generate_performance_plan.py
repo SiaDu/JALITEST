@@ -90,7 +90,10 @@ def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract
     assert "Never copy dialogue into the response" in prompt
     assert "Affect states: Nothing" not in prompt
     assert "Heart states: Nothing" not in prompt
-    assert "Inactive affect or heart channel: NONE" in prompt
+    assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
+    assert "HEART — CLOSED VOCABULARY:" in prompt
+    assert "Watchful |" in prompt and "Happy | NONE" in prompt
+    assert "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons." in prompt
     assert "Do not output `Nothing`" in prompt
     assert "do not omit a channel" in prompt
     assert "digit integers only: write `Smug-30`, not `Smug-thirty`" in prompt

@@ -68,12 +68,36 @@ Intent is a phrase heading in braces, not an angle-bracket tag. Hidden affect us
 
 The canonical display order is intent heading, lid, visible affect, hidden affect, gaze, head, then blink behaviors.
 
+### Semantic Vocabulary Layers
+
+The system deliberately separates three semantic layers. **Actor Interpretation, Intent, and Rationale**
+use open acting language: an author or model may describe a character as curious, warm, interested,
+suspicious, hesitant, guarded, awkward, affectionate, assessing, or defensive. These descriptions do
+not imply a one-to-one executable facial label.
+
+**Visible Affect** is a closed JALI Mask vocabulary: `Neutral`, `Polite`, `Friendly`, `Sassy`, `Smug`,
+`Cocky`, `Nervous`, `Panicky`, `Thinking`, `Scheming`, `Devious`, `Devilish`, `Provoked`, `Angered`,
+`Dislike`, `Disgust`, `Singing_Serene`, `Watchful`, `Intimidating`, `Confused`, `Lost`, or `NONE`.
+
+**Hidden Affect / Heart** is a separate closed JALI Heart vocabulary: `Angry`, `Sad`, `Disgusted`,
+`Afraid`, `Contempt`, `Surprised`, `Happy`, or `NONE`. `Nothing` is an internal JALI default and is
+never emitted by HCI semantic authoring.
+
+Both executable lists are defined once in `configs/semantic_vocabulary.json` (`semantic_vocabulary_v1`),
+which is readable by the backend and Maya without YAML support. Backend tests assert that it stays in
+lockstep with the corresponding JALI Mask and first-version Heart lists in `jali_emotion_options.yaml`.
+
+For example, an actor interpretation may say, “Agnes grows curious.” The executable semantic plan can
+still be `{GROWING_CURIOSITY_ABOUT_WILL}` with `<Watchful-35><GAZE-B><HEAD-MEDIUM>`. The system does
+not map Curious to Watchful automatically; the acting proposal selects an appropriate supported
+combination for the specific scene.
+
 Dual-character form uses one shared Phase 1.1 intent heading followed by complete A/B states:
 
 ```text
 1. {REASSURE_AND_INVITE}
-   A:<l-1><Friendly-66><HEART-Hopeful-20><GAZE-B><HEAD-MEDIUM> |
-   B:<l1><Curious-20><HEART-Cautious-15><GAZE-A><HEAD-LOW>
+   A:<l-1><Friendly-66><HEART-Happy-20><GAZE-B><HEAD-MEDIUM> |
+   B:<l1><Thinking-20><HEART-Happy-15><GAZE-A><HEAD-LOW>
    A: That's right.
 ```
 
@@ -265,11 +289,11 @@ Single-character form:
 
 ```text
 1. {REASSURE_AND_INVITE}
-   <l-1><Friendly-66><HEART-Hopeful-20><GAZE-LISTENER><HEAD-MEDIUM>
+   <l-1><Friendly-66><HEART-Happy-20><GAZE-LISTENER><HEAD-MEDIUM>
    That's right.
 
 2. {DIRECT_ATTENTION}
-   <l-1><Friendly-66><HEART-Hopeful-20><GLANCE-DOWN><HEAD-LOW>
+   <l-1><Friendly-66><HEART-Happy-20><GLANCE-DOWN><HEAD-LOW>
    Here.
 ```
 
@@ -277,13 +301,13 @@ Dual-character form:
 
 ```text
 1. {REASSURE_AND_INVITE}
-   A:<l-1><Friendly-66><HEART-Hopeful-20><GAZE-B><HEAD-MEDIUM> |
-   B:<l1><Curious-10><HEART-Cautious-15><GAZE-A><HEAD-LOW>
+   A:<l-1><Friendly-66><HEART-Happy-20><GAZE-B><HEAD-MEDIUM> |
+   B:<l1><Thinking-10><HEART-Happy-15><GAZE-A><HEAD-LOW>
    A: That's right.
 
 2. {DIRECT_ATTENTION}
-   A:<l-1><Friendly-66><HEART-Hopeful-20><GLANCE-DOWN><HEAD-LOW> |
-   B:<l1><Curious-10><HEART-Cautious-15><GAZE-A><HEAD-LOW>
+   A:<l-1><Friendly-66><HEART-Happy-20><GLANCE-DOWN><HEAD-LOW> |
+   B:<l1><Thinking-10><HEART-Happy-15><GAZE-A><HEAD-LOW>
    A: Here.
 ```
 
@@ -344,7 +368,13 @@ The first body line is parsed as semantic state only when it begins with `<`; ot
    A: Hmm.
 ```
 
-`NAME` is a known affect state learned from the loaded plan and/or supplied by the model's allowed vocabulary. `TARGET` is a known semantic target learned from the loaded plan, character aliases (`A`, `B`, `SPEAKER`, `LISTENER`), standard directional targets, or an explicitly configured look-at mapping. Tags use canonical uppercase behavior tokens for gaze/blink, display lids as `<l-3>` or `<l0>`, and display affect intensity as integer percent (for example `<Friendly-66>`).
+Visible-affect `NAME` must be in the closed shared JALI Mask vocabulary; hidden-affect `NAME` must be
+in the separate closed shared JALI Heart vocabulary. Existing unsupported historical plan values may be
+displayed for correction, but do not expand either executable list. `TARGET` is a known semantic target
+learned from the loaded plan, character aliases (`A`, `B`, `SPEAKER`, `LISTENER`), standard directional
+targets, or an explicitly configured look-at mapping. Tags use canonical uppercase behavior tokens for
+gaze/blink, display lids as `<l-3>` or `<l0>`, and display affect intensity as integer percent (for
+example `<Friendly-66>`).
 
 No implementation IDs or closing tags are emitted. Within a character state, the canonical order is lid, visible affect, hidden affect, gaze, head, then blink behavior. A category may occur at most once per character per phrase, except that distinct blink behaviors may coexist when canonically present.
 
