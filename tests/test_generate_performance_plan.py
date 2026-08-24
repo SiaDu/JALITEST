@@ -93,6 +93,10 @@ def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract
     assert "Inactive affect or heart channel: NONE" in prompt
     assert "Do not output `Nothing`" in prompt
     assert "do not omit a channel" in prompt
+    assert "digit integers only: write `Smug-30`, not `Smug-thirty`" in prompt
+    assert "`Happy-28`, not `Happy-twenty-eight`" in prompt
+    assert "affect: STATE-INTEGER_0_TO_100 | NONE" in prompt
+    assert "heart: STATE-INTEGER_0_TO_100 | NONE" in prompt
 
 
 def test_hci_prompt_has_no_dataset_input_requirements():

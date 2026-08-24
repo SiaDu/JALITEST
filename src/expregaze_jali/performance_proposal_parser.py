@@ -27,8 +27,41 @@ _SECTION = re.compile(r"^\[(ANALYZE|PERFORMANCE|REASONS)\]\s*$", re.IGNORECASE)
 _PROPOSAL_ID = re.compile(r"^S\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _START_ANCHOR = re.compile(r"^w\d{4,}$", re.IGNORECASE)
-_AFFECT = re.compile(r"^(.*)-([+-]?\d+)$")
 _REASON = re.compile(r"^(S\d+)\.([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
+_DIGIT_INTENSITY = re.compile(r"^\d+%?$")
+_INTEGRAL_DECIMAL_INTENSITY = re.compile(r"^\d+\.0+$")
+_NUMBER_WORDS = {
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+}
+_TENS_WORDS = {
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50,
+    "sixty": 60,
+    "seventy": 70,
+    "eighty": 80,
+    "ninety": 90,
+}
 
 
 class ProposalValidationError(ValueError):
@@ -69,18 +102,45 @@ def normalize_intent(value: str) -> str:
     return normalized
 
 
+def parse_intensity(value: str) -> int:
+    """Parse a deterministic 0--100 intensity spelling without guessing."""
+    raw = value.strip()
+    if _DIGIT_INTENSITY.fullmatch(raw):
+        return int(raw.removesuffix("%"))
+    if _INTEGRAL_DECIMAL_INTENSITY.fullmatch(raw):
+        return int(raw.partition(".")[0])
+
+    words = re.sub(r"[-\s]+", " ", raw.lower()).strip().split()
+    if len(words) == 1:
+        if words[0] in _NUMBER_WORDS:
+            return _NUMBER_WORDS[words[0]]
+        if words[0] in _TENS_WORDS:
+            return _TENS_WORDS[words[0]]
+    elif len(words) == 2:
+        if words == ["one", "hundred"]:
+            return 100
+        tens = _TENS_WORDS.get(words[0])
+        unit = _NUMBER_WORDS.get(words[1])
+        if tens is not None and unit is not None and 1 <= unit <= 9:
+            return tens + unit
+    raise ValueError(f'Invalid intensity "{value.strip()}"')
+
+
 def _normalize_affect(
     value: str, *, phrase_id: str, field: str, vocabulary: dict[str, str]
 ) -> str:
     raw = value.strip()
     if raw.upper() in {"NONE", "NOTHING"}:
         return "NONE"
-    match = _AFFECT.fullmatch(raw)
-    if not match:
+    state, separator, intensity_text = raw.partition("-")
+    if not separator or not state.strip() or not intensity_text.strip():
         raise ProposalValidationError(f'{phrase_id}: Invalid {field} value "{raw}"')
-    state, intensity_text = match.groups()
+    try:
+        intensity = parse_intensity(intensity_text)
+    except ValueError as exc:
+        raise ProposalValidationError(f'{phrase_id}: Invalid {field} value "{raw}"') from exc
     if _name_key(state) == "nothing":
-        if int(intensity_text) == 0:
+        if intensity == 0:
             return "NONE"
         raise ProposalValidationError(
             f'{phrase_id}: {field} value "{raw}" is invalid; use NONE for an inactive channel'
@@ -88,7 +148,6 @@ def _normalize_affect(
     canonical = vocabulary.get(_name_key(state))
     if canonical is None:
         raise ProposalValidationError(f'{phrase_id}: Unknown {field} state "{state}"')
-    intensity = int(intensity_text)
     if not 0 <= intensity <= 100:
         raise ProposalValidationError(f"{phrase_id}: {field} intensity must be between 0 and 100")
     return f"{canonical}-{intensity}"

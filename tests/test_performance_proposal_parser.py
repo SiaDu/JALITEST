@@ -13,7 +13,10 @@ from expregaze_jali.transcript_anchor_model import build_transcript_anchor_model
 
 
 VOCAB = SemanticVocabulary(
-    affect_states={"friendly": "Friendly", "nervous": "Nervous", "thinking": "Thinking", "neutral": "Neutral"},
+    affect_states={
+        "friendly": "Friendly", "nervous": "Nervous", "thinking": "Thinking",
+        "neutral": "Neutral", "smug": "Smug", "watchful": "Watchful",
+    },
     heart_states={"angry": "Angry", "sad": "Sad", "happy": "Happy"},
 )
 
@@ -50,7 +53,7 @@ def test_semantic_normalization_and_complete_fields():
     assert phrase["blink_suppression"] == "NONE"
 
 
-@pytest.mark.parametrize("heart", ["Nothing", "nothing", "NONE", "Nothing-0"])
+@pytest.mark.parametrize("heart", ["Nothing", "nothing", "NONE", "Nothing-0", "Nothing-zero"])
 def test_nothing_heart_alias_normalizes_to_inactive_none(heart):
     parsed = parse_performance_proposal(proposal_text(starts=("w0001",), heart=heart), vocabulary=VOCAB)
     assert parsed["phrases"][0]["heart"] == "NONE"
@@ -71,6 +74,56 @@ def test_nothing_with_nonzero_intensity_is_rejected_clearly():
     with pytest.raises(ProposalValidationError, match="use NONE for an inactive channel"):
         parse_performance_proposal(
             proposal_text(starts=("w0001",), heart="Nothing-70"), vocabulary=VOCAB
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "expected"),
+    [
+        ("affect", "Smug-thirty", "Smug-30"),
+        ("affect", "Smug-thirty-five", "Smug-35"),
+        ("affect", "Friendly-fifty", "Friendly-50"),
+        ("heart", "Happy-twenty-eight", "Happy-28"),
+        ("affect", "Watchful-sixty-two", "Watchful-62"),
+        ("affect", "Nervous-one-hundred", "Nervous-100"),
+        ("affect", "Neutral-zero", "Neutral-0"),
+        ("affect", "Smug-twenty eight", "Smug-28"),
+        ("affect", "Smug-30", "Smug-30"),
+        ("affect", "Smug-30%", "Smug-30"),
+        ("affect", "Smug-30.0", "Smug-30"),
+    ],
+)
+def test_affect_and_heart_intensities_normalize_digits_and_english_number_words(
+    field, value, expected
+):
+    parsed = parse_performance_proposal(
+        proposal_text(starts=("w0001",), **{field: value}), vocabulary=VOCAB
+    )
+    assert parsed["phrases"][0][field] == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "message"),
+    [
+        ("Smug-30.7", "Invalid affect value"),
+        ("Smug-high", "Invalid affect value"),
+        ("Smug-strong", "Invalid affect value"),
+        ("Smug-a-little", "Invalid affect value"),
+        ("Smug-kind-of-30", "Invalid affect value"),
+        ("Smug-one-fifty", "Invalid affect value"),
+        ("Smug-one-hundred-one", "Invalid affect value"),
+        ("Smug-101", "affect intensity must be between 0 and 100"),
+    ],
+)
+def test_invalid_or_out_of_range_affect_intensities_are_rejected(value, message):
+    with pytest.raises(ProposalValidationError, match=message):
+        parse_performance_proposal(proposal_text(starts=("w0001",), affect=value), vocabulary=VOCAB)
+
+
+def test_unknown_state_with_a_valid_word_intensity_reports_unknown_state():
+    with pytest.raises(ProposalValidationError, match='Unknown affect state "UnknownEmotion"'):
+        parse_performance_proposal(
+            proposal_text(starts=("w0001",), affect="UnknownEmotion-thirty"), vocabulary=VOCAB
         )
 
 

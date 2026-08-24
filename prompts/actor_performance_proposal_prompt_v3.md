@@ -40,6 +40,9 @@ an internal JALI backend value. Every phrase is a complete resolved state: do no
 `inherit`, or rely on a previous phrase. For example, `heart: Happy-28` followed by `heart: NONE` means
 the Happy heart state ends at that later phrase boundary.
 
+For affect and heart intensities, use digit integers only: write `Smug-30`, not `Smug-thirty`, and
+`Happy-28`, not `Happy-twenty-eight`.
+
 Exact grammar:
 
 ```text
@@ -50,8 +53,8 @@ free-text acting interpretation (no copied dialogue)
 S01
 start: w0001
 intent: ACTOR_READABLE_INTENT
-affect: STATE-0_TO_100 | NONE
-heart: STATE-0_TO_100 | NONE
+affect: STATE-INTEGER_0_TO_100 | NONE
+heart: STATE-INTEGER_0_TO_100 | NONE
 gaze: MODE-TARGET | NONE
 head: NONE | LOW | MEDIUM | HIGH | FULL
 lid: SUPPORTED_INTEGER | NONE
