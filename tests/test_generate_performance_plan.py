@@ -18,22 +18,33 @@ ROOT = Path(__file__).resolve().parents[1]
 MAYA_TOOLS = ROOT / "tools" / "maya"
 
 
-def _annotation_runner(script: str):
+def _proposal_runner(span: str):
     def run(**kwargs: Any) -> tuple[str, dict[str, Any]]:
-        annotation = (
+        proposal = (
             "[ANALYZE]\n\n"
             "scene_constraints:\nUser-authored scene.\n\n"
-            "[ANNOTATION]\n\n"
-            f"<i01=DELIVER_LINE>{script}</i01>\n\n"
+            "[PERFORMANCE]\n\n"
+            "S01\n"
+            f"span: {span}\n"
+            "intent: deliver line\n"
+            "affect: Friendly-50\n"
+            "heart: NONE\n"
+            "gaze: NONE\n"
+            "head: NONE\n"
+            "lid: NONE\n"
+            "blink: NONE\n"
+            "blink_suppression: NONE\n\n"
             "[REASONS]\n\n"
-            "i01=DELIVER_LINE: gives the line one coherent acting intention\n"
+            "S01.intent: gives the line one coherent acting intention\n"
+            "S01.affect: friendly delivery\n"
+            "S01.head: deliberate head stillness\n"
         )
         meta = {"response_id": "test-response", "status": "completed"}
-        Path(kwargs["output_annotation"]).write_text(annotation, encoding="utf-8")
+        Path(kwargs["output_text"]).write_text(proposal, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text(
             json.dumps(meta, indent=2) + "\n", encoding="utf-8"
         )
-        return annotation, meta
+        return proposal, meta
 
     return run
 
@@ -65,6 +76,20 @@ def test_hci_prompt_contains_optional_free_text_context():
     }
 
 
+def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract():
+    script = "AGNES: Good day.\nWILL: Yes, I, uh... I suppose."
+    prompt = build_hci_generation_prompt(
+        script=script, context=None, target_character="WILL"
+    )
+    assert "[IMMUTABLE SCRIPT]" in prompt
+    assert "[ANCHORED SCRIPT]" in prompt
+    assert "T02 WILL:" in prompt
+    assert "[w0003 Yes,]" in prompt
+    assert '"A": "WILL"' in prompt and '"B": "AGNES"' in prompt
+    assert "span: w0001-w0003" in prompt
+    assert "Never copy dialogue into the response" in prompt
+
+
 def test_hci_prompt_has_no_dataset_input_requirements():
     prompt = build_hci_generation_prompt(
         script="PROFESSOR: Sit down.",
@@ -93,7 +118,7 @@ def test_empty_script_is_rejected_before_generation(tmp_path: Path):
             target_character="ACTOR",
             run_id="run_empty",
             output_dir=tmp_path,
-            annotation_runner=_annotation_runner(""),
+            proposal_runner=_proposal_runner("w0001-w0001"),
         )
 
 
@@ -107,18 +132,20 @@ def test_hci_generation_writes_canonical_artifacts_and_target_character(tmp_path
         run_id="run_test",
         output_dir=run_dir,
         overwrite=True,
-        annotation_runner=_annotation_runner(script),
+        proposal_runner=_proposal_runner("w0001-w0008"),
     )
     paths = hci_run_paths("run_test", run_dir)
     assert paths.prompt.exists()
-    assert paths.annotation.exists()
+    assert paths.anchored_script.exists()
+    assert paths.anchor_map.exists()
+    assert paths.proposal.exists()
     assert paths.response_meta.exists()
     assert paths.performance_plan.exists()
     saved = json.loads(paths.performance_plan.read_text(encoding="utf-8"))
     assert saved == plan
     assert plan["sequence_id"] == "run_test"
     assert plan["target_character"] == "AUNT_EM"
-    assert plan["events"][0]["span"]["text"] == script
+    assert plan["events"][0]["span"]["text"] == "Almira Gulch, you have no power over us!"
     assert plan["acting_interpretation"].startswith("scene_constraints:")
 
     import sys
@@ -132,7 +159,7 @@ def test_hci_generation_writes_canonical_artifacts_and_target_character(tmp_path
     assert model.validate(model.score_text).valid
 
 
-def test_hci_generation_preserves_exact_transcript_validation(tmp_path: Path):
+def test_hci_generation_never_uses_llm_transcript_text(tmp_path: Path):
     plan = generate_performance_plan(
         script="ACTOR: Original line.",
         context=None,
@@ -140,10 +167,9 @@ def test_hci_generation_preserves_exact_transcript_validation(tmp_path: Path):
         run_id="run_mismatch",
         output_dir=tmp_path,
         overwrite=True,
-        annotation_runner=_annotation_runner("ACTOR: Rewritten line."),
+        proposal_runner=_proposal_runner("w0001-w0002"),
     )
 
-    assert any(
-        "exact transcript mismatch" in error
-        for error in plan["diagnostics"]["errors"]
-    )
+    assert plan["events"][0]["span"]["text"] == "Original line."
+    assert plan["diagnostics"]["errors"] == []
+    assert "Original line." not in hci_run_paths("run_mismatch", tmp_path).proposal.read_text(encoding="utf-8")

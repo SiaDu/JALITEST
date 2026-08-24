@@ -108,9 +108,11 @@ class PerformancePlan(TypedDict):
     sequence_id: str
     target_character: str | None
     source_annotation: str | None
+    source_proposal: NotRequired[str | None]
     events: list[PerformancePlanEvent]
     diagnostics: Diagnostics
     acting_interpretation: NotRequired[str]
+    proposal_provenance: NotRequired[dict[str, Any]]
 
 
 def default_locks() -> Locks:

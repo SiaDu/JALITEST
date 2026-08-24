@@ -1,8 +1,8 @@
 """HCI production entry point for script-to-Performance-Plan generation.
 
 This path deliberately has no MovieNet, shot-range, full-context, or sequence-
-configuration dependencies.  It reuses the established actor prompt, LLM,
-annotation parser, and Performance Plan normalizer components.
+configuration dependencies. The LLM proposes semantics against deterministic
+word anchors; code owns the immutable transcript, offsets, and canonical tags.
 """
 
 from __future__ import annotations
@@ -15,18 +15,26 @@ from pathlib import Path
 import re
 from typing import Any, Callable, Iterable
 
-from expregaze_jali.actor_prompt_builder import (
-    build_actor_annotation_prompt,
-    load_extra_config_texts,
-    load_prompt_template,
+from expregaze_jali.actor_prompt_builder import load_prompt_template
+from expregaze_jali.performance_plan_from_proposal import build_performance_plan_from_proposal
+from expregaze_jali.performance_proposal_parser import (
+    BLINK_VALUES,
+    DIRECTION_TARGETS,
+    HEAD_VALUES,
+    LID_VALUES,
+    SUPPRESSION_VALUES,
+    load_semantic_vocabulary,
+    parse_performance_proposal,
 )
-from expregaze_jali.performance_annotation_parser import parse_performance_annotation
-from expregaze_jali.performance_plan_normalizer import normalize_performance_plan
-from expregaze_jali.run_actor_llm import generate_actor_annotation_artifacts
+from expregaze_jali.run_actor_llm import generate_text_artifacts
+from expregaze_jali.transcript_anchor_model import (
+    TranscriptAnchorModel,
+    build_transcript_anchor_model,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_performance_annotation_prompt_v2.md"
+DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_performance_proposal_prompt_v3.md"
 DEFAULT_EXTRA_CONFIG_FILES = (
     REPO_ROOT / "configs" / "jali_emotion_options.yaml",
     REPO_ROOT / "configs" / "performance_rules.yaml",
@@ -40,12 +48,14 @@ _SAFE_RUN_ID = re.compile(r"^[A-Za-z0-9_.-]+$")
 class HciRunPaths:
     output_dir: Path
     prompt: Path
-    annotation: Path
+    anchored_script: Path
+    anchor_map: Path
+    proposal: Path
     response_meta: Path
     performance_plan: Path
 
 
-AnnotationRunner = Callable[..., tuple[str, dict[str, Any]]]
+ProposalRunner = Callable[..., tuple[str, dict[str, Any]]]
 
 
 def generate_run_id(now: datetime | None = None) -> str:
@@ -66,7 +76,9 @@ def hci_run_paths(run_id: str, output_dir: str | Path | None = None) -> HciRunPa
     return HciRunPaths(
         output_dir=run_dir,
         prompt=run_dir / "actor_prompt.txt",
-        annotation=run_dir / "performance_annotation.txt",
+        anchored_script=run_dir / "anchored_script.txt",
+        anchor_map=run_dir / "anchor_map.json",
+        proposal=run_dir / "performance_proposal.txt",
         response_meta=run_dir / "llm_response_meta.json",
         performance_plan=run_dir / "performance_plan.json",
     )
@@ -96,17 +108,56 @@ def build_hci_generation_prompt(
     clean_script = str(script)
     if not clean_script.strip():
         raise ValueError("Script is required.")
-    template = load_prompt_template(prompt_template_path)
-    extra_config = load_extra_config_texts(list(extra_config_paths))
-    return build_actor_annotation_prompt(
-        prompt_template=template,
-        context_pack=build_hci_context_pack(
-            context=context,
-            target_character=target_character,
-        ),
-        transcript=clean_script,
-        extra_config=extra_config,
+    clean_character = str(target_character or "").strip()
+    if not clean_character:
+        raise ValueError("target_character is required.")
+    anchor_model = build_transcript_anchor_model(clean_script, target_character=clean_character)
+    return _render_hci_prompt(
+        anchor_model=anchor_model,
+        context=context,
+        prompt_template_path=prompt_template_path,
+        extra_config_paths=extra_config_paths,
     )
+
+
+def _render_hci_prompt(
+    *,
+    anchor_model: TranscriptAnchorModel,
+    context: str | None,
+    prompt_template_path: str | Path,
+    extra_config_paths: Iterable[str | Path],
+) -> str:
+    template = load_prompt_template(prompt_template_path)
+    config_paths = list(extra_config_paths)
+    if not config_paths:
+        raise ValueError("A JALI emotion vocabulary config is required.")
+    vocabulary = load_semantic_vocabulary(config_paths[0])
+    semantic_reference = "\n".join(
+        (
+            "Affect states: " + ", ".join(vocabulary.affect_states.values()),
+            "Heart states: " + ", ".join(vocabulary.heart_states.values()),
+            "Head values: " + ", ".join(HEAD_VALUES),
+            "Lid values: " + ", ".join(str(value) for value in sorted(LID_VALUES)),
+            "Blink values: " + ", ".join(sorted(BLINK_VALUES)),
+            "Blink suppression: " + ", ".join(sorted(SUPPRESSION_VALUES)),
+            "Direction targets: " + ", ".join(sorted(DIRECTION_TARGETS)),
+        )
+    )
+    replacements = {
+        "{{target_character}}": anchor_model.target_character,
+        "{{alias_map}}": json.dumps(anchor_model.aliases, ensure_ascii=False, sort_keys=True),
+        "{{context}}": str(context or "").strip() or "NONE",
+        "{{immutable_script}}": anchor_model.script,
+        "{{anchored_script}}": anchor_model.anchored_script().rstrip("\n"),
+        "{{semantic_reference}}": semantic_reference,
+    }
+    prompt = template
+    for marker, value in replacements.items():
+        prompt = prompt.replace(marker, value)
+    unresolved = re.findall(r"{{[^{}]+}}", prompt)
+    if unresolved:
+        raise ValueError(f"Unresolved HCI prompt placeholders: {unresolved}")
+    return prompt
 
 
 def _write_text(path: Path, text: str, *, overwrite: bool) -> None:
@@ -131,59 +182,69 @@ def generate_performance_plan(
     extra_config_paths: Iterable[str | Path] = DEFAULT_EXTRA_CONFIG_FILES,
     llm_config_path: str | Path = DEFAULT_LLM_CONFIG,
     overwrite: bool = False,
-    annotation_runner: AnnotationRunner | None = None,
+    proposal_runner: ProposalRunner | None = None,
 ) -> dict[str, Any]:
     """Generate and persist one canonical Performance Plan from HCI inputs."""
     clean_script = str(script)
     if not clean_script.strip():
         raise ValueError("Script is required.")
+    clean_character = str(target_character or "").strip()
+    if not clean_character:
+        raise ValueError("target_character is required.")
     resolved_run_id = validate_run_id(run_id or generate_run_id())
     paths = hci_run_paths(resolved_run_id, output_dir)
-    prompt = build_hci_generation_prompt(
-        script=clean_script,
+    resolved_extra_config_paths = tuple(extra_config_paths)
+    anchor_model = build_transcript_anchor_model(
+        clean_script, target_character=clean_character
+    )
+    prompt = _render_hci_prompt(
+        anchor_model=anchor_model,
         context=context,
-        target_character=target_character,
         prompt_template_path=prompt_template_path,
-        extra_config_paths=extra_config_paths,
+        extra_config_paths=resolved_extra_config_paths,
     )
 
-    for path in (paths.prompt, paths.annotation, paths.response_meta, paths.performance_plan):
+    for path in (
+        paths.prompt, paths.anchored_script, paths.anchor_map, paths.proposal,
+        paths.response_meta, paths.performance_plan,
+    ):
         if path.exists() and not overwrite:
             raise FileExistsError(
                 f"Refusing to overwrite existing file without --overwrite: {path}"
             )
 
     _write_text(paths.prompt, prompt, overwrite=overwrite)
+    _write_text(paths.anchored_script, anchor_model.anchored_script(), overwrite=overwrite)
+    _write_json(paths.anchor_map, anchor_model.anchor_map(), overwrite=overwrite)
     print(f"Run ID: {resolved_run_id}", flush=True)
     print(f"Prompt: {paths.prompt}", flush=True)
+    print(f"Anchored Script: {paths.anchored_script}", flush=True)
+    print(f"Anchor Map: {paths.anchor_map}", flush=True)
     print("LLM calls: 1", flush=True)
 
-    runner = annotation_runner or generate_actor_annotation_artifacts
-    runner(
+    runner = proposal_runner or generate_text_artifacts
+    proposal_text, _meta = runner(
         prompt=prompt,
         llm_config_path=llm_config_path,
         prompt_path=paths.prompt,
-        output_annotation=paths.annotation,
+        output_text=paths.proposal,
         output_meta=paths.response_meta,
+        required_sections=("[ANALYZE]", "[PERFORMANCE]", "[REASONS]"),
+        artifact_name="proposal",
         overwrite=overwrite,
     )
 
-    parsed = parse_performance_annotation(paths.annotation)
-    normalization_context = build_hci_context_pack(
-        context=context,
-        target_character=target_character,
-    )
-    # The prompt builder receives the transcript separately, while the existing
-    # normalizer uses this field to detect any LLM rewrite of the source script.
-    normalization_context["exact_transcript"] = clean_script
-    plan = normalize_performance_plan(
-        parsed,
+    config_paths = list(resolved_extra_config_paths)
+    vocabulary = load_semantic_vocabulary(config_paths[0])
+    proposal = parse_performance_proposal(proposal_text, vocabulary=vocabulary)
+    plan = build_performance_plan_from_proposal(
+        proposal,
+        anchor_model=anchor_model,
         sequence_id=resolved_run_id,
-        context_pack=normalization_context,
-        target_character=str(target_character).strip() if target_character else None,
+        proposal_path=str(paths.proposal),
     )
     _write_json(paths.performance_plan, plan, overwrite=overwrite)
-    print(f"Annotation: {paths.annotation}", flush=True)
+    print(f"Proposal: {paths.proposal}", flush=True)
     print(f"LLM meta: {paths.response_meta}", flush=True)
     print(f"Events: {len(plan.get('events', []))}", flush=True)
     print(f"Performance Plan: {paths.performance_plan}", flush=True)

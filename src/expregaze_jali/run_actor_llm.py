@@ -181,16 +181,18 @@ def _call_openai(prompt: str, llm_config: dict[str, Any]) -> Any:
     raise RuntimeError(proxy_hint) from last_exc
 
 
-def generate_actor_annotation_artifacts(
+def generate_text_artifacts(
     *,
     prompt: str,
     llm_config_path: str | Path,
     prompt_path: Path,
-    output_annotation: Path,
+    output_text: Path,
     output_meta: Path,
+    required_sections: tuple[str, ...],
+    artifact_name: str,
     overwrite: bool = False,
 ) -> tuple[str, dict[str, Any]]:
-    """Call OpenAI once and persist a validated actor annotation plus response metadata."""
+    """Call OpenAI once and persist text after deterministic section checks."""
     llm_config = _load_llm_config(llm_config_path)
     model = str(llm_config.get("model") or "gpt-5-mini")
     response = _call_openai(prompt, llm_config)
@@ -198,8 +200,12 @@ def generate_actor_annotation_artifacts(
         response,
         model=model,
         prompt_path=prompt_path,
-        output_path=output_annotation,
+        output_path=output_text,
     )
+    if artifact_name != "annotation":
+        meta.pop("annotation_path", None)
+        meta["output_path"] = str(output_text)
+        meta[f"{artifact_name}_path"] = str(output_text)
     _write_json(output_meta, meta, overwrite=overwrite)
 
     status = getattr(response, "status", None)
@@ -212,23 +218,45 @@ def generate_actor_annotation_artifacts(
             f"Meta saved to: {output_meta}"
         )
 
-    annotation_text = _response_output_text(response)
-    if not annotation_text.strip():
+    artifact_text = _response_output_text(response)
+    if not artifact_text.strip():
         raise RuntimeError("LLM response did not contain output text.")
 
     missing_sections = [
         section
-        for section in ("[ANALYZE]", "[ANNOTATION]", "[REASONS]")
-        if section not in annotation_text
+        for section in required_sections
+        if section not in artifact_text
     ]
     if missing_sections:
         raise RuntimeError(
             f"LLM response missing required sections: {missing_sections}. "
-            f"Not writing partial annotation. Meta saved to: {output_meta}"
+            f"Not writing partial {artifact_name}. Meta saved to: {output_meta}"
         )
 
-    _write_text(output_annotation, annotation_text, overwrite=overwrite)
-    return annotation_text, meta
+    _write_text(output_text, artifact_text, overwrite=overwrite)
+    return artifact_text, meta
+
+
+def generate_actor_annotation_artifacts(
+    *,
+    prompt: str,
+    llm_config_path: str | Path,
+    prompt_path: Path,
+    output_annotation: Path,
+    output_meta: Path,
+    overwrite: bool = False,
+) -> tuple[str, dict[str, Any]]:
+    """Legacy XML actor-annotation wrapper; behavior and sections remain unchanged."""
+    return generate_text_artifacts(
+        prompt=prompt,
+        llm_config_path=llm_config_path,
+        prompt_path=prompt_path,
+        output_text=output_annotation,
+        output_meta=output_meta,
+        required_sections=("[ANALYZE]", "[ANNOTATION]", "[REASONS]"),
+        artifact_name="annotation",
+        overwrite=overwrite,
+    )
 
 
 def parse_args() -> argparse.Namespace:

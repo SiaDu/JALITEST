@@ -50,7 +50,7 @@ Timing Layer      = derived TextGrid/words/time/frame animation artifacts
 
 ### Acting Interpretation Persistence
 
-The canonical Performance Plan has an optional top-level `acting_interpretation` string. The normalizer copies the actor annotation parser's existing `[ANALYZE]` section verbatim into this field; it does not summarize or regenerate it. Maya loads this value into the editable Acting Interpretation field and commits the edited text before saving. Older plans without the field load with an empty editor.
+The canonical Performance Plan has an optional top-level `acting_interpretation` string. The legacy normalizer copies the actor annotation parser's `[ANALYZE]` section, while the anchor-grounded HCI builder copies the proposal's `[ANALYZE]` section; neither path summarizes or regenerates it. Maya loads this value into the editable Acting Interpretation field and commits the edited text before saving. Older plans without the field load with an empty editor.
 
 ### Complete Authorable Semantic State
 
@@ -103,26 +103,65 @@ Participant Inputs
     Optional Context
     Character / Look-at mappings
           ↓
-HCI Prompt Builder
+Immutable Transcript
           ↓
-LLM Performance Annotation
+Deterministic Anchor Scaffold
           ↓
-Canonical Performance Plan JSON (internal)
+LLM Semantic Phrase Proposal
+          ↓
+Deterministic Span / Tag Construction
+          ↓
+Editable Canonical Performance Plan JSON (internal)
           ↓
 Semantic Performance Score
           ↓
 Animator Editing
 ```
 
-The HCI path uses `expregaze_jali.generate_performance_plan` and the existing actor prompt template, performance rules, JALI emotion options, OpenAI request logic, annotation parser, and Performance Plan normalizer. It does not use sequence configuration, `movie_id`, `movie_name`, full-context CSV, shot ranges, local/context windows, or dataset-derived context. Those concepts may remain in legacy dataset-processing commands but are not HCI inputs.
+### Anchor-Grounded Semantic Proposal
 
-Each run receives an automatically generated internal run ID, retained in the compatible `sequence_id` field for output naming and provenance but never entered by or shown to participants. Runtime artifacts are written beneath `data/processed/hci_runs/<run_id>/` as `actor_prompt.txt`, `performance_annotation.txt`, `llm_response_meta.json`, and `performance_plan.json`.
+A **Performance Phrase** is a contiguous span of the immutable transcript over which the proposed semantic performance state remains coherent. The LLM proposes phrase boundaries using deterministic word-anchor IDs. A phrase may cover a complete utterance or only part of one, and may begin or end within a sentence. Exact character positions are always resolved by code.
+
+The anchor scaffold parses labeled dialogue into turns and assigns global whitespace-delimited IDs (`w0001`, `w0002`, ...). Speaker labels are metadata and are not semantic anchor text. Every anchor records its turn, speaker, exact source substring, and global `char_start`/`char_end`. If the input has no labels, the complete script is one turn owned by the target character. The current labeled prototype accepts at most two characters. `A` denotes the target and `B` the one other speaker when present.
+
+The proposal has exactly these line-oriented sections:
+
+```text
+[ANALYZE]
+free-text acting interpretation
+
+[PERFORMANCE]
+S01
+span: w0008-w0010
+intent: HESITATE_AND_BUY_TIME
+affect: Nervous-55
+heart: NONE
+gaze: AVERT-DOWN
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+[REASONS]
+S01.intent: Hesitation buys time before answering.
+S01.affect: Nervousness makes uncertainty visible.
+```
+
+All nine fields are required in every S-block; inactive optional channels use `NONE`, while `head: NONE` is a valid explicit zero-involvement choice. There is no proposal-state inheritance. The LLM chooses semantic phrase boundaries but never copies transcript text and never generates source tag IDs, closing tags, character offsets, JSON, timing, frames, seconds, or Maya controls.
+
+For each target-character turn, validation requires ordered, non-overlapping phrase ranges that cover every target anchor exactly once. A range cannot cross a turn or include another speaker. The program reconstructs each phrase from the immutable source: `char_start` is the first anchor start, and `char_end` is the next phrase start in that turn or the utterance end. This preserves punctuation and all intervening whitespace without relying on LLM transcription.
+
+Semantic values are normalized only for harmless case and spelling-format variance. Intent becomes uppercase snake case. Affect and heart states must exist in the JALI vocabulary; intensities must be 0–100. Gaze supports `GAZE`, `GLANCE`, and `AVERT` with A/B, direction, or concrete `OBJECT_*` targets. Head, lid, blink, and suppression use their documented finite values. Unknown semantics fail with phrase-specific diagnostics rather than being guessed. The builder resolves `GAZE-A`/`GAZE-B` to canonical `GAZE-CHARACTER_*` targets and generates `i##`, `m##`, `h##`, `g##`, `hd##`, `l##`, `pb##`, and `bs##` IDs deterministically. Phrase-local spans preserve phrase-specific rationale; optional proposal provenance retains the normalized anchor proposal.
+
+The HCI path uses `expregaze_jali.generate_performance_plan`, the v3 proposal prompt, JALI emotion options, and the existing reusable one-call OpenAI request logic. It directly builds the canonical plan and does not call the XML annotation parser or normalizer. The legacy actor-style XML prompt, parser, normalizer, and dataset commands remain separate and supported. The HCI path does not use sequence configuration, `movie_id`, `movie_name`, full-context CSV, shot ranges, local/context windows, or dataset-derived context.
+
+Each run receives an automatically generated internal run ID, retained in the compatible `sequence_id` field for output naming and provenance but never entered by or shown to participants. Runtime artifacts are written beneath `data/processed/hci_runs/<run_id>/` as `actor_prompt.txt`, `anchored_script.txt`, `anchor_map.json`, `performance_proposal.txt`, `llm_response_meta.json`, and `performance_plan.json`. Existing canonical plans and older run folders remain loadable; normal Maya authoring does not expose anchor IDs.
 
 Maya writes long script/context input to UTF-8 runtime files and starts the Python 3.12 backend with `QProcess`, using `JALITEST_BACKEND_PYTHON` or `<repo>/.venv/Scripts/python.exe`. The process is asynchronous. Backend stdout/stderr is retained in Advanced / Debug, failure never loads stale output, and successful generation automatically loads the new canonical plan into Acting Interpretation, Semantic Performance Score, Reason by Phrase, and Advanced / Debug.
 
 ## HCI Animation Architecture
 
-Generate Animation uses the current human-edited score, not the original LLM annotation:
+Generate Animation uses the current human-edited score, not the original LLM annotation or semantic proposal:
 
 ```text
 Current edited Semantic Performance Score
@@ -134,7 +173,7 @@ Deterministic JALI / gaze / eye / head artifacts
 Maya animation
 ```
 
-Before compilation, Maya validates the editor text and applies it to the in-memory canonical plan. It writes that exact result to `animation/performance_plan_runtime.json`; this runtime plan is the compiler's source of truth. The compiler never reads `performance_annotation.txt`, so human edits to affect, hidden affect, gaze, lid, blink, head, or intent are present in its resolved semantic artifacts. Intent and head remain explicit in the resolved/debug artifacts; head application is reported as deferred because no Maya head applier currently exists.
+Before compilation, Maya validates the editor text and applies it to the in-memory canonical plan. It writes that exact result to `animation/performance_plan_runtime.json`; this runtime plan is the compiler's source of truth. The compiler reads neither `performance_annotation.txt` nor `performance_proposal.txt`, so human edits to affect, hidden affect, gaze, lid, blink, head, or intent are present in its resolved semantic artifacts. Intent and head remain explicit in the resolved/debug artifacts; head application is reported as deferred because no Maya head applier currently exists.
 
 The selected Input Audio Folder supplies alignment without sequence configuration. Discovery deterministically prefers one `*words*.jsonl` file, otherwise one `.TextGrid`/`.textgrid` file with a `words` tier. Missing or ambiguous timing files stop generation with a clear error; timing is never guessed. Maya scene FPS supplies seconds-to-frame conversion.
 
@@ -287,6 +326,8 @@ The Advanced / Debug **Save Performance Plan** and **Save Performance Plan As...
 
 Also deferred are selective LLM regeneration, multi-agent behavior, a timeline UI, and production dual-character plan generation. Phase 1 supplies deterministic dual-character formatting/parsing architecture and fixtures only.
 
+Future dual-character generation will reuse one shared transcript-anchor phrase scaffold so A and B can propose state over the same Performance Phrases. It will not independently segment two plans and later force their phrase counts to match.
+
 ## Phase 1 Acceptance Criteria
 
 - The Maya UI opens under Maya 2025 / PySide6 and safely replaces an older window.
@@ -294,7 +335,7 @@ Also deferred are selective LLM regeneration, multi-agent behavior, a timeline U
 - Script-only and script-plus-optional-context generation use the external HCI backend without dataset configuration.
 - Generate Performance Plan does not block Maya and automatically loads successful output.
 - Generate Animation validates and applies dirty score edits to a runtime canonical plan before compilation.
-- Generate Animation compiles without the original annotation or dataset/sequence configuration and applies JALI, gaze, and eye artifacts in Maya.
+- Generate Animation compiles without the original annotation/proposal or dataset/sequence configuration and applies JALI, gaze, and eye artifacts in Maya.
 - Script and Context persist in the authoring-session sidecar and restore on load.
 - Timing discovery supports words JSONL and TextGrid and fails clearly when neither is present.
 - Existing plan JSON loads through Advanced / Debug and renders as a numbered simplified score.
