@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAYA_TOOLS = ROOT / "tools" / "maya"
 
 
-def _proposal_runner(span: str):
+def _proposal_runner(span: str, *, gaze: str = "NONE"):
     def run(**kwargs: Any) -> tuple[str, dict[str, Any]]:
         proposal = (
             "[ANALYZE]\n\n"
@@ -29,7 +29,7 @@ def _proposal_runner(span: str):
             "intent: deliver line\n"
             "affect: Friendly-50\n"
             "heart: NONE\n"
-            "gaze: NONE\n"
+            f"gaze: {gaze}\n"
             "head: NONE\n"
             "lid: NONE\n"
             "blink: NONE\n"
@@ -173,3 +173,15 @@ def test_hci_generation_never_uses_llm_transcript_text(tmp_path: Path):
     assert plan["events"][0]["span"]["text"] == "Original line."
     assert plan["diagnostics"]["errors"] == []
     assert "Original line." not in hci_run_paths("run_mismatch", tmp_path).proposal.read_text(encoding="utf-8")
+
+
+def test_hci_generation_accepts_object_gaze_without_maya_mapping(tmp_path: Path):
+    plan = generate_performance_plan(
+        script="AGNES: Look there.",
+        target_character="AGNES",
+        run_id="run_object_gaze",
+        output_dir=tmp_path,
+        overwrite=True,
+        proposal_runner=_proposal_runner("w0001-w0002", gaze="GAZE-OBJECT_HAWK"),
+    )
+    assert plan["events"][0]["gaze"][0]["value"] == "GAZE-OBJECT_HAWK"

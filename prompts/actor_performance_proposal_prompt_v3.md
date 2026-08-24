@@ -60,4 +60,5 @@ S01.blink_suppression: reason for active suppression
 
 Repeat the S-block for every proposed phrase. In `[REASONS]`, explain intent, head, and each active
 optional channel. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
-character targets; object targets use `OBJECT_NAME`; direction targets use the supplied directions.
+character targets; known character names and `CHARACTER_NAME` are also accepted and normalize to
+their A/B alias. Object targets use `OBJECT_NAME`; direction targets use the supplied directions.

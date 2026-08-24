@@ -17,6 +17,7 @@ from animation_apply_runner import (  # noqa: E402
     build_explicit_target_map,
     qualify_rig_control,
     scene_fps_from_unit,
+    validate_gaze_target_mappings,
 )
 
 
@@ -42,6 +43,22 @@ def test_incomplete_look_at_mapping_is_rejected():
     assert "CRYSTAL" not in build_explicit_target_map(
         [{"semantic_target": "CRYSTAL", "maya_node": ""}]
     )
+
+
+def test_animation_preflight_requires_object_mapping_but_accepts_semantic_name_alias():
+    events = [{"target": "OBJECT_HAWK", "resolved_time": {"start": 0.0, "end": 1.0}}]
+    with pytest.raises(ValueError, match="Missing Maya look-at mapping for semantic target HAWK"):
+        validate_gaze_target_mappings(
+            events,
+            target_map=build_explicit_target_map([]),
+            configured_directions={"DOWN"},
+        )
+    target_map = validate_gaze_target_mappings(
+        events,
+        target_map=build_explicit_target_map([{"semantic_target": "HAWK", "maya_node": "|hawk_LOC"}]),
+        configured_directions={"DOWN"},
+    )
+    assert target_map["OBJECT_HAWK"] == {"node": "|hawk_LOC"}
 
 
 def test_active_character_namespace_qualifies_rig_controls():

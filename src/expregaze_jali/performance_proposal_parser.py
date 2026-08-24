@@ -91,13 +91,11 @@ def _normalize_gaze(value: str, *, phrase_id: str) -> str:
     mode, separator, target = raw.partition("-")
     if mode not in {"GAZE", "GLANCE", "AVERT"} or not separator or not target:
         raise ProposalValidationError(f'{phrase_id}: Invalid gaze value "{value.strip()}"')
-    valid_target = (
-        target in {"A", "B"}
-        or target in DIRECTION_TARGETS
-        or bool(re.fullmatch(r"OBJECT_[A-Z0-9]+(?:_[A-Z0-9]+)*", target))
-    )
-    if not valid_target:
-        raise ProposalValidationError(f'{phrase_id}: Unknown gaze target "{target}"')
+    # Character names are validated only after the immutable transcript has
+    # supplied its speakers and A/B aliases. At this stage validate syntax, not
+    # membership, so e.g. GAZE-WILL can reach that character-aware stage.
+    if not re.fullmatch(r"(?:CHARACTER_)?[A-Z0-9]+(?:_[A-Z0-9]+)*", target):
+        raise ProposalValidationError(f'{phrase_id}: Invalid gaze target "{target}"')
     return f"{mode}-{target}"
 
 
@@ -304,3 +302,32 @@ def validate_proposal_anchors(
         phrase.pop("start_index")
         phrase.pop("end_index")
     return resolved
+
+
+def validate_and_resolve_proposal_targets(
+    proposal: dict[str, Any], anchor_model: TranscriptAnchorModel
+) -> dict[str, Any]:
+    """Resolve known dialogue-character gaze names to the proposal A/B form.
+
+    This deliberately validates semantic transcript targets only. Maya-node
+    mapping is execution/session validation and happens during animation apply.
+    """
+    aliases_by_character = {
+        speaker_key(character): alias for alias, character in anchor_model.aliases.items()
+    }
+    for phrase in proposal.get("phrases", []):
+        gaze = str(phrase.get("gaze") or "NONE")
+        if gaze == "NONE":
+            continue
+        mode, target = gaze.split("-", 1)
+        if target in anchor_model.aliases or target in DIRECTION_TARGETS or target.startswith("OBJECT_"):
+            continue
+
+        character_target = target[len("CHARACTER_"):] if target.startswith("CHARACTER_") else target
+        alias = aliases_by_character.get(speaker_key(character_target))
+        if alias is None:
+            raise ProposalValidationError(
+                f'{phrase["proposal_id"]}: Unknown character gaze target "{character_target}"'
+            )
+        phrase["gaze"] = f"{mode}-{alias}"
+    return proposal

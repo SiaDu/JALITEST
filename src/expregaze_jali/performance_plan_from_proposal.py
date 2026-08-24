@@ -14,6 +14,7 @@ from expregaze_jali.performance_plan_schema import (
 from expregaze_jali.performance_proposal_parser import (
     HEAD_VALUES,
     ProposalValidationError,
+    validate_and_resolve_proposal_targets,
     validate_proposal_anchors,
 )
 from expregaze_jali.transcript_anchor_model import TranscriptAnchorModel, speaker_key
@@ -70,6 +71,7 @@ def build_performance_plan_from_proposal(
     proposal_path: str | None = None,
 ) -> PerformancePlan:
     """Build canonical JSON without XML, copied dialogue, or model-generated offsets."""
+    validate_and_resolve_proposal_targets(proposal, anchor_model)
     phrases = validate_proposal_anchors(proposal, anchor_model)
     counters = _TagCounters()
     events: list[dict[str, Any]] = []

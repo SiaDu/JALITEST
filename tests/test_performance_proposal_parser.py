@@ -6,6 +6,7 @@ from expregaze_jali.performance_proposal_parser import (
     ProposalValidationError,
     SemanticVocabulary,
     parse_performance_proposal,
+    validate_and_resolve_proposal_targets,
     validate_proposal_anchors,
 )
 from expregaze_jali.transcript_anchor_model import build_transcript_anchor_model
@@ -60,7 +61,6 @@ def test_every_semantic_field_is_required_and_intent_cannot_be_none():
     [
         ({"affect": "DepressedExistentially-73"}, 'Unknown affect state "DepressedExistentially"'),
         ({"heart": "lonely-20"}, 'Unknown heart state "lonely"'),
-        ({"gaze": "GAZE-MYSTERY"}, 'Unknown gaze target "MYSTERY"'),
         ({"head": "BIG"}, "Unknown head value"),
         ({"lid": "-8"}, "Unsupported lid value"),
         ({"blink": "WINK"}, "Unknown blink value"),
@@ -79,6 +79,50 @@ def test_intra_utterance_anchor_resolution_preserves_exact_substrings():
     resolved = validate_proposal_anchors(parsed, model)
     assert [phrase["text"] for phrase in resolved] == ["Yes, I, uh... ", "I suppose the air was fresh..."]
     assert script[resolved[0]["char_start"]:resolved[0]["char_end"]] == "Yes, I, uh... "
+
+
+@pytest.mark.parametrize(
+    ("gaze", "expected_proposal", "expected_canonical"),
+    [
+        ("GAZE-WILL", "GAZE-B", "GAZE-CHARACTER_WILL"),
+        ("GAZE-AGNES", "GAZE-A", "GAZE-CHARACTER_AGNES"),
+        ("GAZE-CHARACTER_WILL", "GAZE-B", "GAZE-CHARACTER_WILL"),
+        ("GLANCE-WILL", "GLANCE-B", "GLANCE-CHARACTER_WILL"),
+    ],
+)
+def test_known_character_gaze_names_normalize_through_anchor_aliases(
+    gaze, expected_proposal, expected_canonical
+):
+    from expregaze_jali.performance_plan_from_proposal import build_performance_plan_from_proposal
+
+    model = build_transcript_anchor_model("AGNES: one two three\nWILL: four five", target_character="AGNES")
+    parsed = parse_performance_proposal(
+        proposal_text(spans=("w0001-w0003",), gaze=gaze, heart="NONE"), vocabulary=VOCAB
+    )
+    validate_and_resolve_proposal_targets(parsed, model)
+    assert parsed["phrases"][0]["gaze"] == expected_proposal
+    plan = build_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="gaze")
+    assert plan["events"][0]["gaze"][0]["value"] == expected_canonical
+
+
+def test_unknown_character_gaze_target_is_rejected_after_anchor_context_is_known():
+    model = build_transcript_anchor_model("AGNES: one two three\nWILL: four five", target_character="AGNES")
+    parsed = parse_performance_proposal(
+        proposal_text(spans=("w0001-w0003",), gaze="GAZE-RANDOM_PERSON", heart="NONE"),
+        vocabulary=VOCAB,
+    )
+    with pytest.raises(ProposalValidationError, match='S01: Unknown character gaze target "RANDOM_PERSON"'):
+        validate_and_resolve_proposal_targets(parsed, model)
+
+
+def test_object_gaze_target_is_semantically_valid_without_maya_mapping():
+    model = build_transcript_anchor_model("AGNES: one two three", target_character="AGNES")
+    parsed = parse_performance_proposal(
+        proposal_text(spans=("w0001-w0003",), gaze="GAZE-OBJECT_HAWK", heart="NONE"),
+        vocabulary=VOCAB,
+    )
+    validate_and_resolve_proposal_targets(parsed, model)
+    assert parsed["phrases"][0]["gaze"] == "GAZE-OBJECT_HAWK"
 
 
 @pytest.mark.parametrize(

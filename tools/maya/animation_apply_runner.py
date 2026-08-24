@@ -65,6 +65,52 @@ def build_explicit_target_map(
     return target_map
 
 
+def semantic_target_name(target: str) -> str:
+    """Map a canonical typed gaze target to its author-facing mapping name."""
+    clean = str(target or "").strip().upper()
+    for prefix in ("CHARACTER_", "OBJECT_", "PROP_", "PERSON_"):
+        if clean.startswith(prefix):
+            return clean[len(prefix):]
+    return clean
+
+
+def validate_gaze_target_mappings(
+    gaze_events: Iterable[dict[str, Any]],
+    *,
+    target_map: dict[str, dict[str, Any]],
+    configured_directions: Iterable[str],
+) -> dict[str, dict[str, Any]]:
+    """Preflight semantic gaze targets against Maya/session mappings.
+
+    A session row such as ``HAWK -> |hawk_LOC`` satisfies canonical
+    ``OBJECT_HAWK``. The returned map includes that canonical alias for the
+    Maya gaze applier while preserving the user's semantic mapping key.
+    """
+    directions = {str(target).upper() for target in configured_directions}
+    resolved_map = dict(target_map)
+    missing: set[str] = set()
+    for event in gaze_events:
+        if not event.get("resolved_time"):
+            continue
+        target = str(event.get("target") or "").strip().upper()
+        if not target or target in directions or target == "__BASE__":
+            continue
+        semantic = semantic_target_name(target)
+        spec = target_map.get(target) or target_map.get(semantic)
+        if spec is None:
+            missing.add(semantic)
+        else:
+            resolved_map[target] = spec
+    if missing:
+        names = sorted(missing)
+        if len(names) == 1:
+            raise ValueError(f"Missing Maya look-at mapping for semantic target {names[0]}.")
+        raise ValueError(
+            "Missing Maya look-at mappings for semantic targets: " + ", ".join(names)
+        )
+    return resolved_map
+
+
 def _rig_namespace(active_node: str) -> str:
     leaf = str(active_node).strip().rsplit("|", 1)[-1]
     return leaf.rsplit(":", 1)[0] if ":" in leaf else ""
@@ -165,20 +211,11 @@ def apply_animation_artifacts(
     configured_directions = {
         str(target).upper() for target in gaze_config.get("direction_offsets", {})
     }
-    missing_targets = sorted(
-        {
-            str(event.get("target") or "").upper()
-            for event in gaze_data.get("events", [])
-            if event.get("resolved_time")
-            and str(event.get("target") or "").upper()
-            not in {*target_map, *configured_directions}
-        }
+    target_map = validate_gaze_target_mappings(
+        gaze_data.get("events", []),
+        target_map=target_map,
+        configured_directions=configured_directions,
     )
-    if missing_targets:
-        raise ValueError(
-            "Missing Maya look-at mapping for canonical gaze target(s): "
-            + ", ".join(missing_targets)
-        )
 
     jsync_node = qualify_rig_control(
         character_node, str(jali_config.get("jsync_node", "jSync1"))
