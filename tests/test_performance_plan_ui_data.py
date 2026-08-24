@@ -307,6 +307,14 @@ def test_generation_success_loads_plan_without_reformatting_authoring_text():
     assert "not preserve_authoring_text" in load
 
 
+def test_maya_launcher_clears_stale_local_helper_modules_before_loading_ui():
+    source = (MAYA_TOOLS / "run_performance_plan_ui.py").read_text(encoding="utf-8")
+    assert '"performance_plan_ui_data"' in source
+    assert '"performance_score_model"' in source
+    assert "sys.modules.pop(name, None)" in source
+    assert "Path(cached_path).resolve().parent == tools_root" in source
+
+
 def test_multiline_editors_share_score_font_and_use_larger_sizes():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
 

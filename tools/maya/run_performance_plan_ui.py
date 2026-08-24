@@ -21,6 +21,13 @@ REPO_ROOT = Path(
 )
 TOOLS_DIR = REPO_ROOT / "tools" / "maya"
 UI_PATH = TOOLS_DIR / "performance_plan_ui.py"
+_LOCAL_MODULES = (
+    "performance_plan_ui_data",
+    "performance_score_model",
+    "authoring_session_data",
+    "backend_process_runner",
+    "animation_apply_runner",
+)
 
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
@@ -29,6 +36,15 @@ if str(TOOLS_DIR) not in sys.path:
 def launch() -> object:
     if not UI_PATH.exists():
         raise FileNotFoundError(f"Performance Plan UI not found: {UI_PATH}")
+    # Maya keeps Python modules alive between Script Editor executions. Drop
+    # only this tool's helper modules so a newly saved UI and data helper load
+    # together instead of mixing a current UI with a stale helper API.
+    tools_root = TOOLS_DIR.resolve()
+    for name in _LOCAL_MODULES:
+        cached = sys.modules.get(name)
+        cached_path = getattr(cached, "__file__", None)
+        if cached_path and Path(cached_path).resolve().parent == tools_root:
+            sys.modules.pop(name, None)
     module_name = "jalitest_performance_plan_ui"
     spec = importlib.util.spec_from_file_location(module_name, UI_PATH)
     if spec is None or spec.loader is None:
