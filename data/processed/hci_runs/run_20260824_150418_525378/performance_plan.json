@@ -1,0 +1,626 @@
+{
+  "schema_version": "performance_plan_v0",
+  "sequence_id": "run_20260824_150418_525378",
+  "target_character": "AGNES",
+  "source_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260824_150418_525378\\performance_annotation.txt",
+  "acting_interpretation": "scene_constraints:\n- Available people: AGNES and WILL.\n- Objects: Agnes's hawk; the garden at Hewlands.\n- Gaze targets: WILL and the hawk.\n\nsocial_interaction_structure:\n- AGNES speaks throughout; WILL listens and is being assessed by her.\n- Agnes controls the exchange through questions, while Will's presence creates the social pressure.\n\naffective_cognitive_state:\n- Agnes is socially self-possessed, independent, and cautious with a stranger who occupies a tenuously higher-status role as tutor.\n- Her energy is alert but controlled, with a guarded curiosity.\n- Visible emotion is polite and increasingly inquisitive. A restrained attraction is relevant as a hidden undercurrent, but she protects it behind practical questions.\n- She wants to understand why Will approached her without appearing eager or vulnerable.\n\nnarrative_intent:\n- The performance establishes Agnes as perceptive and difficult to unsettle.\n- Her questions keep Will near while giving her a safe subject—the hawk—through which mutual interest can develop.\n\nperformance_strategy:\n- Begin with controlled social politeness toward Will.\n- Shift into watchful appraisal when identifying him as the Latin tutor.\n- Let curiosity and guarded attraction briefly soften the face, then restore a lightly defensive, questioning mask.\n- Move gaze to the hawk for the final reveal, using the object as a safer emotional and conversational anchor.\n- Head involvement should remain low to medium: small assessing inclination, then a subtle redirect toward the hawk. No special blink or eyelid event is needed.",
+  "events": [
+    {
+      "event_id": "E01",
+      "source_intent_tag": "i01",
+      "span": {
+        "text": "AGNES: Good day, sir. ",
+        "char_start": 0,
+        "char_end": 22
+      },
+      "intent": "POLITE_GREETING",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m01",
+            "char_start": 0,
+            "char_end": 21,
+            "value": "Polite-55",
+            "state": "Polite",
+            "intensity": 0.55
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g01",
+          "char_start": 0,
+          "char_end": 21,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd01",
+          "char_start": 0,
+          "char_end": 21,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 0,
+          "char_end": 22,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i01",
+          "reason": "Frames Agnes as socially composed and courteous without making her immediately intimate."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m01",
+              "reason": "Gives the line formal warmth while preserving distance."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g01",
+            "reason": "Direct eye contact makes the greeting confident and lets Agnes begin assessing him."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd01",
+            "reason": "Adds only a slight social acknowledgment, keeping the greeting restrained."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Establishes an alert, controlled baseline appropriate to Agnes's cautious first meeting with an unfamiliar man."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "AGNES: Good day, sir. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E02",
+      "source_intent_tag": "i02",
+      "span": {
+        "text": "AGNES: What brings you to Hewlands? ",
+        "char_start": 22,
+        "char_end": 58
+      },
+      "intent": "ASSESS_HIS_PURPOSE",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m02",
+            "char_start": 22,
+            "char_end": 57,
+            "value": "Watchful-58",
+            "state": "Watchful",
+            "intensity": 0.58
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g02",
+          "char_start": 22,
+          "char_end": 57,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd02",
+          "char_start": 22,
+          "char_end": 57,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 22,
+          "char_end": 58,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i02",
+          "reason": "Converts the greeting into a practical probe of why Will is present."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m02",
+              "reason": "Signals alert curiosity rather than open welcome."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g02",
+            "reason": "Keeps social pressure on Will and makes him account for himself."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd02",
+            "reason": "A measured assessment in the head gives the question more scrutiny than casual conversation."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Establishes an alert, controlled baseline appropriate to Agnes's cautious first meeting with an unfamiliar man."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "AGNES: What brings you to Hewlands? "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E03",
+      "source_intent_tag": "i03",
+      "span": {
+        "text": "<heart01=Happy-28>AGNES: The Latin tutor. I've heard of you.</heart01> ",
+        "char_start": 58,
+        "char_end": 129
+      },
+      "intent": "RECOGNIZE_AND_TEST_HIM",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m03",
+            "char_start": 58,
+            "char_end": 128,
+            "value": "Friendly-48",
+            "state": "Friendly",
+            "intensity": 0.48
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g03",
+          "char_start": 58,
+          "char_end": 128,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 58,
+          "char_end": 129,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i03",
+          "reason": "Shows that Agnes already has information about Will, subtly reversing the unfamiliarity and testing his reaction."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m03",
+              "reason": "Briefly softens the guarded presentation as interest begins to show. heart01=Happy-28: Adds a restrained inner pleasure or attraction beneath the more controlled visible expression."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g03",
+            "reason": "Holds his attention while she names his role."
+          }
+        ],
+        "head": [],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Establishes an alert, controlled baseline appropriate to Agnes's cautious first meeting with an unfamiliar man."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "<heart01=Happy-28>AGNES: The Latin tutor. I've heard of you.</heart01> "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E04",
+      "source_intent_tag": "i04",
+      "span": {
+        "text": "AGNES: What brought you into the garden? ",
+        "char_start": 129,
+        "char_end": 170
+      },
+      "intent": "QUESTION_HIS_APPROACH",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m04",
+            "char_start": 129,
+            "char_end": 169,
+            "value": "Watchful-64",
+            "state": "Watchful",
+            "intensity": 0.64
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g04",
+          "char_start": 129,
+          "char_end": 169,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd03",
+          "char_start": 129,
+          "char_end": 169,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 129,
+          "char_end": 170,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i04",
+          "reason": "Returns to the central concern—why he came into the garden—so the encounter cannot remain safely impersonal."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m04",
+              "reason": "Restores caution and makes clear that she has noticed his unusual approach."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g04",
+            "reason": "Makes Agnes's curiosity direct and quietly challenging."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd03",
+            "reason": "Gives the question a deliberate, searching quality."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Establishes an alert, controlled baseline appropriate to Agnes's cautious first meeting with an unfamiliar man."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "AGNES: What brought you into the garden? "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E05",
+      "source_intent_tag": "i05",
+      "span": {
+        "text": "AGNES: It's just a question, master tutor. ",
+        "char_start": 170,
+        "char_end": 213
+      },
+      "intent": "DEFLECT_WITH_BOUNDARY",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m05",
+            "char_start": 170,
+            "char_end": 212,
+            "value": "Sassy-52",
+            "state": "Sassy",
+            "intensity": 0.52
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g05",
+          "char_start": 170,
+          "char_end": 212,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd04",
+          "char_start": 170,
+          "char_end": 212,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 170,
+          "char_end": 213,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i05",
+          "reason": "Protects Agnes from exposing too much by presenting her scrutiny as merely a question."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m05",
+              "reason": "Adds a dry, independent edge to “master tutor,” keeping the power balance from favoring Will."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g05",
+            "reason": "Maintains control of the exchange and refuses to retreat socially."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd04",
+            "reason": "A small contained movement supports the lightly defensive qualification without overplaying it."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Establishes an alert, controlled baseline appropriate to Agnes's cautious first meeting with an unfamiliar man."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "AGNES: It's just a question, master tutor. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E06",
+      "source_intent_tag": "i06",
+      "span": {
+        "text": "AGNES: It's a hawk.",
+        "char_start": 213,
+        "char_end": 232
+      },
+      "intent": "OFFER_SAFE_SUBJECT",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m06",
+            "char_start": 213,
+            "char_end": 232,
+            "value": "Friendly-58",
+            "state": "Friendly",
+            "intensity": 0.58
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g06",
+          "char_start": 213,
+          "char_end": 232,
+          "value": "GAZE-OBJECT_HAWK",
+          "mode": "GAZE",
+          "target": "OBJECT_HAWK"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd05",
+          "char_start": 213,
+          "char_end": 232,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 213,
+          "char_end": 232,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i06",
+          "reason": "Redirects the encounter toward the hawk, allowing continued connection without further personal disclosure."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m06",
+              "reason": "Lets the final answer land with open, uncomplicated interest rather than suspicion."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g06",
+            "reason": "Shifts attention to the hawk as a safe, concrete object and reveals Agnes's natural-world focus."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd05",
+            "reason": "A subtle orientation toward the subject supports the conversational redirect."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Establishes an alert, controlled baseline appropriate to Agnes's cautious first meeting with an unfamiliar man."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "AGNES: It's a hawk."
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [
+      "exact transcript mismatch at character 58: annotation='<', context='A'"
+    ],
+    "warnings": [
+      "opening tag has no closing tag: <i01=POLITE_GREETING>",
+      "opening tag has no closing tag: <i02=ASSESS_HIS_PURPOSE>",
+      "opening tag has no closing tag: <i03=RECOGNIZE_AND_TEST_HIM>",
+      "opening tag has no closing tag: <i04=QUESTION_HIS_APPROACH>",
+      "opening tag has no closing tag: <i05=DEFLECT_WITH_BOUNDARY>",
+      "redundant consecutive gaze state: g01 and g02=GAZE-CHARACTER_WILL",
+      "redundant consecutive gaze state: g02 and g03=GAZE-CHARACTER_WILL",
+      "redundant consecutive head_involvement state: hd02 and hd03=MEDIUM",
+      "redundant consecutive gaze state: g03 and g04=GAZE-CHARACTER_WILL",
+      "redundant consecutive gaze state: g04 and g05=GAZE-CHARACTER_WILL",
+      "redundant consecutive head_involvement state: hd04 and hd05=LOW"
+    ]
+  }
+}
