@@ -1,0 +1,115 @@
+{
+  "schema_version": "performance_plan_v0",
+  "sequence_id": "run_20260824_123452_188083",
+  "target_character": "AUNT_EM",
+  "source_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260824_123452_188083\\performance_annotation.txt",
+  "acting_interpretation": "scene_constraints:\n- Available people: Aunt Em, Miss Gulch, Dorothy, Toto.\n- Primary gaze target: Miss Gulch. No object focus is needed.\n\nsocial_interaction_structure:\n- Aunt Em is speaking directly to Miss Gulch.\n- Miss Gulch is the listener and social antagonist; Dorothy and Toto are the threatened third parties.\n\naffective_cognitive_state:\n- Aunt Em is normally conciliatory, but now occupies a morally grounded, briefly empowered position against Miss Gulch’s local authority.\n- Her energy is high and controlled enough to articulate a forceful challenge; eyes are intensely alert.\n- Visible emotion: provoked anger and defiance. Hidden emotion: protective concern for Dorothy and Toto.\n- She wants Miss Gulch to recognize that wealth and property do not grant the right to dominate others.\n\nnarrative_intent:\n- The line marks Aunt Em’s break from habitual avoidance and establishes a direct moral confrontation with Miss Gulch.\n\nperformance_strategy:\n- Begin with sustained eye contact toward Miss Gulch, an Angered facial mask, and an alert angry eyelid baseline.\n- Use a firm, moderately engaged head posture to make the challenge feel deliberate rather than impulsive.\n- Keep the entire sentence as one communicative beat: Aunt Em asserts a boundary and rejects Miss Gulch’s authority without changing objectives mid-line.",
+  "events": [
+    {
+      "event_id": "E01",
+      "source_intent_tag": "i01",
+      "span": {
+        "text": "Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us!",
+        "char_start": 0,
+        "char_end": 105
+      },
+      "intent": "CONFRONT_AUTHORITY",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m01",
+            "char_start": 0,
+            "char_end": 105,
+            "value": "Angered-76",
+            "state": "Angered",
+            "intensity": 0.76
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g01",
+          "char_start": 0,
+          "char_end": 105,
+          "value": "GAZE-CHARACTER_MISS_GULCH",
+          "mode": "GAZE",
+          "target": "CHARACTER_MISS_GULCH"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd01",
+          "char_start": 0,
+          "char_end": 105,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 0,
+          "char_end": 105,
+          "value": "-3",
+          "lid_state": -3
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i01",
+          "reason": "Defines the single decisive beat in which Aunt Em rejects Miss Gulch’s presumed right to control others."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m01",
+              "reason": "Shows Aunt Em’s unusual loss of patience while preserving enough control for the words to land as moral authority."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g01",
+            "reason": "Sustained eye contact makes the line a direct social confrontation rather than a private complaint."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd01",
+            "reason": "A firm, contained head engagement supports a deliberate challenge without making Aunt Em theatrically aggressive."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Keeps the eyes intensely alert and angry, signaling that her patience has been exhausted."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "Almira Gulch, just because you own half the county doesn't mean you have the power to run the rest of us!"
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

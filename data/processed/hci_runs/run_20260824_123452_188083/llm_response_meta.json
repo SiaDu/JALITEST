@@ -1,0 +1,21 @@
+{
+  "response_id": "resp_09c47355a4317fbd006a8c2c5fe0d087d09f543da84b974af9",
+  "model": "gpt-5.6-luna",
+  "prompt_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260824_123452_188083\\actor_prompt.txt",
+  "annotation_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260824_123452_188083\\performance_annotation.txt",
+  "usage": {
+    "input_tokens": 3138,
+    "input_tokens_details": {
+      "cache_write_tokens": 3135,
+      "cached_tokens": 0
+    },
+    "output_tokens": 678,
+    "output_tokens_details": {
+      "reasoning_tokens": 167
+    },
+    "total_tokens": 3816
+  },
+  "status": "completed",
+  "incomplete_details": null,
+  "created_at": 1787571295.0
+}
