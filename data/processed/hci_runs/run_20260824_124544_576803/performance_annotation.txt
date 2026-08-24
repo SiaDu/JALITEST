@@ -1,0 +1,72 @@
+[ANALYZE]
+
+scene_constraints:
+- People: AGNES and WILL.
+- Objects: Agnes's hawk; the garden and Hewlands are contextual locations.
+- Gaze targets: CHARACTER_WILL and OBJECT_HAWK.
+
+social_interaction_structure:
+- WILL and AGNES alternate speaking.
+- Agnes listens to Will, questions his presence, then redirects the exchange toward the hawk.
+
+affective_cognitive_state:
+- Agnes has social and positional confidence as a resident of Hewlands; Will is the unfamiliar outsider and employee.
+- She is self-possessed, observant, and mildly guarded, with controlled energy and direct attention.
+- Her visible emotion is polite curiosity with occasional dry firmness. A restrained attraction or interest is an undercurrent, but it stays subordinate to assessing him.
+- She wants to understand why Will approached while preserving control of the encounter.
+
+narrative_intent:
+- Agnes establishes herself as perceptive and difficult to disarm, while giving Will a safe route to continue the conversation.
+- Her correction about the hawk reveals competence and her unconventional bond with the natural world.
+
+performance_strategy:
+- Begin alert but controlled, with sustained attention on Will and a polite mask.
+- Shift to watchful inquiry when asking what brought him into the garden.
+- Briefly soften and lightly tease when she excuses the question, allowing the interaction to continue.
+- Turn attention toward the hawk for the final correction, with a small increase in firmness and pride.
+- Head involvement is low to medium: restrained acknowledgment, an inquisitive inclination, then a precise corrective emphasis.
+
+[ANNOTATION]
+
+<i01=POLITE_ACKNOWLEDGMENT><hd01=LOW><l01=-1><g01=GAZE-CHARACTER_WILL><m01=Polite-48>AGNES: Good day, sir.</m01></g01></l01></hd01></i01>
+WILL: Good day to you.
+<i02=ASSESS_THE_STRANGER><hd02=MEDIUM><g02=GAZE-CHARACTER_WILL><m02=Watchful-54>AGNES: What brings you to Hewlands?</m02></g02></hd02></i02>
+WILL: I'm tutoring the boys here.
+<i03=RECOGNIZE_HIS_REPUTATION><hd03=LOW><m03=Polite-52>AGNES: The Latin tutor. I've heard of you.</m03></hd03></i03>
+<i04=QUESTION_HIS_APPROACH><hd04=MEDIUM><g03=GAZE-CHARACTER_WILL><m04=Watchful-60>AGNES: What brought you into the garden?</m04></g03></hd04></i04>
+WILL: Uh...
+<i05=LIGHTLY_REASSURE_AND_CONTINUE><hd05=LOW><m05=Friendly-50>AGNES: It's just a question, master tutor.</m05></hd05></i05>
+WILL: Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.
+<i06=CORRECT_WITH_QUIET_PRIDE><hd06=LOW><g04=GAZE-OBJECT_HAWK><m06=Polite-64>AGNES: It's a hawk.</m06></g04></hd06></i06>
+WILL: Ah.
+
+[REASONS]
+
+- i01=POLITE_ACKNOWLEDGMENT: Establishes Agnes as composed and socially proper while opening the encounter without over-investing.
+- hd01=LOW: A restrained acknowledgment keeps her confident without making the greeting ceremonious.
+- l01=-1: Alert but controlled eyes suit her assessment of an unfamiliar man.
+- g01=GAZE-CHARACTER_WILL: Direct attention makes the greeting socially clear and lets her immediately read his response.
+- m01=Polite-48: A measured courtesy presents openness while retaining some distance.
+
+- i02=ASSESS_THE_STRANGER: Turns the greeting into an assessment of Will's purpose and places Agnes in control of the exchange.
+- hd02=MEDIUM: A more engaged head inclination sharpens the investigation and makes the question personal.
+- g02=GAZE-CHARACTER_WILL: Sustained eye contact makes the question feel intentional and watchful.
+- m02=Watchful-54: The guarded curiosity signals that his presence matters and is not being accepted unexamined.
+
+- i03=RECOGNIZE_HIS_REPUTATION: Acknowledges that she already knows of him, subtly narrowing his advantage as a stranger.
+- hd03=LOW: Minimal head movement keeps the admission matter-of-fact rather than impressed.
+- m03=Polite-52: Maintains civility while allowing a trace of reserved appraisal.
+
+- i04=QUESTION_HIS_APPROACH: Directly tests why he left his tutoring and came near her, exposing the social risk beneath the polite exchange.
+- hd04=MEDIUM: A more engaged head inclination sharpens the investigation and makes the question personal.
+- g03=GAZE-CHARACTER_WILL: Holding him in her gaze increases the pressure to explain himself.
+- m04=Watchful-60: The firmer watchfulness communicates skepticism without hostility.
+
+- i05=LIGHTLY_REASSURE_AND_CONTINUE: Relieves the pressure just enough to keep Will talking, while the title “master tutor” retains a playful edge of control.
+- hd05=LOW: A small release in head engagement prevents the line from sounding accusatory.
+- m05=Friendly-50: The softened mask makes the question feel safe enough to answer while preserving Agnes's teasing independence.
+
+- i06=CORRECT_WITH_QUIET_PRIDE: Corrects Will's vague “bird” and redirects the moment toward the specific creature she understands and values.
+- hd06=LOW: A precise, contained emphasis supports expertise without turning the correction into a rebuke.
+- g04=GAZE-OBJECT_HAWK: Looking to the hawk makes the correction grounded in her bond with the animal rather than merely argumentative.
+- m06=Polite-64: The brighter, firmer politeness conveys quiet pride and competence while keeping the attraction and curiosity understated.
