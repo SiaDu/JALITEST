@@ -11,6 +11,13 @@ from expregaze_jali.performance_annotation_parser import parse_performance_annot
 from expregaze_jali.performance_plan_normalizer import normalize_performance_plan
 
 
+MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
+if str(MAYA_TOOLS) not in sys.path:
+    sys.path.insert(0, str(MAYA_TOOLS))
+
+from performance_score_model import format_single_score  # noqa: E402
+
+
 def _write_annotation(
     tmp_path: Path, annotation: str, reasons: str, *, analyze: str = "ok"
 ) -> Path:
@@ -172,6 +179,20 @@ def test_state_spans_are_exact_and_rationale_is_field_addressable(tmp_path: Path
         "lid_state": [{"source_tag": "l01", "reason": "keeps the attention alert"}],
         "blink": {"performative": [], "suppression": []},
     }
+
+
+def test_explicit_annotation_close_ends_resolved_score_state(tmp_path: Path):
+    _parsed, plan = _parse_and_normalize(
+        tmp_path,
+        "<i01=TEST><l01=-1>One.</l01> <pb01=SLOW_BLINK>Two.</pb01></i01>",
+        "i01=TEST: one event\nl01=-1: alert opening\npb01=SLOW_BLINK: marks the second phrase",
+        exact_transcript="One. Two.",
+    )
+    assert plan["events"][0]["lid_state"][0]["char_end"] == 4
+    first, second = format_single_score(plan).split("\n\n")
+    assert "<l-1>" in first
+    assert "<l-1>" not in second
+    assert "<SLOW_BLINK>" in second
 
 
 @pytest.mark.parametrize(

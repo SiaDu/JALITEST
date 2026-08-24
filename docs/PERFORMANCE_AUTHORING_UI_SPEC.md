@@ -70,8 +70,8 @@ Dual-character form uses one shared Phase 1.1 intent heading followed by complet
 
 ```text
 1. {REASSURE_AND_INVITE}
-   A:<l-1><Friendly-66><GAZE-B><HEAD-MEDIUM> |
-   B:<l1><Curious-20><GAZE-A><HEAD-LOW>
+   A:<l-1><Friendly-66><HEART-Hopeful-20><GAZE-B><HEAD-MEDIUM> |
+   B:<l1><Curious-20><HEART-Cautious-15><GAZE-A><HEAD-LOW>
    A: That's right.
 ```
 
@@ -118,20 +118,26 @@ One editable plain-text component supports both modes. Internal IDs, closing tag
 Single-character form:
 
 ```text
-1. <l-1><Friendly-66><GAZE-LISTENER>
+1. {REASSURE_AND_INVITE}
+   <l-1><Friendly-66><HEART-Hopeful-20><GAZE-LISTENER><HEAD-MEDIUM>
    That's right.
 
-2. <l-1><Friendly-66><GLANCE-DOWN>
+2. {DIRECT_ATTENTION}
+   <l-1><Friendly-66><HEART-Hopeful-20><GLANCE-DOWN><HEAD-LOW>
    Here.
 ```
 
 Dual-character form:
 
 ```text
-1. A:<Friendly-66><GAZE-B> | B:<Curious-10><GAZE-A>
+1. {REASSURE_AND_INVITE}
+   A:<l-1><Friendly-66><HEART-Hopeful-20><GAZE-B><HEAD-MEDIUM> |
+   B:<l1><Curious-10><HEART-Cautious-15><GAZE-A><HEAD-LOW>
    A: That's right.
 
-2. A:<Friendly-66><GLANCE-DOWN> | B:<Curious-10><GAZE-A>
+2. {DIRECT_ATTENTION}
+   A:<l-1><Friendly-66><HEART-Hopeful-20><GLANCE-DOWN><HEAD-LOW> |
+   B:<l1><Curious-10><HEART-Cautious-15><GAZE-A><HEAD-LOW>
    A: Here.
 ```
 
@@ -156,7 +162,7 @@ A phrase is a deterministic readable local performance unit. In Phase 1.1 bounda
 
 Empty intervals are discarded. Phrase text is sliced from canonical event text using canonical character offsets; event text itself is used as a safe fallback when offsets are incomplete or inconsistent. Adjacent intervals with identical resolved state may remain separate at meaningful event boundaries.
 
-At each phrase interval, every active persistent category is resolved and printed. Persistent categories are intent, visible affect, hidden affect, gaze, head involvement, and lid state. Values continue until replaced by a later value or until plan coverage ends, so inherited state is repeated explicitly on every numbered phrase. Performative blink and blink suppression are printed on every phrase interval they cover. Thus every phrase is self-contained; the score never relies on hidden state changes.
+At each phrase interval, every active category is resolved and printed. A resolved state remains active only while its canonical semantic span covers the phrase. If a span explicitly ends, the state is absent until another span begins. Inherited state is repeated in the human-facing score only when the canonical span actually continues across that phrase. This applies to visible affect, hidden affect, gaze, head involvement, and lid state. Intent comes from the containing canonical event. Performative blink and blink suppression remain interval-based and are printed on every phrase interval they overlap. Thus every phrase is self-contained without extending state beyond its canonical span.
 
 ## Semantic Score Grammar
 

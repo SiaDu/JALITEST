@@ -134,8 +134,15 @@ def _all_spans(plan: dict[str, Any], path: tuple[str, ...]) -> list[dict[str, An
     return sorted(result, key=lambda item: (_span_start(item) if _span_start(item) is not None else 10**18))
 
 
-def _latest(spans: list[dict[str, Any]], position: int) -> dict[str, Any] | None:
-    candidates = [span for span in spans if _span_start(span) is not None and _span_start(span) <= position]
+def _active_at(spans: list[dict[str, Any]], position: int) -> dict[str, Any] | None:
+    """Return the latest-starting canonical span that actually covers position."""
+    candidates = [
+        span
+        for span in spans
+        if _span_start(span) is not None
+        and _span_end(span) is not None
+        and int(span["char_start"]) <= position < int(span["char_end"])
+    ]
     return candidates[-1] if candidates else None
 
 
@@ -252,11 +259,11 @@ def derive_phrases(plan: dict[str, Any], *, alias: str = "A") -> list[ScorePhras
             text = _phrase_text(raw_event, start, end)
             if not text:
                 continue
-            affect_ref = _latest(affect, start)
-            hidden_ref = _latest(hidden_affect, start)
-            gaze_ref = _latest(gaze, start)
-            head_ref = _latest(head, start)
-            lid_ref = _latest(lid, start)
+            affect_ref = _active_at(affect, start)
+            hidden_ref = _active_at(hidden_affect, start)
+            gaze_ref = _active_at(gaze, start)
+            head_ref = _active_at(head, start)
+            lid_ref = _active_at(lid, start)
             blink_refs = _active(performative, start, end) + _active(suppression, start, end)
             blink_values = tuple(
                 dict.fromkeys(str(span.get("value") or "").strip().upper() for span in blink_refs if span.get("value"))

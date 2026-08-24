@@ -95,12 +95,41 @@ def test_single_format_is_numbered_human_facing_and_expands_resolved_state():
     assert "</" not in score
 
 
-def test_resolved_state_inheritance_is_repeated_after_original_span_end():
+def test_resolved_state_is_absent_after_canonical_span_end():
     plan = _plan()
     plan["events"][0]["lid_state"][0]["char_end"] = 13
     score = format_single_score(plan)
-    assert score.count("<l-1>") == 2
+    assert score.count("<l-1>") == 1
     assert score.count("<HEAD-MEDIUM>") == 2
+
+
+def test_state_covering_both_phrases_is_repeated_in_both():
+    plan = _plan()
+    phrases = derive_phrases(plan)
+    assert len(phrases) == 2
+    assert [phrase.states["A"].lid for phrase in phrases] == [-1, -1]
+    assert format_single_score(plan).count("<l-1>") == 2
+
+
+def test_all_persistent_channels_stop_at_their_canonical_span_end():
+    attribute_and_path = [
+        ("affect", ("affect", "visible")),
+        ("hidden_affect", ("affect", "hidden")),
+        ("gaze", ("gaze",)),
+        ("head", ("head",)),
+        ("lid", ("lid_state",)),
+    ]
+    for attribute, path in attribute_and_path:
+        plan = _plan()
+        event = plan["events"][0]
+        value = event
+        for key in path:
+            value = value[key]
+        value[:] = [{**value[0], "char_start": 0, "char_end": 13}]
+        phrases = derive_phrases(plan)
+        assert len(phrases) == 2
+        assert getattr(phrases[0].states["A"], attribute) is not None
+        assert getattr(phrases[1].states["A"], attribute) is None
 
 
 def test_score_round_trip_applies_affect_gaze_lid_and_blink_edits():
