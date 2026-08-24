@@ -161,7 +161,16 @@ def build_performance_plan_from_proposal(
 
     provenance_phrases = [
         {
-            **{key: value for key, value in phrase.items() if key not in {"text"}},
+            **{
+                key: value
+                for key, value in phrase.items()
+                if key not in {"text", "turn_id", "char_start", "char_end"}
+            },
+            "resolved_interval": {
+                "turn_id": phrase["turn_id"],
+                "char_start": phrase["char_start"],
+                "char_end": phrase["char_end"],
+            },
             "reasons": dict(proposal.get("reasons", {}).get(phrase["proposal_id"], {})),
         }
         for phrase in phrases

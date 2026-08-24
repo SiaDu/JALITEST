@@ -107,9 +107,9 @@ Immutable Transcript
           ↓
 Deterministic Anchor Scaffold
           ↓
-LLM Semantic Phrase Proposal
+LLM chooses Performance Phrase START boundaries
           ↓
-Deterministic Span / Tag Construction
+Code derives complete contiguous phrase intervals
           ↓
 Editable Canonical Performance Plan JSON (internal)
           ↓
@@ -120,7 +120,7 @@ Animator Editing
 
 ### Anchor-Grounded Semantic Proposal
 
-A **Performance Phrase** is a contiguous span of the immutable transcript over which the proposed semantic performance state remains coherent. The LLM proposes phrase boundaries using deterministic word-anchor IDs. A phrase may cover a complete utterance or only part of one, and may begin or end within a sentence. Exact character positions are always resolved by code.
+A **Performance Phrase** is a contiguous span of the immutable transcript over which the proposed semantic performance state remains coherent. The LLM proposes only each phrase's start boundary using deterministic word-anchor IDs. Code derives the phrase end from the next start in that turn or its utterance end. A phrase may cover a complete utterance or only part of one, and may begin or end within a sentence. Exact character positions are always resolved by code.
 
 The anchor scaffold parses labeled dialogue into turns and assigns global whitespace-delimited IDs (`w0001`, `w0002`, ...). Speaker labels are metadata and are not semantic anchor text. Every anchor records its turn, speaker, exact source substring, and global `char_start`/`char_end`. If the input has no labels, the complete script is one turn owned by the target character. The current labeled prototype accepts at most two characters. `A` denotes the target and `B` the one other speaker when present.
 
@@ -132,7 +132,7 @@ free-text acting interpretation
 
 [PERFORMANCE]
 S01
-span: w0008-w0010
+start: w0008
 intent: HESITATE_AND_BUY_TIME
 affect: Nervous-55
 heart: NONE
@@ -147,9 +147,9 @@ S01.intent: Hesitation buys time before answering.
 S01.affect: Nervousness makes uncertainty visible.
 ```
 
-All nine fields are required in every S-block; inactive optional channels use `NONE`, while `head: NONE` is a valid explicit zero-involvement choice. There is no proposal-state inheritance. The LLM chooses semantic phrase boundaries but never copies transcript text and never generates source tag IDs, closing tags, character offsets, JSON, timing, frames, seconds, or Maya controls.
+All nine fields are required in every S-block; inactive optional channels use `NONE`, while `head: NONE` is a valid explicit zero-involvement choice. There is no proposal-state inheritance. The LLM decides whether performance changes and where each new state starts, but never copies transcript text and never generates phrase ends, source tag IDs, closing tags, character offsets, JSON, timing, frames, seconds, or Maya controls.
 
-For each target-character turn, validation requires ordered, non-overlapping phrase ranges that cover every target anchor exactly once. A range cannot cross a turn or include another speaker. The program reconstructs each phrase from the immutable source: `char_start` is the first anchor start, and `char_end` is the next phrase start in that turn or the utterance end. This preserves punctuation and all intervening whitespace without relying on LLM transcription.
+For each target-character turn, the first proposed start must be its first anchor; later starts must be strictly ordered and target-owned. The deterministic layer constructs the complete contiguous partition: `char_start` is a phrase start anchor, and `char_end` is the next phrase start in that turn or the utterance end. It therefore decides where the previous phrase ends, exact text, whitespace, punctuation, `char_start`/`char_end`, and canonical source tags. This preserves every target utterance without asking the LLM to calculate end anchors or reproduce transcript text.
 
 Semantic values are normalized only for harmless case and spelling-format variance. Intent becomes uppercase snake case. Affect and heart states must exist in the JALI vocabulary; intensities must be 0–100. Gaze supports `GAZE`, `GLANCE`, and `AVERT` with A/B, known dialogue-character names, `CHARACTER_*`, direction, or concrete `OBJECT_*` targets. Known character names normalize deterministically to A/B before canonical `GAZE-CHARACTER_*` construction. Head, lid, blink, and suppression use their documented finite values. Unknown character targets fail with phrase-specific diagnostics rather than being guessed. The builder generates `i##`, `m##`, `h##`, `g##`, `hd##`, `l##`, `pb##`, and `bs##` IDs deterministically. Phrase-local spans preserve phrase-specific rationale; optional proposal provenance retains the normalized anchor proposal.
 

@@ -13,7 +13,7 @@ from expregaze_jali.transcript_anchor_model import TranscriptAnchorModel, speake
 
 
 REQUIRED_FIELDS = (
-    "span", "intent", "affect", "heart", "gaze", "head", "lid", "blink",
+    "start", "intent", "affect", "heart", "gaze", "head", "lid", "blink",
     "blink_suppression",
 )
 HEAD_VALUES = {"NONE": 0.0, "LOW": 0.25, "MEDIUM": 0.5, "HIGH": 0.75, "FULL": 1.0}
@@ -26,7 +26,7 @@ DIRECTION_TARGETS = {
 _SECTION = re.compile(r"^\[(ANALYZE|PERFORMANCE|REASONS)\]\s*$", re.IGNORECASE)
 _PROPOSAL_ID = re.compile(r"^S\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
-_SPAN = re.compile(r"^(w\d{4,})\s*-\s*(w\d{4,})$", re.IGNORECASE)
+_START_ANCHOR = re.compile(r"^w\d{4,}$", re.IGNORECASE)
 _AFFECT = re.compile(r"^(.*)-([+-]?\d+)$")
 _REASON = re.compile(r"^(S\d+)\.([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
 
@@ -106,9 +106,9 @@ def _normalize_phrase(
     missing = [field for field in REQUIRED_FIELDS if field not in phrase]
     if missing:
         raise ProposalValidationError(f"{phrase_id}: Missing required fields: {', '.join(missing)}")
-    span = _SPAN.fullmatch(phrase["span"])
-    if span is None:
-        raise ProposalValidationError(f'{phrase_id}: Invalid anchor span "{phrase["span"]}"')
+    start_anchor = phrase["start"].strip().lower()
+    if _START_ANCHOR.fullmatch(start_anchor) is None:
+        raise ProposalValidationError(f'{phrase_id}: Invalid start anchor "{phrase["start"]}"')
     head = phrase["head"].strip().upper()
     if head not in HEAD_VALUES:
         raise ProposalValidationError(f'{phrase_id}: Unknown head value "{phrase["head"]}"')
@@ -136,8 +136,7 @@ def _normalize_phrase(
         raise ProposalValidationError(f"{phrase_id}: {exc}") from exc
     return {
         "proposal_id": phrase_id,
-        "start_anchor": span.group(1).lower(),
-        "end_anchor": span.group(2).lower(),
+        "start_anchor": start_anchor,
         "intent": intent,
         "affect": _normalize_affect(
             phrase["affect"], phrase_id=phrase_id, field="affect", vocabulary=vocabulary.affect_states
@@ -242,51 +241,42 @@ def parse_performance_proposal(
 def validate_proposal_anchors(
     proposal: dict[str, Any], anchor_model: TranscriptAnchorModel
 ) -> list[dict[str, Any]]:
-    """Validate exact target-speaker coverage and resolve immutable phrase text spans."""
+    """Validate phrase starts and deterministically partition target turns."""
     anchors = list(anchor_model.anchors)
     by_id = {anchor.anchor_id: (index, anchor) for index, anchor in enumerate(anchors)}
     turns = {turn.turn_id: turn for turn in anchor_model.turns}
     target_key = speaker_key(anchor_model.target_character)
     resolved: list[dict[str, Any]] = []
-    covered: set[str] = set()
-    previous: dict[str, Any] | None = None
+    seen_starts: set[str] = set()
+    previous_index: int | None = None
 
     for phrase in proposal.get("phrases", []):
         phrase_id = str(phrase.get("proposal_id", "<unknown>"))
-        start_id, end_id = phrase.get("start_anchor"), phrase.get("end_anchor")
+        start_id = phrase.get("start_anchor")
         if start_id not in by_id:
             raise ProposalValidationError(f"{phrase_id}: unknown anchor {start_id}")
-        if end_id not in by_id:
-            raise ProposalValidationError(f"{phrase_id}: unknown anchor {end_id}")
         start_index, start = by_id[start_id]
-        end_index, end = by_id[end_id]
-        if start_index > end_index:
-            raise ProposalValidationError(f"{phrase_id}: reversed anchor range {start_id}-{end_id}")
-        if start.turn_id != end.turn_id:
-            raise ProposalValidationError(f"{phrase_id}: phrase crosses dialogue-turn boundary")
-        if speaker_key(start.speaker) != target_key or speaker_key(end.speaker) != target_key:
-            raise ProposalValidationError(f"{phrase_id}: phrase includes another character's dialogue")
-        if previous is not None:
-            if start_index <= previous["end_index"]:
-                raise ProposalValidationError(f"{phrase_id} overlaps {previous['proposal_id']}")
-            if start_index < previous["start_index"]:
-                raise ProposalValidationError(f"{phrase_id}: phrases are not in transcript order")
-        phrase_anchor_ids = [anchor.anchor_id for anchor in anchors[start_index:end_index + 1]]
-        duplicate = next((anchor_id for anchor_id in phrase_anchor_ids if anchor_id in covered), None)
-        if duplicate:
-            raise ProposalValidationError(f"{phrase_id}: duplicate coverage of {duplicate}")
-        covered.update(phrase_anchor_ids)
-        row = {**phrase, "turn_id": start.turn_id, "start_index": start_index, "end_index": end_index}
+        if speaker_key(start.speaker) != target_key:
+            raise ProposalValidationError(f"{phrase_id}: phrase start belongs to another character's dialogue")
+        if start_id in seen_starts:
+            raise ProposalValidationError(f"{phrase_id}: duplicate phrase boundary {start_id}")
+        if previous_index is not None and start_index < previous_index:
+            raise ProposalValidationError(f"{phrase_id}: phrase boundaries are not in transcript order")
+        seen_starts.add(start_id)
+        row = {**phrase, "turn_id": start.turn_id, "start_index": start_index}
         resolved.append(row)
-        previous = row
+        previous_index = start_index
 
     for turn in anchor_model.turns:
-        if speaker_key(turn.speaker) != target_key:
+        if speaker_key(turn.speaker) != target_key or not turn.anchors:
             continue
-        missing = [anchor.anchor_id for anchor in turn.anchors if anchor.anchor_id not in covered]
-        if missing:
+        turn_phrases = [phrase for phrase in resolved if phrase["turn_id"] == turn.turn_id]
+        if not turn_phrases:
+            raise ProposalValidationError(f"Target turn {turn.turn_id} has no Performance Phrase")
+        first_anchor = turn.anchors[0].anchor_id
+        if turn_phrases[0]["start_anchor"] != first_anchor:
             raise ProposalValidationError(
-                f"Target turn {turn.turn_id} has uncovered anchors {missing[0]}-{missing[-1]}"
+                f"{turn.turn_id}: first Performance Phrase must start at {first_anchor}"
             )
 
     for index, phrase in enumerate(resolved):
@@ -300,7 +290,6 @@ def validate_proposal_anchors(
         phrase["char_end"] = char_end
         phrase["text"] = anchor_model.script[start.char_start:char_end]
         phrase.pop("start_index")
-        phrase.pop("end_index")
     return resolved
 
 

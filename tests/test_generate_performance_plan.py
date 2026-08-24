@@ -18,14 +18,14 @@ ROOT = Path(__file__).resolve().parents[1]
 MAYA_TOOLS = ROOT / "tools" / "maya"
 
 
-def _proposal_runner(span: str, *, gaze: str = "NONE"):
+def _proposal_runner(start: str, *, gaze: str = "NONE"):
     def run(**kwargs: Any) -> tuple[str, dict[str, Any]]:
         proposal = (
             "[ANALYZE]\n\n"
             "scene_constraints:\nUser-authored scene.\n\n"
             "[PERFORMANCE]\n\n"
             "S01\n"
-            f"span: {span}\n"
+            f"start: {start}\n"
             "intent: deliver line\n"
             "affect: Friendly-50\n"
             "heart: NONE\n"
@@ -86,7 +86,7 @@ def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract
     assert "T02 WILL:" in prompt
     assert "[w0003 Yes,]" in prompt
     assert '"A": "WILL"' in prompt and '"B": "AGNES"' in prompt
-    assert "span: w0001-w0003" in prompt
+    assert "start: w0001" in prompt
     assert "Never copy dialogue into the response" in prompt
 
 
@@ -132,7 +132,7 @@ def test_hci_generation_writes_canonical_artifacts_and_target_character(tmp_path
         run_id="run_test",
         output_dir=run_dir,
         overwrite=True,
-        proposal_runner=_proposal_runner("w0001-w0008"),
+        proposal_runner=_proposal_runner("w0001"),
     )
     paths = hci_run_paths("run_test", run_dir)
     assert paths.prompt.exists()
@@ -167,7 +167,7 @@ def test_hci_generation_never_uses_llm_transcript_text(tmp_path: Path):
         run_id="run_mismatch",
         output_dir=tmp_path,
         overwrite=True,
-        proposal_runner=_proposal_runner("w0001-w0002"),
+        proposal_runner=_proposal_runner("w0001"),
     )
 
     assert plan["events"][0]["span"]["text"] == "Original line."
@@ -182,6 +182,6 @@ def test_hci_generation_accepts_object_gaze_without_maya_mapping(tmp_path: Path)
         run_id="run_object_gaze",
         output_dir=tmp_path,
         overwrite=True,
-        proposal_runner=_proposal_runner("w0001-w0002", gaze="GAZE-OBJECT_HAWK"),
+        proposal_runner=_proposal_runner("w0001", gaze="GAZE-OBJECT_HAWK"),
     )
     assert plan["events"][0]["gaze"][0]["value"] == "GAZE-OBJECT_HAWK"

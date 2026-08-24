@@ -18,7 +18,7 @@ VOCAB = SemanticVocabulary(
 )
 
 
-def proposal_text(spans=("w0001-w0003", "w0004-w0009"), **changes):
+def proposal_text(starts=("w0001", "w0004"), **changes):
     fields = {
         "intent": "Withhold the insult", "affect": "friendly-66", "heart": "angry-20",
         "gaze": "gaze-b", "head": "medium", "lid": "-1", "blink": "slow_blink",
@@ -26,11 +26,11 @@ def proposal_text(spans=("w0001-w0003", "w0004-w0009"), **changes):
     }
     fields.update(changes)
     blocks = []
-    for index, span in enumerate(spans, 1):
-        lines = [f"S{index:02d}", f"span: {span}"]
+    for index, start in enumerate(starts, 1):
+        lines = [f"S{index:02d}", f"start: {start}"]
         lines.extend(f"{key}: {value}" for key, value in fields.items())
         blocks.append("\n".join(lines))
-    reasons = "\n".join(f"S{index:02d}.intent: Intent reason {index}." for index in range(1, len(spans) + 1))
+    reasons = "\n".join(f"S{index:02d}.intent: Intent reason {index}." for index in range(1, len(starts) + 1))
     performance = "\n\n".join(blocks)
     return f"[ANALYZE]\nCareful acting.\n\n[PERFORMANCE]\n\n{performance}\n\n[REASONS]\n\n{reasons}\n"
 
@@ -39,6 +39,8 @@ def test_semantic_normalization_and_complete_fields():
     parsed = parse_performance_proposal(proposal_text(), vocabulary=VOCAB)
     phrase = parsed["phrases"][0]
     assert phrase["intent"] == "WITHHOLD_THE_INSULT"
+    assert phrase["start_anchor"] == "w0001"
+    assert "end_anchor" not in phrase
     assert phrase["affect"] == "Friendly-66"
     assert phrase["heart"] == "Angry-20"
     assert phrase["gaze"] == "GAZE-B"
@@ -54,6 +56,11 @@ def test_every_semantic_field_is_required_and_intent_cannot_be_none():
         parse_performance_proposal(missing_lid, vocabulary=VOCAB)
     with pytest.raises(ProposalValidationError, match="S01: intent must be a non-NONE"):
         parse_performance_proposal(proposal_text(intent="NONE"), vocabulary=VOCAB)
+    with pytest.raises(ProposalValidationError, match="S01: Unknown field span"):
+        parse_performance_proposal(
+            proposal_text(starts=("w0001",)).replace("start: w0001", "span: w0001-w0003"),
+            vocabulary=VOCAB,
+        )
 
 
 @pytest.mark.parametrize(
@@ -81,6 +88,29 @@ def test_intra_utterance_anchor_resolution_preserves_exact_substrings():
     assert script[resolved[0]["char_start"]:resolved[0]["char_end"]] == "Yes, I, uh... "
 
 
+def test_one_start_automatically_covers_the_rest_of_its_target_turn():
+    model = build_transcript_anchor_model("WILL: one two three four", target_character="WILL")
+    parsed = parse_performance_proposal(proposal_text(starts=("w0001",)), vocabulary=VOCAB)
+    resolved = validate_proposal_anchors(parsed, model)
+    assert [phrase["text"] for phrase in resolved] == ["one two three four"]
+    assert resolved[0]["char_end"] == model.turns[0].utterance_end
+
+
+def test_three_or_more_starts_partition_one_turn_without_gaps_or_overlaps():
+    script = "WILL: one  two three four five"
+    model = build_transcript_anchor_model(script, target_character="WILL")
+    parsed = parse_performance_proposal(
+        proposal_text(starts=("w0001", "w0002", "w0004")), vocabulary=VOCAB
+    )
+    resolved = validate_proposal_anchors(parsed, model)
+    assert [phrase["text"] for phrase in resolved] == ["one  ", "two three ", "four five"]
+    assert "".join(phrase["text"] for phrase in resolved) == model.turns[0].utterance_text
+    assert all(
+        resolved[index]["char_end"] == resolved[index + 1]["char_start"]
+        for index in range(len(resolved) - 1)
+    )
+
+
 @pytest.mark.parametrize(
     ("gaze", "expected_proposal", "expected_canonical"),
     [
@@ -97,7 +127,7 @@ def test_known_character_gaze_names_normalize_through_anchor_aliases(
 
     model = build_transcript_anchor_model("AGNES: one two three\nWILL: four five", target_character="AGNES")
     parsed = parse_performance_proposal(
-        proposal_text(spans=("w0001-w0003",), gaze=gaze, heart="NONE"), vocabulary=VOCAB
+        proposal_text(starts=("w0001",), gaze=gaze, heart="NONE"), vocabulary=VOCAB
     )
     validate_and_resolve_proposal_targets(parsed, model)
     assert parsed["phrases"][0]["gaze"] == expected_proposal
@@ -108,7 +138,7 @@ def test_known_character_gaze_names_normalize_through_anchor_aliases(
 def test_unknown_character_gaze_target_is_rejected_after_anchor_context_is_known():
     model = build_transcript_anchor_model("AGNES: one two three\nWILL: four five", target_character="AGNES")
     parsed = parse_performance_proposal(
-        proposal_text(spans=("w0001-w0003",), gaze="GAZE-RANDOM_PERSON", heart="NONE"),
+        proposal_text(starts=("w0001",), gaze="GAZE-RANDOM_PERSON", heart="NONE"),
         vocabulary=VOCAB,
     )
     with pytest.raises(ProposalValidationError, match='S01: Unknown character gaze target "RANDOM_PERSON"'):
@@ -118,7 +148,7 @@ def test_unknown_character_gaze_target_is_rejected_after_anchor_context_is_known
 def test_object_gaze_target_is_semantically_valid_without_maya_mapping():
     model = build_transcript_anchor_model("AGNES: one two three", target_character="AGNES")
     parsed = parse_performance_proposal(
-        proposal_text(spans=("w0001-w0003",), gaze="GAZE-OBJECT_HAWK", heart="NONE"),
+        proposal_text(starts=("w0001",), gaze="GAZE-OBJECT_HAWK", heart="NONE"),
         vocabulary=VOCAB,
     )
     validate_and_resolve_proposal_targets(parsed, model)
@@ -126,19 +156,19 @@ def test_object_gaze_target_is_semantically_valid_without_maya_mapping():
 
 
 @pytest.mark.parametrize(
-    ("spans", "message"),
+    ("starts", "message"),
     [
-        (("w0099-w0099",), "unknown anchor w0099"),
-        (("w0003-w0001", "w0004-w0009"), "reversed anchor range"),
-        (("w0001-w0004", "w0005-w0009"), "crosses dialogue-turn boundary"),
-        (("w0004-w0006",), "another character's dialogue"),
-        (("w0001-w0003", "w0003-w0003", "w0007-w0009"), "overlaps S01"),
-        (("w0001-w0002", "w0007-w0009"), "uncovered anchors"),
+        (("w0099",), "unknown anchor w0099"),
+        (("w0002", "w0007"), "T01: first Performance Phrase must start at w0001"),
+        (("w0004",), "another character's dialogue"),
+        (("w0001", "w0001", "w0007"), "S02: duplicate phrase boundary w0001"),
+        (("w0007", "w0001"), "S02: phrase boundaries are not in transcript order"),
+        (("w0001",), "Target turn T03 has no Performance Phrase"),
     ],
 )
-def test_anchor_validation_failures(spans, message):
+def test_anchor_validation_failures(starts, message):
     model = build_transcript_anchor_model("A: one two three\nB: four five six\nA: seven eight nine", target_character="A")
-    parsed = parse_performance_proposal(proposal_text(spans=spans, heart="NONE", gaze="NONE"), vocabulary=VOCAB)
+    parsed = parse_performance_proposal(proposal_text(starts=starts, heart="NONE", gaze="NONE"), vocabulary=VOCAB)
     with pytest.raises(ProposalValidationError, match=message):
         validate_proposal_anchors(parsed, model)
 
@@ -146,8 +176,11 @@ def test_anchor_validation_failures(spans, message):
 def test_complete_target_coverage_accepts_multiple_turns_without_other_speaker():
     model = build_transcript_anchor_model("A: one two three\nB: four five six\nA: seven eight nine", target_character="A")
     parsed = parse_performance_proposal(
-        proposal_text(spans=("w0001-w0003", "w0007-w0009"), heart="NONE", gaze="NONE"),
+        proposal_text(starts=("w0001", "w0003", "w0007", "w0009"), heart="NONE", gaze="NONE"),
         vocabulary=VOCAB,
     )
     resolved = validate_proposal_anchors(parsed, model)
-    assert [phrase["text"] for phrase in resolved] == ["one two three", "seven eight nine"]
+    assert [phrase["text"] for phrase in resolved] == ["one two ", "three", "seven eight ", "nine"]
+    for turn in model.turns:
+        if turn.speaker == "A":
+            assert "".join(phrase["text"] for phrase in resolved if phrase["turn_id"] == turn.turn_id) == turn.utterance_text

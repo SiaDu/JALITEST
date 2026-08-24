@@ -17,7 +17,7 @@ Will hesitates, then constructs an explanation.
 
 [PERFORMANCE]
 S01
-span: w0001-w0003
+start: w0001
 intent: hesitate and buy time
 affect: nervous-55
 heart: Angry-20
@@ -28,7 +28,7 @@ blink: NONE
 blink_suppression: SUPPRESS
 
 S02
-span: w0004-w0009
+start: w0004
 intent: construct plausible explanation
 affect: Thinking-60
 heart: NONE
@@ -83,6 +83,12 @@ def test_direct_plan_build_has_exact_spans_generated_tags_reasons_and_no_timing(
     }
     assert plan["source_annotation"] is None
     assert plan["source_proposal"] == "proposal.txt"
+    assert plan["proposal_provenance"]["phrases"][0]["start_anchor"] == "w0001"
+    assert plan["proposal_provenance"]["phrases"][0]["resolved_interval"] == {
+        "turn_id": "T01",
+        "char_start": len("WILL: "),
+        "char_end": len("WILL: Yes, I, uh... "),
+    }
     all_tags = []
     for event in plan["events"]:
         all_tags.append(event["source_intent_tag"])
@@ -99,7 +105,7 @@ def test_direct_plan_build_has_exact_spans_generated_tags_reasons_and_no_timing(
 def test_fake_proposal_never_contains_transcript_but_plan_is_exact():
     script = "WILL: Yes,  I, uh... I suppose."
     anchors = build_transcript_anchor_model(script, target_character="WILL")
-    proposal_text = PROPOSAL.replace("w0004-w0009", "w0004-w0005").replace("GAZE-B", "GAZE-A")
+    proposal_text = PROPOSAL.replace("GAZE-B", "GAZE-A")
     assert "Yes," not in proposal_text and "suppose" not in proposal_text.lower()
     plan = build_performance_plan_from_proposal(
         parse_performance_proposal(proposal_text, vocabulary=VOCAB),

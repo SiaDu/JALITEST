@@ -1,7 +1,7 @@
 # Anchor-Grounded Actor Performance Proposal v3
 
 You are proposing semantic acting choices for one target character. The script is immutable.
-Choose phrase boundaries using anchor IDs, including multiple phrases inside one utterance when the acting changes.
+Choose where each Performance Phrase starts using anchor IDs, including multiple phrases inside one utterance when the acting changes.
 
 Target character: {{target_character}}
 Character aliases: {{alias_map}}
@@ -22,8 +22,14 @@ Return exactly three sections in this order: `[ANALYZE]`, `[PERFORMANCE]`, `[REA
 Never copy dialogue into the response. Never output XML, JSON, source-tag IDs, character offsets,
 closing tags, timing, frames, seconds, or Maya controls. The deterministic program owns all of those.
 
-Only propose phrases for the target character. Every target-character anchor must be covered exactly
-once, in order. A phrase cannot cross a dialogue turn. Use inclusive anchor ranges.
+Only propose phrases for the target character. Every target-character dialogue turn needs at least one
+phrase, whose first `start` must be that turn's first anchor. Add another phrase only when the
+acting/performance meaningfully changes; do not create one merely because punctuation occurs.
+Phrase starts must be in transcript order and cannot belong to another character's dialogue.
+
+You only choose where each new Performance Phrase **STARTS**. Do not provide phrase end anchors.
+The deterministic program extends each phrase until the next phrase start or the end of the current
+dialogue turn, preserving all original text, whitespace, and punctuation.
 
 Every phrase must contain all nine fields below. Do not inherit omitted state. Use `NONE` for an
 inactive affect, heart, gaze, lid, blink, or blink_suppression channel. `head: NONE` is a valid explicit
@@ -37,7 +43,7 @@ free-text acting interpretation (no copied dialogue)
 
 [PERFORMANCE]
 S01
-span: w0001-w0003
+start: w0001
 intent: ACTOR_READABLE_INTENT
 affect: STATE-0_TO_100 | NONE
 heart: STATE-0_TO_100 | NONE
