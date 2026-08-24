@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import re
 import sys
 
 
@@ -254,3 +255,24 @@ def test_generation_ui_reports_progress_and_loads_backend_result():
     assert "self.load_plan(path)" in generation
     assert 'setText("Performance plan generated.")' in generation
     assert 'setText("Performance plan generation failed.")' in generation
+
+
+def test_multiline_editors_share_score_font_and_use_larger_sizes():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+
+    assert "def _configure_multiline_editor(" in source
+    assert "QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)" in source
+    for editor, height in (
+        ("input_script", 240),
+        ("input_context", 200),
+        ("acting_interpretation", 240),
+        ("score_editor", 260),
+        ("phrase_reason", 240),
+        ("backend_log", 180),
+        ("diagnostics", 160),
+        ("validation_details", 120),
+    ):
+        assert re.search(
+            rf"_configure_multiline_editor\(\s*self\.{editor},\s*height={height}",
+            source,
+        )

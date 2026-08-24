@@ -67,6 +67,24 @@ def _editable_item(value: Any) -> QtWidgets.QTableWidgetItem:
     return QtWidgets.QTableWidgetItem("" if value is None else str(value))
 
 
+def _configure_multiline_editor(
+    editor: QtWidgets.QPlainTextEdit,
+    *,
+    height: int,
+    read_only: bool = False,
+    fixed_height: bool = False,
+) -> None:
+    """Apply the shared Semantic Performance Score text treatment."""
+    editor.setFont(
+        QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
+    )
+    editor.setReadOnly(read_only)
+    if fixed_height:
+        editor.setFixedHeight(height)
+    else:
+        editor.setMinimumHeight(height)
+
+
 class PerformancePlanEditor(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent or maya_main_window())
@@ -124,7 +142,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addWidget(QtWidgets.QLabel("Input Script"))
         self.input_script = QtWidgets.QPlainTextEdit()
         self.input_script.setPlaceholderText("Paste or load the dialogue/script used for the performance plan.")
-        self.input_script.setMinimumHeight(100)
+        _configure_multiline_editor(self.input_script, height=240)
         layout.addWidget(self.input_script)
 
         layout.addWidget(QtWidgets.QLabel("Context (Optional)"))
@@ -132,7 +150,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.input_context.setPlaceholderText(
             "Optional scene, story, character, or performance context."
         )
-        self.input_context.setMinimumHeight(90)
+        _configure_multiline_editor(self.input_context, height=200)
         layout.addWidget(self.input_context)
 
         audio = QtWidgets.QHBoxLayout()
@@ -198,7 +216,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.acting_interpretation.setPlaceholderText(
             "Scene:\n\nAffective state:\n\nNarrative intent:"
         )
-        self.acting_interpretation.setMinimumHeight(130)
+        _configure_multiline_editor(self.acting_interpretation, height=240)
         layout.addWidget(self.acting_interpretation)
         self.regenerate_button = QtWidgets.QPushButton("Regenerate Plan")
         self.regenerate_button.clicked.connect(lambda: self._show_phase_one_placeholder("Regenerate Plan"))
@@ -210,10 +228,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout(group)
         self.score_editor = QtWidgets.QPlainTextEdit()
         self.score_editor.setPlaceholderText("Generate or load a performance plan to begin editing.")
-        self.score_editor.setMinimumHeight(260)
+        _configure_multiline_editor(self.score_editor, height=260)
         self.score_editor.textChanged.connect(self._score_changed)
-        font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
-        self.score_editor.setFont(font)
         layout.addWidget(self.score_editor)
         controls = QtWidgets.QHBoxLayout()
         self.validate_score_button = QtWidgets.QPushButton("Validate Score")
@@ -226,8 +242,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         controls.addWidget(self.validation_label, 1)
         layout.addLayout(controls)
         self.validation_details = QtWidgets.QPlainTextEdit()
-        self.validation_details.setReadOnly(True)
-        self.validation_details.setMaximumHeight(90)
+        _configure_multiline_editor(
+            self.validation_details, height=120, read_only=True, fixed_height=True
+        )
         self.validation_details.hide()
         layout.addWidget(self.validation_details)
         parent.addWidget(group)
@@ -244,8 +261,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         selector.addStretch(1)
         layout.addLayout(selector)
         self.phrase_reason = QtWidgets.QPlainTextEdit()
-        self.phrase_reason.setReadOnly(True)
-        self.phrase_reason.setMinimumHeight(160)
+        _configure_multiline_editor(self.phrase_reason, height=240, read_only=True)
         layout.addWidget(self.phrase_reason)
         parent.addWidget(group)
 
@@ -272,15 +288,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
         layout.addWidget(QtWidgets.QLabel("Backend Generation Log"))
         self.backend_log = QtWidgets.QPlainTextEdit()
-        self.backend_log.setReadOnly(True)
+        _configure_multiline_editor(
+            self.backend_log, height=180, read_only=True, fixed_height=True
+        )
         self.backend_log.setMaximumBlockCount(500)
-        self.backend_log.setFixedHeight(120)
         layout.addWidget(self.backend_log)
 
         self.diagnostics = QtWidgets.QPlainTextEdit()
-        self.diagnostics.setReadOnly(True)
+        _configure_multiline_editor(
+            self.diagnostics, height=160, read_only=True, fixed_height=True
+        )
         self.diagnostics.setMaximumBlockCount(200)
-        self.diagnostics.setFixedHeight(82)
         layout.addWidget(self.diagnostics)
 
         splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
@@ -556,8 +574,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.event_id.setReadOnly(True)
         self.intent = QtWidgets.QLineEdit()
         self.transcript = QtWidgets.QPlainTextEdit()
-        self.transcript.setReadOnly(True)
-        self.transcript.setFixedHeight(72)
+        _configure_multiline_editor(
+            self.transcript, height=72, read_only=True, fixed_height=True
+        )
         self.char_start = QtWidgets.QLineEdit()
         self.char_start.setReadOnly(True)
         self.char_end = QtWidgets.QLineEdit()
@@ -587,8 +606,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         group = QtWidgets.QGroupBox("Rationale")
         group_layout = QtWidgets.QVBoxLayout(group)
         self.rationale = QtWidgets.QPlainTextEdit()
-        self.rationale.setReadOnly(True)
-        self.rationale.setMinimumHeight(180)
+        _configure_multiline_editor(self.rationale, height=180, read_only=True)
         group_layout.addWidget(self.rationale)
         self.right_layout.addWidget(group)
 
