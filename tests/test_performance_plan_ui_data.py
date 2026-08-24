@@ -182,3 +182,27 @@ def test_acting_interpretation_is_optional_and_edited_text_survives_save(tmp_pat
     save_performance_plan(plan, destination)
     loaded = load_performance_plan(destination)
     assert loaded["acting_interpretation"] == plan["acting_interpretation"]
+
+
+def test_participant_authoring_ui_hides_json_and_file_controls():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    authoring = source.split("    def _build_authoring_tab", 1)[1].split(
+        "    def _build_setup", 1
+    )[0]
+    assert "JSON" not in authoring
+    assert "Load Existing Plan" not in authoring
+    assert "Save Performance Plan" not in authoring
+    assert 'QPushButton("Generate Animation")' in authoring
+    assert "Generate or load a performance plan to begin editing." in source
+    assert "Load a Performance Plan JSON to author its semantic score." not in source
+
+
+def test_advanced_debug_retains_canonical_json_load_and_save_controls():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    advanced = source.split("    def _build_advanced_tab", 1)[1].split(
+        "    def _select_audio_folder", 1
+    )[0]
+    assert 'QPushButton("Load Existing Plan...")' in advanced
+    assert 'QPushButton("Save Performance Plan")' in advanced
+    assert 'QPushButton("Save Performance Plan As...")' in advanced
+    assert '"Performance Plan JSON (*.json)"' in source

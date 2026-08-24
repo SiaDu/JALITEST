@@ -87,16 +87,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-
-        top = QtWidgets.QHBoxLayout()
-        self.load_button = QtWidgets.QPushButton("Load Performance Plan JSON")
-        self.load_button.clicked.connect(self.load_plan_dialog)
-        top.addWidget(self.load_button)
-        self.metadata_label = QtWidgets.QLabel("No plan loaded")
-        self.metadata_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
-        top.addWidget(self.metadata_label, 1)
-        layout.addLayout(top)
-
         self.tabs = QtWidgets.QTabWidget()
         layout.addWidget(self.tabs, 1)
         self._build_authoring_tab()
@@ -119,12 +109,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.generate_animation_button.setToolTip("Deferred in Phase 1; animation execution is not implemented.")
         bottom.addWidget(self.generate_animation_button)
         bottom.addStretch(1)
-        self.save_button = QtWidgets.QPushButton("Save Edited Plan")
-        self.save_button.clicked.connect(self.save_edited_plan)
-        bottom.addWidget(self.save_button)
-        self.save_as_button = QtWidgets.QPushButton("Save Edited Plan As...")
-        self.save_as_button.clicked.connect(self.save_edited_plan_as)
-        bottom.addWidget(self.save_as_button)
         authoring.addLayout(bottom)
         scroll.setWidget(content)
         self.tabs.addTab(scroll, "Authoring")
@@ -212,7 +196,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         group = QtWidgets.QGroupBox("SEMANTIC PERFORMANCE SCORE")
         layout = QtWidgets.QVBoxLayout(group)
         self.score_editor = QtWidgets.QPlainTextEdit()
-        self.score_editor.setPlaceholderText("Load a Performance Plan JSON to author its semantic score.")
+        self.score_editor.setPlaceholderText("Generate or load a performance plan to begin editing.")
         self.score_editor.setMinimumHeight(260)
         self.score_editor.textChanged.connect(self._score_changed)
         font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
@@ -255,6 +239,23 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _build_advanced_tab(self) -> None:
         advanced = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(advanced)
+
+        file_controls = QtWidgets.QHBoxLayout()
+        self.load_button = QtWidgets.QPushButton("Load Existing Plan...")
+        self.load_button.clicked.connect(self.load_plan_dialog)
+        file_controls.addWidget(self.load_button)
+        self.metadata_label = QtWidgets.QLabel("No plan loaded")
+        self.metadata_label.setTextInteractionFlags(
+            QtCore.Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        file_controls.addWidget(self.metadata_label, 1)
+        self.save_button = QtWidgets.QPushButton("Save Performance Plan")
+        self.save_button.clicked.connect(self.save_edited_plan)
+        file_controls.addWidget(self.save_button)
+        self.save_as_button = QtWidgets.QPushButton("Save Performance Plan As...")
+        self.save_as_button.clicked.connect(self.save_edited_plan_as)
+        file_controls.addWidget(self.save_as_button)
+        layout.addLayout(file_controls)
 
         self.diagnostics = QtWidgets.QPlainTextEdit()
         self.diagnostics.setReadOnly(True)
@@ -532,7 +533,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def load_plan_dialog(self) -> None:
         path, _selected = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            "Load Performance Plan",
+            "Load Existing Performance Plan",
             str(self.source_path.parent if self.source_path else Path.cwd()),
             "Performance Plan JSON (*.json)",
         )
@@ -831,7 +832,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         suggested = default_edited_path(self.source_path) if self.source_path else Path.cwd() / "performance_plan_edited.json"
         path, _selected = QtWidgets.QFileDialog.getSaveFileName(
             self,
-            "Save Edited Performance Plan",
+            "Save Performance Plan As",
             str(suggested),
             "Performance Plan JSON (*.json)",
         )

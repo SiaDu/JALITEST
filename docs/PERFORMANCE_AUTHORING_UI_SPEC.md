@@ -6,6 +6,8 @@ This document is the source of truth for the Phase 1 Maya Performance Plan autho
 
 The primary user is an animator. The primary interface is a readable, editable Semantic Performance Score; the existing event/table inspector remains available only as an Advanced / Debug view.
 
+For the CHI user study, canonical JSON and file-loading details are hidden from the normal participant-facing Authoring tab. Participants are expected to enter setup information and use **Generate Performance Plan**; the resulting Semantic Performance Score is the primary representation they inspect and edit. Manual loading and saving of pre-generated canonical JSON remain developer capabilities in Advanced / Debug.
+
 ## Product Workflow
 
 1. Enter or load the input script, audio folder, character mappings, and optional semantic look-at target mappings.
@@ -102,8 +104,7 @@ The dialog is a vertically scrollable authoring surface with these sections.
 - **Mode**: Single Character or Dual Character, with a maximum of two authored characters.
 - **Character Mapping**: explicit script character name mapped to a Maya rig/node. Scene selection can populate the rig field.
 - **Potential Look-at Target Mapping**: semantic target name mapped to Maya geometry or locator, with **+ Add Look-at Target** and scene-selection support.
-- **Generate Performance Plan**: visible Phase 1 placeholder, separate from data loading.
-- Existing Performance Plan JSON loading remains available.
+- **Generate Performance Plan**: visible Phase 1 placeholder and the main participant entry point.
 
 Character names must match the names used by the script/context. Look-at mappings provide deterministic future resolution for tags such as `<GAZE-CRYSTAL>` but do not apply animation in Phase 1.
 
@@ -151,7 +152,7 @@ If the phrase was manually edited, the view states: “Phrase manually edited. A
 
 ### Advanced / Debug
 
-The existing event list, semantic tables, intent/locks editor, raw span fields, rationale, and diagnostics are retained in a collapsible Advanced / Debug area. This view can expose implementation details, but it is not the primary authoring interface.
+The existing event list, semantic tables, intent/locks editor, raw span fields, rationale, and diagnostics are retained in the Advanced / Debug tab. This view can expose implementation details, but it is not the primary authoring interface. It contains **Load Existing Plan...**, **Save Performance Plan**, and **Save Performance Plan As...** controls for developers to load and persist canonical Performance Plan JSON while testing pre-generated plans. These file controls do not appear in the participant-facing Authoring tab.
 
 ## Phrase Construction and Resolved State
 
@@ -224,7 +225,7 @@ Original rationale is never rewritten or presented as newly generated rationale.
 
 ## Save Contract
 
-**Save Edited Plan** and **Save Edited Plan As...** write canonical JSON using the existing edited-path and JSON helpers. Saving first validates and applies the current score. The source file is not overwritten by the default edited path. All unknown fields, source tags, character offsets, original rationale, diagnostics, and unrepresented canonical behavior remain preserved.
+The Advanced / Debug **Save Performance Plan** and **Save Performance Plan As...** controls write canonical JSON using the existing edited-path and JSON helpers. Saving first validates and applies the current score. The source file is not overwritten by the default edited path. All unknown fields, source tags, character offsets, original rationale, diagnostics, and unrepresented canonical behavior remain preserved. The normal user-study workflow proceeds from **Generate Performance Plan** to Semantic Performance Score editing and **Generate Animation** without exposing persistence format or file controls.
 
 ## Deferred / Not in Phase 1
 
@@ -243,7 +244,7 @@ Also deferred are selective LLM regeneration, multi-agent behavior, a timeline U
 
 - The Maya UI opens under Maya 2025 / PySide6 and safely replaces an older window.
 - Setup, character mapping, look-at mapping, Acting Interpretation, and exact named action buttons are present.
-- Existing plan JSON loads and renders as a numbered simplified score.
+- Existing plan JSON loads through Advanced / Debug and renders as a numbered simplified score.
 - Every phrase prints its complete resolved state.
 - The score is editable and phrase-specific validation blocks invalid application/save.
 - Phrase reason lookup returns all original associated rationales.
