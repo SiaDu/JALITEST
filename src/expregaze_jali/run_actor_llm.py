@@ -181,6 +181,56 @@ def _call_openai(prompt: str, llm_config: dict[str, Any]) -> Any:
     raise RuntimeError(proxy_hint) from last_exc
 
 
+def generate_actor_annotation_artifacts(
+    *,
+    prompt: str,
+    llm_config_path: str | Path,
+    prompt_path: Path,
+    output_annotation: Path,
+    output_meta: Path,
+    overwrite: bool = False,
+) -> tuple[str, dict[str, Any]]:
+    """Call OpenAI once and persist a validated actor annotation plus response metadata."""
+    llm_config = _load_llm_config(llm_config_path)
+    model = str(llm_config.get("model") or "gpt-5-mini")
+    response = _call_openai(prompt, llm_config)
+    meta = _response_meta(
+        response,
+        model=model,
+        prompt_path=prompt_path,
+        output_path=output_annotation,
+    )
+    _write_json(output_meta, meta, overwrite=overwrite)
+
+    status = getattr(response, "status", None)
+    if status == "incomplete":
+        details = getattr(response, "incomplete_details", None)
+        reason = getattr(details, "reason", None) if details is not None else None
+        raise RuntimeError(
+            f"LLM response incomplete. reason={reason!r}. "
+            f"Increase llm.max_output_tokens and/or lower llm.reasoning_effort. "
+            f"Meta saved to: {output_meta}"
+        )
+
+    annotation_text = _response_output_text(response)
+    if not annotation_text.strip():
+        raise RuntimeError("LLM response did not contain output text.")
+
+    missing_sections = [
+        section
+        for section in ("[ANALYZE]", "[ANNOTATION]", "[REASONS]")
+        if section not in annotation_text
+    ]
+    if missing_sections:
+        raise RuntimeError(
+            f"LLM response missing required sections: {missing_sections}. "
+            f"Not writing partial annotation. Meta saved to: {output_meta}"
+        )
+
+    _write_text(output_annotation, annotation_text, overwrite=overwrite)
+    return annotation_text, meta
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Step 02: call OpenAI once to generate performance annotation. Does not compile.")
     parser.add_argument("--sequence-id", default=DEFAULT_SEQUENCE_ID)
@@ -204,44 +254,19 @@ def main() -> None:
         raise FileNotFoundError(f"Prompt not found: {prompt_path}. Run scripts/01_build_actor_prompt.sh first.")
 
     prompt = prompt_path.read_text(encoding="utf-8")
-    llm_config = _load_llm_config(args.llm_config)
-    model = str(llm_config.get("model") or "gpt-5-mini")
 
     print(f"Prompt: {prompt_path}")
     print(f"Annotation output: {output_annotation}")
     print("LLM calls: 1")
 
-    response = _call_openai(prompt, llm_config)
-    _write_json(
-        output_meta,
-        _response_meta(response, model=model, prompt_path=prompt_path, output_path=output_annotation),
+    generate_actor_annotation_artifacts(
+        prompt=prompt,
+        llm_config_path=args.llm_config,
+        prompt_path=prompt_path,
+        output_annotation=output_annotation,
+        output_meta=output_meta,
         overwrite=args.overwrite,
     )
-
-    status = getattr(response, "status", None)
-    if status == "incomplete":
-        details = getattr(response, "incomplete_details", None)
-        reason = getattr(details, "reason", None) if details is not None else None
-        raise RuntimeError(
-            f"LLM response incomplete. reason={reason!r}. "
-            f"Increase llm.max_output_tokens and/or lower llm.reasoning_effort. Meta saved to: {output_meta}"
-        )
-
-    annotation_text = _response_output_text(response)
-    if not annotation_text.strip():
-        raise RuntimeError("LLM response did not contain output text.")
-
-    missing_sections = [
-        section for section in ("[ANALYZE]", "[ANNOTATION]", "[REASONS]")
-        if section not in annotation_text
-    ]
-    if missing_sections:
-        raise RuntimeError(
-            f"LLM response missing required sections: {missing_sections}. "
-            f"Not writing partial annotation. Meta saved to: {output_meta}"
-        )
-
-    _write_text(output_annotation, annotation_text, overwrite=args.overwrite)
     print(f"Annotation: {output_annotation}")
     print(f"LLM meta: {output_meta}")
 

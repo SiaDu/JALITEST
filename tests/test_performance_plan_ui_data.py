@@ -205,4 +205,52 @@ def test_advanced_debug_retains_canonical_json_load_and_save_controls():
     assert 'QPushButton("Load Existing Plan...")' in advanced
     assert 'QPushButton("Save Performance Plan")' in advanced
     assert 'QPushButton("Save Performance Plan As...")' in advanced
+    assert 'QLabel("Backend Generation Log")' in advanced
     assert '"Performance Plan JSON (*.json)"' in source
+
+
+def test_setup_exposes_optional_context_and_real_generation_action():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    setup = source.split("    def _build_setup", 1)[1].split(
+        "    def _build_acting_interpretation", 1
+    )[0]
+
+    assert 'QLabel("Context (Optional)")' in setup
+    assert "self.input_context = QtWidgets.QPlainTextEdit()" in setup
+    assert "Optional scene, story, character, or performance context." in setup
+    assert "self.generate_plan_button.clicked.connect(self.generate_performance_plan)" in setup
+
+
+def test_participant_setup_has_no_dataset_specific_inputs():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    setup = source.split("    def _build_setup", 1)[1].split(
+        "    def _build_acting_interpretation", 1
+    )[0]
+
+    for forbidden in (
+        "Sequence ID",
+        "Movie ID",
+        "Movie Name",
+        "Shot Range",
+        "Full Context",
+        "Context Window",
+        "Local Window",
+        "sequence_config",
+        "movie_id",
+        "shot_start",
+        "shot_end",
+    ):
+        assert forbidden not in setup
+
+
+def test_generation_ui_reports_progress_and_loads_backend_result():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    generation = source.split("    def generate_performance_plan", 1)[1].split(
+        "    def _known_look_targets", 1
+    )[0]
+
+    assert 'setText("Generating performance plan...")' in generation
+    assert "self.backend_runner.start(" in generation
+    assert "self.load_plan(path)" in generation
+    assert 'setText("Performance plan generated.")' in generation
+    assert 'setText("Performance plan generation failed.")' in generation

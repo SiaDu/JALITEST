@@ -43,6 +43,7 @@ from authoring_session_data import (  # noqa: E402
     load_authoring_session,
     save_authoring_session,
 )
+from backend_process_runner import BackendProcessRunner  # noqa: E402
 
 
 WINDOW_OBJECT_NAME = "jalitestPerformancePlanEditor"
@@ -84,6 +85,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.look_at_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
 
         self._build_ui()
+        self.backend_runner = BackendProcessRunner(self)
+        self.backend_runner.output_received.connect(self._append_backend_output)
+        self.backend_runner.succeeded.connect(self._generation_succeeded)
+        self.backend_runner.failed.connect(self._generation_failed)
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -121,6 +126,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.input_script.setPlaceholderText("Paste or load the dialogue/script used for the performance plan.")
         self.input_script.setMinimumHeight(100)
         layout.addWidget(self.input_script)
+
+        layout.addWidget(QtWidgets.QLabel("Context (Optional)"))
+        self.input_context = QtWidgets.QPlainTextEdit()
+        self.input_context.setPlaceholderText(
+            "Optional scene, story, character, or performance context."
+        )
+        self.input_context.setMinimumHeight(90)
+        layout.addWidget(self.input_context)
 
         audio = QtWidgets.QHBoxLayout()
         audio.addWidget(QtWidgets.QLabel("Input Audio Folder"))
@@ -171,10 +184,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._add_look_at_target("CRYSTAL")
 
         self.generate_plan_button = QtWidgets.QPushButton("Generate Performance Plan")
-        self.generate_plan_button.clicked.connect(
-            lambda: self._show_phase_one_placeholder("Generate Performance Plan")
-        )
+        self.generate_plan_button.clicked.connect(self.generate_performance_plan)
         layout.addWidget(self.generate_plan_button)
+        self.generation_status = QtWidgets.QLabel("Ready.")
+        layout.addWidget(self.generation_status)
         parent.addWidget(group)
         self._update_character_mode()
 
@@ -256,6 +269,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.save_as_button.clicked.connect(self.save_edited_plan_as)
         file_controls.addWidget(self.save_as_button)
         layout.addLayout(file_controls)
+
+        layout.addWidget(QtWidgets.QLabel("Backend Generation Log"))
+        self.backend_log = QtWidgets.QPlainTextEdit()
+        self.backend_log.setReadOnly(True)
+        self.backend_log.setMaximumBlockCount(500)
+        self.backend_log.setFixedHeight(120)
+        layout.addWidget(self.backend_log)
 
         self.diagnostics = QtWidgets.QPlainTextEdit()
         self.diagnostics.setReadOnly(True)
@@ -353,6 +373,66 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self,
             f"{action} — Phase 1",
             f"{action} backend execution is deferred. The UI plumbing is present, but Maya does not call the backend or an LLM.",
+        )
+
+    def generate_performance_plan(self) -> None:
+        script = self.input_script.toPlainText()
+        target_character = self.character_rows[0][0].text().strip()
+        if not script.strip():
+            QtWidgets.QMessageBox.warning(
+                self, "Input Script Required", "Enter the script before generating a performance plan."
+            )
+            return
+        if not target_character:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Character Mapping Required",
+                "Enter the active script character in Character Mapping before generating.",
+            )
+            return
+        self.backend_log.clear()
+        self.generate_plan_button.setEnabled(False)
+        self.generation_status.setText("Generating performance plan...")
+        self.generation_status.setStyleSheet("color: #1d4ed8;")
+        try:
+            command = self.backend_runner.start(
+                script=script,
+                context=self.input_context.toPlainText(),
+                target_character=target_character,
+            )
+        except Exception as exc:
+            self._generation_failed(str(exc))
+            return
+        self._append_backend_output(f"Run ID: {command.run_id}")
+        self._append_backend_output(f"Backend Python: {command.program}")
+        self._append_backend_output(f"Output directory: {command.run_dir}")
+
+    def _append_backend_output(self, value: str) -> None:
+        text = str(value).strip()
+        if text:
+            self.backend_log.appendPlainText(text)
+
+    def _generation_succeeded(self, plan_path: object) -> None:
+        self.generate_plan_button.setEnabled(True)
+        path = Path(str(plan_path))
+        self.load_plan(path)
+        if self.source_path == path:
+            self.generation_status.setText("Performance plan generated.")
+            self.generation_status.setStyleSheet("color: #166534;")
+        else:
+            self._generation_failed("The backend completed, but the generated plan could not be loaded.")
+
+    def _generation_failed(self, message: str) -> None:
+        self.generate_plan_button.setEnabled(True)
+        self.generation_status.setText("Performance plan generation failed.")
+        self.generation_status.setStyleSheet("color: #9b1c1c;")
+        self._append_backend_output(message)
+        lines = [line.strip() for line in str(message).splitlines() if line.strip()]
+        concise = lines[-1] if lines else "Unknown backend error."
+        QtWidgets.QMessageBox.critical(
+            self,
+            "Could Not Generate Performance Plan",
+            concise,
         )
 
     def _known_look_targets(self) -> list[str]:

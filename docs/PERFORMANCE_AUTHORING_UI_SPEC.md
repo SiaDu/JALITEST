@@ -10,7 +10,7 @@ For the CHI user study, canonical JSON and file-loading details are hidden from 
 
 ## Product Workflow
 
-1. Enter or load the input script, audio folder, character mappings, and optional semantic look-at target mappings.
+1. Enter the required script, optional free-text context, audio folder, character mappings, and optional semantic look-at target mappings.
 2. Select **Generate Performance Plan**.
 3. Review and optionally edit the Acting Interpretation.
 4. Select **Regenerate Plan** when the interpretation changes.
@@ -18,7 +18,7 @@ For the CHI user study, canonical JSON and file-loading details are hidden from 
 6. Inspect all original AI reasons associated with any numbered phrase.
 7. Select **Generate Animation** only after the score is valid.
 
-In Phase 1, the three named actions are visible but backend generation and animation execution remain explicit placeholders. No LLM call is invented inside Maya.
+**Generate Performance Plan** invokes the separate Python 3.12 HCI backend asynchronously. **Regenerate Plan** and **Generate Animation** remain explicit placeholders. Maya never imports the backend package or executes an LLM request in its Python 3.11 process.
 
 ## Data Architecture
 
@@ -38,7 +38,7 @@ Each formatted phrase records the canonical spans that contributed to it. A huma
 
 ## Phase 1.1 Extension
 
-Phase 1.1 completes the semantic authoring and session-persistence boundary without adding backend execution.
+Phase 1.1 established the semantic authoring and session-persistence boundary. The subsequent HCI generation bridge adds external backend execution without changing that boundary.
 
 The three data layers are deliberately separate:
 
@@ -93,6 +93,33 @@ data/processed/performance_plan/{sequence_id}__authoring_session.json
 
 The sidecar schema is `authoring_session_v0` and contains `sequence_id`, single/dual `mode`, `audio_folder`, character alias/script-name/Maya-node mappings, and semantic-target/Maya-node mappings. Unknown sidecar fields are preserved when practical. Loading a plan restores a matching sidecar when present; saving an edited plan also saves the sidecar. Missing scene nodes remain visible as text and may produce a warning, but are never silently deleted. Session mappings must never be inserted into the semantic Performance Plan.
 
+## HCI Generation Architecture
+
+The participant-facing semantic inputs are deliberately small: **Script** is required, **Context** is optional free text, and the active script character comes from Character Mapping. Audio, rig mapping, and look-at mapping remain animation/session inputs rather than prompt dataset context.
+
+```text
+Participant Inputs
+    Script
+    Optional Context
+    Character / Look-at mappings
+          ↓
+HCI Prompt Builder
+          ↓
+LLM Performance Annotation
+          ↓
+Canonical Performance Plan JSON (internal)
+          ↓
+Semantic Performance Score
+          ↓
+Animator Editing
+```
+
+The HCI path uses `expregaze_jali.generate_performance_plan` and the existing actor prompt template, performance rules, JALI emotion options, OpenAI request logic, annotation parser, and Performance Plan normalizer. It does not use sequence configuration, `movie_id`, `movie_name`, full-context CSV, shot ranges, local/context windows, or dataset-derived context. Those concepts may remain in legacy dataset-processing commands but are not HCI inputs.
+
+Each run receives an automatically generated internal run ID, retained in the compatible `sequence_id` field for output naming and provenance but never entered by or shown to participants. Runtime artifacts are written beneath `data/processed/hci_runs/<run_id>/` as `actor_prompt.txt`, `performance_annotation.txt`, `llm_response_meta.json`, and `performance_plan.json`.
+
+Maya writes long script/context input to UTF-8 runtime files and starts the Python 3.12 backend with `QProcess`, using `JALITEST_BACKEND_PYTHON` or `<repo>/.venv/Scripts/python.exe`. The process is asynchronous. Backend stdout/stderr is retained in Advanced / Debug, failure never loads stale output, and successful generation automatically loads the new canonical plan into Acting Interpretation, Semantic Performance Score, Reason by Phrase, and Advanced / Debug.
+
 ## Main UI
 
 The dialog is a vertically scrollable authoring surface with these sections.
@@ -100,11 +127,12 @@ The dialog is a vertically scrollable authoring surface with these sections.
 ### Setup
 
 - **Input Script**: editable multiline text.
+- **Context (Optional)**: editable free text for scene, story, character, or performance context; it may be empty.
 - **Input Audio Folder**: path field and **Select Folder** button.
 - **Mode**: Single Character or Dual Character, with a maximum of two authored characters.
 - **Character Mapping**: explicit script character name mapped to a Maya rig/node. Scene selection can populate the rig field.
 - **Potential Look-at Target Mapping**: semantic target name mapped to Maya geometry or locator, with **+ Add Look-at Target** and scene-selection support.
-- **Generate Performance Plan**: visible Phase 1 placeholder and the main participant entry point.
+- **Generate Performance Plan**: the main participant entry point; it asynchronously invokes the HCI backend and loads the resulting plan.
 
 Character names must match the names used by the script/context. Look-at mappings provide deterministic future resolution for tags such as `<GAZE-CRYSTAL>` but do not apply animation in Phase 1.
 
@@ -229,7 +257,6 @@ The Advanced / Debug **Save Performance Plan** and **Save Performance Plan As...
 
 ## Deferred / Not in Phase 1
 
-- Generate Performance Plan backend invocation
 - Regenerate Plan backend invocation
 - Generate Animation execution
 - JALI integration
@@ -244,6 +271,8 @@ Also deferred are selective LLM regeneration, multi-agent behavior, a timeline U
 
 - The Maya UI opens under Maya 2025 / PySide6 and safely replaces an older window.
 - Setup, character mapping, look-at mapping, Acting Interpretation, and exact named action buttons are present.
+- Script-only and script-plus-optional-context generation use the external HCI backend without dataset configuration.
+- Generate Performance Plan does not block Maya and automatically loads successful output.
 - Existing plan JSON loads through Advanced / Debug and renders as a numbered simplified score.
 - Every phrase prints its complete resolved state.
 - The score is editable and phrase-specific validation blocks invalid application/save.
