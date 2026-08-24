@@ -315,12 +315,15 @@ def format_state(state: SemanticState) -> str:
 
 def format_single_score(phrases_or_plan: list[ScorePhrase] | dict[str, Any]) -> str:
     phrases = derive_phrases(phrases_or_plan) if isinstance(phrases_or_plan, dict) else phrases_or_plan
-    return "\n\n".join(
-        f"{phrase.number}. {{{phrase.states['A'].intent or ''}}}\n"
-        f"   {format_state(phrase.states['A'])}\n"
-        f"   {phrase.text}"
-        for phrase in phrases
-    )
+    blocks: list[str] = []
+    for phrase in phrases:
+        state_text = format_state(phrase.states["A"])
+        lines = [f"{phrase.number}. {{{phrase.states['A'].intent or ''}}}"]
+        if state_text:
+            lines.append(f"   {state_text}")
+        lines.append(f"   {phrase.text}")
+        blocks.append("\n".join(lines))
+    return "\n\n".join(blocks)
 
 
 def format_dual_score(
@@ -431,8 +434,6 @@ def _parse_tags(
             affect = (name, strength)
         else:
             issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
-    if not tags:
-        issues.append(ValidationIssue(phrase_number, "At least one semantic tag is required."))
     return SemanticState(
         intent=intent,
         lid=lid,
@@ -478,14 +479,15 @@ def parse_score(
             if lines[index].strip():
                 body_lines.append(lines[index].strip())
             index += 1
-        if len(body_lines) < 2:
-            issues.append(ValidationIssue(number, "Dialogue text is required."))
-            dialogue = ""
         states: dict[str, SemanticState] = {}
         speaker = "A"
         if mode == "single":
-            state_line = body_lines[0] if body_lines else ""
-            dialogue = " ".join(body_lines[1:]) if len(body_lines) > 1 else ""
+            has_state_line = bool(body_lines and body_lines[0].startswith("<"))
+            state_line = body_lines[0] if has_state_line else ""
+            dialogue_lines = body_lines[1:] if has_state_line else body_lines
+            dialogue = " ".join(dialogue_lines)
+            if not dialogue:
+                issues.append(ValidationIssue(number, "Dialogue text is required."))
             state, tag_issues = _parse_tags(
                 state_line, number, affect_names, gaze_targets, intent=intent
             )

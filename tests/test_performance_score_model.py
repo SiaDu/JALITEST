@@ -15,6 +15,7 @@ from performance_score_model import (  # noqa: E402
     format_dual_score,
     format_rationale_view,
     format_single_score,
+    format_state,
     parse_score,
 )
 
@@ -83,6 +84,19 @@ def _plan(*, character: str = "PROFESSOR", second_state: str = "Smug") -> dict:
     }
 
 
+def _no_state_plan(*, character: str = "PROFESSOR", text: str = "I don't know.") -> dict:
+    plan = _plan(character=character)
+    event = plan["events"][0]
+    event["span"] = {"text": text, "char_start": 0, "char_end": len(text)}
+    event["intent"] = "HESITATE"
+    event["affect"] = {"visible": [], "hidden": []}
+    event["gaze"] = []
+    event["head"] = []
+    event["lid_state"] = []
+    event["blink"] = {"performative": [], "suppression": []}
+    return plan
+
+
 def test_single_format_is_numbered_human_facing_and_expands_resolved_state():
     score = format_single_score(_plan())
     assert score.startswith("1. {WELCOME}\n   <l-1><Friendly-66><GAZE-DOROTHY><HEAD-MEDIUM>")
@@ -109,6 +123,56 @@ def test_state_covering_both_phrases_is_repeated_in_both():
     assert len(phrases) == 2
     assert [phrase.states["A"].lid for phrase in phrases] == [-1, -1]
     assert format_single_score(plan).count("<l-1>") == 2
+
+
+def test_single_intent_and_dialogue_without_semantic_tags_is_valid():
+    parsed = parse_score("1. {HESITATE}\n   I don't know.")
+    assert parsed.valid
+    state = parsed.phrases[0].states["A"]
+    assert state.intent == "HESITATE"
+    assert format_state(state) == ""
+    assert parsed.phrases[0].text == "I don't know."
+
+
+def test_no_state_formatter_parser_and_model_round_trip():
+    model = PerformanceScoreModel(_no_state_plan())
+    assert model.score_text == "1. {HESITATE}\n   I don't know."
+    parsed = parse_score(model.score_text)
+    assert parsed.valid
+    assert parsed.phrases[0].states["A"].intent == "HESITATE"
+    assert model.validate(model.score_text).valid
+    assert model.apply(model.score_text)["events"][0]["intent"] == "HESITATE"
+
+
+def test_dialogue_remains_mandatory_when_semantic_tags_are_optional():
+    result = parse_score("1. {HESITATE}")
+    assert not result.valid
+    assert "Phrase 1: Dialogue text is required." in [str(error) for error in result.errors]
+
+
+def test_dual_mode_allows_one_character_to_have_no_semantic_tags():
+    plan_a = _no_state_plan(character="A", text="Hmm.")
+    plan_a["events"][0]["intent"] = "LISTEN"
+    plan_b = _no_state_plan(character="B", text="Hmm.")
+    plan_b["events"][0]["intent"] = "LISTEN"
+    plan_b["events"][0]["gaze"] = [
+        _span("g01", 0, 4, "GAZE-A", mode="GAZE", target="A")
+    ]
+    score = format_dual_score(plan_a, plan_b, speakers=["A"])
+    assert "A: |" in score
+    assert "B:<GAZE-A>" in score
+    parsed = parse_score(score, mode="dual")
+    assert parsed.valid
+    assert format_state(parsed.phrases[0].states["A"]) == ""
+    assert parsed.phrases[0].states["B"].gaze == ("GAZE", "A")
+
+
+def test_malformed_semantic_line_is_rejected_even_when_tags_are_optional():
+    result = parse_score("1. {HESITATE}\n   <GAZE-A\n   Hmm.")
+    assert not result.valid
+    assert "Phrase 1: Malformed or unclosed semantic tag." in [
+        str(error) for error in result.errors
+    ]
 
 
 def test_all_persistent_channels_stop_at_their_canonical_span_end():

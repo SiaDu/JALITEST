@@ -15,7 +15,7 @@ MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 if str(MAYA_TOOLS) not in sys.path:
     sys.path.insert(0, str(MAYA_TOOLS))
 
-from performance_score_model import format_single_score  # noqa: E402
+from performance_score_model import PerformanceScoreModel  # noqa: E402
 
 
 def _write_annotation(
@@ -184,15 +184,17 @@ def test_state_spans_are_exact_and_rationale_is_field_addressable(tmp_path: Path
 def test_explicit_annotation_close_ends_resolved_score_state(tmp_path: Path):
     _parsed, plan = _parse_and_normalize(
         tmp_path,
-        "<i01=TEST><l01=-1>One.</l01> <pb01=SLOW_BLINK>Two.</pb01></i01>",
-        "i01=TEST: one event\nl01=-1: alert opening\npb01=SLOW_BLINK: marks the second phrase",
+        "<i01=TEST><l01=-1>One.</l01> Two.</i01>",
+        "i01=TEST: one event\nl01=-1: alert opening",
         exact_transcript="One. Two.",
     )
     assert plan["events"][0]["lid_state"][0]["char_end"] == 4
-    first, second = format_single_score(plan).split("\n\n")
+    model = PerformanceScoreModel(plan)
+    first, second = model.score_text.split("\n\n")
     assert "<l-1>" in first
     assert "<l-1>" not in second
-    assert "<SLOW_BLINK>" in second
+    assert second == "2. {TEST}\n   Two."
+    assert model.validate(model.score_text).valid
 
 
 @pytest.mark.parametrize(

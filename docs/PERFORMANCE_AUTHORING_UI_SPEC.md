@@ -169,8 +169,8 @@ At each phrase interval, every active category is resolved and printed. A resolv
 Whitespace and blank lines are flexible, but phrase numbers must be positive, unique, contiguous, and ordered from 1.
 
 ```text
-single-phrase := NUMBER "." intent NEWLINE tag+ NEWLINE dialogue
-dual-phrase   := NUMBER "." intent NEWLINE "A:" tag+ "|" NEWLINE? "B:" tag+ NEWLINE speaker ":" dialogue
+single-phrase := NUMBER "." intent NEWLINE [tag+ NEWLINE] dialogue
+dual-phrase   := NUMBER "." intent NEWLINE "A:" tag* "|" NEWLINE? "B:" tag* NEWLINE speaker ":" dialogue
 intent        := "{" INTENT_NAME "}"
 speaker       := "A" | "B"
 tag           := "<" affect | hidden-affect | gaze | head | lid | blink ">"
@@ -180,6 +180,22 @@ gaze          := ("GAZE" | "GLANCE" | "AVERT") "-" TARGET
 head          := "HEAD-" ("NONE" | "LOW" | "MEDIUM" | "HIGH" | "FULL")
 lid           := "l" SIGNED_NUMBER
 blink         := "SLOW_BLINK" | "EYE_CLOSE_HOLD" | "SUPPRESS"
+```
+
+Semantic behavior tags are optional. When a single-character phrase has no active behavior channels, the formatter omits the semantic-state line:
+
+```text
+1. {HESITATE}
+   I don't know.
+```
+
+The first body line is parsed as semantic state only when it begins with `<`; otherwise it is dialogue. Dialogue is always required. Dual mode always retains explicit A/B columns so either side can be empty without ambiguity:
+
+```text
+1. {LISTEN}
+   A: |
+   B:<GAZE-A>
+   A: Hmm.
 ```
 
 `NAME` is a known affect state learned from the loaded plan and/or supplied by the model's allowed vocabulary. `TARGET` is a known semantic target learned from the loaded plan, character aliases (`A`, `B`, `SPEAKER`, `LISTENER`), standard directional targets, or an explicitly configured look-at mapping. Tags use canonical uppercase behavior tokens for gaze/blink, display lids as `<l-3>` or `<l0>`, and display affect intensity as integer percent (for example `<Friendly-66>`).
