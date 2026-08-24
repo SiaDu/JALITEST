@@ -1,0 +1,1085 @@
+{
+  "schema_version": "performance_plan_v0",
+  "sequence_id": "run_20260824_172853_093609",
+  "target_character": "AGNES",
+  "source_annotation": null,
+  "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260824_172853_093609\\performance_proposal.txt",
+  "acting_interpretation": "Agnes begins with composed civility, acknowledging the unfamiliar man without overwelcoming him. Her questions are purposeful: she is assessing his role and why he has entered her private outdoor space. Recognition of his position carries guarded interest rather than intimacy. When he hesitates, she lightly reduces the pressure while retaining control, then adds a faintly playful formality. Her final correction is concise and self-assured, redirecting attention toward the creature she knows well.",
+  "events": [
+    {
+      "event_id": "E01",
+      "source_intent_tag": "i01",
+      "span": {
+        "text": "Good day, sir.",
+        "char_start": 7,
+        "char_end": 21
+      },
+      "intent": "OFFER_COMPOSED_COURTESY_WHILE_ASSESSING_THE_UNFAMILIAR_MAN",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m01",
+            "char_start": 7,
+            "char_end": 21,
+            "value": "Polite-42",
+            "state": "Polite",
+            "intensity": 0.42
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g01",
+          "char_start": 7,
+          "char_end": 21,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd01",
+          "char_start": 7,
+          "char_end": 21,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 7,
+          "char_end": 21,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i01",
+          "reason": "Agnes offers the proper opening while deliberately attending to the newcomer."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m01",
+              "reason": "Polite supports civility without implying trust or excessive warmth."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g01",
+            "reason": "Direct attention acknowledges Will and quietly measures his response."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd01",
+            "reason": "A balanced head position conveys self-possession and equal footing."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": "Slightly narrowed lids add restrained appraisal beneath the courtesy."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "Good day, sir."
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E02",
+      "source_intent_tag": "i02",
+      "span": {
+        "text": "What brings you to Hewlands?",
+        "char_start": 52,
+        "char_end": 80
+      },
+      "intent": "SEEK_DIRECT_INFORMATION_WITH_CALM_PURPOSEFUL_CURIOSITY",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m02",
+            "char_start": 52,
+            "char_end": 80,
+            "value": "Watchful-48",
+            "state": "Watchful",
+            "intensity": 0.48
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g02",
+          "char_start": 52,
+          "char_end": 80,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd02",
+          "char_start": 52,
+          "char_end": 80,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l02",
+          "char_start": 52,
+          "char_end": 80,
+          "value": "-2",
+          "lid_state": -2
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i02",
+          "reason": "The question probes his status and purpose rather than expressing idle conversation."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m02",
+              "reason": "Watchfulness reflects caution around an unfamiliar man in her surroundings."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g02",
+            "reason": "Sustained attention makes the inquiry genuinely investigative."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd02",
+            "reason": "A steady head keeps the question clear and controlled."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l02",
+            "reason": "Mild narrowing focuses the assessment without hostility."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "What brings you to Hewlands?"
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E03",
+      "source_intent_tag": "i03",
+      "span": {
+        "text": "The Latin tutor. ",
+        "char_start": 122,
+        "char_end": 139
+      },
+      "intent": "ESTABLISH_HIS_IDENTITY_IN_THE_HOUSEHOLD_AND_SIGNAL_THAT_HE_IS_BEING_EVALUATED",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m03",
+            "char_start": 122,
+            "char_end": 139,
+            "value": "Watchful-55",
+            "state": "Watchful",
+            "intensity": 0.55
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g03",
+          "char_start": 122,
+          "char_end": 139,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd03",
+          "char_start": 122,
+          "char_end": 139,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l03",
+          "char_start": 122,
+          "char_end": 139,
+          "value": "-2",
+          "lid_state": -2
+        }
+      ],
+      "blink": {
+        "performative": [
+          {
+            "source_tag": "pb01",
+            "char_start": 122,
+            "char_end": 139,
+            "value": "SLOW_BLINK"
+          }
+        ],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i03",
+          "reason": "Naming his role tests whether he is merely a rumor or someone worth understanding."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m03",
+              "reason": "Increased watchfulness marks a more active evaluation of his place at Hewlands."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g03",
+            "reason": "Holding Will in view prevents him from escaping the implication."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd03",
+            "reason": "The slight lowering adds scrutiny and firmness."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l03",
+            "reason": "Narrowed lids communicate guarded interest."
+          }
+        ],
+        "blink": {
+          "performative": [
+            {
+              "source_tag": "pb01",
+              "reason": "The slow blink gives Agnes time to register recognition while maintaining composure."
+            }
+          ],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "The Latin tutor. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E04",
+      "source_intent_tag": "i04",
+      "span": {
+        "text": "I've heard of you.",
+        "char_start": 139,
+        "char_end": 157
+      },
+      "intent": "LET_RECOGNITION_SHOW_WHILE_KEEPING_PERSONAL_CURIOSITY_CAREFULLY_CONTAINED",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m04",
+            "char_start": 139,
+            "char_end": 157,
+            "value": "Polite-36",
+            "state": "Polite",
+            "intensity": 0.36
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h01",
+            "char_start": 139,
+            "char_end": 157,
+            "value": "Surprised-18",
+            "state": "Surprised",
+            "intensity": 0.18
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g04",
+          "char_start": 139,
+          "char_end": 157,
+          "value": "GLANCE-CHARACTER_WILL",
+          "mode": "GLANCE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd04",
+          "char_start": 139,
+          "char_end": 157,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l04",
+          "char_start": 139,
+          "char_end": 157,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i04",
+          "reason": "The shift acknowledges prior knowledge and reveals a small spark of interest."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m04",
+              "reason": "Reduced formality prevents the recognition from sounding accusatory."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h01",
+              "reason": "Restrained surprise suggests that meeting the person behind the reports is unexpectedly affecting."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g04",
+            "reason": "A brief glance lets recognition surface without exposing too much."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd04",
+            "reason": "Returning to neutral height softens the evaluation."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l04",
+            "reason": "Slight openness keeps the moment curious rather than suspicious."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "I've heard of you."
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E05",
+      "source_intent_tag": "i05",
+      "span": {
+        "text": "What brought you into the garden?",
+        "char_start": 165,
+        "char_end": 198
+      },
+      "intent": "PRESS_HIM_FOR_THE_REAL_MOTIVE_BEHIND_ENTERING_HER_SPACE",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m05",
+            "char_start": 165,
+            "char_end": 198,
+            "value": "Watchful-62",
+            "state": "Watchful",
+            "intensity": 0.62
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g05",
+          "char_start": 165,
+          "char_end": 198,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd05",
+          "char_start": 165,
+          "char_end": 198,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l05",
+          "char_start": 165,
+          "char_end": 198,
+          "value": "-3",
+          "lid_state": -3
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": [
+          {
+            "source_tag": "bs01",
+            "char_start": 165,
+            "char_end": 198,
+            "value": "SUPPRESS"
+          }
+        ]
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i05",
+          "reason": "Agnes redirects the exchange toward his unexplained presence and expects an account."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m05",
+              "reason": "Stronger watchfulness protects her boundaries while preserving curiosity."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g05",
+            "reason": "Direct focus makes the demand for an explanation unmistakable."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd05",
+            "reason": "The lowered head gives the question quiet pressure rather than aggression."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l05",
+            "reason": "Tighter lids show that she notices his hesitation."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": [
+            {
+              "source_tag": "bs01",
+              "reason": "Suppression sustains pressure through the uncomfortable pause."
+            }
+          ]
+        }
+      },
+      "evidence": {
+        "transcript": "What brought you into the garden?"
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E06",
+      "source_intent_tag": "i06",
+      "span": {
+        "text": "It's just a question, ",
+        "char_start": 218,
+        "char_end": 240
+      },
+      "intent": "REASSURE_HIM_JUST_ENOUGH_TO_INVITE_AN_ANSWER_WITHOUT_SURRENDERING_AUTHORITY",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m06",
+            "char_start": 218,
+            "char_end": 240,
+            "value": "Friendly-38",
+            "state": "Friendly",
+            "intensity": 0.38
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g06",
+          "char_start": 218,
+          "char_end": 240,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd06",
+          "char_start": 218,
+          "char_end": 240,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l06",
+          "char_start": 218,
+          "char_end": 240,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i06",
+          "reason": "She lowers the threat of the interrogation so he can recover while retaining control."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m06",
+              "reason": "Mild friendliness offers permission to answer without becoming intimate."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g06",
+            "reason": "Continued attention shows that the reassurance is genuine but not a retreat."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd06",
+            "reason": "A moderate lift makes the line accessible and lightly patient."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l06",
+            "reason": "Relaxed lids soften the challenge."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "It's just a question, "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E07",
+      "source_intent_tag": "i07",
+      "span": {
+        "text": "master tutor.",
+        "char_start": 240,
+        "char_end": 253
+      },
+      "intent": "LIGHTLY_TEASE_HIS_FORMALITY_AND_RECLAIM_THE_CONVERSATIONAL_ADVANTAGE",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m07",
+            "char_start": 240,
+            "char_end": 253,
+            "value": "Sassy-44",
+            "state": "Sassy",
+            "intensity": 0.44
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g07",
+          "char_start": 240,
+          "char_end": 253,
+          "value": "GLANCE-CHARACTER_WILL",
+          "mode": "GLANCE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd07",
+          "char_start": 240,
+          "char_end": 253,
+          "value": "HIGH",
+          "involvement": 0.75
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l07",
+          "char_start": 240,
+          "char_end": 253,
+          "value": "-2",
+          "lid_state": -2
+        }
+      ],
+      "blink": {
+        "performative": [
+          {
+            "source_tag": "pb02",
+            "char_start": 240,
+            "char_end": 253,
+            "value": "DOUBLE_BLINK"
+          }
+        ],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i07",
+          "reason": "The formal address becomes a playful jab at his nervousness and restores flirtatious energy."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m07",
+              "reason": "Sassy self-possession gives Agnes the upper hand without cruelty."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g07",
+            "reason": "The sideward glance creates teasing distance and acknowledges the awkward attraction."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd07",
+            "reason": "The lifted head reinforces confident, amused control."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l07",
+            "reason": "Slight narrowing gives the tease a knowing edge."
+          }
+        ],
+        "blink": {
+          "performative": [
+            {
+              "source_tag": "pb02",
+              "reason": "The double blink punctuates the playful correction and lightly unsettles him."
+            }
+          ],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "master tutor."
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E08",
+      "source_intent_tag": "i08",
+      "span": {
+        "text": "It's a hawk.",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "intent": "CORRECT_THE_IMPRECISE_IDENTIFICATION_WITH_CONCISE_CONFIDENT_OWNERSHIP_OF_THE_SUBJECT",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m08",
+            "char_start": 356,
+            "char_end": 368,
+            "value": "Watchful-46",
+            "state": "Watchful",
+            "intensity": 0.46
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g08",
+          "char_start": 356,
+          "char_end": 368,
+          "value": "GAZE-CHARACTER_WILL",
+          "mode": "GAZE",
+          "target": "CHARACTER_WILL"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd08",
+          "char_start": 356,
+          "char_end": 368,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l08",
+          "char_start": 356,
+          "char_end": 368,
+          "value": "-2",
+          "lid_state": -2
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i08",
+          "reason": "Agnes supplies the precise classification and turns the exchange toward the creature she values."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m08",
+              "reason": "Watchfulness remains because she is still observing Will's reaction, while confidence dominates."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g08",
+            "reason": "Direct focus anchors the correction in her expertise."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd08",
+            "reason": "A centered head conveys certainty and quiet authority."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l08",
+            "reason": "Mild narrowing emphasizes precision without hostility."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "It's a hawk."
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "proposal_provenance": {
+    "format": "anchor_semantic_v1",
+    "aliases": {
+      "A": "AGNES",
+      "B": "WILL"
+    },
+    "phrases": [
+      {
+        "proposal_id": "S01",
+        "start_anchor": "w0001",
+        "intent": "OFFER_COMPOSED_COURTESY_WHILE_ASSESSING_THE_UNFAMILIAR_MAN",
+        "affect": "Polite-42",
+        "heart": "NONE",
+        "gaze": "GAZE-B",
+        "head": "MEDIUM",
+        "lid": -1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 7,
+          "char_end": 21
+        },
+        "reasons": {
+          "intent": "Agnes offers the proper opening while deliberately attending to the newcomer.",
+          "affect": "Polite supports civility without implying trust or excessive warmth.",
+          "gaze": "Direct attention acknowledges Will and quietly measures his response.",
+          "head": "A balanced head position conveys self-possession and equal footing.",
+          "lid": "Slightly narrowed lids add restrained appraisal beneath the courtesy."
+        }
+      },
+      {
+        "proposal_id": "S02",
+        "start_anchor": "w0008",
+        "intent": "SEEK_DIRECT_INFORMATION_WITH_CALM_PURPOSEFUL_CURIOSITY",
+        "affect": "Watchful-48",
+        "heart": "NONE",
+        "gaze": "GAZE-B",
+        "head": "MEDIUM",
+        "lid": -2,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T03",
+          "char_start": 52,
+          "char_end": 80
+        },
+        "reasons": {
+          "intent": "The question probes his status and purpose rather than expressing idle conversation.",
+          "affect": "Watchfulness reflects caution around an unfamiliar man in her surroundings.",
+          "gaze": "Sustained attention makes the inquiry genuinely investigative.",
+          "head": "A steady head keeps the question clear and controlled.",
+          "lid": "Mild narrowing focuses the assessment without hostility."
+        }
+      },
+      {
+        "proposal_id": "S03",
+        "start_anchor": "w0018",
+        "intent": "ESTABLISH_HIS_IDENTITY_IN_THE_HOUSEHOLD_AND_SIGNAL_THAT_HE_IS_BEING_EVALUATED",
+        "affect": "Watchful-55",
+        "heart": "NONE",
+        "gaze": "GAZE-B",
+        "head": "LOW",
+        "lid": -2,
+        "blink": "SLOW_BLINK",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T05",
+          "char_start": 122,
+          "char_end": 139
+        },
+        "reasons": {
+          "intent": "Naming his role tests whether he is merely a rumor or someone worth understanding.",
+          "affect": "Increased watchfulness marks a more active evaluation of his place at Hewlands.",
+          "gaze": "Holding Will in view prevents him from escaping the implication.",
+          "head": "The slight lowering adds scrutiny and firmness.",
+          "lid": "Narrowed lids communicate guarded interest.",
+          "blink": "The slow blink gives Agnes time to register recognition while maintaining composure."
+        }
+      },
+      {
+        "proposal_id": "S04",
+        "start_anchor": "w0021",
+        "intent": "LET_RECOGNITION_SHOW_WHILE_KEEPING_PERSONAL_CURIOSITY_CAREFULLY_CONTAINED",
+        "affect": "Polite-36",
+        "heart": "Surprised-18",
+        "gaze": "GLANCE-B",
+        "head": "MEDIUM",
+        "lid": -1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T05",
+          "char_start": 139,
+          "char_end": 157
+        },
+        "reasons": {
+          "intent": "The shift acknowledges prior knowledge and reveals a small spark of interest.",
+          "affect": "Reduced formality prevents the recognition from sounding accusatory.",
+          "heart": "Restrained surprise suggests that meeting the person behind the reports is unexpectedly affecting.",
+          "gaze": "A brief glance lets recognition surface without exposing too much.",
+          "head": "Returning to neutral height softens the evaluation.",
+          "lid": "Slight openness keeps the moment curious rather than suspicious."
+        }
+      },
+      {
+        "proposal_id": "S05",
+        "start_anchor": "w0025",
+        "intent": "PRESS_HIM_FOR_THE_REAL_MOTIVE_BEHIND_ENTERING_HER_SPACE",
+        "affect": "Watchful-62",
+        "heart": "NONE",
+        "gaze": "GAZE-B",
+        "head": "LOW",
+        "lid": -3,
+        "blink": "NONE",
+        "blink_suppression": "SUPPRESS",
+        "resolved_interval": {
+          "turn_id": "T06",
+          "char_start": 165,
+          "char_end": 198
+        },
+        "reasons": {
+          "intent": "Agnes redirects the exchange toward his unexplained presence and expects an account.",
+          "affect": "Stronger watchfulness protects her boundaries while preserving curiosity.",
+          "gaze": "Direct focus makes the demand for an explanation unmistakable.",
+          "head": "The lowered head gives the question quiet pressure rather than aggression.",
+          "lid": "Tighter lids show that she notices his hesitation.",
+          "blink_suppression": "Suppression sustains pressure through the uncomfortable pause."
+        }
+      },
+      {
+        "proposal_id": "S06",
+        "start_anchor": "w0032",
+        "intent": "REASSURE_HIM_JUST_ENOUGH_TO_INVITE_AN_ANSWER_WITHOUT_SURRENDERING_AUTHORITY",
+        "affect": "Friendly-38",
+        "heart": "NONE",
+        "gaze": "GAZE-B",
+        "head": "MEDIUM",
+        "lid": -1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T08",
+          "char_start": 218,
+          "char_end": 240
+        },
+        "reasons": {
+          "intent": "She lowers the threat of the interrogation so he can recover while retaining control.",
+          "affect": "Mild friendliness offers permission to answer without becoming intimate.",
+          "gaze": "Continued attention shows that the reassurance is genuine but not a retreat.",
+          "head": "A moderate lift makes the line accessible and lightly patient.",
+          "lid": "Relaxed lids soften the challenge."
+        }
+      },
+      {
+        "proposal_id": "S07",
+        "start_anchor": "w0036",
+        "intent": "LIGHTLY_TEASE_HIS_FORMALITY_AND_RECLAIM_THE_CONVERSATIONAL_ADVANTAGE",
+        "affect": "Sassy-44",
+        "heart": "NONE",
+        "gaze": "GLANCE-B",
+        "head": "HIGH",
+        "lid": -2,
+        "blink": "DOUBLE_BLINK",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T08",
+          "char_start": 240,
+          "char_end": 253
+        },
+        "reasons": {
+          "intent": "The formal address becomes a playful jab at his nervousness and restores flirtatious energy.",
+          "affect": "Sassy self-possession gives Agnes the upper hand without cruelty.",
+          "gaze": "The sideward glance creates teasing distance and acknowledges the awkward attraction.",
+          "head": "The lifted head reinforces confident, amused control.",
+          "lid": "Slight narrowing gives the tease a knowing edge.",
+          "blink": "The double blink punctuates the playful correction and lightly unsettles him."
+        }
+      },
+      {
+        "proposal_id": "S08",
+        "start_anchor": "w0057",
+        "intent": "CORRECT_THE_IMPRECISE_IDENTIFICATION_WITH_CONCISE_CONFIDENT_OWNERSHIP_OF_THE_SUBJECT",
+        "affect": "Watchful-46",
+        "heart": "NONE",
+        "gaze": "GAZE-B",
+        "head": "MEDIUM",
+        "lid": -2,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T10",
+          "char_start": 356,
+          "char_end": 368
+        },
+        "reasons": {
+          "intent": "Agnes supplies the precise classification and turns the exchange toward the creature she values.",
+          "affect": "Watchfulness remains because she is still observing Will's reaction, while confidence dominates.",
+          "gaze": "Direct focus anchors the correction in her expertise.",
+          "head": "A centered head conveys certainty and quiet authority.",
+          "lid": "Mild narrowing emphasizes precision without hostility."
+        }
+      }
+    ]
+  }
+}
