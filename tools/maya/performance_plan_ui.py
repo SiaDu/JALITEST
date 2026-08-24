@@ -452,12 +452,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _generation_succeeded(self, plan_path: object) -> None:
         self.generate_plan_button.setEnabled(True)
         path = Path(str(plan_path))
-        generated_script = self.input_script.toPlainText()
-        generated_context = self.input_context.toPlainText()
-        self.load_plan(path)
+        self.load_plan(path, preserve_authoring_text=True)
         if self.source_path == path:
-            self.input_script.setPlainText(generated_script)
-            self.input_context.setPlainText(generated_context)
             try:
                 self._save_authoring_session_for_path(path)
             except Exception as exc:
@@ -628,14 +624,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             row.deleteLater()
         self.look_at_rows = []
 
-    def _restore_authoring_session(self, session: dict[str, Any]) -> None:
+    def _restore_authoring_session(
+        self, session: dict[str, Any], *, preserve_authoring_text: bool = False
+    ) -> None:
         mode = str(session.get("mode") or "single")
         blocker = QtCore.QSignalBlocker(self.mode_combo)
         self.mode_combo.setCurrentIndex(1 if mode == "dual" else 0)
         del blocker
         self._update_character_mode()
-        self.input_script.setPlainText(str(session.get("input_script") or ""))
-        self.input_context.setPlainText(str(session.get("input_context") or ""))
+        if not preserve_authoring_text:
+            self.input_script.setPlainText(str(session.get("input_script") or ""))
+            self.input_context.setPlainText(str(session.get("input_context") or ""))
         self.audio_folder.setText(str(session.get("audio_folder") or ""))
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
@@ -809,7 +808,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if path:
             self.load_plan(Path(path))
 
-    def load_plan(self, path: Path) -> None:
+    def load_plan(self, path: Path, *, preserve_authoring_text: bool = False) -> None:
         try:
             loaded_plan = load_performance_plan(path)
         except Exception as exc:
@@ -824,7 +823,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 load_authoring_session(session_path) if session_path.exists() else None
             )
             if self.authoring_session is not None:
-                self._restore_authoring_session(self.authoring_session)
+                self._restore_authoring_session(
+                    self.authoring_session,
+                    preserve_authoring_text=preserve_authoring_text,
+                )
         except Exception as exc:
             QtWidgets.QMessageBox.warning(
                 self,
@@ -857,7 +859,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         dual_phrases = [
             phrase for phrase in self.plan.get("phrases", []) if isinstance(phrase, dict)
         ]
-        if not self.authoring_session or not self.authoring_session.get("input_script"):
+        if (
+            not preserve_authoring_text
+            and (not self.authoring_session or not self.authoring_session.get("input_script"))
+        ):
             source_rows = events or dual_phrases
             self.input_script.setPlainText(" ".join(
                 str(row.get("span", {}).get("text") or "") for row in source_rows

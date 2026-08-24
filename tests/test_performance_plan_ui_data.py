@@ -256,7 +256,7 @@ def test_generation_ui_reports_progress_and_loads_backend_result():
 
     assert 'setText("Generating performance plan...")' in generation
     assert "self.backend_runner.start(" in generation
-    assert "self.load_plan(path)" in generation
+    assert "self.load_plan(path, preserve_authoring_text=True)" in generation
     assert 'setText("Performance plan generated.")' in generation
     assert 'setText("Performance plan generation failed.")' in generation
 
@@ -290,6 +290,21 @@ def test_authoring_session_restores_script_and_context_in_ui_source():
     assert 'session.get("input_context")' in restore
     assert "input_script=self.input_script.toPlainText()" in build
     assert "input_context=self.input_context.toPlainText()" in build
+
+
+def test_generation_success_loads_plan_without_reformatting_authoring_text():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    succeeded = source.split("    def _generation_succeeded", 1)[1].split(
+        "    def _generation_failed", 1
+    )[0]
+    load = source.split("    def load_plan(", 1)[1].split(
+        "    def _refresh_phrase_reason", 1
+    )[0]
+
+    assert "self.load_plan(path, preserve_authoring_text=True)" in succeeded
+    assert "input_script.setPlainText" not in succeeded
+    assert "input_context.setPlainText" not in succeeded
+    assert "not preserve_authoring_text" in load
 
 
 def test_multiline_editors_share_score_font_and_use_larger_sizes():
