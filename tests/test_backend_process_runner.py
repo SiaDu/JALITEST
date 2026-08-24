@@ -9,6 +9,7 @@ if str(MAYA_TOOLS) not in sys.path:
     sys.path.insert(0, str(MAYA_TOOLS))
 
 from backend_process_runner import (  # noqa: E402
+    prepare_animation_command,
     prepare_generation_command,
     resolve_backend_python,
 )
@@ -56,3 +57,35 @@ def test_backend_python_environment_override_and_fallback(monkeypatch, tmp_path:
     assert resolve_backend_python(tmp_path).as_posix() == "D:/backend/python.exe"
     monkeypatch.delenv("JALITEST_BACKEND_PYTHON")
     assert resolve_backend_python(tmp_path) == tmp_path / ".venv" / "Scripts" / "python.exe"
+
+
+def test_animation_command_uses_plan_and_needs_no_sequence_configuration(
+    monkeypatch, tmp_path: Path
+):
+    monkeypatch.delenv("JALITEST_SEQUENCE_ID", raising=False)
+    plan = tmp_path / "performance_plan_runtime.json"
+    plan.write_text('{"events": []}', encoding="utf-8")
+    audio = tmp_path / "audio"
+    audio.mkdir()
+
+    command = prepare_animation_command(
+        performance_plan=plan,
+        script="ACTOR: Current edited line.",
+        audio_folder=audio,
+        output_dir=tmp_path / "animation",
+        fps=24.0,
+        repo_root=tmp_path,
+        backend_python="backend-python.exe",
+    )
+
+    arguments = " ".join(command.arguments)
+    assert command.arguments[:2] == (
+        "-m",
+        "expregaze_jali.compile_performance_plan",
+    )
+    assert str(plan.resolve()) in command.arguments
+    assert command.script_file.read_text(encoding="utf-8") == "ACTOR: Current edited line."
+    assert "--sequence-config" not in arguments
+    assert "--sequence-id" not in arguments
+    assert "JALITEST_SEQUENCE_ID" not in arguments
+    assert "performance_annotation" not in arguments

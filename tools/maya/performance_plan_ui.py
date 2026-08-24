@@ -6,6 +6,8 @@ It reads and writes only Performance Plan JSON through the adjacent data helper.
 
 from __future__ import annotations
 
+from contextlib import redirect_stderr, redirect_stdout
+import io
 import os
 from pathlib import Path
 import sys
@@ -24,6 +26,7 @@ if str(TOOLS_DIR) not in sys.path:
 from performance_plan_ui_data import (  # noqa: E402
     default_edited_path,
     load_performance_plan,
+    save_animation_runtime_plan,
     save_performance_plan,
     set_event_intent,
     set_event_locks,
@@ -43,7 +46,11 @@ from authoring_session_data import (  # noqa: E402
     load_authoring_session,
     save_authoring_session,
 )
-from backend_process_runner import BackendProcessRunner  # noqa: E402
+from animation_apply_runner import (  # noqa: E402
+    apply_animation_artifacts,
+    current_scene_fps,
+)
+from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
 WINDOW_OBJECT_NAME = "jalitestPerformancePlanEditor"
@@ -107,6 +114,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.backend_runner.output_received.connect(self._append_backend_output)
         self.backend_runner.succeeded.connect(self._generation_succeeded)
         self.backend_runner.failed.connect(self._generation_failed)
+        self.animation_runner = AnimationProcessRunner(self)
+        self.animation_runner.output_received.connect(self._append_backend_output)
+        self.animation_runner.succeeded.connect(self._animation_compile_succeeded)
+        self.animation_runner.failed.connect(self._animation_failed)
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -128,9 +139,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
         bottom = QtWidgets.QHBoxLayout()
         self.generate_animation_button = QtWidgets.QPushButton("Generate Animation")
-        self.generate_animation_button.setEnabled(False)
-        self.generate_animation_button.setToolTip("Deferred in Phase 1; animation execution is not implemented.")
+        self.generate_animation_button.clicked.connect(self.generate_animation)
         bottom.addWidget(self.generate_animation_button)
+        self.animation_status = QtWidgets.QLabel("Ready.")
+        bottom.addWidget(self.animation_status)
         bottom.addStretch(1)
         authoring.addLayout(bottom)
         scroll.setWidget(content)
@@ -433,8 +445,19 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _generation_succeeded(self, plan_path: object) -> None:
         self.generate_plan_button.setEnabled(True)
         path = Path(str(plan_path))
+        generated_script = self.input_script.toPlainText()
+        generated_context = self.input_context.toPlainText()
         self.load_plan(path)
         if self.source_path == path:
+            self.input_script.setPlainText(generated_script)
+            self.input_context.setPlainText(generated_context)
+            try:
+                self._save_authoring_session_for_path(path)
+            except Exception as exc:
+                self._generation_failed(
+                    f"The plan loaded, but its authoring session could not be saved: {exc}"
+                )
+                return
             self.generation_status.setText("Performance plan generated.")
             self.generation_status.setStyleSheet("color: #166534;")
         else:
@@ -453,6 +476,141 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             concise,
         )
 
+    def _look_at_mapping_data(self) -> list[dict[str, str]]:
+        return [
+            {
+                "semantic_target": semantic.text().strip(),
+                "maya_node": maya_object.text().strip(),
+            }
+            for semantic, maya_object, _row in self.look_at_rows
+            if semantic.text().strip() or maya_object.text().strip()
+        ]
+
+    def generate_animation(self) -> None:
+        if self.mode_combo.currentIndex() == 1:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Dual Animation Not Supported",
+                "Generate Animation currently supports single-character authoring only.",
+            )
+            return
+        if self.plan is None or self.score_model is None or self.source_path is None:
+            QtWidgets.QMessageBox.warning(
+                self, "Performance Plan Required", "Generate or load a Performance Plan first."
+            )
+            return
+        script = self.input_script.toPlainText()
+        if not script.strip():
+            QtWidgets.QMessageBox.warning(
+                self, "Input Script Required", "Input Script is required to compile animation."
+            )
+            return
+        audio_folder = self.audio_folder.text().strip()
+        if not audio_folder:
+            QtWidgets.QMessageBox.warning(
+                self, "Input Audio Folder Required", "Select an Input Audio Folder first."
+            )
+            return
+        script_character = self.character_rows[0][0].text().strip()
+        character_node = self.character_rows[0][1].text().strip()
+        if not script_character or not character_node:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Character Mapping Required",
+                "The active script character and Maya rig/node mapping are required.",
+            )
+            return
+        plan_character = str(self.plan.get("target_character") or "").strip()
+        if plan_character and script_character.upper() != plan_character.upper():
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Character Mapping Mismatch",
+                f"The plan targets {plan_character!r}, but Character Mapping uses "
+                f"{script_character!r}.",
+            )
+            return
+        if not cmds.objExists(character_node):
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Character Node Missing",
+                f"The active Maya character node does not exist:\n{character_node}",
+            )
+            return
+        if not self.commit_current_event(show_error=True):
+            return
+        if not self.validate_score(show_dialog=True):
+            return
+
+        animation_dir = self.source_path.parent / "animation"
+        runtime_plan = animation_dir / "performance_plan_runtime.json"
+        try:
+            if self.plan is not None:
+                self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
+            self.plan = save_animation_runtime_plan(
+                self.score_model,
+                self.score_editor.toPlainText(),
+                runtime_plan,
+            )
+            self._refresh_phrase_reason()
+            self._refresh_metadata_and_diagnostics()
+            self._save_authoring_session_for_path(self.source_path)
+            fps = current_scene_fps()
+        except Exception as exc:
+            self._animation_failed(str(exc))
+            return
+
+        self.backend_log.clear()
+        self.generate_animation_button.setEnabled(False)
+        self.animation_status.setText("Generating animation...")
+        self.animation_status.setStyleSheet("color: #1d4ed8;")
+        try:
+            command = self.animation_runner.start(
+                performance_plan=runtime_plan,
+                script=script,
+                audio_folder=audio_folder,
+                output_dir=animation_dir,
+                fps=fps,
+            )
+        except Exception as exc:
+            self._animation_failed(str(exc))
+            return
+        self._append_backend_output(f"Runtime Performance Plan: {runtime_plan}")
+        self._append_backend_output(f"Animation output: {command.output_dir}")
+        self._append_backend_output(f"Maya scene FPS: {fps}")
+
+    def _animation_compile_succeeded(self, manifest_path: object) -> None:
+        stream = io.StringIO()
+        try:
+            with redirect_stdout(stream), redirect_stderr(stream):
+                apply_animation_artifacts(
+                    manifest_path=Path(str(manifest_path)),
+                    active_character_node=self.character_rows[0][1].text().strip(),
+                    look_at_mappings=self._look_at_mapping_data(),
+                )
+        except Exception as exc:
+            self._append_backend_output(stream.getvalue())
+            self._animation_failed(f"Maya apply failed: {exc}")
+            return
+        self._append_backend_output(stream.getvalue())
+        self.generate_animation_button.setEnabled(True)
+        self.animation_status.setText("Animation generated.")
+        self.animation_status.setStyleSheet("color: #166534;")
+        QtWidgets.QMessageBox.information(
+            self, "Animation Generated", "Animation artifacts were compiled and applied in Maya."
+        )
+
+    def _animation_failed(self, message: str) -> None:
+        self.generate_animation_button.setEnabled(True)
+        self.animation_status.setText("Animation generation failed.")
+        self.animation_status.setStyleSheet("color: #9b1c1c;")
+        self._append_backend_output(message)
+        lines = [line.strip() for line in str(message).splitlines() if line.strip()]
+        QtWidgets.QMessageBox.critical(
+            self,
+            "Could Not Generate Animation",
+            lines[-1] if lines else "Unknown animation error.",
+        )
+
     def _known_look_targets(self) -> list[str]:
         return [field.text().strip() for field, _maya, _row in self.look_at_rows if field.text().strip()]
 
@@ -468,6 +626,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.mode_combo.setCurrentIndex(1 if mode == "dual" else 0)
         del blocker
         self._update_character_mode()
+        self.input_script.setPlainText(str(session.get("input_script") or ""))
+        self.input_context.setPlainText(str(session.get("input_context") or ""))
         self.audio_folder.setText(str(session.get("audio_folder") or ""))
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
@@ -511,22 +671,25 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             }
             for index in range(character_count)
         ]
-        look_at_targets = [
-            {
-                "semantic_target": semantic.text().strip(),
-                "maya_node": maya_object.text().strip(),
-            }
-            for semantic, maya_object, _row in self.look_at_rows
-            if semantic.text().strip() or maya_object.text().strip()
-        ]
         return build_authoring_session(
             sequence_id=str((self.plan or {}).get("sequence_id") or ""),
             mode="dual" if dual else "single",
             audio_folder=self.audio_folder.text(),
+            input_script=self.input_script.toPlainText(),
+            input_context=self.input_context.toPlainText(),
             characters=characters,
-            look_at_targets=look_at_targets,
+            look_at_targets=self._look_at_mapping_data(),
             base=self.authoring_session,
         )
+
+    def _save_authoring_session_for_path(self, plan_path: Path) -> Path:
+        session = self._build_authoring_session_data()
+        session_path = default_authoring_session_path(
+            plan_path, str((self.plan or {}).get("sequence_id") or "")
+        )
+        save_authoring_session(session, session_path)
+        self.authoring_session = session
+        return session_path
 
     def _score_changed(self) -> None:
         if not self._building and self.score_model is not None:
@@ -675,9 +838,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.current_event_index = None
         self._building = True
         events = [event for event in self.plan.get("events", []) if isinstance(event, dict)]
-        self.input_script.setPlainText(" ".join(
-            str(event.get("span", {}).get("text") or "") for event in events
-        ).strip())
+        if not self.authoring_session or not self.authoring_session.get("input_script"):
+            self.input_script.setPlainText(" ".join(
+                str(event.get("span", {}).get("text") or "") for event in events
+            ).strip())
         self.acting_interpretation.setPlainText(
             str(self.plan.get("acting_interpretation") or "")
         )
@@ -941,13 +1105,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         try:
             if self.plan is not None:
                 self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
-            session = self._build_authoring_session_data()
             save_performance_plan(self.plan or {}, path)
-            session_path = default_authoring_session_path(
-                path, str((self.plan or {}).get("sequence_id") or "")
-            )
-            save_authoring_session(session, session_path)
-            self.authoring_session = session
+            session_path = self._save_authoring_session_for_path(path)
         except Exception as exc:
             QtWidgets.QMessageBox.critical(self, "Could Not Save Authoring Data", str(exc))
             return

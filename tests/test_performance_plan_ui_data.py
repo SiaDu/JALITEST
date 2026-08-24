@@ -14,6 +14,7 @@ if str(MAYA_TOOLS) not in sys.path:
 from performance_plan_ui_data import (  # noqa: E402
     default_edited_path,
     load_performance_plan,
+    save_animation_runtime_plan,
     save_performance_plan,
     set_event_intent,
     set_event_locks,
@@ -22,6 +23,7 @@ from performance_plan_ui_data import (  # noqa: E402
     update_head_span,
     update_lid_state_span,
 )
+from performance_score_model import PerformanceScoreModel  # noqa: E402
 
 
 def _plan() -> dict:
@@ -194,6 +196,8 @@ def test_participant_authoring_ui_hides_json_and_file_controls():
     assert "Load Existing Plan" not in authoring
     assert "Save Performance Plan" not in authoring
     assert 'QPushButton("Generate Animation")' in authoring
+    assert "self.generate_animation_button.clicked.connect(self.generate_animation)" in authoring
+    assert "self.generate_animation_button.setEnabled(False)" not in authoring
     assert "Generate or load a performance plan to begin editing." in source
     assert "Load a Performance Plan JSON to author its semantic score." not in source
 
@@ -257,6 +261,37 @@ def test_generation_ui_reports_progress_and_loads_backend_result():
     assert 'setText("Performance plan generation failed.")' in generation
 
 
+def test_generate_animation_uses_current_score_runtime_plan_and_real_handler():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    animation = source.split("    def generate_animation", 1)[1].split(
+        "    def _animation_compile_succeeded", 1
+    )[0]
+
+    assert "self.validate_score(show_dialog=True)" in animation
+    assert "save_animation_runtime_plan(" in animation
+    assert "self.score_editor.toPlainText()" in animation
+    assert "self.animation_runner.start(" in animation
+    assert 'setText("Generating animation...")' in animation
+    assert "Dual Animation Not Supported" in animation
+    assert "performance_annotation" not in animation
+    assert "sequence_config" not in animation
+
+
+def test_authoring_session_restores_script_and_context_in_ui_source():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    restore = source.split("    def _restore_authoring_session", 1)[1].split(
+        "    def _build_authoring_session_data", 1
+    )[0]
+    build = source.split("    def _build_authoring_session_data", 1)[1].split(
+        "    def _save_authoring_session_for_path", 1
+    )[0]
+
+    assert 'session.get("input_script")' in restore
+    assert 'session.get("input_context")' in restore
+    assert "input_script=self.input_script.toPlainText()" in build
+    assert "input_context=self.input_context.toPlainText()" in build
+
+
 def test_multiline_editors_share_score_font_and_use_larger_sizes():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
 
@@ -276,3 +311,18 @@ def test_multiline_editors_share_score_font_and_use_larger_sizes():
             rf"_configure_multiline_editor\(\s*self\.{editor},\s*height={height}",
             source,
         )
+
+
+def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path: Path):
+    model = PerformanceScoreModel(_plan())
+    edited_score = model.score_text.replace("<Friendly-50>", "<Angry-80>", 1)
+    runtime_path = tmp_path / "animation" / "performance_plan_runtime.json"
+
+    updated = save_animation_runtime_plan(model, edited_score, runtime_path)
+    saved = json.loads(runtime_path.read_text(encoding="utf-8"))
+
+    assert updated["events"][0]["affect"]["visible"][0]["value"] == "Angry-80"
+    assert saved == updated
+    assert saved["authoring"]["manually_edited_phrases"][0]["changed_categories"] == [
+        "affect"
+    ]

@@ -37,6 +37,10 @@ def validate_authoring_session(session: dict[str, Any]) -> None:
         raise ValueError("Authoring session mode must be 'single' or 'dual'.")
     if not isinstance(session.get("audio_folder", ""), str):
         raise ValueError("Authoring session audio_folder must be a string.")
+    if not isinstance(session.get("input_script", ""), str):
+        raise ValueError("Authoring session input_script must be a string.")
+    if not isinstance(session.get("input_context", ""), str):
+        raise ValueError("Authoring session input_context must be a string.")
     characters = _mapping_rows(session.get("characters", []), ("alias", "script_name", "maya_node"))
     expected_aliases = ["A"] if session["mode"] == "single" else ["A", "B"]
     if len(characters) > 2 or [row["alias"] for row in characters] != expected_aliases[:len(characters)]:
@@ -53,6 +57,8 @@ def build_authoring_session(
     audio_folder: str,
     characters: Iterable[dict[str, Any]],
     look_at_targets: Iterable[dict[str, Any]],
+    input_script: str = "",
+    input_context: str = "",
     base: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build validated sidecar data while retaining unknown fields from a loaded sidecar."""
@@ -62,6 +68,8 @@ def build_authoring_session(
         "sequence_id": str(sequence_id).strip(),
         "mode": mode,
         "audio_folder": str(audio_folder),
+        "input_script": str(input_script),
+        "input_context": str(input_context),
         "characters": _mapping_rows(characters, ("alias", "script_name", "maya_node")),
         "look_at_targets": _mapping_rows(
             look_at_targets, ("semantic_target", "maya_node")

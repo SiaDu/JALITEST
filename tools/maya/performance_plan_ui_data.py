@@ -42,6 +42,15 @@ def save_performance_plan(plan: dict[str, Any], path: str | Path) -> Path:
     return output
 
 
+def save_animation_runtime_plan(
+    score_model: Any, score_text: str, path: str | Path
+) -> dict[str, Any]:
+    """Validate/apply the current score and persist the exact canonical runtime plan."""
+    plan = score_model.apply(score_text)
+    save_performance_plan(plan, path)
+    return plan
+
+
 def set_event_intent(event: dict[str, Any], intent: str) -> None:
     event["intent"] = intent
 

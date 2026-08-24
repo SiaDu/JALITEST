@@ -18,7 +18,7 @@ For the CHI user study, canonical JSON and file-loading details are hidden from 
 6. Inspect all original AI reasons associated with any numbered phrase.
 7. Select **Generate Animation** only after the score is valid.
 
-**Generate Performance Plan** invokes the separate Python 3.12 HCI backend asynchronously. **Regenerate Plan** and **Generate Animation** remain explicit placeholders. Maya never imports the backend package or executes an LLM request in its Python 3.11 process.
+**Generate Performance Plan** invokes the separate Python 3.12 HCI backend asynchronously. **Generate Animation** asynchronously compiles the currently edited canonical plan and then applies the resulting artifacts in Maya. **Regenerate Plan** remains an explicit placeholder. Maya never executes an LLM request in its Python 3.11 process.
 
 ## Data Architecture
 
@@ -34,7 +34,7 @@ editable Maya text representation
 
 The Semantic Performance Score is an authoring projection, never a replacement persistence format. Loading creates a model over a deep copy of the complete plan. Applying a valid score updates only represented semantic values in that copy. It preserves source tags, character spans, rationale, evidence, diagnostics, locks, and unknown JSON fields. Saving always writes canonical Performance Plan JSON.
 
-Each formatted phrase records the canonical spans that contributed to it. A human edit updates the corresponding existing semantic span when that category is represented. Phase 1 does not synthesize timing or animation data. A phrase whose authored tags differ from its original proposal is recorded as manually edited in canonical plan metadata; original rationale remains unchanged.
+Each formatted phrase records the canonical spans that contributed to it. A human edit updates the corresponding existing semantic span when that category is represented. Timing and Maya artifacts remain outside the canonical semantic plan and are derived only when Generate Animation runs. A phrase whose authored tags differ from its original proposal is recorded as manually edited in canonical plan metadata; original rationale remains unchanged.
 
 ## Phase 1.1 Extension
 
@@ -44,8 +44,8 @@ The three data layers are deliberately separate:
 
 ```text
 Performance Plan  = semantic performance decisions and Acting Interpretation
-Authoring Session = Maya nodes, script-character mappings, audio folder, and UI mode
-Timing Layer      = future TextGrid/time/frame resolution
+Authoring Session = script/context, Maya nodes, mappings, audio folder, and UI mode
+Timing Layer      = derived TextGrid/words/time/frame animation artifacts
 ```
 
 ### Acting Interpretation Persistence
@@ -91,7 +91,7 @@ Maya execution/session mappings are stored outside the Performance Plan at:
 data/processed/performance_plan/{sequence_id}__authoring_session.json
 ```
 
-The sidecar schema is `authoring_session_v0` and contains `sequence_id`, single/dual `mode`, `audio_folder`, character alias/script-name/Maya-node mappings, and semantic-target/Maya-node mappings. Unknown sidecar fields are preserved when practical. Loading a plan restores a matching sidecar when present; saving an edited plan also saves the sidecar. Missing scene nodes remain visible as text and may produce a warning, but are never silently deleted. Session mappings must never be inserted into the semantic Performance Plan.
+The sidecar schema is `authoring_session_v0` and contains `sequence_id`, single/dual `mode`, participant-entered `input_script` and `input_context`, `audio_folder`, character alias/script-name/Maya-node mappings, and semantic-target/Maya-node mappings. Unknown sidecar fields are preserved when practical, and older sidecars without script/context remain valid. Loading a plan restores the exact script and context when present. Generating or saving a plan updates its sidecar. Missing scene nodes remain visible as text and may produce a warning, but are never silently deleted. Session fields must never be inserted into the semantic Performance Plan.
 
 ## HCI Generation Architecture
 
@@ -120,6 +120,28 @@ Each run receives an automatically generated internal run ID, retained in the co
 
 Maya writes long script/context input to UTF-8 runtime files and starts the Python 3.12 backend with `QProcess`, using `JALITEST_BACKEND_PYTHON` or `<repo>/.venv/Scripts/python.exe`. The process is asynchronous. Backend stdout/stderr is retained in Advanced / Debug, failure never loads stale output, and successful generation automatically loads the new canonical plan into Acting Interpretation, Semantic Performance Score, Reason by Phrase, and Advanced / Debug.
 
+## HCI Animation Architecture
+
+Generate Animation uses the current human-edited score, not the original LLM annotation:
+
+```text
+Current edited Semantic Performance Score
+          ↓ validate and apply
+Runtime canonical Performance Plan
+          ↓ expregaze_jali.compile_performance_plan
+Deterministic JALI / gaze / eye / head artifacts
+          ↓ explicit Maya apply functions and UI mappings
+Maya animation
+```
+
+Before compilation, Maya validates the editor text and applies it to the in-memory canonical plan. It writes that exact result to `animation/performance_plan_runtime.json`; this runtime plan is the compiler's source of truth. The compiler never reads `performance_annotation.txt`, so human edits to affect, hidden affect, gaze, lid, blink, head, or intent are present in its resolved semantic artifacts. Intent and head remain explicit in the resolved/debug artifacts; head application is reported as deferred because no Maya head applier currently exists.
+
+The selected Input Audio Folder supplies alignment without sequence configuration. Discovery deterministically prefers one `*words*.jsonl` file, otherwise one `.TextGrid`/`.textgrid` file with a `words` tier. Missing or ambiguous timing files stop generation with a clear error; timing is never guessed. Maya scene FPS supplies seconds-to-frame conversion.
+
+Compilation runs asynchronously in the Python 3.12 backend and writes beneath the plan's `animation/` directory: `annotated_for_jali.txt`, `gaze_events_resolved.json`, `eye_performance_events.json`, `head_events_resolved.json`, `semantic_events_resolved.json`, `compile_from_plan_debug.txt`, and `animation_manifest.json`. On success, Maya applies JALI affect, gaze, lid, and blink through explicit artifact paths. Directional gaze targets use rig configuration offsets; semantic object/character targets use the participant's look-at mappings. Missing required targets fail gaze preflight rather than being silently dropped.
+
+The HCI animation path does not use sequence config, MovieNet identifiers, shot ranges, full-context CSV, local context windows, or `JALITEST_SEQUENCE_ID`. Single-character animation is supported. Dual-character Generate Animation is explicitly blocked until independent per-character plans and apply routing exist.
+
 ## Main UI
 
 The dialog is a vertically scrollable authoring surface with these sections.
@@ -134,7 +156,7 @@ The dialog is a vertically scrollable authoring surface with these sections.
 - **Potential Look-at Target Mapping**: semantic target name mapped to Maya geometry or locator, with **+ Add Look-at Target** and scene-selection support.
 - **Generate Performance Plan**: the main participant entry point; it asynchronously invokes the HCI backend and loads the resulting plan.
 
-Character names must match the names used by the script/context. Look-at mappings provide deterministic future resolution for tags such as `<GAZE-CRYSTAL>` but do not apply animation in Phase 1.
+Character names must match the names used by the script/context. Generate Animation requires the active character's Maya rig/node mapping. Look-at mappings resolve semantic targets such as `<GAZE-CRYSTAL>`; built-in directions use configured offsets without object mappings.
 
 ### Acting Interpretation
 
@@ -258,10 +280,8 @@ The Advanced / Debug **Save Performance Plan** and **Save Performance Plan As...
 ## Deferred / Not in Phase 1
 
 - Regenerate Plan backend invocation
-- Generate Animation execution
-- JALI integration
-- gaze/head/blink application
-- TextGrid/time/frame conversion
+- Maya head-involvement application (head events are compiled and reported)
+- production dual-character animation generation/application
 - animation preview
 - user-study logging
 
@@ -273,6 +293,10 @@ Also deferred are selective LLM regeneration, multi-agent behavior, a timeline U
 - Setup, character mapping, look-at mapping, Acting Interpretation, and exact named action buttons are present.
 - Script-only and script-plus-optional-context generation use the external HCI backend without dataset configuration.
 - Generate Performance Plan does not block Maya and automatically loads successful output.
+- Generate Animation validates and applies dirty score edits to a runtime canonical plan before compilation.
+- Generate Animation compiles without the original annotation or dataset/sequence configuration and applies JALI, gaze, and eye artifacts in Maya.
+- Script and Context persist in the authoring-session sidecar and restore on load.
+- Timing discovery supports words JSONL and TextGrid and fails clearly when neither is present.
 - Existing plan JSON loads through Advanced / Debug and renders as a numbered simplified score.
 - Every phrase prints its complete resolved state.
 - The score is editable and phrase-specific validation blocks invalid application/save.
@@ -280,5 +304,5 @@ Also deferred are selective LLM regeneration, multi-agent behavior, a timeline U
 - Manual edits are tracked while original rationale and canonical provenance remain intact.
 - Save emits canonical structured JSON through the existing save/path utilities.
 - Advanced / Debug retains the useful existing inspector.
-- Single- and dual-character formatter/parser behavior is testable without Maya, PySide6, or the backend package.
+- Single- and dual-character formatter/parser behavior and single-character animation command/compilation behavior are testable without Maya or PySide6.
 - The normal pytest suite passes without Maya.
