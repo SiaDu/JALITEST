@@ -23,7 +23,11 @@ def load_performance_plan(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError("Performance Plan JSON must have an object at its root.")
-    if not isinstance(value.get("events"), list):
+    schema = value.get("schema_version")
+    if schema == "dual_performance_plan_v0":
+        if not isinstance(value.get("phrases"), list):
+            raise ValueError("Dual Performance Plan JSON must contain a phrases list.")
+    elif not isinstance(value.get("events"), list):
         raise ValueError("Performance Plan JSON must contain an events list.")
     return value
 

@@ -37,6 +37,7 @@ from performance_plan_ui_data import (  # noqa: E402
     update_lid_state_span,
 )
 from performance_score_model import (  # noqa: E402
+    DualPerformanceScoreModel,
     PerformanceScoreModel,
     format_rationale_view,
 )
@@ -101,7 +102,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.resize(1280, 860)
 
         self.plan: dict[str, Any] | None = None
-        self.score_model: PerformanceScoreModel | None = None
+        self.score_model: PerformanceScoreModel | DualPerformanceScoreModel | None = None
         self.authoring_session: dict[str, Any] | None = None
         self.source_path: Path | None = None
         self.current_event_index: int | None = None
@@ -395,7 +396,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.character_rows[1][2].setVisible(dual)
         if dual:
             self.validation_label.setText(
-                "Dual UI mode selected; load paired character plans through future backend plumbing."
+                "Dual semantic authoring uses one shared conversation plan."
             )
 
     def _show_phase_one_placeholder(self, action: str) -> None:
@@ -407,17 +408,21 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def generate_performance_plan(self) -> None:
         script = self.input_script.toPlainText()
-        target_character = self.character_rows[0][0].text().strip()
+        dual = self.mode_combo.currentIndex() == 1
+        character_a = self.character_rows[0][0].text().strip()
+        character_b = self.character_rows[1][0].text().strip()
         if not script.strip():
             QtWidgets.QMessageBox.warning(
                 self, "Input Script Required", "Enter the script before generating a performance plan."
             )
             return
-        if not target_character:
+        if not character_a or (dual and not character_b):
             QtWidgets.QMessageBox.warning(
                 self,
                 "Character Mapping Required",
-                "Enter the active script character in Character Mapping before generating.",
+                "Enter Script Character A and Script Character B before generating."
+                if dual else
+                "Enter Script Character A before generating.",
             )
             return
         self.backend_log.clear()
@@ -428,7 +433,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             command = self.backend_runner.start(
                 script=script,
                 context=self.input_context.toPlainText(),
-                target_character=target_character,
+                mode="dual" if dual else "single",
+                character_a=character_a,
+                character_b=character_b if dual else None,
             )
         except Exception as exc:
             self._generation_failed(str(exc))
@@ -491,7 +498,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(
                 self,
                 "Dual Animation Not Supported",
-                "Generate Animation currently supports single-character authoring only.",
+                "Dual-character animation execution is not connected yet.\n"
+                "The dual semantic Performance Plan can still be generated, edited, and saved.",
             )
             return
         if self.plan is None or self.score_model is None or self.source_path is None:
@@ -826,9 +834,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.authoring_session = None
 
         try:
-            self.score_model = PerformanceScoreModel(
-                loaded_plan, extra_targets=self._known_look_targets()
-            )
+            if loaded_plan.get("schema_version") == "dual_performance_plan_v0":
+                self.score_model = DualPerformanceScoreModel(
+                    loaded_plan, extra_targets=self._known_look_targets()
+                )
+                if self.authoring_session is None:
+                    self.mode_combo.setCurrentIndex(1)
+                    self._update_character_mode()
+            else:
+                self.score_model = PerformanceScoreModel(
+                    loaded_plan, extra_targets=self._known_look_targets()
+                )
             self.plan = self.score_model.plan
         except Exception as exc:
             QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
@@ -838,9 +854,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.current_event_index = None
         self._building = True
         events = [event for event in self.plan.get("events", []) if isinstance(event, dict)]
+        dual_phrases = [
+            phrase for phrase in self.plan.get("phrases", []) if isinstance(phrase, dict)
+        ]
         if not self.authoring_session or not self.authoring_session.get("input_script"):
+            source_rows = events or dual_phrases
             self.input_script.setPlainText(" ".join(
-                str(event.get("span", {}).get("text") or "") for event in events
+                str(row.get("span", {}).get("text") or "") for row in source_rows
             ).strip())
         self.acting_interpretation.setPlainText(
             str(self.plan.get("acting_interpretation") or "")
@@ -849,6 +869,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         target_character = str(self.plan.get("target_character") or "")
         if target_character and self.authoring_session is None:
             self.character_rows[0][0].setText(target_character)
+        if self.plan.get("schema_version") == "dual_performance_plan_v0" and self.authoring_session is None:
+            characters = self.plan.get("characters", {})
+            if isinstance(characters, dict):
+                self.character_rows[0][0].setText(str(characters.get("A") or ""))
+                self.character_rows[1][0].setText(str(characters.get("B") or ""))
         self.phrase_number.setMaximum(max(1, len(self.score_model.phrases)))
         self.phrase_number.setValue(1)
         self._building = False
@@ -880,11 +905,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.metadata_label.setText("No plan loaded")
             self.diagnostics.clear()
             return
+        characters = self.plan.get("characters")
+        character_label = (
+            f"characters: {characters}" if isinstance(characters, dict)
+            else f"target_character: {self.plan.get('target_character', '')}"
+        )
         self.metadata_label.setText(
-            "schema_version: {schema}    sequence_id: {sequence}    target_character: {character}".format(
+            "schema_version: {schema}    sequence_id: {sequence}    {character}".format(
                 schema=self.plan.get("schema_version", ""),
                 sequence=self.plan.get("sequence_id", ""),
-                character=self.plan.get("target_character", ""),
+                character=character_label,
             )
         )
         diagnostics = self.plan.get("diagnostics", {})

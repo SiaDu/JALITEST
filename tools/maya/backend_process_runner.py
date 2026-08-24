@@ -70,7 +70,10 @@ def prepare_generation_command(
     *,
     script: str,
     context: str | None,
-    target_character: str | None,
+    target_character: str | None = None,
+    mode: str = "single",
+    character_a: str | None = None,
+    character_b: str | None = None,
     repo_root: str | Path | None = None,
     backend_python: str | Path | None = None,
     run_id: str | None = None,
@@ -78,9 +81,14 @@ def prepare_generation_command(
     clean_script = str(script)
     if not clean_script.strip():
         raise ValueError("Input Script is required.")
-    clean_character = str(target_character or "").strip()
-    if not clean_character:
-        raise ValueError("A script character is required in Character Mapping.")
+    if mode not in {"single", "dual"}:
+        raise ValueError("Generation mode must be 'single' or 'dual'.")
+    clean_a = str(character_a or target_character or "").strip()
+    clean_b = str(character_b or "").strip()
+    if not clean_a:
+        raise ValueError("Script Character A is required in Character Mapping.")
+    if mode == "dual" and not clean_b:
+        raise ValueError("Script Character B is required in dual mode.")
 
     root = resolve_repo_root(repo_root)
     resolved_run_id = run_id or generate_backend_run_id()
@@ -95,18 +103,17 @@ def prepare_generation_command(
         context_file = run_dir / "input_context.txt"
         context_file.write_text(clean_context, encoding="utf-8")
 
+    module = (
+        "expregaze_jali.generate_dual_performance_plan"
+        if mode == "dual" else "expregaze_jali.generate_performance_plan"
+    )
+    character_arguments = (
+        ["--character-a", clean_a, "--character-b", clean_b]
+        if mode == "dual" else ["--target-character", clean_a]
+    )
     arguments = [
-        "-m",
-        "expregaze_jali.generate_performance_plan",
-        "--script-file",
-        str(script_file),
-        "--target-character",
-        clean_character,
-        "--run-id",
-        resolved_run_id,
-        "--output-dir",
-        str(run_dir),
-        "--overwrite",
+        "-m", module, "--script-file", str(script_file), *character_arguments,
+        "--run-id", resolved_run_id, "--output-dir", str(run_dir), "--overwrite",
     ]
     if context_file is not None:
         arguments[4:4] = ["--context-file", str(context_file)]
@@ -209,7 +216,9 @@ if QtCore is not None:
             )
 
         def start(
-            self, *, script: str, context: str | None, target_character: str
+            self, *, script: str, context: str | None,
+            target_character: str | None = None, mode: str = "single",
+            character_a: str | None = None, character_b: str | None = None,
         ) -> BackendCommand:
             if self.running:
                 raise RuntimeError("Performance Plan generation is already running.")
@@ -217,6 +226,9 @@ if QtCore is not None:
                 script=script,
                 context=context,
                 target_character=target_character,
+                mode=mode,
+                character_a=character_a,
+                character_b=character_b,
                 repo_root=self.repo_root,
                 backend_python=self.backend_python,
             )

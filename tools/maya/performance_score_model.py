@@ -19,9 +19,11 @@ DEFAULT_GAZE_TARGETS = {
     "UP", "UP_LEFT", "UP_RIGHT", "LEFT", "RIGHT", "CRYSTAL", "DOOR",
 }
 DEFAULT_AFFECTS = {
-    "Angered", "Angry", "Curious", "Dislike", "Friendly", "Happy",
-    "Polite", "Provoked", "Sad", "Scheming", "Singing_Serene", "Smug",
-    "Thinking", "Warm",
+    "Afraid", "Angered", "Angry", "Cocky", "Confused", "Contempt", "Curious",
+    "Devious", "Devilish", "Disgust", "Disgusted", "Dislike", "Friendly", "Happy",
+    "Intimidating", "Lost", "Nervous", "Neutral", "Panicky", "Polite", "Provoked",
+    "Sad", "Sassy", "Scheming", "Singing_Serene", "Smug", "Surprised", "Thinking",
+    "Warm", "Watchful",
 }
 BLINK_VALUES = {
     "SLOW_BLINK", "EYE_CLOSE_HOLD", "SUPPRESS", "DOUBLE_BLINK", "BLINK_CLUSTER",
@@ -29,7 +31,7 @@ BLINK_VALUES = {
 HEAD_INVOLVEMENT = {"NONE": 0.0, "LOW": 0.25, "MEDIUM": 0.5, "HIGH": 0.75, "FULL": 1.0}
 HEAD_LEVEL_BY_INVOLVEMENT = {value: key for key, value in HEAD_INVOLVEMENT.items()}
 _HEADER = re.compile(r"^\s*(\d+)\.\s*(.*?)\s*$")
-_INTENT = re.compile(r"^\{([A-Za-z][A-Za-z0-9_]*)?\}$")
+_INTENT = re.compile(r"^\{([A-Za-z][A-Za-z0-9_]*)\}$")
 _TAG = re.compile(r"<([^<>]+)>")
 _AFFECT = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
 _HEART = re.compile(r"^HEART-([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
@@ -351,6 +353,73 @@ def format_dual_score(
     return "\n\n".join(blocks)
 
 
+def _dual_state_from_plan(value: Any, *, intent: str | None) -> SemanticState:
+    state = _as_dict(value)
+
+    def affect(field: str) -> tuple[str, int] | None:
+        raw = str(state.get(field) or "NONE")
+        if raw == "NONE":
+            return None
+        match = _AFFECT.fullmatch(raw)
+        return (match.group(1), int(match.group(2))) if match else None
+
+    gaze_raw = str(state.get("gaze") or "NONE")
+    gaze = None
+    if gaze_raw != "NONE":
+        mode, separator, target = gaze_raw.partition("-")
+        if separator:
+            gaze = (mode, _human_target(target))
+    blink_values = []
+    if state.get("blink") not in (None, "NONE"):
+        blink_values.append(str(state["blink"]))
+    if state.get("blink_suppression") == "SUPPRESS":
+        blink_values.append("SUPPRESS")
+    lid = _number(state.get("lid"))
+    head = str(state.get("head") or "NONE").upper()
+    return SemanticState(
+        intent=intent, lid=lid, affect=affect("affect"),
+        hidden_affect=affect("heart"), gaze=gaze,
+        head=None if head == "NONE" else head, blinks=tuple(blink_values),
+    )
+
+
+def derive_dual_plan_phrases(plan: dict[str, Any]) -> list[ScorePhrase]:
+    result: list[ScorePhrase] = []
+    for index, raw in enumerate(_as_list(plan.get("phrases"))):
+        if not isinstance(raw, dict):
+            continue
+        span = _as_dict(raw.get("span"))
+        try:
+            start, end = int(span["char_start"]), int(span["char_end"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        intent = str(raw.get("intent") or "").strip() or None
+        states = _as_dict(raw.get("states"))
+        result.append(ScorePhrase(
+            number=len(result) + 1, text=str(span.get("text") or "").strip(),
+            event_index=index, char_start=start, char_end=end,
+            states={
+                alias: _dual_state_from_plan(states.get(alias), intent=intent)
+                for alias in ("A", "B")
+            },
+            speaker=str(raw.get("speaker") or "A"),
+        ))
+    return result
+
+
+def format_dual_plan_score(plan_or_phrases: dict[str, Any] | list[ScorePhrase]) -> str:
+    phrases = derive_dual_plan_phrases(plan_or_phrases) if isinstance(plan_or_phrases, dict) else plan_or_phrases
+    blocks: list[str] = []
+    for phrase in phrases:
+        intent = phrase.states["A"].intent or ""
+        blocks.append(
+            f"{phrase.number}. {{{intent}}}\n"
+            f"   A:{format_state(phrase.states['A'])} | B:{format_state(phrase.states['B'])}\n"
+            f"   {phrase.speaker}: {phrase.text}"
+        )
+    return "\n\n".join(blocks)
+
+
 def known_vocabulary(
     plans: Iterable[dict[str, Any]], *, extra_targets: Iterable[str] = ()
 ) -> tuple[set[str], set[str]]:
@@ -560,6 +629,141 @@ def _human_span(phrase: ScorePhrase, value: str) -> dict[str, Any]:
         "value": value,
         "author": "human",
     }
+
+
+class DualPerformanceScoreModel:
+    """Editable score backed by one canonical dual_performance_plan_v0."""
+
+    def __init__(self, plan: dict[str, Any], *, extra_targets: Iterable[str] = ()) -> None:
+        if plan.get("schema_version") != "dual_performance_plan_v0":
+            raise ValueError("DualPerformanceScoreModel requires dual_performance_plan_v0.")
+        self.plan = deepcopy(plan)
+        self.phrases = derive_dual_plan_phrases(self.plan)
+        self.affects = set(DEFAULT_AFFECTS)
+        self.targets = set(DEFAULT_GAZE_TARGETS)
+        for phrase in self.phrases:
+            for state in phrase.states.values():
+                if state.affect:
+                    self.affects.add(state.affect[0])
+                if state.hidden_affect:
+                    self.affects.add(state.hidden_affect[0])
+                if state.gaze:
+                    self.targets.add(state.gaze[1])
+        self.targets.update(_human_target(str(value)) for value in extra_targets if str(value).strip())
+        snapshot = _as_dict(self.plan.get("authoring")).get("original_semantic_proposal")
+        if isinstance(snapshot, list) and len(snapshot) == len(self.phrases):
+            self.original = deepcopy(snapshot)
+        else:
+            self.original = [
+                {
+                    "intent": phrase.states["A"].intent,
+                    "states": {
+                        alias: deepcopy(self.plan["phrases"][index]["states"][alias])
+                        for alias in ("A", "B")
+                    },
+                }
+                for index, phrase in enumerate(self.phrases)
+            ]
+
+    @property
+    def score_text(self) -> str:
+        return format_dual_plan_score(self.phrases)
+
+    def validate(self, text: str) -> ParseResult:
+        result = parse_score(text, mode="dual", known_affects=self.affects, known_targets=self.targets)
+        errors = list(result.errors)
+        if len(result.phrases) != len(self.phrases):
+            errors.append(ValidationIssue(None, f"Expected {len(self.phrases)} phrases, found {len(result.phrases)}."))
+        for parsed, canonical in zip(result.phrases, self.phrases):
+            if parsed.text != canonical.text:
+                errors.append(ValidationIssue(parsed.number, "Dialogue text must match the canonical transcript."))
+            if parsed.speaker != canonical.speaker:
+                errors.append(ValidationIssue(parsed.number, "Dialogue speaker must match the canonical transcript."))
+        return ParseResult(result.phrases, tuple(errors))
+
+    @staticmethod
+    def _canonical_state(
+        state: SemanticState, original_state: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        performative = next((value for value in state.blinks if value != "SUPPRESS"), "NONE")
+        lid: int | float | None = state.lid
+        if lid is not None and float(lid).is_integer():
+            lid = int(lid)
+        gaze = f"{state.gaze[0]}-{state.gaze[1]}" if state.gaze else "NONE"
+        original_gaze = str(_as_dict(original_state).get("gaze") or "NONE")
+        if state.gaze and original_gaze != "NONE":
+            original_mode, separator, original_target = original_gaze.partition("-")
+            if (
+                separator and original_mode == state.gaze[0]
+                and _human_target(original_target) == state.gaze[1]
+            ):
+                gaze = original_gaze
+        return {
+            "affect": f"{state.affect[0]}-{state.affect[1]}" if state.affect else "NONE",
+            "heart": f"{state.hidden_affect[0]}-{state.hidden_affect[1]}" if state.hidden_affect else "NONE",
+            "gaze": gaze,
+            "head": state.head or "NONE", "lid": "NONE" if lid is None else lid,
+            "blink_suppression": "SUPPRESS" if "SUPPRESS" in state.blinks else "NONE",
+        }
+
+    def apply(self, text: str) -> dict[str, Any]:
+        result = self.validate(text)
+        if not result.valid:
+            raise ValueError("\n".join(str(error) for error in result.errors))
+        records: list[dict[str, Any]] = []
+        for index, parsed in enumerate(result.phrases):
+            phrase = self.plan["phrases"][index]
+            phrase["intent"] = parsed.states["A"].intent
+            existing_states = deepcopy(_as_dict(phrase.get("states")))
+            phrase["states"] = {
+                alias: self._canonical_state(
+                    parsed.states[alias], _as_dict(existing_states.get(alias))
+                )
+                for alias in ("A", "B")
+            }
+            changed: list[str] = []
+            original = self.original[index]
+            if phrase["intent"] != original["intent"]:
+                changed.append("intent")
+            for alias in ("A", "B"):
+                for field, value in phrase["states"][alias].items():
+                    if value != original["states"][alias].get(field):
+                        changed.append(f"{alias}.{field}")
+            if changed:
+                records.append({"phrase_number": index + 1, "phrase_id": phrase.get("phrase_id"), "changed_categories": changed})
+        authoring = self.plan.setdefault("authoring", {})
+        authoring["semantic_score_version"] = "dual_semantic_score_v1"
+        authoring.setdefault("original_semantic_proposal", deepcopy(self.original))
+        authoring["manually_edited_phrases"] = records
+        self.phrases = derive_dual_plan_phrases(self.plan)
+        return self.plan
+
+    def is_manually_edited(self, phrase_number: int) -> bool:
+        records = _as_dict(self.plan.get("authoring")).get("manually_edited_phrases", [])
+        return any(isinstance(row, dict) and row.get("phrase_number") == phrase_number for row in records)
+
+    def rationale_view(self, phrase_number: int) -> str:
+        if not 1 <= phrase_number <= len(self.phrases):
+            return "No such phrase."
+        score_phrase = self.phrases[phrase_number - 1]
+        phrase = self.plan["phrases"][phrase_number - 1]
+        rationale = _as_dict(phrase.get("rationale"))
+        lines = [f"Phrase {phrase_number}", "", f'"{score_phrase.text}"', ""]
+        if self.is_manually_edited(phrase_number):
+            lines.extend(["Phrase manually edited. AI rationale corresponds to the original proposal.", ""])
+        lines.extend(["Intent", f"Reason: {rationale.get('intent') or ''}", ""])
+        characters = _as_dict(self.plan.get("characters"))
+        states = _as_dict(phrase.get("states"))
+        for alias in ("A", "B"):
+            lines.append(f"{alias} — {characters.get(alias, alias)}")
+            state = _as_dict(states.get(alias))
+            reasons = _as_dict(rationale.get(alias))
+            for field in ("affect", "heart", "gaze", "head", "lid", "blink", "blink_suppression"):
+                value = state.get(field, "NONE")
+                if value in (None, "NONE") and not reasons.get(field):
+                    continue
+                lines.extend([f"{field.replace('_', ' ').title()}: {value}", f"Reason: {reasons.get(field) or ''}", ""])
+        return "\n".join(lines).rstrip()
 
 
 class PerformanceScoreModel:
@@ -792,7 +996,11 @@ class PerformanceScoreModel:
         return [item for item in items if not ((item.category, item.behavior, item.reason) in seen or seen.add((item.category, item.behavior, item.reason)))]
 
 
-def format_rationale_view(model: PerformanceScoreModel, phrase_number: int) -> str:
+def format_rationale_view(
+    model: PerformanceScoreModel | DualPerformanceScoreModel, phrase_number: int
+) -> str:
+    if isinstance(model, DualPerformanceScoreModel):
+        return model.rationale_view(phrase_number)
     if not 1 <= phrase_number <= len(model.phrases):
         return "No such phrase."
     phrase = model.phrases[phrase_number - 1]

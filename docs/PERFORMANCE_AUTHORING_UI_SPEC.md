@@ -77,7 +77,8 @@ Dual-character form uses one shared Phase 1.1 intent heading followed by complet
    A: That's right.
 ```
 
-Separate A/B intents and production dual-character generation remain deferred.
+Separate A/B intents remain deferred. Production dual semantic generation uses one shared phrase-level
+conversational/performance beat intent and separate complete A/B states.
 
 ### All-Channel Phrase Boundaries
 
@@ -96,6 +97,59 @@ The sidecar schema is `authoring_session_v0` and contains `sequence_id`, single/
 ## HCI Generation Architecture
 
 The participant-facing semantic inputs are deliberately small: **Script** is required, **Context** is optional free text, and the active script character comes from Character Mapping. Audio, rig mapping, and look-at mapping remain animation/session inputs rather than prompt dataset context.
+
+### Dual Shared Performance Phrase Architecture
+
+Dual semantic authoring is conversation-level and is not derived from two independently generated or
+independently segmented single-character plans:
+
+```text
+Conversation
+    ↓
+Shared Anchor Scaffold
+    ↓
+ONE LLM call
+    ↓
+Shared phrase boundaries
+    ↓
+A + B simultaneous semantic states
+    ↓
+Editable Dual Performance Plan
+```
+
+The first Script Character field defines `A`; the second defines `B`. Every labeled script line must
+belong to one of those characters. The deterministic scaffold anchors the entire conversation. Each
+turn has a phrase at its first word, and the model may add starts inside a turn whenever either
+character's performance changes. Code derives phrase ends from the next start in that turn or the turn
+end, preserving exact transcript characters and offsets without gaps or overlaps.
+
+One dual proposal block contains a shared intent plus complete A/B state:
+
+```text
+S01
+start: w0001
+intent: FORMAL_GREETING_AND_MUTUAL_ASSESSMENT
+A.affect: Polite-42
+A.heart: NONE
+A.gaze: GAZE-B
+A.head: MEDIUM
+A.lid: -1
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Watchful-20
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: LOW
+B.lid: -1
+B.blink: NONE
+B.blink_suppression: NONE
+```
+
+The production schema is `dual_performance_plan_v0`. Its top-level `characters` maps A/B to script
+names, and each canonical `phrases` row contains the code-derived speaker, exact span, shared intent,
+complete `states.A` and `states.B`, preserved A/B rationale, and locks. It has no timing or Maya-node
+fields. Maya rig and semantic target mappings may remain empty while generating, editing, and saving
+this plan. Dual Generate Animation remains disconnected.
 
 ```text
 Participant Inputs
@@ -233,7 +287,7 @@ Dual-character form:
    A: Here.
 ```
 
-Dual mode changes formatting and parsing, not the UI component. `A` and `B` map to the two explicit script characters. The dialogue line identifies the speaker; both characters' resolved states are shown simultaneously.
+Dual mode uses the same UI component over one `dual_performance_plan_v0`. `A` and `B` map to the two explicit script characters. The dialogue speaker is derived from the phrase's anchor turn rather than supplied by the LLM; both characters' resolved states are shown simultaneously on one line separated by ` | `. Inactive tags, including `HEAD-NONE`, are omitted from this human-facing projection while remaining explicit in canonical state.
 
 ### Reason by Phrase
 
@@ -326,9 +380,10 @@ The Advanced / Debug **Save Performance Plan** and **Save Performance Plan As...
 - animation preview
 - user-study logging
 
-Also deferred are selective LLM regeneration, multi-agent behavior, a timeline UI, and production dual-character plan generation. Phase 1 supplies deterministic dual-character formatting/parsing architecture and fixtures only.
-
-Future dual-character generation will reuse one shared transcript-anchor phrase scaffold so A and B can propose state over the same Performance Phrases. It will not independently segment two plans and later force their phrase counts to match.
+Also deferred are selective LLM regeneration, multi-agent behavior, a timeline UI, and compilation of a
+dual authoring plan into per-character execution plans. Production dual semantic authoring already uses
+one shared transcript-anchor phrase scaffold; it never independently segments two plans and later
+forces their phrase counts to match.
 
 ## Phase 1 Acceptance Criteria
 
@@ -336,6 +391,7 @@ Future dual-character generation will reuse one shared transcript-anchor phrase 
 - Setup, character mapping, look-at mapping, Acting Interpretation, and exact named action buttons are present.
 - Script-only and script-plus-optional-context generation use the external HCI backend without dataset configuration.
 - Generate Performance Plan does not block Maya and automatically loads successful output.
+- Dual Generate Performance Plan makes one LLM call over the shared conversation scaffold and loads one `dual_performance_plan_v0` without requiring Maya mappings.
 - Generate Animation validates and applies dirty score edits to a runtime canonical plan before compilation.
 - Generate Animation compiles without the original annotation/proposal or dataset/sequence configuration and applies JALI, gaze, and eye artifacts in Maya.
 - Script and Context persist in the authoring-session sidecar and restore on load.

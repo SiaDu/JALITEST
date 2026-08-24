@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import re
 from typing import Any
 
@@ -92,6 +92,42 @@ class TranscriptAnchorModel:
         return {
             "format": "transcript_anchor_v1",
             "target_character": self.target_character,
+            "aliases": dict(self.aliases),
+            "turns": [
+                {
+                    **{key: value for key, value in asdict(turn).items() if key != "anchors"},
+                    "anchors": [asdict(anchor) for anchor in turn.anchors],
+                }
+                for turn in self.turns
+            ],
+            "anchors": [asdict(anchor) for anchor in self.anchors],
+        }
+
+
+@dataclass(frozen=True)
+class ConversationAnchorModel:
+    """Immutable two-character conversation scaffold used by dual authoring."""
+
+    script: str
+    characters: dict[str, str]
+    turns: tuple[DialogueTurn, ...]
+    aliases: dict[str, str]
+
+    @property
+    def anchors(self) -> tuple[AnchorUnit, ...]:
+        return tuple(anchor for turn in self.turns for anchor in turn.anchors)
+
+    def anchored_script(self) -> str:
+        blocks: list[str] = []
+        for turn in self.turns:
+            units = " ".join(f"[{a.anchor_id} {a.text}]" for a in turn.anchors)
+            blocks.append(f"{turn.turn_id} {turn.speaker}:\n{units}")
+        return "\n\n".join(blocks) + "\n"
+
+    def anchor_map(self) -> dict[str, Any]:
+        return {
+            "format": "conversation_anchor_v1",
+            "characters": dict(self.characters),
             "aliases": dict(self.aliases),
             "turns": [
                 {
@@ -197,3 +233,35 @@ def build_transcript_anchor_model(
             )
         )
     return TranscriptAnchorModel(source, target, tuple(turns), aliases)
+
+
+def build_conversation_anchor_model(
+    script: str, *, character_a: str, character_b: str
+) -> ConversationAnchorModel:
+    """Build one shared A/B anchor scaffold covering every conversation turn."""
+    source = str(script)
+    a_name, b_name = str(character_a).strip(), str(character_b).strip()
+    if not a_name or not b_name:
+        raise ValueError("Both character_a and character_b are required.")
+    if speaker_key(a_name) == speaker_key(b_name):
+        raise ValueError("character_a and character_b must be different characters.")
+    if not any(_SPEAKER_LINE.match(line.rstrip("\r\n")) for line in source.splitlines(True)):
+        raise ValueError("Dual authoring requires speaker-labeled dialogue turns.")
+
+    single = build_transcript_anchor_model(source, target_character=a_name)
+    expected = {speaker_key(a_name): a_name, speaker_key(b_name): b_name}
+    actual = {speaker_key(turn.speaker) for turn in single.turns}
+    unknown = sorted(actual - set(expected))
+    if unknown:
+        raise ValueError(
+            "Every labeled speaker in dual authoring must match character A or B; "
+            f"unknown speaker(s): {', '.join(unknown)}."
+        )
+
+    turns: list[DialogueTurn] = []
+    for turn in single.turns:
+        speaker = expected[speaker_key(turn.speaker)]
+        anchors = tuple(replace(anchor, speaker=speaker) for anchor in turn.anchors)
+        turns.append(replace(turn, speaker=speaker, anchors=anchors))
+    aliases = {"A": a_name, "B": b_name}
+    return ConversationAnchorModel(source, aliases, tuple(turns), aliases)
