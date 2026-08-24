@@ -1,0 +1,111 @@
+[ANALYZE]
+Agnes begins with composed courtesy, keeping the unfamiliar tutor under careful observation. Her questions are genuine but also test his reason for approaching her. Recognition of his role briefly softens her reserve and reveals a restrained spark of interest. When he gives an inadequate explanation, she reins in the exchange with a lightly defensive clarification rather than hostility. The final identification of the hawk is concise and self-possessed, redirecting attention toward the safer, more natural subject.
+
+[PERFORMANCE]
+S01
+span: w0001-w0003
+intent: Offer measured courtesy while assessing the unfamiliar man.
+affect: Polite-42
+heart: NONE
+gaze: GAZE-B
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S02
+span: w0005-w0009
+intent: Invite an explanation while quietly testing his purpose.
+affect: Watchful-52
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -2
+blink: NONE
+blink_suppression: SUPPRESS
+
+S03
+span: w0010-w0017
+intent: Acknowledge his identity with restrained warmth and growing curiosity.
+affect: Friendly-34
+heart: Happy-28
+gaze: GAZE-B
+head: LOW
+lid: 1
+blink: SLOW_BLINK
+blink_suppression: NONE
+
+S04
+span: w0018-w0024
+intent: Probe why he entered her private space without surrendering control of the encounter.
+affect: Watchful-60
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -3
+blink: NONE
+blink_suppression: SUPPRESS
+
+S05
+span: w0025-w0031
+intent: Defuse the awkward challenge with a lightly pointed, self-possessed correction.
+affect: Sassy-46
+heart: NONE
+gaze: GAZE-B
+head: HIGH
+lid: -2
+blink: DOUBLE_BLINK
+blink_suppression: NONE
+
+S06
+span: w0032-w0035
+intent: Redirect the interaction toward the hawk and reclaim comfortable conversational ground.
+affect: Neutral-38
+heart: NONE
+gaze: GLANCE-OBJECT_NAME
+head: LOW
+lid: 0
+blink: NONE
+blink_suppression: NONE
+
+[REASONS]
+S01.intent: The opening should welcome him without implying familiarity, preserving Agnes's caution.
+S01.affect: Politeness makes the greeting socially graceful while the moderate intensity keeps it reserved.
+S01.gaze: Direct attention lets her appraise him openly rather than appearing timid.
+S01.head: A slight lowered head adds courtesy and controlled formality.
+S01.lid: The subtly narrowed lids support alert appraisal without becoming confrontational.
+
+S02.intent: The question functions both as conversation and as a test of his motives.
+S02.affect: Watchfulness reflects her curiosity mixed with caution about an unexpected approach.
+S02.gaze: Sustained attention pressures him to answer honestly and shows that she is reading his reaction.
+S02.head: Moderate lift gives the question focused inquiry rather than accusation.
+S02.lid: Mild narrowing signals scrutiny while retaining composure.
+S02.blink_suppression: Holding the eyes steady makes the examination feel deliberate.
+
+S03.intent: Recognition creates a small opening for rapport, but the warmth remains carefully contained.
+S03.affect: Restrained friendliness acknowledges the connection without assuming trust.
+S03.heart: The specified modest happiness marks a genuine spark of pleasure at knowing who he is.
+S03.gaze: Meeting his gaze sustains the emerging mutual attraction and curiosity.
+S03.head: A slight dip softens the acknowledgment and prevents it from sounding boastful.
+S03.lid: Slightly opened lids convey receptiveness after her initial assessment.
+S03.blink: A slow blink releases some guardedness and lets the warmth register.
+
+S04.intent: She returns to the unexplained intrusion, making clear that curiosity has not displaced her boundaries.
+S04.affect: Increased watchfulness keeps the exchange controlled and asks for a more credible answer.
+S04.gaze: Direct focus holds him accountable for his presence.
+S04.head: The firmer lift gives the inquiry authority without turning it into an attack.
+S04.lid: Narrowed lids communicate caution and a demand for clarity.
+S04.blink_suppression: Reduced blinking maintains pressure during the probing question.
+
+S05.intent: The lightly teasing correction protects her privacy while easing the social awkwardness.
+S05.affect: Sassy energy gives her verbal control and a hint of amused challenge rather than anger.
+S05.gaze: Direct attention makes the correction personal and ensures he understands the boundary.
+S05.head: The raised head conveys self-possession and a small challenge to his assumptions.
+S05.lid: A modest narrowing supports the pointed, teasing edge.
+S05.blink: The double blink punctuates the correction as performative and mildly incredulous.
+
+S06.intent: Naming the hawk shifts the conversation to a subject she understands and chooses to share.
+S06.affect: Neutral composure makes the redirection feel effortless and grounded.
+S06.gaze: A brief glance toward the hawk physically guides his attention to the safer subject.
+S06.head: The small lowered movement follows the visual redirection and reconnects her to the bird.
+S06.lid: Neutral lids keep the final identification plain, confident, and unembellished.
