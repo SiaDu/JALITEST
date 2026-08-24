@@ -37,3 +37,28 @@ def test_labeled_script_rejects_mixed_unlabeled_lines_and_more_than_two_speakers
         build_transcript_anchor_model("A: Hi\ncontinuation", target_character="A")
     with pytest.raises(ValueError, match="at most two"):
         build_transcript_anchor_model("A: Hi\nB: Hi\nC: Hi", target_character="A")
+
+
+@pytest.mark.parametrize("script", [
+    "<heart01=Happy-28>AGNES: The Latin tutor.</heart01>",
+    "AGNES: <m01=Friendly-50>Good day.</m01>",
+])
+def test_legacy_annotation_tags_are_rejected_before_anchor_generation(script):
+    with pytest.raises(ValueError, match="Input Script contains performance annotation tags"):
+        build_transcript_anchor_model(script, target_character="AGNES")
+
+
+def test_multiple_speaker_labels_on_one_line_are_rejected_but_newline_turns_work():
+    with pytest.raises(ValueError, match="Multiple dialogue turns were found on one line"):
+        build_transcript_anchor_model(
+            "AGNES: Good day, sir. AGNES: What brings you to Hewlands?", target_character="AGNES"
+        )
+    model = build_transcript_anchor_model(
+        "AGNES: Good day, sir.\nAGNES: What brings you to Hewlands.", target_character="AGNES"
+    )
+    assert [turn.turn_id for turn in model.turns] == ["T01", "T02"]
+
+
+def test_clean_dialogue_with_ordinary_angle_brackets_passes_preflight():
+    model = build_transcript_anchor_model("AGNES: Is <3 still your lucky number?", target_character="AGNES")
+    assert model.turns[0].utterance_text == "Is <3 still your lucky number?"

@@ -53,8 +53,12 @@ def load_semantic_vocabulary(jali_config_path: str | Path) -> SemanticVocabulary
     if not isinstance(mask, dict) or not isinstance(heart, dict):
         raise ValueError("JALI emotion configuration is missing mask/heart vocabularies.")
     return SemanticVocabulary(
-        affect_states={_name_key(name): str(name) for name in mask},
-        heart_states={_name_key(name): str(name) for name in heart},
+        affect_states={
+            _name_key(name): str(name) for name in mask if _name_key(name) != "nothing"
+        },
+        heart_states={
+            _name_key(name): str(name) for name in heart if _name_key(name) != "nothing"
+        },
     )
 
 
@@ -69,12 +73,18 @@ def _normalize_affect(
     value: str, *, phrase_id: str, field: str, vocabulary: dict[str, str]
 ) -> str:
     raw = value.strip()
-    if raw.upper() == "NONE":
+    if raw.upper() in {"NONE", "NOTHING"}:
         return "NONE"
     match = _AFFECT.fullmatch(raw)
     if not match:
         raise ProposalValidationError(f'{phrase_id}: Invalid {field} value "{raw}"')
     state, intensity_text = match.groups()
+    if _name_key(state) == "nothing":
+        if int(intensity_text) == 0:
+            return "NONE"
+        raise ProposalValidationError(
+            f'{phrase_id}: {field} value "{raw}" is invalid; use NONE for an inactive channel'
+        )
     canonical = vocabulary.get(_name_key(state))
     if canonical is None:
         raise ProposalValidationError(f'{phrase_id}: Unknown {field} state "{state}"')

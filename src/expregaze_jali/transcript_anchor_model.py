@@ -11,11 +11,41 @@ _SPEAKER_LINE = re.compile(
     r"^(?P<indent>[ \t]*)(?P<speaker>[A-Za-z][A-Za-z0-9 _'-]*?)[ \t]*:[ \t]*"
 )
 _ANCHOR = re.compile(r"\S+")
+_ANNOTATION_TAG = re.compile(
+    r"<\s*/?\s*(?:i\d+|g\d+|m\d+|h\d+|hd\d+|l\d+|pb\d+|bs\d+|heart\d+|mask|heart)\b[^>]*>",
+    re.IGNORECASE,
+)
+_INLINE_UPPERCASE_SPEAKER_LABEL = re.compile(
+    r"(?<=[.!?])[ \t]+(?P<speaker>[A-Z][A-Z0-9_'-]*(?:[ \t]+[A-Z][A-Z0-9_'-]*)*)[ \t]*:"
+)
 
 
 def speaker_key(value: str) -> str:
     """Return a stable comparison/canonical key for a dialogue character."""
     return re.sub(r"[^A-Z0-9]+", "_", str(value).strip().upper()).strip("_")
+
+
+def validate_clean_dialogue_script(script: str) -> None:
+    """Reject legacy performance markup without altering participant dialogue."""
+    if _ANNOTATION_TAG.search(str(script)):
+        raise ValueError(
+            "Input Script contains performance annotation tags. Generate Performance Plan "
+            "expects clean dialogue text without JALI or legacy performance tags."
+        )
+
+
+def _has_multiple_turns_on_line(content: str, first_match: re.Match[str]) -> bool:
+    """Detect another likely screenplay speaker label after an initial label."""
+    tail = content[first_match.end():]
+    first_key = speaker_key(first_match.group("speaker"))
+    for match in _INLINE_UPPERCASE_SPEAKER_LABEL.finditer(tail):
+        if match.group("speaker"):
+            return True
+    repeated_name = re.compile(
+        rf"(?<![A-Za-z0-9_'-]){re.escape(first_match.group('speaker').strip())}[ \t]*:",
+        re.IGNORECASE,
+    )
+    return any(speaker_key(match.group(0).rstrip(":")) == first_key for match in repeated_name.finditer(tail))
 
 
 @dataclass(frozen=True)
@@ -84,6 +114,7 @@ def build_transcript_anchor_model(
         raise ValueError("Script is required.")
     if not target:
         raise ValueError("target_character is required.")
+    validate_clean_dialogue_script(source)
 
     lines: list[tuple[int, int, str, re.Match[str] | None]] = []
     offset = 0
@@ -108,6 +139,11 @@ def build_transcript_anchor_model(
                 raise ValueError(
                     "Speaker-labeled scripts require every non-empty line to begin with "
                     "a speaker label followed by a colon."
+                )
+            if _has_multiple_turns_on_line(content, match):
+                raise ValueError(
+                    "Multiple dialogue turns were found on one line. Put each "
+                    "CHARACTER: dialogue turn on its own line."
                 )
             raw_speaker = match.group("speaker").strip()
             speaker = target if speaker_key(raw_speaker) == speaker_key(target) else speaker_key(raw_speaker)

@@ -88,6 +88,11 @@ def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract
     assert '"A": "WILL"' in prompt and '"B": "AGNES"' in prompt
     assert "start: w0001" in prompt
     assert "Never copy dialogue into the response" in prompt
+    assert "Affect states: Nothing" not in prompt
+    assert "Heart states: Nothing" not in prompt
+    assert "Inactive affect or heart channel: NONE" in prompt
+    assert "Do not output `Nothing`" in prompt
+    assert "do not omit a channel" in prompt
 
 
 def test_hci_prompt_has_no_dataset_input_requirements():
@@ -120,6 +125,25 @@ def test_empty_script_is_rejected_before_generation(tmp_path: Path):
             output_dir=tmp_path,
             proposal_runner=_proposal_runner("w0001-w0001"),
         )
+
+
+def test_dirty_script_is_rejected_before_the_llm_runner_is_called(tmp_path: Path):
+    called = False
+
+    def runner(**_kwargs: Any):
+        nonlocal called
+        called = True
+        raise AssertionError("LLM runner must not be called for tagged dialogue")
+
+    with pytest.raises(ValueError, match="Input Script contains performance annotation tags"):
+        generate_performance_plan(
+            script="<heart01=Happy-28>AGNES: The Latin tutor.</heart01>",
+            target_character="AGNES",
+            run_id="run_dirty",
+            output_dir=tmp_path,
+            proposal_runner=runner,
+        )
+    assert called is False
 
 
 def test_hci_generation_writes_canonical_artifacts_and_target_character(tmp_path: Path):

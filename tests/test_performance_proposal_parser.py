@@ -13,8 +13,8 @@ from expregaze_jali.transcript_anchor_model import build_transcript_anchor_model
 
 
 VOCAB = SemanticVocabulary(
-    affect_states={"friendly": "Friendly", "nervous": "Nervous", "thinking": "Thinking"},
-    heart_states={"angry": "Angry", "sad": "Sad"},
+    affect_states={"friendly": "Friendly", "nervous": "Nervous", "thinking": "Thinking", "neutral": "Neutral"},
+    heart_states={"angry": "Angry", "sad": "Sad", "happy": "Happy"},
 )
 
 
@@ -48,6 +48,48 @@ def test_semantic_normalization_and_complete_fields():
     assert phrase["lid"] == -1
     assert phrase["blink"] == "SLOW_BLINK"
     assert phrase["blink_suppression"] == "NONE"
+
+
+@pytest.mark.parametrize("heart", ["Nothing", "nothing", "NONE", "Nothing-0"])
+def test_nothing_heart_alias_normalizes_to_inactive_none(heart):
+    parsed = parse_performance_proposal(proposal_text(starts=("w0001",), heart=heart), vocabulary=VOCAB)
+    assert parsed["phrases"][0]["heart"] == "NONE"
+
+
+def test_nothing_affect_alias_is_inactive_but_neutral_is_real_affect():
+    inactive = parse_performance_proposal(
+        proposal_text(starts=("w0001",), affect="Nothing"), vocabulary=VOCAB
+    )
+    neutral = parse_performance_proposal(
+        proposal_text(starts=("w0001",), affect="Neutral-50"), vocabulary=VOCAB
+    )
+    assert inactive["phrases"][0]["affect"] == "NONE"
+    assert neutral["phrases"][0]["affect"] == "Neutral-50"
+
+
+def test_nothing_with_nonzero_intensity_is_rejected_clearly():
+    with pytest.raises(ProposalValidationError, match="use NONE for an inactive channel"):
+        parse_performance_proposal(
+            proposal_text(starts=("w0001",), heart="Nothing-70"), vocabulary=VOCAB
+        )
+
+
+def test_nothing_ends_hidden_affect_without_inheritance():
+    from expregaze_jali.performance_plan_from_proposal import build_performance_plan_from_proposal
+
+    text = proposal_text(
+        starts=("w0001", "w0004"), heart="Happy-28", affect="Friendly-66", gaze="NONE"
+    )
+    before, marker, second = text.partition("S02\n")
+    text = before + marker + second.replace("heart: Happy-28", "heart: Nothing", 1).replace(
+        "affect: Friendly-66", "affect: Nothing", 1
+    )
+    proposal = parse_performance_proposal(text, vocabulary=VOCAB)
+    model = build_transcript_anchor_model("WILL: one two three four five", target_character="WILL")
+    plan = build_performance_plan_from_proposal(proposal, anchor_model=model, sequence_id="nothing")
+    assert plan["events"][0]["affect"]["hidden"][0]["value"] == "Happy-28"
+    assert plan["events"][1]["affect"]["hidden"] == []
+    assert plan["events"][1]["affect"]["visible"] == []
 
 
 def test_every_semantic_field_is_required_and_intent_cannot_be_none():

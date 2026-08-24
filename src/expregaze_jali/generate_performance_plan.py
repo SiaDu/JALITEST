@@ -136,6 +136,7 @@ def _render_hci_prompt(
         (
             "Affect states: " + ", ".join(vocabulary.affect_states.values()),
             "Heart states: " + ", ".join(vocabulary.heart_states.values()),
+            "Inactive affect or heart channel: NONE",
             "Head values: " + ", ".join(HEAD_VALUES),
             "Lid values: " + ", ".join(str(value) for value in sorted(LID_VALUES)),
             "Blink values: " + ", ".join(sorted(BLINK_VALUES)),

@@ -35,6 +35,11 @@ Every phrase must contain all nine fields below. Do not inherit omitted state. U
 inactive affect, heart, gaze, lid, blink, or blink_suppression channel. `head: NONE` is a valid explicit
 head-involvement decision, not an omitted field.
 
+Use exactly `NONE` when an affect or heart channel is inactive. Do not output `Nothing`; `Nothing` is
+an internal JALI backend value. Every phrase is a complete resolved state: do not omit a channel, write
+`inherit`, or rely on a previous phrase. For example, `heart: Happy-28` followed by `heart: NONE` means
+the Happy heart state ends at that later phrase boundary.
+
 Exact grammar:
 
 ```text

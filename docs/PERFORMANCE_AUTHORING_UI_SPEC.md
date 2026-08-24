@@ -124,6 +124,8 @@ A **Performance Phrase** is a contiguous span of the immutable transcript over w
 
 The anchor scaffold parses labeled dialogue into turns and assigns global whitespace-delimited IDs (`w0001`, `w0002`, ...). Speaker labels are metadata and are not semantic anchor text. Every anchor records its turn, speaker, exact source substring, and global `char_start`/`char_end`. If the input has no labels, the complete script is one turn owned by the target character. The current labeled prototype accepts at most two characters. `A` denotes the target and `B` the one other speaker when present.
 
+The HCI Input Script is immutable clean dialogue. Before anchoring or any LLM call, the backend rejects recognized legacy/JALI performance tags instead of stripping them, and requires each labeled dialogue turn to occupy its own physical line.
+
 The proposal has exactly these line-oriented sections:
 
 ```text
@@ -147,7 +149,7 @@ S01.intent: Hesitation buys time before answering.
 S01.affect: Nervousness makes uncertainty visible.
 ```
 
-All nine fields are required in every S-block; inactive optional channels use `NONE`, while `head: NONE` is a valid explicit zero-involvement choice. There is no proposal-state inheritance. The LLM decides whether performance changes and where each new state starts, but never copies transcript text and never generates phrase ends, source tag IDs, closing tags, character offsets, JSON, timing, frames, seconds, or Maya controls.
+All nine fields are required in every S-block; inactive optional channels use `NONE`, while `head: NONE` is a valid explicit zero-involvement choice. There is no proposal-state inheritance. `Nothing` is an internal JALI backend value and is normalized to inactive `NONE`, never to prior-state inheritance; `Neutral` remains an active visible affect. For example, `heart: Happy-28` followed by `heart: NONE` explicitly ends the Happy state at that boundary. The LLM decides whether performance changes and where each new state starts, but never copies transcript text and never generates phrase ends, source tag IDs, closing tags, character offsets, JSON, timing, frames, seconds, or Maya controls.
 
 For each target-character turn, the first proposed start must be its first anchor; later starts must be strictly ordered and target-owned. The deterministic layer constructs the complete contiguous partition: `char_start` is a phrase start anchor, and `char_end` is the next phrase start in that turn or the utterance end. It therefore decides where the previous phrase ends, exact text, whitespace, punctuation, `char_start`/`char_end`, and canonical source tags. This preserves every target utterance without asking the LLM to calculate end anchors or reproduce transcript text.
 
