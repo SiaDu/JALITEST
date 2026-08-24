@@ -239,6 +239,7 @@ def normalize_performance_plan(
         "sequence_id": sequence_id,
         "target_character": resolved_character,
         "source_annotation": str(parsed.get("path")) if parsed.get("path") else None,
+        "acting_interpretation": str(parsed.get("analyze") or ""),
         "events": events,
         "diagnostics": {"errors": errors, "warnings": warnings},
     }

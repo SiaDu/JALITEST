@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 SCHEMA_VERSION = "performance_plan_v0"
 
@@ -110,6 +110,7 @@ class PerformancePlan(TypedDict):
     source_annotation: str | None
     events: list[PerformancePlanEvent]
     diagnostics: Diagnostics
+    acting_interpretation: NotRequired[str]
 
 
 def default_locks() -> Locks:

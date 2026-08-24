@@ -34,6 +34,63 @@ The Semantic Performance Score is an authoring projection, never a replacement p
 
 Each formatted phrase records the canonical spans that contributed to it. A human edit updates the corresponding existing semantic span when that category is represented. Phase 1 does not synthesize timing or animation data. A phrase whose authored tags differ from its original proposal is recorded as manually edited in canonical plan metadata; original rationale remains unchanged.
 
+## Phase 1.1 Extension
+
+Phase 1.1 completes the semantic authoring and session-persistence boundary without adding backend execution.
+
+The three data layers are deliberately separate:
+
+```text
+Performance Plan  = semantic performance decisions and Acting Interpretation
+Authoring Session = Maya nodes, script-character mappings, audio folder, and UI mode
+Timing Layer      = future TextGrid/time/frame resolution
+```
+
+### Acting Interpretation Persistence
+
+The canonical Performance Plan has an optional top-level `acting_interpretation` string. The normalizer copies the actor annotation parser's existing `[ANALYZE]` section verbatim into this field; it does not summarize or regenerate it. Maya loads this value into the editable Acting Interpretation field and commits the edited text before saving. Older plans without the field load with an empty editor.
+
+### Complete Authorable Semantic State
+
+Every authorable canonical decision is visible in the normal Semantic Performance Score: phrase/event intent, lid state, visible affect, hidden affect (heart), gaze, head involvement, performative blink, and blink suppression.
+
+Single-character form:
+
+```text
+1. {WITHHOLD_THE_INSULT}
+   <l-3><Polite-50><HEART-Angry-70><GAZE-GULCH><HEAD-LOW>
+   And now -- well, being a Christian woman, I can't say it!
+```
+
+Intent is a phrase heading in braces, not an angle-bracket tag. Hidden affect uses `<HEART-State-Strength>` and remains distinct from visible affect. Head involvement uses only `<HEAD-NONE>`, `<HEAD-LOW>`, `<HEAD-MEDIUM>`, `<HEAD-HIGH>`, or `<HEAD-FULL>`; numeric involvement is never exposed in the normal authoring view.
+
+The canonical display order is intent heading, lid, visible affect, hidden affect, gaze, head, then blink behaviors.
+
+Dual-character form uses one shared Phase 1.1 intent heading followed by complete A/B states:
+
+```text
+1. {REASSURE_AND_INVITE}
+   A:<l-1><Friendly-66><GAZE-B><HEAD-MEDIUM> |
+   B:<l1><Curious-20><GAZE-A><HEAD-LOW>
+   A: That's right.
+```
+
+Separate A/B intents and production dual-character generation remain deferred.
+
+### All-Channel Phrase Boundaries
+
+Phrase boundaries are the sorted union of event/intent boundaries and the starts and ends of visible affect, hidden affect, gaze, head involvement, lid, performative blink, and blink-suppression spans. A change only to hidden affect or head therefore creates a readable phrase boundary. Every resulting phrase repeats its complete resolved semantic state; no category relies on hidden inheritance.
+
+### Authoring-Session Sidecar
+
+Maya execution/session mappings are stored outside the Performance Plan at:
+
+```text
+data/processed/performance_plan/{sequence_id}__authoring_session.json
+```
+
+The sidecar schema is `authoring_session_v0` and contains `sequence_id`, single/dual `mode`, `audio_folder`, character alias/script-name/Maya-node mappings, and semantic-target/Maya-node mappings. Unknown sidecar fields are preserved when practical. Loading a plan restores a matching sidecar when present; saving an edited plan also saves the sidecar. Missing scene nodes remain visible as text and may produce a warning, but are never silently deleted. Session mappings must never be inserted into the semantic Performance Plan.
+
 ## Main UI
 
 The dialog is a vertically scrollable authoring surface with these sections.
@@ -92,35 +149,36 @@ The existing event list, semantic tables, intent/locks editor, raw span fields, 
 
 ## Phrase Construction and Resolved State
 
-A phrase is a deterministic readable local performance unit. Boundaries are the sorted union of:
+A phrase is a deterministic readable local performance unit. In Phase 1.1 boundaries are the sorted union of:
 
 - event span starts and ends; and
-- starts and ends of semantic affect, gaze, lid, and blink spans within events.
+- starts and ends of visible affect, hidden affect, gaze, head involvement, lid, and blink spans within events.
 
 Empty intervals are discarded. Phrase text is sliced from canonical event text using canonical character offsets; event text itself is used as a safe fallback when offsets are incomplete or inconsistent. Adjacent intervals with identical resolved state may remain separate at meaningful event boundaries.
 
-At each phrase interval, every active persistent category is resolved and printed. Persistent categories are visible affect, gaze, and lid state. Values continue until replaced by a later value or until plan coverage ends, so inherited state is repeated explicitly on every numbered phrase. Performative blink and blink suppression are printed on every phrase interval they cover. Thus every phrase is self-contained; the score never relies on hidden state changes.
-
-Hidden affect, head involvement, intent, and other canonical fields remain preserved but are not part of the Phase 1 human-facing grammar.
+At each phrase interval, every active persistent category is resolved and printed. Persistent categories are intent, visible affect, hidden affect, gaze, head involvement, and lid state. Values continue until replaced by a later value or until plan coverage ends, so inherited state is repeated explicitly on every numbered phrase. Performative blink and blink suppression are printed on every phrase interval they cover. Thus every phrase is self-contained; the score never relies on hidden state changes.
 
 ## Semantic Score Grammar
 
 Whitespace and blank lines are flexible, but phrase numbers must be positive, unique, contiguous, and ordered from 1.
 
 ```text
-single-phrase := NUMBER "." tag+ NEWLINE dialogue
-dual-phrase   := NUMBER "." "A:" tag+ "|" "B:" tag+ NEWLINE speaker ":" dialogue
+single-phrase := NUMBER "." intent NEWLINE tag+ NEWLINE dialogue
+dual-phrase   := NUMBER "." intent NEWLINE "A:" tag+ "|" NEWLINE? "B:" tag+ NEWLINE speaker ":" dialogue
+intent        := "{" INTENT_NAME "}"
 speaker       := "A" | "B"
-tag           := "<" affect | gaze | lid | blink ">"
+tag           := "<" affect | hidden-affect | gaze | head | lid | blink ">"
 affect        := NAME "-" INTEGER_0_TO_100
+hidden-affect := "HEART-" NAME "-" INTEGER_0_TO_100
 gaze          := ("GAZE" | "GLANCE" | "AVERT") "-" TARGET
+head          := "HEAD-" ("NONE" | "LOW" | "MEDIUM" | "HIGH" | "FULL")
 lid           := "l" SIGNED_NUMBER
 blink         := "SLOW_BLINK" | "EYE_CLOSE_HOLD" | "SUPPRESS"
 ```
 
 `NAME` is a known affect state learned from the loaded plan and/or supplied by the model's allowed vocabulary. `TARGET` is a known semantic target learned from the loaded plan, character aliases (`A`, `B`, `SPEAKER`, `LISTENER`), standard directional targets, or an explicitly configured look-at mapping. Tags use canonical uppercase behavior tokens for gaze/blink, display lids as `<l-3>` or `<l0>`, and display affect intensity as integer percent (for example `<Friendly-66>`).
 
-No implementation IDs or closing tags are emitted. Within a character state, the canonical order is lid, visible affect, gaze, then blink behavior. A category may occur at most once per character per phrase, except that distinct blink behaviors may coexist when canonically present.
+No implementation IDs or closing tags are emitted. Within a character state, the canonical order is lid, visible affect, hidden affect, gaze, head, then blink behavior. A category may occur at most once per character per phrase, except that distinct blink behaviors may coexist when canonically present.
 
 ## Validation
 

@@ -11,13 +11,34 @@ from expregaze_jali.performance_annotation_parser import parse_performance_annot
 from expregaze_jali.performance_plan_normalizer import normalize_performance_plan
 
 
-def _write_annotation(tmp_path: Path, annotation: str, reasons: str) -> Path:
+def _write_annotation(
+    tmp_path: Path, annotation: str, reasons: str, *, analyze: str = "ok"
+) -> Path:
     path = tmp_path / "performance_annotation.txt"
     path.write_text(
-        f"[ANALYZE]\n\nok\n\n[ANNOTATION]\n\n{annotation}\n\n[REASONS]\n\n{reasons}\n",
+        f"[ANALYZE]\n\n{analyze}\n\n[ANNOTATION]\n\n{annotation}\n\n[REASONS]\n\n{reasons}\n",
         encoding="utf-8",
     )
     return path
+
+
+def test_acting_interpretation_preserves_analyze_section_verbatim(tmp_path: Path):
+    analyze = (
+        "scene_constraints:\nOne speaker and one prop.\n\n"
+        "affective_cognitive_state:\nControlled anger.\n\n"
+        "narrative_intent:\nChallenge authority."
+    )
+    parsed = parse_performance_annotation(
+        _write_annotation(
+            tmp_path,
+            "<i01=CONFRONT>Line.</i01>",
+            "i01=CONFRONT: challenges authority",
+            analyze=analyze,
+        )
+    )
+    plan = normalize_performance_plan(parsed, sequence_id="s_test", target_character="ACTOR")
+    assert parsed["analyze"] == analyze
+    assert plan["acting_interpretation"] == analyze
 
 
 def _parse_and_normalize(

@@ -37,6 +37,12 @@ from performance_score_model import (  # noqa: E402
     PerformanceScoreModel,
     format_rationale_view,
 )
+from authoring_session_data import (  # noqa: E402
+    build_authoring_session,
+    default_authoring_session_path,
+    load_authoring_session,
+    save_authoring_session,
+)
 
 
 WINDOW_OBJECT_NAME = "jalitestPerformancePlanEditor"
@@ -70,6 +76,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
         self.plan: dict[str, Any] | None = None
         self.score_model: PerformanceScoreModel | None = None
+        self.authoring_session: dict[str, Any] | None = None
         self.source_path: Path | None = None
         self.current_event_index: int | None = None
         self._building = False
@@ -350,6 +357,78 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _known_look_targets(self) -> list[str]:
         return [field.text().strip() for field, _maya, _row in self.look_at_rows if field.text().strip()]
 
+    def _clear_look_at_targets(self) -> None:
+        for _semantic, _maya, row in self.look_at_rows:
+            self.look_at_layout.removeWidget(row)
+            row.deleteLater()
+        self.look_at_rows = []
+
+    def _restore_authoring_session(self, session: dict[str, Any]) -> None:
+        mode = str(session.get("mode") or "single")
+        blocker = QtCore.QSignalBlocker(self.mode_combo)
+        self.mode_combo.setCurrentIndex(1 if mode == "dual" else 0)
+        del blocker
+        self._update_character_mode()
+        self.audio_folder.setText(str(session.get("audio_folder") or ""))
+        for script_field, maya_field, _row in self.character_rows:
+            script_field.clear()
+            maya_field.clear()
+        missing_nodes: list[str] = []
+        for index, mapping in enumerate(session.get("characters", [])):
+            if index >= len(self.character_rows) or not isinstance(mapping, dict):
+                continue
+            self.character_rows[index][0].setText(str(mapping.get("script_name") or ""))
+            maya_node = str(mapping.get("maya_node") or "")
+            self.character_rows[index][1].setText(maya_node)
+            if maya_node and not cmds.objExists(maya_node):
+                missing_nodes.append(maya_node)
+        self._clear_look_at_targets()
+        for mapping in session.get("look_at_targets", []):
+            if not isinstance(mapping, dict):
+                continue
+            self._add_look_at_target(str(mapping.get("semantic_target") or ""))
+            maya_node = str(mapping.get("maya_node") or "")
+            self.look_at_rows[-1][1].setText(maya_node)
+            if maya_node and not cmds.objExists(maya_node):
+                missing_nodes.append(maya_node)
+        if not self.look_at_rows:
+            self._add_look_at_target("CRYSTAL")
+        if missing_nodes:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Missing Maya Session Nodes",
+                "These saved Maya nodes are not present in the current scene. Their mappings were retained:\n\n"
+                + "\n".join(missing_nodes),
+            )
+
+    def _build_authoring_session_data(self) -> dict[str, Any]:
+        dual = self.mode_combo.currentIndex() == 1
+        character_count = 2 if dual else 1
+        characters = [
+            {
+                "alias": "A" if index == 0 else "B",
+                "script_name": self.character_rows[index][0].text().strip(),
+                "maya_node": self.character_rows[index][1].text().strip(),
+            }
+            for index in range(character_count)
+        ]
+        look_at_targets = [
+            {
+                "semantic_target": semantic.text().strip(),
+                "maya_node": maya_object.text().strip(),
+            }
+            for semantic, maya_object, _row in self.look_at_rows
+            if semantic.text().strip() or maya_object.text().strip()
+        ]
+        return build_authoring_session(
+            sequence_id=str((self.plan or {}).get("sequence_id") or ""),
+            mode="dual" if dual else "single",
+            audio_folder=self.audio_folder.text(),
+            characters=characters,
+            look_at_targets=look_at_targets,
+            base=self.authoring_session,
+        )
+
     def _score_changed(self) -> None:
         if not self._building and self.score_model is not None:
             self.validation_label.setText("Score changed — validate before saving.")
@@ -463,6 +542,28 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def load_plan(self, path: Path) -> None:
         try:
             loaded_plan = load_performance_plan(path)
+        except Exception as exc:
+            QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
+            return
+
+        self.authoring_session = None
+        try:
+            sequence_id = str(loaded_plan.get("sequence_id") or "")
+            session_path = default_authoring_session_path(path, sequence_id)
+            self.authoring_session = (
+                load_authoring_session(session_path) if session_path.exists() else None
+            )
+            if self.authoring_session is not None:
+                self._restore_authoring_session(self.authoring_session)
+        except Exception as exc:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Could Not Restore Authoring Session",
+                f"The Performance Plan will still load, but its authoring-session sidecar could not be restored.\n\n{exc}",
+            )
+            self.authoring_session = None
+
+        try:
             self.score_model = PerformanceScoreModel(
                 loaded_plan, extra_targets=self._known_look_targets()
             )
@@ -478,9 +579,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.input_script.setPlainText(" ".join(
             str(event.get("span", {}).get("text") or "") for event in events
         ).strip())
+        self.acting_interpretation.setPlainText(
+            str(self.plan.get("acting_interpretation") or "")
+        )
         self.score_editor.setPlainText(self.score_model.score_text)
         target_character = str(self.plan.get("target_character") or "")
-        if target_character:
+        if target_character and self.authoring_session is None:
             self.character_rows[0][0].setText(target_character)
         self.phrase_number.setMaximum(max(1, len(self.score_model.phrases)))
         self.phrase_number.setValue(1)
@@ -736,11 +840,23 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _save_to(self, path: Path) -> None:
         try:
+            if self.plan is not None:
+                self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
+            session = self._build_authoring_session_data()
             save_performance_plan(self.plan or {}, path)
+            session_path = default_authoring_session_path(
+                path, str((self.plan or {}).get("sequence_id") or "")
+            )
+            save_authoring_session(session, session_path)
+            self.authoring_session = session
         except Exception as exc:
-            QtWidgets.QMessageBox.critical(self, "Could Not Save Plan", str(exc))
+            QtWidgets.QMessageBox.critical(self, "Could Not Save Authoring Data", str(exc))
             return
-        QtWidgets.QMessageBox.information(self, "Plan Saved", f"Saved edited plan:\n{path}")
+        QtWidgets.QMessageBox.information(
+            self,
+            "Plan Saved",
+            f"Saved edited plan:\n{path}\n\nSaved authoring session:\n{session_path}",
+        )
 
 
 def show_performance_plan_editor() -> PerformancePlanEditor:

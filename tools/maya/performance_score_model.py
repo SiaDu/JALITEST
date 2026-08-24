@@ -26,9 +26,14 @@ DEFAULT_AFFECTS = {
 BLINK_VALUES = {
     "SLOW_BLINK", "EYE_CLOSE_HOLD", "SUPPRESS", "DOUBLE_BLINK", "BLINK_CLUSTER",
 }
+HEAD_INVOLVEMENT = {"NONE": 0.0, "LOW": 0.25, "MEDIUM": 0.5, "HIGH": 0.75, "FULL": 1.0}
+HEAD_LEVEL_BY_INVOLVEMENT = {value: key for key, value in HEAD_INVOLVEMENT.items()}
 _HEADER = re.compile(r"^\s*(\d+)\.\s*(.*?)\s*$")
+_INTENT = re.compile(r"^\{([A-Za-z][A-Za-z0-9_]*)?\}$")
 _TAG = re.compile(r"<([^<>]+)>")
 _AFFECT = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
+_HEART = re.compile(r"^HEART-([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
+_HEAD = re.compile(r"^HEAD-([A-Z]+)$")
 _LID = re.compile(r"^l(-?\d+(?:\.\d+)?)$", re.IGNORECASE)
 
 
@@ -44,9 +49,12 @@ class ValidationIssue:
 
 @dataclass(frozen=True)
 class SemanticState:
+    intent: str | None = None
     lid: float | None = None
     affect: tuple[str, int] | None = None
+    hidden_affect: tuple[str, int] | None = None
     gaze: tuple[str, str] | None = None
+    head: str | None = None
     blinks: tuple[str, ...] = ()
 
 
@@ -178,6 +186,21 @@ def _lid_state(span: dict[str, Any] | None) -> float | None:
     return _number(span.get("lid_state", span.get("value")))
 
 
+def _head_state(span: dict[str, Any] | None) -> str | None:
+    if not span:
+        return None
+    value = str(span.get("value") or "").strip().upper()
+    if value in HEAD_INVOLVEMENT:
+        return value
+    involvement = _number(span.get("involvement"))
+    if involvement is None:
+        return None
+    return next(
+        (level for numeric, level in HEAD_LEVEL_BY_INVOLVEMENT.items() if abs(involvement - numeric) < 1e-9),
+        None,
+    )
+
+
 def _event_bounds(event: dict[str, Any]) -> tuple[int, int] | None:
     span = _as_dict(event.get("span"))
     try:
@@ -201,11 +224,13 @@ def _phrase_text(event: dict[str, Any], start: int, end: int) -> str:
 def derive_phrases(plan: dict[str, Any], *, alias: str = "A") -> list[ScorePhrase]:
     """Derive deterministic phrases with complete resolved persistent state."""
     affect = _all_spans(plan, ("affect", "visible"))
+    hidden_affect = _all_spans(plan, ("affect", "hidden"))
     gaze = _all_spans(plan, ("gaze",))
+    head = _all_spans(plan, ("head",))
     lid = _all_spans(plan, ("lid_state",))
     performative = _all_spans(plan, ("blink", "performative"))
     suppression = _all_spans(plan, ("blink", "suppression"))
-    semantic_spans = affect + gaze + lid + performative + suppression
+    semantic_spans = affect + hidden_affect + gaze + head + lid + performative + suppression
     phrases: list[ScorePhrase] = []
 
     for event_index, raw_event in enumerate(_as_list(plan.get("events"))):
@@ -228,18 +253,21 @@ def derive_phrases(plan: dict[str, Any], *, alias: str = "A") -> list[ScorePhras
             if not text:
                 continue
             affect_ref = _latest(affect, start)
-            hidden_ref = _latest(_all_spans(plan, ("affect", "hidden")), start)
+            hidden_ref = _latest(hidden_affect, start)
             gaze_ref = _latest(gaze, start)
-            head_ref = _latest(_all_spans(plan, ("head",)), start)
+            head_ref = _latest(head, start)
             lid_ref = _latest(lid, start)
             blink_refs = _active(performative, start, end) + _active(suppression, start, end)
             blink_values = tuple(
                 dict.fromkeys(str(span.get("value") or "").strip().upper() for span in blink_refs if span.get("value"))
             )
             state = SemanticState(
+                intent=str(raw_event.get("intent") or "").strip() or None,
                 lid=_lid_state(lid_ref),
                 affect=_affect_state(affect_ref),
+                hidden_affect=_affect_state(hidden_ref),
                 gaze=_gaze_state(gaze_ref),
+                head=_head_state(head_ref),
                 blinks=blink_values,
             )
             phrases.append(ScorePhrase(
@@ -268,8 +296,12 @@ def format_state(state: SemanticState) -> str:
         tags.append(f"<l{_format_number(state.lid)}>")
     if state.affect is not None:
         tags.append(f"<{state.affect[0]}-{state.affect[1]}>")
+    if state.hidden_affect is not None:
+        tags.append(f"<HEART-{state.hidden_affect[0]}-{state.hidden_affect[1]}>")
     if state.gaze is not None:
         tags.append(f"<{state.gaze[0]}-{state.gaze[1]}>")
+    if state.head is not None:
+        tags.append(f"<HEAD-{state.head}>")
     tags.extend(f"<{value}>" for value in state.blinks)
     return "".join(tags)
 
@@ -277,7 +309,10 @@ def format_state(state: SemanticState) -> str:
 def format_single_score(phrases_or_plan: list[ScorePhrase] | dict[str, Any]) -> str:
     phrases = derive_phrases(phrases_or_plan) if isinstance(phrases_or_plan, dict) else phrases_or_plan
     return "\n\n".join(
-        f"{phrase.number}. {format_state(phrase.states['A'])}\n   {phrase.text}" for phrase in phrases
+        f"{phrase.number}. {{{phrase.states['A'].intent or ''}}}\n"
+        f"   {format_state(phrase.states['A'])}\n"
+        f"   {phrase.text}"
+        for phrase in phrases
     )
 
 
@@ -298,7 +333,9 @@ def format_dual_score(
     for index, (a_phrase, b_phrase, speaker) in enumerate(zip(a_phrases, b_phrases, speaker_values), start=1):
         text = a_phrase.text if speaker == "A" else b_phrase.text
         blocks.append(
-            f"{index}. A:{format_state(a_phrase.states['A'])} | B:{format_state(b_phrase.states['B'])}\n"
+            f"{index}. {{{a_phrase.states['A'].intent or ''}}}\n"
+            f"   A:{format_state(a_phrase.states['A'])} |\n"
+            f"   B:{format_state(b_phrase.states['B'])}\n"
             f"   {speaker}: {text}"
         )
     return "\n\n".join(blocks)
@@ -327,6 +364,8 @@ def _parse_tags(
     phrase_number: int,
     known_affects: set[str],
     known_targets: set[str],
+    *,
+    intent: str | None,
 ) -> tuple[SemanticState, list[ValidationIssue]]:
     issues: list[ValidationIssue] = []
     tags = _TAG.findall(raw)
@@ -335,11 +374,15 @@ def _parse_tags(
         issues.append(ValidationIssue(phrase_number, "Malformed or unclosed semantic tag."))
     lid: float | None = None
     affect: tuple[str, int] | None = None
+    hidden_affect: tuple[str, int] | None = None
     gaze: tuple[str, str] | None = None
+    head: str | None = None
     blinks: list[str] = []
     for value in tags:
         token = value.strip()
         lid_match = _LID.match(token)
+        heart_match = _HEART.match(token)
+        head_match = _HEAD.match(token)
         affect_match = _AFFECT.match(token)
         mode, separator, target = token.partition("-")
         if lid_match:
@@ -351,6 +394,20 @@ def _parse_tags(
                 issues.append(ValidationIssue(phrase_number, f"Duplicate behavior <{token}>"))
             else:
                 blinks.append(token)
+        elif heart_match:
+            name, strength = heart_match.group(1), int(heart_match.group(2))
+            if name not in known_affects or not 0 <= strength <= 100:
+                issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+            if hidden_affect is not None:
+                issues.append(ValidationIssue(phrase_number, "Duplicate hidden affect state."))
+            hidden_affect = (name, strength)
+        elif head_match:
+            level = head_match.group(1)
+            if level not in HEAD_INVOLVEMENT:
+                issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
+            if head is not None:
+                issues.append(ValidationIssue(phrase_number, "Duplicate head involvement."))
+            head = level
         elif separator and mode in GAZE_MODES:
             if gaze is not None:
                 issues.append(ValidationIssue(phrase_number, "Duplicate gaze behavior."))
@@ -369,7 +426,15 @@ def _parse_tags(
             issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
     if not tags:
         issues.append(ValidationIssue(phrase_number, "At least one semantic tag is required."))
-    return SemanticState(lid=lid, affect=affect, gaze=gaze, blinks=tuple(blinks)), issues
+    return SemanticState(
+        intent=intent,
+        lid=lid,
+        affect=affect,
+        hidden_affect=hidden_affect,
+        gaze=gaze,
+        head=head,
+        blinks=tuple(blinks),
+    ), issues
 
 
 def parse_score(
@@ -396,35 +461,53 @@ def parse_score(
             index += 1
             continue
         number, header = int(match.group(1)), match.group(2)
+        intent_match = _INTENT.match(header)
+        intent = intent_match.group(1) if intent_match else None
+        if not intent_match:
+            issues.append(ValidationIssue(number, "Intent heading must use {INTENT_NAME}."))
         index += 1
-        dialogue_lines: list[str] = []
+        body_lines: list[str] = []
         while index < len(lines) and not _HEADER.match(lines[index]):
             if lines[index].strip():
-                dialogue_lines.append(lines[index].strip())
+                body_lines.append(lines[index].strip())
             index += 1
-        if not dialogue_lines:
+        if len(body_lines) < 2:
             issues.append(ValidationIssue(number, "Dialogue text is required."))
             dialogue = ""
-        else:
-            dialogue = " ".join(dialogue_lines)
         states: dict[str, SemanticState] = {}
         speaker = "A"
         if mode == "single":
-            state, tag_issues = _parse_tags(header, number, affect_names, gaze_targets)
+            state_line = body_lines[0] if body_lines else ""
+            dialogue = " ".join(body_lines[1:]) if len(body_lines) > 1 else ""
+            state, tag_issues = _parse_tags(
+                state_line, number, affect_names, gaze_targets, intent=intent
+            )
             states["A"] = state
             issues.extend(tag_issues)
         else:
-            dual_match = re.match(r"^A:\s*(.*?)\s*\|\s*B:\s*(.*?)\s*$", header)
+            speaker_index = next(
+                (
+                    line_index for line_index in range(len(body_lines) - 1, -1, -1)
+                    if re.match(r"^[AB]:\s+[^<].*$", body_lines[line_index])
+                ),
+                -1,
+            )
+            state_text = " ".join(body_lines[:speaker_index]) if speaker_index >= 0 else " ".join(body_lines)
+            dialogue_line = body_lines[speaker_index] if speaker_index >= 0 else ""
+            dual_match = re.match(r"^A:\s*(.*?)\s*\|\s*B:\s*(.*?)\s*$", state_text)
             if not dual_match:
                 issues.append(ValidationIssue(number, "Dual state must use A:<...> | B:<...>."))
-                states = {"A": SemanticState(), "B": SemanticState()}
+                states = {"A": SemanticState(intent=intent), "B": SemanticState(intent=intent)}
             else:
                 for alias, raw_tags in zip(("A", "B"), dual_match.groups()):
-                    states[alias], tag_issues = _parse_tags(raw_tags, number, affect_names, gaze_targets)
+                    states[alias], tag_issues = _parse_tags(
+                        raw_tags, number, affect_names, gaze_targets, intent=intent
+                    )
                     issues.extend(tag_issues)
-            speaker_match = re.match(r"^([AB]):\s*(.*)$", dialogue)
+            speaker_match = re.match(r"^([AB]):\s*(.*)$", dialogue_line)
             if not speaker_match:
                 issues.append(ValidationIssue(number, "Dialogue must begin with speaker A: or B:."))
+                dialogue = ""
             else:
                 speaker, dialogue = speaker_match.group(1), speaker_match.group(2).strip()
                 if not dialogue:
@@ -455,6 +538,11 @@ def _set_lid(span: dict[str, Any], value: float) -> None:
     span["value"] = str(numeric)
 
 
+def _set_head(span: dict[str, Any], level: str) -> None:
+    span["value"] = level
+    span["involvement"] = HEAD_INVOLVEMENT[level]
+
+
 def _human_span(phrase: ScorePhrase, value: str) -> dict[str, Any]:
     return {
         "source_tag": f"human_phrase_{phrase.number}",
@@ -471,8 +559,40 @@ class PerformanceScoreModel:
     def __init__(self, plan: dict[str, Any], *, extra_targets: Iterable[str] = ()) -> None:
         self.plan = deepcopy(plan)
         self.phrases = derive_phrases(self.plan)
-        self.original_states = [deepcopy(phrase.states["A"]) for phrase in self.phrases]
+        self.original_states = self._original_proposal_states()
         self.affects, self.targets = known_vocabulary([self.plan], extra_targets=extra_targets)
+
+    def _original_proposal_states(self) -> list[SemanticState]:
+        snapshot = _as_dict(_as_dict(self.plan.get("authoring")).get("original_semantic_proposal"))
+        snapshot_events = _as_list(snapshot.get("events"))
+        if not snapshot_events:
+            return [deepcopy(phrase.states["A"]) for phrase in self.phrases]
+        original_plan = deepcopy(self.plan)
+        by_event_id = {
+            str(event.get("event_id")): event for event in snapshot_events if isinstance(event, dict)
+        }
+        for event in original_plan.get("events", []):
+            if not isinstance(event, dict):
+                continue
+            saved = by_event_id.get(str(event.get("event_id")))
+            if not saved:
+                continue
+            for key in ("intent", "affect", "gaze", "head", "lid_state", "blink"):
+                if key in saved:
+                    event[key] = deepcopy(saved[key])
+        original_phrases = derive_phrases(original_plan)
+        states: list[SemanticState] = []
+        for phrase in self.phrases:
+            source = next(
+                (
+                    candidate for candidate in original_phrases
+                    if candidate.event_index == phrase.event_index
+                    and candidate.char_start <= phrase.char_start < candidate.char_end
+                ),
+                None,
+            )
+            states.append(deepcopy((source or phrase).states["A"]))
+        return states
 
     @property
     def score_text(self) -> str:
@@ -483,9 +603,17 @@ class PerformanceScoreModel:
         errors = list(result.errors)
         if len(result.phrases) != len(self.phrases):
             errors.append(ValidationIssue(None, f"Expected {len(self.phrases)} phrases, found {len(result.phrases)}."))
+        intents_by_event: dict[int, str | None] = {}
         for parsed, source in zip(result.phrases, self.phrases):
             if parsed.text != source.text:
                 errors.append(ValidationIssue(parsed.number, "Dialogue text must match the canonical transcript."))
+            intent = parsed.states["A"].intent
+            previous = intents_by_event.setdefault(source.event_index, intent)
+            if previous != intent:
+                errors.append(ValidationIssue(
+                    parsed.number,
+                    "All phrases in the same intent event must use the same intent heading.",
+                ))
         return ParseResult(result.phrases, tuple(errors))
 
     def apply(self, text: str) -> dict[str, Any]:
@@ -500,7 +628,9 @@ class PerformanceScoreModel:
             requires_rebuild = requires_rebuild or new != phrase.states["A"]
             if new != original:
                 changed_from_original = [
-                    name for name in ("affect", "gaze", "lid", "blinks")
+                    name for name in (
+                        "intent", "affect", "hidden_affect", "gaze", "head", "lid", "blinks"
+                    )
                     if getattr(new, name) != getattr(original, name)
                 ]
                 edited_records.append({
@@ -518,8 +648,10 @@ class PerformanceScoreModel:
                 "events": [
                     {
                         "event_id": event.get("event_id"),
+                        "intent": event.get("intent"),
                         "affect": deepcopy(event.get("affect", {})),
                         "gaze": deepcopy(event.get("gaze", [])),
+                        "head": deepcopy(event.get("head", [])),
                         "lid_state": deepcopy(event.get("lid_state", [])),
                         "blink": deepcopy(event.get("blink", {})),
                     }
@@ -576,8 +708,13 @@ class PerformanceScoreModel:
             event_phrases = [phrase for phrase in self.phrases if phrase.event_index == event_index]
             if not event_phrases:
                 continue
+            event["intent"] = parsed_by_number[event_phrases[0].number].states["A"].intent
             event.setdefault("affect", {})["visible"] = materialize(event_phrases, "affect", _set_affect)
+            event["affect"]["hidden"] = materialize(
+                event_phrases, "hidden_affect", _set_affect
+            )
             event["gaze"] = materialize(event_phrases, "gaze", _set_gaze)
+            event["head"] = materialize(event_phrases, "head", _set_head)
             event["lid_state"] = materialize(event_phrases, "lid", _set_lid)
             blink_output = {"performative": [], "suppression": []}
             for blink_value in BLINK_VALUES:

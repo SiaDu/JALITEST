@@ -172,3 +172,13 @@ def test_saving_preserves_unknown_fields(tmp_path: Path):
 
     assert saved["unknown_root"] == {"preserve": True}
     assert saved["events"][0]["unknown_event"] == ["keep"]
+
+
+def test_acting_interpretation_is_optional_and_edited_text_survives_save(tmp_path: Path):
+    plan = _plan()
+    assert "acting_interpretation" not in plan
+    plan["acting_interpretation"] = "scene_constraints:\nOne speaker.\n\nnarrative_intent:\nChallenge Gulch."
+    destination = tmp_path / "edited.json"
+    save_performance_plan(plan, destination)
+    loaded = load_performance_plan(destination)
+    assert loaded["acting_interpretation"] == plan["acting_interpretation"]
