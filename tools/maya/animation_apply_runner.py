@@ -234,6 +234,10 @@ def capture_character_gaze_reference(character_node: str, *, cmds_module: Any | 
     return {"eye_stare_node": eye_stare, "eye_stare_world_position": list(cmds_module.xform(eye_stare, query=True, worldSpace=True, translation=True)), "both_eyes_node": both_eyes, "both_eyes_translate": [float(cmds_module.getAttr(f"{both_eyes}.translateX")), float(cmds_module.getAttr(f"{both_eyes}.translateY"))]}
 
 
+def capture_current_look_at_position(character_node: str, *, cmds_module: Any | None = None) -> list[float]:
+    return capture_character_gaze_reference(character_node, cmds_module=cmds_module)["eye_stare_world_position"]
+
+
 def resolve_actor_target_position(alias: str, target: str, character_mappings: dict[str, dict[str, Any]]) -> list[float]:
     targets = (character_mappings.get(alias) or {}).get("gaze_targets") or {}
     value = targets.get(target)
@@ -249,6 +253,23 @@ def directional_eye_offset(target: str, *, magnitude: float = 5.0, limit: float 
     x = -amount if "LEFT" in token else amount if "RIGHT" in token else 0.0
     y = -amount if "DOWN" in token else amount if "UP" in token else 0.0
     return max(-abs(limit), min(abs(limit), x)), max(-abs(limit), min(abs(limit), y))
+
+
+def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_position: list[float], neutral_eyes: list[float], target_positions: dict[str, list[float]], magnitude: float = 5.0, limit: float = 6.0) -> list[dict[str, Any]]:
+    """Return complete two-layer gaze states, ordered by canonical intervals."""
+    schedule=[]; previous={"eye_stare":list(neutral_position),"eyes":list(neutral_eyes)}
+    ordered=adapt_dual_gaze_events(events)
+    for index,event in enumerate(ordered):
+        mode,target=event["mode"],event["target"]; state={"event":event,"start":float(event["resolved_time"]["start"]),"end":float(ordered[index+1]["resolved_time"]["start"]) if index+1<len(ordered) else float(event["resolved_time"]["end"])}
+        if mode in {"GAZE","GLANCE"}:
+            if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
+            state.update({"eye_stare":list(target_positions[target]),"eyes":list(neutral_eyes)})
+            if mode=="GLANCE": state["return_state"]=dict(previous)
+        else:
+            x,y=directional_eye_offset(target,magnitude=magnitude,limit=limit,social=bool(event.get("social_avert")))
+            state.update({"eye_stare":list(neutral_position),"eyes":[neutral_eyes[0]+x,neutral_eyes[1]+y]})
+        previous={"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])}; schedule.append(state)
+    return schedule
 
 
 def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], look_at_mappings: Iterable[dict[str, Any]], maya_config_path: str | Path | None = None) -> dict[str, Any]:
@@ -276,30 +297,27 @@ def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappi
         jsync=resolve_jsync_for_character(node, str(runtime[alias]["sound_file"]))
         events=json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events",[])
         gaze=adapt_dual_gaze_events(events)
-        reference=capture_character_gaze_reference(node)
+        provided_reference=row.get("gaze_reference") if isinstance(row.get("gaze_reference"),dict) else None
+        reference=dict(provided_reference) if provided_reference else capture_character_gaze_reference(node)
+        reference.setdefault("eye_stare_node",qualify_rig_control(node,"eyeStare_world")); reference.setdefault("both_eyes_node",qualify_rig_control(node,"CNT_BOTH_EYES"))
         actor_target_map=dict(target_map)
         for item in gaze:
             if item["target"] not in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}:
                 actor_target_map[item["target"]]={"position":resolve_actor_target_position(alias,item["target"],character_mappings)}
-        directed=[item for item in gaze if not item["mode"] == "AVERT"]
-        directional=[item for item in gaze if item["mode"] == "AVERT"]
-        for item in directional:
-            start=float(item["resolved_time"]["start"])*float(manifest["fps"])
-            x,y=directional_eye_offset(item["target"],magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)),social=bool(item.get("social_avert")))
-            cmds.xform(reference["eye_stare_node"],worldSpace=True,translation=reference["eye_stare_world_position"])
-            cmds.setKeyframe(reference["eye_stare_node"],attribute="translate",time=start)
-            cmds.setAttr(f"{reference['both_eyes_node']}.translateX",reference["both_eyes_translate"][0]+x); cmds.setAttr(f"{reference['both_eyes_node']}.translateY",reference["both_eyes_translate"][1]+y)
-            cmds.setKeyframe(reference["both_eyes_node"],attribute="translateX",time=start); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateY",time=start)
+        positions={key: spec["position"] for key,spec in actor_target_map.items() if isinstance(spec,dict) and "position" in spec}
+        schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_world_position"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
+        for state in schedule:
+            frame=state["start"]*float(manifest["fps"]); cmds.xform(reference["eye_stare_node"],worldSpace=True,translation=state["eye_stare"]); cmds.setKeyframe(reference["eye_stare_node"],attribute="translate",time=frame)
+            cmds.setAttr(f"{reference['both_eyes_node']}.translateX",state["eyes"][0]); cmds.setAttr(f"{reference['both_eyes_node']}.translateY",state["eyes"][1]); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateX",time=frame); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateY",time=frame)
         eye=[]
         for e in events:
             kind={"lid":"lid_state","blink":"performative_blink","blink_suppression":"blink_suppression"}.get(e.get("channel"))
             if kind: eye.append({"type":kind,"value":e.get("value"),"resolved_time":e.get("resolved_time")})
         adapter_dir=Path(manifest_path).parent / "maya_adapter" / alias; adapter_dir.mkdir(parents=True,exist_ok=True)
         gaze_path=adapter_dir / "gaze_events.json"; eye_path=adapter_dir / "eye_events.json"
-        gaze_path.write_text(json.dumps({"events":directed}),encoding="utf-8"); eye_path.write_text(json.dumps({"events":eye}),encoding="utf-8")
-        if directed: apply_gaze_events(gaze_events_path=str(gaze_path), target_map=actor_target_map, fps=float(manifest["fps"]), direction_offsets={}, target_aliases={}, eye_stare_node_suffix=reference["eye_stare_node"])
+        gaze_path.write_text(json.dumps({"events":gaze,"schedule":schedule}),encoding="utf-8"); eye_path.write_text(json.dumps({"events":eye}),encoding="utf-8")
         if eye: apply_eye_performance_events(eye_events_path=str(eye_path), fps=float(manifest["fps"]), eyelid_control_suffix=qualify_rig_control(node,str(eye_config.get("eyelid_control_suffix","LIDS_jSync_plusMinus"))), eyelid_attr=str(eye_config.get("eyelid_attr","Down_upLids_jSync")))
-        result[alias]={"jsync_node":jsync,"sound_file":runtime[alias]["sound_file"],"gaze_event_count":len(gaze),"eye_event_count":len(eye),"affect_event_count_compiled_not_applied":sum(e.get("channel")=="affect" for e in events),"heart_event_count_compiled_not_applied":sum(e.get("channel")=="heart" for e in events),"head_event_count_compiled_not_applied":sum(e.get("channel")=="head" for e in events),"warnings":["affect/heart compiled but not yet applied in dual runtime","head compiled but not yet applied"]}
+        result[alias]={"jsync_node":jsync,"sound_file":runtime[alias]["sound_file"],"gaze_reference":reference,"gaze_event_count":len(gaze),"eye_event_count":len(eye),"affect_event_count_compiled_not_applied":sum(e.get("channel")=="affect" for e in events),"heart_event_count_compiled_not_applied":sum(e.get("channel")=="heart" for e in events),"head_event_count_compiled_not_applied":sum(e.get("channel")=="head" for e in events),"warnings":["affect/heart compiled but not yet applied in dual runtime","head compiled but not yet applied"]}
     return result
 
 

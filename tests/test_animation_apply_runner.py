@@ -18,6 +18,7 @@ from animation_apply_runner import (  # noqa: E402
     qualify_rig_control,
     adapt_dual_gaze_events,
     directional_eye_offset,
+    build_dual_gaze_schedule,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
@@ -96,6 +97,16 @@ def test_dual_gaze_adapter_sorts_and_preserves_identity_and_social_avert():
 def test_directional_eye_offsets_are_local_and_clamped():
     assert directional_eye_offset("DOWN_LEFT", magnitude=10, limit=6) == (-6.0, -6.0)
     assert directional_eye_offset("B", social=True) == (0.0, -5.0)
+
+
+def test_gaze_state_machine_resets_detailed_eyes_after_avert():
+    schedule = build_dual_gaze_schedule([
+        {"channel":"gaze","value":"AVERT-A","phrase_id":"P1","resolved_time":{"start":100,"end":136}},
+        {"channel":"gaze","value":"GAZE-A","phrase_id":"P2","resolved_time":{"start":136,"end":200}},
+    ], neutral_position=[3,4,5], neutral_eyes=[1,2], target_positions={"A":[9,8,7]})
+    assert schedule[0]["eye_stare"] == [3,4,5] and schedule[0]["eyes"] == [1, -3.0]
+    assert schedule[0]["end"] == 136
+    assert schedule[1]["eye_stare"] == [9,8,7] and schedule[1]["eyes"] == [1,2]
 
 
 class _JSyncCmds:
