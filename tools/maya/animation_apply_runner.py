@@ -124,6 +124,33 @@ def qualify_rig_control(active_node: str, configured_name: str) -> str:
     return f"{namespace}:{name}"
 
 
+def resolve_jsync_for_character(
+    character_node: str, expected_sound_file: str | None = None, *, cmds_module: Any | None = None
+) -> str:
+    """Resolve the full DAG path of the jSync belonging to one character rig."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    root = str(character_node).rstrip("|")
+    candidates = [
+        str(node) for node in (cmds_module.ls(type="jSync", long=True) or [])
+        if str(node).startswith(root + "|")
+    ]
+    if expected_sound_file and len(candidates) > 1:
+        expected = str(expected_sound_file)
+        candidates = [
+            node for node in candidates
+            if cmds_module.getAttr(f"{node}.sound_file") == expected
+        ]
+    if not candidates:
+        qualifier = f' with sound_file {expected_sound_file!r}' if expected_sound_file else ""
+        raise RuntimeError(f"No jSync node found beneath character {character_node!r}{qualifier}.")
+    if len(candidates) != 1:
+        raise RuntimeError(
+            f"Ambiguous jSync nodes beneath character {character_node!r}: {', '.join(candidates)}"
+        )
+    return candidates[0]
+
+
 def load_animation_manifest(path: str | Path) -> dict[str, Any]:
     manifest_path = Path(path)
     value = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -217,8 +244,8 @@ def apply_animation_artifacts(
         configured_directions=configured_directions,
     )
 
-    jsync_node = qualify_rig_control(
-        character_node, str(jali_config.get("jsync_node", "jSync1"))
+    jsync_node = resolve_jsync_for_character(
+        character_node, jali_config.get("expected_sound_file")
     )
     apply_jali_annotation(
         annotated_for_jali_path=artifacts["annotated_for_jali"],

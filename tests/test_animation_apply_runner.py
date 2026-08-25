@@ -16,6 +16,7 @@ from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
     build_explicit_target_map,
     qualify_rig_control,
+    resolve_jsync_for_character,
     scene_fps_from_unit,
     validate_gaze_target_mappings,
 )
@@ -67,12 +68,47 @@ def test_active_character_namespace_qualifies_rig_controls():
     assert qualify_rig_control("|world|auntEm:ROOT", "custom:jSync1") == "custom:jSync1"
 
 
+class _JSyncCmds:
+    def __init__(self, nodes, sounds=None):
+        self.nodes, self.sounds = nodes, sounds or {}
+
+    def ls(self, **kwargs):
+        assert kwargs == {"type": "jSync", "long": True}
+        return self.nodes
+
+    def getAttr(self, attribute):
+        return self.sounds[attribute.rsplit(".", 1)[0]]
+
+
+def test_resolve_jsync_uses_character_dag_not_leaf_name_or_namespace():
+    cmds = _JSyncCmds([
+        "|world|ValleyGirl_jRigMaya:JALI_GRP|speechMaster|jSync1_parent|jSync1",
+        "|world|Angela_jRigMaya:JALI_GRP|speechMaster|jSync2_parent|jSync2",
+    ])
+    assert resolve_jsync_for_character("|world|ValleyGirl_jRigMaya:JALI_GRP", cmds_module=cmds).endswith("|jSync1")
+    assert resolve_jsync_for_character("|world|Angela_jRigMaya:JALI_GRP", cmds_module=cmds).endswith("|jSync2")
+
+
+def test_resolve_jsync_disambiguates_sound_file_and_reports_missing_or_ambiguous():
+    root = "|world|ValleyGirl_jRigMaya:JALI_GRP"
+    one, two = root + "|a|jSync1", root + "|b|jSync3"
+    cmds = _JSyncCmds([one, two], {one: "SeqT_AGNES", two: "other"})
+    assert resolve_jsync_for_character(root, "SeqT_AGNES", cmds_module=cmds) == one
+    with pytest.raises(RuntimeError, match="No jSync node"):
+        resolve_jsync_for_character("|world|Missing", cmds_module=cmds)
+    with pytest.raises(RuntimeError, match="Ambiguous jSync"):
+        resolve_jsync_for_character(root, cmds_module=cmds)
+
+
 def test_apply_uses_explicit_manifest_paths_and_ui_mapping(monkeypatch, tmp_path: Path):
     import expregaze_jali.maya_apply_eye_performance as eye_module
     import expregaze_jali.maya_apply_gaze as gaze_module
     import expregaze_jali.maya_apply_jali_annotation as jali_module
 
-    fake_cmds = SimpleNamespace(objExists=lambda _node: True)
+    fake_cmds = SimpleNamespace(
+        objExists=lambda _node: True,
+        ls=lambda **kwargs: ["|world|auntEm:ROOT|speechMaster|jSync1_parent|jSync1"],
+    )
     monkeypatch.setitem(sys.modules, "maya", SimpleNamespace(cmds=fake_cmds))
     calls: dict[str, dict] = {}
     monkeypatch.setattr(jali_module, "load_jali_annotation_config", lambda _path: {})
@@ -143,6 +179,7 @@ def test_apply_uses_explicit_manifest_paths_and_ui_mapping(monkeypatch, tmp_path
     )
 
     assert calls["jali"]["annotated_for_jali_path"] == str(artifacts["annotated_for_jali"])
+    assert calls["jali"]["jsync_node"] == "|world|auntEm:ROOT|speechMaster|jSync1_parent|jSync1"
     assert calls["gaze"]["target_map"]["CRYSTAL"] == {"node": "|crystal_LOC"}
     assert calls["gaze"]["eye_stare_node_suffix"] == "auntEm:eyeStare_world"
     assert calls["eye"]["eyelid_control_suffix"] == "auntEm:LIDS_jSync_plusMinus"
