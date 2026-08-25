@@ -17,6 +17,7 @@ from animation_apply_runner import (  # noqa: E402
     build_explicit_target_map,
     qualify_rig_control,
     adapt_dual_gaze_events,
+    directional_eye_offset,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
@@ -90,6 +91,11 @@ def test_dual_gaze_adapter_sorts_and_preserves_identity_and_social_avert():
     assert adapted[0]["target"] == "__BASE__" and adapted[0]["social_avert"]
     assert adapted[1]["target"] == "A" and adapted[1]["phrase_id"] == "P02"
     assert adapted[0]["source_proposal_id"] == "S01" and adapted[0]["reason"] == "avoid"
+
+
+def test_directional_eye_offsets_are_local_and_clamped():
+    assert directional_eye_offset("DOWN_LEFT", magnitude=10, limit=6) == (-6.0, -6.0)
+    assert directional_eye_offset("B", social=True) == (0.0, -5.0)
 
 
 class _JSyncCmds:
