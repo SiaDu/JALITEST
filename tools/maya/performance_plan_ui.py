@@ -214,7 +214,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         mode_row.addStretch(1)
         layout.addLayout(mode_row)
 
-        layout.addWidget(QtWidgets.QLabel("Script Characters"))
         character_grid = QtWidgets.QGridLayout()
         character_grid.addWidget(QtWidgets.QLabel("Script Character"), 0, 0)
         for row_index in range(2):
