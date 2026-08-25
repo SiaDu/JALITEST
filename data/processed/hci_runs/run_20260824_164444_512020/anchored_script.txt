@@ -1,2 +1,0 @@
-T01 AGNES:
-[w0001 Good] [w0002 day,] [w0003 sir.] [w0004 AGNES:] [w0005 What] [w0006 brings] [w0007 you] [w0008 to] [w0009 Hewlands?] [w0010 <heart01=Happy-28>AGNES:] [w0011 The] [w0012 Latin] [w0013 tutor.] [w0014 I've] [w0015 heard] [w0016 of] [w0017 you.</heart01>] [w0018 AGNES:] [w0019 What] [w0020 brought] [w0021 you] [w0022 into] [w0023 the] [w0024 garden?] [w0025 AGNES:] [w0026 It's] [w0027 just] [w0028 a] [w0029 question,] [w0030 master] [w0031 tutor.] [w0032 AGNES:] [w0033 It's] [w0034 a] [w0035 hawk.]
