@@ -176,6 +176,60 @@ def load_animation_manifest(path: str | Path) -> dict[str, Any]:
     return value
 
 
+def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(value, dict) or value.get("schema_version") != "dual_animation_manifest_v0":
+        raise ValueError(f"Invalid dual animation manifest: {path}")
+    mapping, artifacts = value.get("character_runtime_mapping"), value.get("artifacts")
+    if not isinstance(mapping, dict) or not isinstance(artifacts, dict):
+        raise ValueError("Dual animation manifest requires character_runtime_mapping and artifacts.")
+    for alias in ("A", "B"):
+        if not isinstance(mapping.get(alias), dict) or not str(mapping[alias].get("sound_file") or ""):
+            raise ValueError(f"Dual animation manifest requires {alias} runtime mapping.")
+        if not Path(str(artifacts.get(alias) or "")).is_file():
+            raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing.")
+    return value
+
+
+def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], look_at_mappings: Iterable[dict[str, Any]], maya_config_path: str | Path | None = None) -> dict[str, Any]:
+    """Apply only dual gaze/lid/blink overlays; existing jSync speech is untouched."""
+    from maya import cmds  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path)
+    runtime = manifest["character_runtime_mapping"]
+    config_path = Path(maya_config_path or os.environ.get("JALITEST_MAYA_CONFIG") or DEFAULT_MAYA_CONFIG)
+    source_path=str(REPO_ROOT / "src")
+    if source_path not in sys.path: sys.path.insert(0, source_path)
+    from expregaze_jali.maya_apply_gaze import apply_gaze_events, load_maya_gaze_config  # noqa: PLC0415
+    from expregaze_jali.maya_apply_eye_performance import apply_eye_performance_events, load_maya_eye_config  # noqa: PLC0415
+    gaze_config, eye_config = load_maya_gaze_config(config_path), load_maya_eye_config(config_path)
+    target_map=build_explicit_target_map(look_at_mappings)
+    for alias in ("A","B"):
+        row=character_mappings.get(alias)
+        if not isinstance(row,dict) or not str(row.get("maya_node") or ""):
+            raise ValueError(f"Missing Maya character mapping for {alias}.")
+        if str(row.get("script_name") or "").strip().upper()!=str(runtime[alias].get("script_name") or "").strip().upper():
+            raise ValueError(f"Maya character mapping {alias} does not match manifest runtime mapping.")
+        target_map[alias]={"node":str(row["maya_node"])}
+    result={}
+    for alias in ("A","B"):
+        row=character_mappings[alias]; node=str(row["maya_node"])
+        if not cmds.objExists(node): raise RuntimeError(f"Maya character node does not exist for {alias}: {node}")
+        jsync=resolve_jsync_for_character(node, str(runtime[alias]["sound_file"]))
+        events=json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events",[])
+        gaze=[{"type":"gaze","mode":str(e["value"]).split("-",1)[0],"target":str(e["value"]).split("-",1)[1],"resolved_time":e["resolved_time"]} for e in events if e.get("channel")=="gaze"]
+        eye=[]
+        for e in events:
+            kind={"lid":"lid_state","blink":"performative_blink","blink_suppression":"blink_suppression"}.get(e.get("channel"))
+            if kind: eye.append({"type":kind,"value":e.get("value"),"resolved_time":e.get("resolved_time")})
+        adapter_dir=Path(manifest_path).parent / "maya_adapter" / alias; adapter_dir.mkdir(parents=True,exist_ok=True)
+        gaze_path=adapter_dir / "gaze_events.json"; eye_path=adapter_dir / "eye_events.json"
+        gaze_path.write_text(json.dumps({"events":gaze}),encoding="utf-8"); eye_path.write_text(json.dumps({"events":eye}),encoding="utf-8")
+        if gaze: apply_gaze_events(gaze_events_path=str(gaze_path), target_map=target_map, fps=float(manifest["fps"]), direction_offsets=gaze_config.get("direction_offsets",{}), target_aliases={}, eye_stare_node_suffix=qualify_rig_control(node,str(gaze_config.get("eye_stare_node_suffix","eyeStare_world"))))
+        if eye: apply_eye_performance_events(eye_events_path=str(eye_path), fps=float(manifest["fps"]), eyelid_control_suffix=qualify_rig_control(node,str(eye_config.get("eyelid_control_suffix","LIDS_jSync_plusMinus"))), eyelid_attr=str(eye_config.get("eyelid_attr","Down_upLids_jSync")))
+        result[alias]={"jsync_node":jsync,"sound_file":runtime[alias]["sound_file"],"gaze_event_count":len(gaze),"eye_event_count":len(eye),"affect_event_count_compiled_not_applied":sum(e.get("channel")=="affect" for e in events),"heart_event_count_compiled_not_applied":sum(e.get("channel")=="heart" for e in events),"head_event_count_compiled_not_applied":sum(e.get("channel")=="head" for e in events),"warnings":["affect/heart compiled but not yet applied in dual runtime","head compiled but not yet applied"]}
+    return result
+
+
 def _event_count(path: str | Path, *keys: str) -> int:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     return sum(len(data.get(key, [])) for key in keys if isinstance(data.get(key), list))
