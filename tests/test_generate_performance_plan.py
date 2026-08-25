@@ -100,6 +100,8 @@ def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract
     assert "`Happy-28`, not `Happy-twenty-eight`" in prompt
     assert "affect: STATE-INTEGER_0_TO_100 | NONE" in prompt
     assert "heart: STATE-INTEGER_0_TO_100 | NONE" in prompt
+    assert "[REASONS]\nS01\nintent: natural-language explanation" in prompt
+    assert "do not repeat `S##.` before every field" in prompt
 
 
 def test_hci_prompt_has_no_dataset_input_requirements():

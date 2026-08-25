@@ -27,6 +27,7 @@ _PROPOSAL_ID = re.compile(r"^S\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _START_ANCHOR = re.compile(r"^w\d{4,}$", re.IGNORECASE)
 _REASON = re.compile(r"^(S\d+)\.([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
+_INTENT_LABEL_REASON = re.compile(r"^[A-Z][A-Z0-9_']+$")
 _DIGIT_INTENSITY = re.compile(r"^\d+%?$")
 _INTEGRAL_DECIMAL_INTENSITY = re.compile(r"^\d+\.0+$")
 _NUMBER_WORDS = {
@@ -129,6 +130,11 @@ def parse_intensity(value: str) -> int:
         if tens is not None and unit is not None and 1 <= unit <= 9:
             return tens + unit
     raise ValueError(f'Invalid intensity "{value.strip()}"')
+
+
+def _intent_reason_looks_like_label(value: str) -> bool:
+    """Identify label-like intent rationale without treating it as execution."""
+    return bool(_INTENT_LABEL_REASON.fullmatch(value.strip()) and "_" in value)
 
 
 def _normalize_affect(
@@ -281,27 +287,54 @@ def parse_performance_proposal(
 
     reasons: dict[str, dict[str, str]] = {}
     warnings: list[str] = []
-    for line in sections["REASONS"]:
-        stripped = line.strip()
-        if not stripped:
-            continue
-        match = _REASON.fullmatch(stripped)
-        if match is None:
-            raise ProposalValidationError(f"Malformed [REASONS] line: {stripped}")
-        phrase_id, field, reason = match.groups()
-        phrase_id, field = phrase_id.upper(), field.lower()
+    current_reason_phrase: str | None = None
+
+    def store_reason(phrase_id: str, field: str, reason: str) -> None:
         if phrase_id not in ids:
             raise ProposalValidationError(f"Reason refers to unknown phrase {phrase_id}")
         if field not in REQUIRED_FIELDS[1:]:
             raise ProposalValidationError(f"{phrase_id}: Reason refers to unknown field {field}")
-        if field in reasons.setdefault(phrase_id, {}):
+        destination = reasons.setdefault(phrase_id, {})
+        if field in destination:
             raise ProposalValidationError(f"{phrase_id}: Duplicate reason for {field}")
-        reasons[phrase_id][field] = reason
+        destination[field] = reason
+        if field == "intent" and _intent_reason_looks_like_label(reason):
+            warnings.append(
+                f"{phrase_id}: intent rationale looks like a label rather than an explanation"
+            )
+
+    for line in sections["REASONS"]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if _PROPOSAL_ID.fullmatch(stripped):
+            current_reason_phrase = stripped.upper()
+            if current_reason_phrase not in ids:
+                raise ProposalValidationError(
+                    f"Reason refers to unknown phrase {current_reason_phrase}"
+                )
+            continue
+        match = _REASON.fullmatch(stripped)
+        if match is not None:
+            phrase_id, field, reason = match.groups()
+            store_reason(phrase_id.upper(), field.lower(), reason)
+            continue
+        field_match = _FIELD.fullmatch(stripped)
+        if field_match is None or current_reason_phrase is None:
+            raise ProposalValidationError(f"Malformed [REASONS] line: {stripped}")
+        field, reason = field_match.groups()
+        if not reason:
+            raise ProposalValidationError(f"Malformed [REASONS] line: {stripped}")
+        store_reason(current_reason_phrase, field.lower(), reason)
     for phrase in phrases:
         phrase_reasons = reasons.get(phrase["proposal_id"], {})
         for field in REQUIRED_FIELDS[1:]:
             value = phrase[field]
-            active = field == "intent" or field == "head" or value not in ("NONE", None)
+            active = (
+                field == "intent"
+                or (field == "head" and value != "NONE")
+                or (field not in {"intent", "head", "lid"} and value not in ("NONE", None))
+            )
             if active and field not in phrase_reasons:
                 warnings.append(f"{phrase['proposal_id']}: missing rationale for {field}")
     return {

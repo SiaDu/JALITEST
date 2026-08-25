@@ -16,6 +16,7 @@ from expregaze_jali.performance_proposal_parser import (
     SemanticVocabulary,
     _normalize_affect,
     _normalize_gaze,
+    _intent_reason_looks_like_label,
     normalize_intent,
 )
 
@@ -24,8 +25,9 @@ STATE_FIELDS = REQUIRED_FIELDS[2:]
 _SECTION = re.compile(r"^\[(ANALYZE|PERFORMANCE|REASONS)\]\s*$", re.IGNORECASE)
 _PROPOSAL_ID = re.compile(r"^S\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^(?:(A|B)\.)?([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
+_REASON_FIELD = re.compile(r"^(?:([a-z]+)\.)?([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _START = re.compile(r"^w\d{4,}$", re.IGNORECASE)
-_REASON = re.compile(r"^(S\d+)\.(?:(A|B)\.)?([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
+_REASON = re.compile(r"^(S\d+)\.(?:([a-z]+)\.)?([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
 
 
 def _normalize_state(
@@ -156,15 +158,10 @@ def parse_dual_performance_proposal(
         })
 
     reasons: dict[str, dict[str, Any]] = {}
-    for line in sections["REASONS"]:
-        stripped = line.strip()
-        if not stripped:
-            continue
-        match = _REASON.fullmatch(stripped)
-        if match is None:
-            raise ProposalValidationError(f"Malformed [REASONS] line: {stripped}")
-        phrase_id, alias, field, reason = match.groups()
-        phrase_id, field = phrase_id.upper(), field.lower()
+    warnings: list[str] = []
+    current_reason_phrase: str | None = None
+
+    def store_reason(phrase_id: str, alias: str | None, field: str, reason: str) -> None:
         if phrase_id not in ids:
             raise ProposalValidationError(f"Reason refers to unknown phrase {phrase_id}")
         if alias is None:
@@ -173,14 +170,46 @@ def parse_dual_performance_proposal(
             destination = reasons.setdefault(phrase_id, {})
         else:
             alias = alias.upper()
+            if alias not in {"A", "B"}:
+                raise ProposalValidationError(f"{phrase_id}: Unknown rationale alias {alias}")
             if field not in STATE_FIELDS:
                 raise ProposalValidationError(f"{phrase_id}: Unknown reason field {alias}.{field}")
             destination = reasons.setdefault(phrase_id, {}).setdefault(alias, {})
         if field in destination:
-            raise ProposalValidationError(f"{phrase_id}: Duplicate reason for {alias + '.' if alias else ''}{field}")
+            prefix = f"{alias}." if alias else ""
+            raise ProposalValidationError(f"{phrase_id}: Duplicate reason for {prefix}{field}")
         destination[field] = reason
+        if alias is None and field == "intent" and _intent_reason_looks_like_label(reason):
+            warnings.append(
+                f"{phrase_id}: intent rationale looks like a label rather than an explanation"
+            )
 
-    warnings: list[str] = []
+    for line in sections["REASONS"]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if _PROPOSAL_ID.fullmatch(stripped):
+            current_reason_phrase = stripped.upper()
+            if current_reason_phrase not in ids:
+                raise ProposalValidationError(
+                    f"Reason refers to unknown phrase {current_reason_phrase}"
+                )
+            continue
+        match = _REASON.fullmatch(stripped)
+        if match is not None:
+            phrase_id, alias, field, reason = match.groups()
+            store_reason(phrase_id.upper(), alias.upper() if alias else None, field.lower(), reason)
+            continue
+        field_match = _REASON_FIELD.fullmatch(stripped)
+        if field_match is None or current_reason_phrase is None:
+            raise ProposalValidationError(f"Malformed [REASONS] line: {stripped}")
+        alias, field, reason = field_match.groups()
+        if not reason:
+            raise ProposalValidationError(f"Malformed [REASONS] line: {stripped}")
+        store_reason(
+            current_reason_phrase, alias.upper() if alias else None, field.lower(), reason
+        )
+
     for phrase in phrases:
         reason = reasons.get(phrase["proposal_id"], {})
         if "intent" not in reason:
@@ -188,7 +217,10 @@ def parse_dual_performance_proposal(
         for alias in ("A", "B"):
             alias_reasons = reason.get(alias, {})
             for field, value in phrase["states"][alias].items():
-                active = field == "head" or value not in ("NONE", None)
+                active = (
+                    (field == "head" and value != "NONE")
+                    or (field not in {"head", "lid"} and value not in ("NONE", None))
+                )
                 if active and field not in alias_reasons:
                     warnings.append(f"{phrase['proposal_id']}: missing rationale for {alias}.{field}")
     return {

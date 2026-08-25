@@ -64,9 +64,10 @@ B.blink: NONE
 B.blink_suppression: NONE
 
 [REASONS]
-S09.intent: Curiosity becomes a shared conversational beat.
-S09.A.affect: Her curiosity appears outwardly as attentive, contained observation.
-S09.A.gaze: She studies Will more directly as her interest grows.
+S09
+intent: Curiosity becomes a shared conversational beat.
+A.affect: Her curiosity appears outwardly as attentive, contained observation.
+A.gaze: She studies Will more directly as her interest grows.
 ```
 
 Exact grammar:
@@ -95,15 +96,19 @@ B.blink: NONE | SLOW_BLINK | EYE_CLOSE_HOLD | DOUBLE_BLINK | BLINK_CLUSTER
 B.blink_suppression: NONE | SUPPRESS
 
 [REASONS]
-S01.intent: reason for the shared conversational beat
-S01.A.affect: reason for A's active affect
-S01.A.gaze: reason for A's active gaze
-S01.A.head: reason for A's head choice
-S01.B.affect: reason for B's active affect
-S01.B.gaze: reason for B's active gaze
-S01.B.head: reason for B's head choice
+S01
+intent: natural-language explanation, not another intent label
+A.affect: reason for A's active affect
+A.gaze: reason for A's active gaze
+A.head: reason for A's meaningful head choice
+B.affect: reason for B's active affect
+B.gaze: reason for B's active gaze
+B.head: reason for B's meaningful head choice
 ```
 
-Repeat the S block for every shared phrase. Explain intent, head, and every active optional channel.
-Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Use A/B for character targets; known character
+Repeat the S block for every shared phrase. In `[REASONS]`, each `S##` appears once as a rationale
+block header; do not repeat `S##.` before every field. Under `intent:`, write a natural-language
+explanation, not another intent label. Reasons explain the proposal and never redefine `[PERFORMANCE]`.
+Explain intent, active affect/heart/gaze, meaningful head choices, and active blink behavior; lid rationale
+is optional unless it represents an important acting choice. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Use A/B for character targets; known character
 names and `CHARACTER_NAME` are accepted. Objects use `OBJECT_NAME`; directions use supplied values.

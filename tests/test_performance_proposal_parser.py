@@ -53,6 +53,45 @@ def test_semantic_normalization_and_complete_fields():
     assert phrase["blink_suppression"] == "NONE"
 
 
+def test_reasons_accept_block_style_mixed_fields_and_keep_performance_intent():
+    text = proposal_text(starts=("w0001", "w0004"))
+    text = text.replace(
+        "S01.intent: Intent reason 1.\nS02.intent: Intent reason 2.",
+        "S01\n"
+        "intent: A natural-language explanation of the first beat.\n"
+        "affect: The friendly delivery is outwardly reassuring.\n"
+        "S02\n"
+        "intent: SECOND_BEAT_LABEL\n"
+        "S02.affect: The visible affect changes with the second beat.\n"
+        "gaze: The attention remains on the listener.",
+    )
+
+    parsed = parse_performance_proposal(text, vocabulary=VOCAB)
+
+    assert parsed["reasons"]["S01"]["affect"].startswith("The friendly")
+    assert parsed["reasons"]["S02"]["gaze"].startswith("The attention")
+    assert parsed["phrases"][1]["intent"] == "WITHHOLD_THE_INSULT"
+    assert "S02: intent rationale looks like a label rather than an explanation" in parsed["diagnostics"]["warnings"]
+
+
+def test_reasons_keep_legacy_inline_format_and_reject_bad_block_references():
+    assert parse_performance_proposal(proposal_text(starts=("w0001",)), vocabulary=VOCAB)["reasons"]
+
+    with pytest.raises(ProposalValidationError, match="Reason refers to unknown phrase S99"):
+        parse_performance_proposal(
+            proposal_text(starts=("w0001",)).replace("S01.intent", "S99.intent"),
+            vocabulary=VOCAB,
+        )
+    with pytest.raises(ProposalValidationError, match="Duplicate reason for affect"):
+        parse_performance_proposal(
+            proposal_text(starts=("w0001",)).replace(
+                "S01.intent: Intent reason 1.",
+                "S01\naffect: first reason\nS01.affect: duplicate reason",
+            ),
+            vocabulary=VOCAB,
+        )
+
+
 @pytest.mark.parametrize("heart", ["Nothing", "nothing", "NONE", "Nothing-0", "Nothing-zero"])
 def test_nothing_heart_alias_normalizes_to_inactive_none(heart):
     parsed = parse_performance_proposal(proposal_text(starts=("w0001",), heart=heart), vocabulary=VOCAB)

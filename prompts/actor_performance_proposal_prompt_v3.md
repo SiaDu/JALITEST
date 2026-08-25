@@ -73,8 +73,9 @@ blink: NONE
 blink_suppression: NONE
 
 [REASONS]
-S09.affect: Her curiosity appears outwardly as attentive, contained observation.
-S09.gaze: She studies Will more directly as her interest grows.
+S09
+affect: Her curiosity appears outwardly as attentive, contained observation.
+gaze: She studies Will more directly as her interest grows.
 ```
 
 Exact grammar:
@@ -96,17 +97,21 @@ blink: NONE | SLOW_BLINK | EYE_CLOSE_HOLD | DOUBLE_BLINK | BLINK_CLUSTER
 blink_suppression: NONE | SUPPRESS
 
 [REASONS]
-S01.intent: reason
-S01.affect: reason for an active affect
-S01.heart: reason for an active heart
-S01.gaze: reason for active gaze
-S01.head: reason
-S01.lid: reason for an active lid state
-S01.blink: reason for an active performative blink
-S01.blink_suppression: reason for active suppression
+S01
+intent: natural-language explanation, not another intent label
+affect: reason for an active affect
+heart: reason for an active heart
+gaze: reason for active gaze
+head: reason for a meaningful head choice
+lid: optional reason for an important lid choice
+blink: reason for an active performative blink
+blink_suppression: reason for active suppression
 ```
 
-Repeat the S-block for every proposed phrase. In `[REASONS]`, explain intent, head, and each active
-optional channel. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
+Repeat the S-block for every proposed phrase. In `[REASONS]`, each `S##` appears once as a rationale
+block header; do not repeat `S##.` before every field. Under `intent:`, write a natural-language
+explanation, not another intent label. Reasons explain the proposal and never redefine `[PERFORMANCE]`.
+Explain intent, active affect/heart/gaze, meaningful head choices, and active blink behavior; lid rationale
+is optional unless it represents an important acting choice. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
 character targets; known character names and `CHARACTER_NAME` are also accepted and normalize to
 their A/B alias. Object targets use `OBJECT_NAME`; direction targets use the supplied directions.

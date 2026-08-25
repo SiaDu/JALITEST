@@ -126,6 +126,56 @@ def test_dual_proposal_has_complete_normalized_a_b_state_and_shared_intent():
     assert phrase["states"]["B"]["heart"] == "Happy-28"
 
 
+def test_dual_reasons_accept_real_s10_mixed_block_style_and_do_not_change_execution():
+    proposal = dual_proposal()
+    performance = proposal.split("[PERFORMANCE]\n\n", 1)[1].split("\n\n[REASONS]", 1)[0]
+    blocks = performance.split("\n\n")[:3]
+    for old, new in (("S01\n", "S09\n"), ("S02\n", "S10\n"), ("S03\n", "S11\n")):
+        blocks = [block.replace(old, new, 1) for block in blocks]
+    reasons = "\n".join((
+        "S09.intent: The conversation opens with guarded inquiry.",
+        "S09.A.affect: Agnes watches closely.",
+        "S10",
+        "intent: WILL'S_EXPLANATION_REVEALS_AGNES_AS_THE_REAL_ATTRACTION",
+        "S10.A.affect: Agnes registers the personal disclosure.",
+        "S10.A.heart: Her feeling becomes more immediate.",
+        "A.gaze: She holds attention on Will.",
+        "S10.B.affect: Will tries to remain composed.",
+        "S11",
+        "intent: AGNES_IDENTIFIES_THE_HAWK_AS_SAFE_COMMON_GROUND",
+        "A.affect: Agnes redirects the exchange safely.",
+        "S11.B.affect: Will follows that redirect.",
+    ))
+    text = "[ANALYZE]\nA shared scene.\n\n[PERFORMANCE]\n\n" + "\n\n".join(blocks) + "\n\n[REASONS]\n" + reasons
+
+    parsed = parse_dual_performance_proposal(text, vocabulary=VOCAB)
+
+    assert parsed["reasons"]["S10"]["A"]["gaze"] == "She holds attention on Will."
+    assert parsed["reasons"]["S11"]["B"]["affect"] == "Will follows that redirect."
+    assert parsed["phrases"][1]["intent"] == "HESITATE_BEFORE_ANSWERING"
+    assert "S10: intent rationale looks like a label rather than an explanation" in parsed["diagnostics"]["warnings"]
+
+
+def test_dual_reasons_reject_unknown_block_phrase_and_duplicate_fields():
+    with pytest.raises(ProposalValidationError, match="Reason refers to unknown phrase S99"):
+        parse_dual_performance_proposal(
+            dual_proposal().replace("S01.intent", "S99.intent", 1), vocabulary=VOCAB
+        )
+    with pytest.raises(ProposalValidationError, match="Duplicate reason for A.affect"):
+        parse_dual_performance_proposal(
+            dual_proposal().replace(
+                "S01.intent: Shared beat 1.",
+                "S01\nA.affect: initial reason\nS01.A.affect: duplicate reason",
+                1,
+            ),
+            vocabulary=VOCAB,
+        )
+    with pytest.raises(ProposalValidationError, match="Unknown rationale alias C"):
+        parse_dual_performance_proposal(
+            dual_proposal().replace("S01.A.affect", "S01.C.affect", 1), vocabulary=VOCAB
+        )
+
+
 def test_dual_proposal_requires_every_a_b_field_and_rejects_unknown_semantics():
     with pytest.raises(ProposalValidationError, match="Missing required A fields: lid"):
         parse_dual_performance_proposal(
@@ -245,6 +295,8 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
     assert "HEART — CLOSED VOCABULARY:" in prompt
     assert "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons." in prompt
+    assert "[REASONS]\nS01\nintent: natural-language explanation" in prompt
+    assert "do not repeat `S##.` before every field" in prompt
     calls = []
 
     def runner(**kwargs):
