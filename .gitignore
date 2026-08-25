@@ -36,6 +36,7 @@ data/processed/candidate_sequences/videos/
 *.avi
 *.wav
 *.mp3
+data/seqt_runtime/compiled/maya_adapter/
 
 # Editor / OS noise
 .DS_Store
