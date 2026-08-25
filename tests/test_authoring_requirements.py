@@ -27,6 +27,10 @@ def test_required_targets_extract_semantic_values_once_without_directions():
     assert required_look_at_targets(_plan()) == ["CRYSTAL", "DOOR", "WILL"]
 
 
+def test_unresolved_alias_target_is_shown_in_animation_setup():
+    assert required_look_at_targets({"events": [{"gaze": [{"value": "GAZE-B"}]}]}) == ["B"]
+
+
 def test_required_target_refresh_preserves_existing_mapping_and_adds_empty_row():
     rows = refresh_look_at_mappings(
         ["CRYSTAL", "DOOR"], [{"semantic_target": "CRYSTAL", "maya_node": "|crystal_LOC"}]

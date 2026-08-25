@@ -31,7 +31,7 @@ def required_look_at_targets(plan: dict[str, Any]) -> list[str]:
     result: list[str] = []
     for value in values:
         target = _target(value)
-        if target and target not in DIRECTIONS | {"NONE", "UNRESOLVED", "A", "B"} and target not in result:
+        if target and target not in DIRECTIONS | {"NONE", "UNRESOLVED"} and target not in result:
             result.append(target)
     return result
 

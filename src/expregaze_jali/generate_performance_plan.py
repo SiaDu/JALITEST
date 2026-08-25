@@ -151,6 +151,13 @@ def _render_hci_prompt(
     replacements = {
         "{{target_character}}": anchor_model.target_character,
         "{{alias_map}}": json.dumps(anchor_model.aliases, ensure_ascii=False, sort_keys=True),
+        "{{alias_guidance}}": (
+            "Character aliases available in this run: "
+            + ", ".join(f"{alias} = {name}" for alias, name in anchor_model.aliases.items())
+            + (". Use only these aliases for known dialogue characters."
+               if "B" in anchor_model.aliases
+               else ". Only A is currently defined by the script. Do not invent B as a known dialogue character.")
+        ),
         "{{context}}": str(context or "").strip() or "NONE",
         "{{immutable_script}}": anchor_model.script,
         "{{anchored_script}}": anchor_model.anchored_script().rstrip("\n"),

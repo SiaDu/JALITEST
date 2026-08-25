@@ -5,6 +5,7 @@ Choose where each Performance Phrase starts using anchor IDs, including multiple
 
 Target character: {{target_character}}
 Character aliases: {{alias_map}}
+{{alias_guidance}}
 Optional context:
 {{context}}
 
@@ -116,6 +117,5 @@ is optional unless it represents an important acting choice. Gaze values normall
 For social eye-contact avoidance, prefer `AVERT-B` when A avoids B. For spatially meaningful avoidance,
 use an explicit direction such as `AVERT-DOWN`, `AVERT-DOWN_LEFT`, or `AVERT-UP_RIGHT`. Do not output
 bare `GAZE` or `GLANCE`. Bare `AVERT` is tolerated only as shorthand when there is one unambiguous social
-counterpart; prefer the explicit A/B form. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
-character targets; known character names and `CHARACTER_NAME` are also accepted and normalize to
+counterpart; prefer the explicit available alias form. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Known character names and `CHARACTER_NAME` are also accepted and normalize to
 their A/B alias. Object targets use `OBJECT_NAME`; direction targets use the supplied directions.

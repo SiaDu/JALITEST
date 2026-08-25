@@ -310,14 +310,15 @@ def test_bare_avert_does_not_require_a_social_counterpart_for_authoring():
     assert parsed["phrases"][0]["gaze"] == "AVERT-UNRESOLVED"
 
 
-def test_unknown_character_gaze_target_is_rejected_after_anchor_context_is_known():
+def test_unknown_character_gaze_target_is_preserved_with_authoring_warning():
     model = build_transcript_anchor_model("AGNES: one two three\nWILL: four five", target_character="AGNES")
     parsed = parse_performance_proposal(
         proposal_text(starts=("w0001",), gaze="GAZE-RANDOM_PERSON", heart="NONE"),
         vocabulary=VOCAB,
     )
-    with pytest.raises(ProposalValidationError, match='S01: Unknown character gaze target "RANDOM_PERSON"'):
-        validate_and_resolve_proposal_targets(parsed, model)
+    validate_and_resolve_proposal_targets(parsed, model)
+    assert parsed["phrases"][0]["gaze"] == "GAZE-RANDOM_PERSON"
+    assert "S01: unresolved gaze target RANDOM_PERSON" in parsed["diagnostics"]["warnings"]
 
 
 def test_object_gaze_target_is_semantically_valid_without_maya_mapping():

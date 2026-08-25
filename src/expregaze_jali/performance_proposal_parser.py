@@ -436,8 +436,9 @@ def validate_and_resolve_proposal_targets(
         character_target = target[len("CHARACTER_"):] if target.startswith("CHARACTER_") else target
         alias = aliases_by_character.get(speaker_key(character_target))
         if alias is None:
-            raise ProposalValidationError(
-                f'{phrase["proposal_id"]}: Unknown character gaze target "{character_target}"'
+            proposal.setdefault("diagnostics", {}).setdefault("warnings", []).append(
+                f'{phrase["proposal_id"]}: unresolved gaze target {character_target}'
             )
+            continue
         phrase["gaze"] = f"{mode}-{alias}"
     return proposal

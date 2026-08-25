@@ -76,6 +76,14 @@ def test_hci_prompt_contains_optional_free_text_context():
     }
 
 
+def test_unlabeled_single_prompt_does_not_present_b_as_an_available_alias():
+    prompt = build_hci_generation_prompt(
+        script="Good day, sir. Good day to you.", context=None, target_character="A"
+    )
+    assert '"A": "A"' in prompt
+    assert "Only A is currently defined by the script. Do not invent B" in prompt
+
+
 def test_hci_prompt_contains_immutable_and_anchored_script_and_proposal_contract():
     script = "AGNES: Good day.\nWILL: Yes, I, uh... I suppose."
     prompt = build_hci_generation_prompt(
