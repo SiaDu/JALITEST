@@ -1,0 +1,10 @@
+{
+  "A": {
+    "script_name": "AGNES",
+    "sound_file": "SeqT_AGNES"
+  },
+  "B": {
+    "script_name": "WILL",
+    "sound_file": "SeqT_WILL"
+  }
+}
