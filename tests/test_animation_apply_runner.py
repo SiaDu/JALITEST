@@ -16,6 +16,8 @@ from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
     build_explicit_target_map,
     qualify_rig_control,
+    adapt_dual_gaze_events,
+    resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
     validate_gaze_target_mappings,
@@ -66,6 +68,28 @@ def test_active_character_namespace_qualifies_rig_controls():
     assert qualify_rig_control("|world|auntEm:ROOT", "eyeStare_world") == "auntEm:eyeStare_world"
     assert qualify_rig_control("|world|ROOT", "eyeStare_world") == "eyeStare_world"
     assert qualify_rig_control("|world|auntEm:ROOT", "custom:jSync1") == "custom:jSync1"
+
+
+def test_dual_character_gaze_targets_require_explicit_nodes_not_jali_groups():
+    mappings = {"A": {"maya_node": "|ValleyGirl:JALI_GRP", "look_at_node": "|ValleyGirl:look_LOC"}, "B": {"maya_node": "|Angela:JALI_GRP", "look_at_node": "|Angela:look_LOC"}}
+    assert resolve_character_look_at_target("A", mappings) == "|ValleyGirl:look_LOC"
+    assert resolve_character_look_at_target("B", mappings) == "|Angela:look_LOC"
+    with pytest.raises(ValueError, match="JALI_GRP is not a gaze target"):
+        resolve_character_look_at_target("A", {"A": {"maya_node": "|ValleyGirl:JALI_GRP"}})
+
+
+def test_dual_gaze_adapter_sorts_and_preserves_identity_and_social_avert():
+    events = [
+        {"phrase_id": "P04", "source_proposal_id": "S04", "channel": "gaze", "value": "GAZE-B", "resolved_time": {"start": 136, "end": 140}},
+        {"phrase_id": "P01", "source_proposal_id": "S01", "channel": "gaze", "value": "AVERT-B", "reason": "avoid", "resolved_time": {"start": 0, "end": 5}},
+        {"phrase_id": "P03", "source_proposal_id": "S03", "channel": "gaze", "value": "GLANCE-B", "resolved_time": {"start": 100, "end": 110}},
+        {"phrase_id": "P02", "source_proposal_id": "S02", "channel": "gaze", "value": "GAZE-A", "resolved_time": {"start": 86, "end": 90}},
+    ]
+    adapted = adapt_dual_gaze_events(events)
+    assert [row["resolved_time"]["start"] for row in adapted] == [0, 86, 100, 136]
+    assert adapted[0]["target"] == "__BASE__" and adapted[0]["social_avert"]
+    assert adapted[1]["target"] == "A" and adapted[1]["phrase_id"] == "P02"
+    assert adapted[0]["source_proposal_id"] == "S01" and adapted[0]["reason"] == "avoid"
 
 
 class _JSyncCmds:

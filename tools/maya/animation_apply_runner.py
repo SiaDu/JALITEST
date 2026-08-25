@@ -198,6 +198,31 @@ def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
     return value
 
 
+def resolve_character_look_at_target(alias: str, character_mappings: dict[str, dict[str, Any]], *, configured_suffix: str | None = None) -> str:
+    row = character_mappings.get(alias) or {}
+    explicit = str(row.get("look_at_node") or "").strip()
+    if explicit:
+        return explicit
+    root = str(row.get("maya_node") or "").strip()
+    if configured_suffix and root:
+        return qualify_rig_control(root, configured_suffix)
+    raise ValueError(f"Character {alias} requires an explicit look_at_node (JALI_GRP is not a gaze target).")
+
+
+def adapt_dual_gaze_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Convert generic dual gaze rows to Maya gaze rows in chronological order."""
+    adapted=[]
+    for event in events:
+        if event.get("channel") != "gaze" or not event.get("resolved_time"): continue
+        mode, _, target = str(event.get("value") or "").partition("-")
+        if not target: continue
+        # Social AVERT deliberately returns to base rather than looking at the
+        # other character. Explicit AVERT-DOWN/etc retain direction targets.
+        resolved_target = "__BASE__" if mode == "AVERT" and target in {"A", "B"} else target
+        adapted.append({"id": event.get("id") or event.get("phrase_id"), "phrase_id": event.get("phrase_id"), "source_proposal_id": event.get("source_proposal_id"), "reason": event.get("reason"), "type":"gaze", "mode":mode, "target":resolved_target, "social_avert": mode == "AVERT" and target in {"A","B"}, "resolved_time":dict(event["resolved_time"])})
+    return sorted(adapted, key=lambda e:(float(e["resolved_time"]["start"]),float(e["resolved_time"]["end"])))
+
+
 def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], look_at_mappings: Iterable[dict[str, Any]], maya_config_path: str | Path | None = None) -> dict[str, Any]:
     """Apply only dual gaze/lid/blink overlays; existing jSync speech is untouched."""
     from maya import cmds  # type: ignore
@@ -216,14 +241,14 @@ def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappi
             raise ValueError(f"Missing Maya character mapping for {alias}.")
         if str(row.get("script_name") or "").strip().upper()!=str(runtime[alias].get("script_name") or "").strip().upper():
             raise ValueError(f"Maya character mapping {alias} does not match manifest runtime mapping.")
-        target_map[alias]={"node":str(row["maya_node"])}
+        target_map[alias]={"node":resolve_character_look_at_target(alias, character_mappings, configured_suffix=gaze_config.get("character_look_at_suffix"))}
     result={}
     for alias in ("A","B"):
         row=character_mappings[alias]; node=str(row["maya_node"])
         if not cmds.objExists(node): raise RuntimeError(f"Maya character node does not exist for {alias}: {node}")
         jsync=resolve_jsync_for_character(node, str(runtime[alias]["sound_file"]))
         events=json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events",[])
-        gaze=[{"type":"gaze","mode":str(e["value"]).split("-",1)[0],"target":str(e["value"]).split("-",1)[1],"resolved_time":e["resolved_time"]} for e in events if e.get("channel")=="gaze"]
+        gaze=adapt_dual_gaze_events(events)
         eye=[]
         for e in events:
             kind={"lid":"lid_state","blink":"performative_blink","blink_suppression":"blink_suppression"}.get(e.get("channel"))
