@@ -186,8 +186,15 @@ def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
     for alias in ("A", "B"):
         if not isinstance(mapping.get(alias), dict) or not str(mapping[alias].get("sound_file") or ""):
             raise ValueError(f"Dual animation manifest requires {alias} runtime mapping.")
-        if not Path(str(artifacts.get(alias) or "")).is_file():
-            raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing.")
+        artifact_path = Path(str(artifacts.get(alias) or ""))
+        if not artifact_path.is_absolute():
+            artifact_path = REPO_ROOT / artifact_path
+        if not artifact_path.is_file():
+            raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing: {artifact_path}")
+        artifacts[alias] = str(artifact_path)
+    timing_path = Path(str(artifacts.get("conversation_anchor_timing") or ""))
+    if timing_path and not timing_path.is_absolute():
+        artifacts["conversation_anchor_timing"] = str(REPO_ROOT / timing_path)
     return value
 
 
