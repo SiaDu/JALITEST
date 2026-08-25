@@ -19,6 +19,7 @@ from animation_apply_runner import (  # noqa: E402
     adapt_dual_gaze_events,
     directional_eye_offset,
     build_dual_gaze_schedule,
+    build_dual_gaze_key_schedule,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
@@ -100,13 +101,21 @@ def test_directional_eye_offsets_are_local_and_clamped():
 
 
 def test_gaze_state_machine_resets_detailed_eyes_after_avert():
-    schedule = build_dual_gaze_schedule([
+    raw = [
         {"channel":"gaze","value":"AVERT-A","phrase_id":"P1","resolved_time":{"start":100,"end":136}},
         {"channel":"gaze","value":"GAZE-A","phrase_id":"P2","resolved_time":{"start":136,"end":200}},
-    ], neutral_position=[3,4,5], neutral_eyes=[1,2], target_positions={"A":[9,8,7]})
+    ]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[3,4,5], neutral_eyes=[1,2], target_positions={"A":[9,8,7]})
     assert schedule[0]["eye_stare"] == [3,4,5] and schedule[0]["eyes"] == [1, -3.0]
     assert schedule[0]["end"] == 136
     assert schedule[1]["eye_stare"] == [9,8,7] and schedule[1]["eyes"] == [1,2]
+
+
+def test_adapted_chain_and_glance_return_emit_complete_key_states():
+    raw=[{"channel":"gaze","value":"GAZE-A","resolved_time":{"start":0,"end":20}},{"channel":"gaze","value":"GLANCE-B","resolved_time":{"start":5,"end":12}}]
+    schedule=build_dual_gaze_schedule(adapt_dual_gaze_events(raw),neutral_position=[0,0,0],neutral_eyes=[0,0],target_positions={"A":[1,1,1],"B":[2,2,2]})
+    keys=build_dual_gaze_key_schedule(schedule,fps=1,transition_frames=1,glance_frames=2)
+    assert len(schedule)==2 and any(key["frame"]==12 and key["eye_stare"]==[1,1,1] and key["eyes"]==[0,0] for key in keys)
 
 
 class _JSyncCmds:
