@@ -1,0 +1,1508 @@
+{
+  "schema_version": "performance_plan_v0",
+  "sequence_id": "run_20260825_140456_541591",
+  "target_character": "A",
+  "source_annotation": null,
+  "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260825_140456_541591\\performance_proposal.txt",
+  "acting_interpretation": "A begins with restrained courtesy, then turns inwardly inquisitive and watchful. He gives a concise account of his presence, becomes more guarded when challenged, and hesitates while constructing a harmless explanation. His attention finally settles on the bird, followed by a small moment of recognition.",
+  "events": [
+    {
+      "event_id": "E01",
+      "source_intent_tag": "i01",
+      "span": {
+        "text": "Good day, sir. Good day to you. ",
+        "char_start": 0,
+        "char_end": 32
+      },
+      "intent": "CONTROLLED_SOCIAL_OPENING",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m01",
+            "char_start": 0,
+            "char_end": 32,
+            "value": "Polite-35",
+            "state": "Polite",
+            "intensity": 0.35
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g01",
+          "char_start": 0,
+          "char_end": 32,
+          "value": "AVERT-DOWN",
+          "mode": "AVERT",
+          "target": "DOWN"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd01",
+          "char_start": 0,
+          "char_end": 32,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l01",
+          "char_start": 0,
+          "char_end": 32,
+          "value": "-1",
+          "lid_state": -1.0
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i01",
+          "reason": "A controlled social opening keeps A courteous without suggesting deep warmth or confidence."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m01",
+              "reason": "The polite presentation makes the greeting civil and measured."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g01",
+            "reason": "A downward gaze suits A's self-contained, inward manner."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd01",
+            "reason": "A slight lowered head reinforces formal restraint."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l01",
+            "reason": null
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "Good day, sir. Good day to you. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E02",
+      "source_intent_tag": "i02",
+      "span": {
+        "text": "What brings you to Hewlands? ",
+        "char_start": 32,
+        "char_end": 61
+      },
+      "intent": "SEEKING_INFORMATION_WITH_FORMAL_CURIOSITY",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m02",
+            "char_start": 32,
+            "char_end": 61,
+            "value": "Watchful-30",
+            "state": "Watchful",
+            "intensity": 0.3
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g02",
+          "char_start": 32,
+          "char_end": 61,
+          "value": "GAZE-RIGHT",
+          "mode": "GAZE",
+          "target": "RIGHT"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd02",
+          "char_start": 32,
+          "char_end": 61,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l02",
+          "char_start": 32,
+          "char_end": 61,
+          "value": "0",
+          "lid_state": 0
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i02",
+          "reason": "A's attention turns toward the person being addressed, with curiosity kept within polite limits."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m02",
+              "reason": "Watchfulness shows active interest without becoming confrontational."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g02",
+            "reason": "The directional gaze gives the question a clear outward focus."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd02",
+            "reason": "Moderate head involvement supports attentive inquiry."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l02",
+            "reason": null
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "What brings you to Hewlands? "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E03",
+      "source_intent_tag": "i03",
+      "span": {
+        "text": "I'm tutoring the boys here. The Latin tutor. ",
+        "char_start": 61,
+        "char_end": 106
+      },
+      "intent": "MATTER_OF_FACT_SELF_IDENTIFICATION",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m03",
+            "char_start": 61,
+            "char_end": 106,
+            "value": "Neutral-25",
+            "state": "Neutral",
+            "intensity": 0.25
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g03",
+          "char_start": 61,
+          "char_end": 106,
+          "value": "AVERT-DOWN",
+          "mode": "AVERT",
+          "target": "DOWN"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd03",
+          "char_start": 61,
+          "char_end": 106,
+          "value": "NONE",
+          "involvement": 0.0
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l03",
+          "char_start": 61,
+          "char_end": 106,
+          "value": "0",
+          "lid_state": 0
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i03",
+          "reason": "A shifts into a plain factual mode while describing his role."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m03",
+              "reason": "Neutrality makes the self-description sound routine and uncomplicated."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g03",
+            "reason": "Looking down preserves the sense that A is speaking from himself rather than performing for approval."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd03",
+            "reason": null
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l03",
+            "reason": null
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "I'm tutoring the boys here. The Latin tutor. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E04",
+      "source_intent_tag": "i04",
+      "span": {
+        "text": "I've heard of you. ",
+        "char_start": 106,
+        "char_end": 125
+      },
+      "intent": "CAUTIOUSLY_ACKNOWLEDGING_PRIOR_RECOGNITION",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m04",
+            "char_start": 106,
+            "char_end": 125,
+            "value": "Watchful-40",
+            "state": "Watchful",
+            "intensity": 0.4
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g04",
+          "char_start": 106,
+          "char_end": 125,
+          "value": "GAZE-RIGHT",
+          "mode": "GAZE",
+          "target": "RIGHT"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd04",
+          "char_start": 106,
+          "char_end": 125,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l04",
+          "char_start": 106,
+          "char_end": 125,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i04",
+          "reason": "Recognition makes A more alert, but he does not yet reveal strong emotion."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m04",
+              "reason": "Watchfulness conveys careful assessment of what the prior acquaintance may imply."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g04",
+            "reason": "The outward gaze marks renewed attention to the other presence."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd04",
+            "reason": "A moderate lift signals engagement and caution."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l04",
+            "reason": null
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "I've heard of you. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E05",
+      "source_intent_tag": "i05",
+      "span": {
+        "text": "What brought you into the garden? ",
+        "char_start": 125,
+        "char_end": 159
+      },
+      "intent": "GUARDING_AGAINST_A_DIRECT_CHALLENGE",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m05",
+            "char_start": 125,
+            "char_end": 159,
+            "value": "Nervous-38",
+            "state": "Nervous",
+            "intensity": 0.38
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h01",
+            "char_start": 125,
+            "char_end": 159,
+            "value": "Afraid-18",
+            "state": "Afraid",
+            "intensity": 0.18
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g05",
+          "char_start": 125,
+          "char_end": 159,
+          "value": "AVERT-DOWN",
+          "mode": "AVERT",
+          "target": "DOWN"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd05",
+          "char_start": 125,
+          "char_end": 159,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l05",
+          "char_start": 125,
+          "char_end": 159,
+          "value": "-2",
+          "lid_state": -2
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i05",
+          "reason": "The direct challenge causes A to protect himself and monitor the situation."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m05",
+              "reason": "Nervousness exposes guarded uncertainty."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h01",
+              "reason": "A mild fear response indicates concern about being found suspicious."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g05",
+            "reason": "Downward avoidance softens the confrontation and conceals A's immediate reaction."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd05",
+            "reason": "A lowered head supports defensive modesty."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l05",
+            "reason": "Slightly narrowed lids suggest guardedness rather than open panic."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "What brought you into the garden? "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E06",
+      "source_intent_tag": "i06",
+      "span": {
+        "text": "Uh... It's just a question, master tutor. ",
+        "char_start": 159,
+        "char_end": 201
+      },
+      "intent": "BUYING_TIME_BEFORE_A_SAFE_EXPLANATION",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m06",
+            "char_start": 159,
+            "char_end": 201,
+            "value": "Nervous-62",
+            "state": "Nervous",
+            "intensity": 0.62
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h02",
+            "char_start": 159,
+            "char_end": 201,
+            "value": "Afraid-30",
+            "state": "Afraid",
+            "intensity": 0.3
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g06",
+          "char_start": 159,
+          "char_end": 201,
+          "value": "AVERT-DOWN_LEFT",
+          "mode": "AVERT",
+          "target": "DOWN_LEFT"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd06",
+          "char_start": 159,
+          "char_end": 201,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l06",
+          "char_start": 159,
+          "char_end": 201,
+          "value": "-3",
+          "lid_state": -3
+        }
+      ],
+      "blink": {
+        "performative": [
+          {
+            "source_tag": "pb01",
+            "char_start": 159,
+            "char_end": 201,
+            "value": "SLOW_BLINK"
+          }
+        ],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i06",
+          "reason": "The hesitation is used to gain time while A searches for an innocuous answer."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m06",
+              "reason": "Stronger nervousness makes the delay visibly meaningful."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h02",
+              "reason": "Fear increases as A feels pressed to justify himself."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g06",
+            "reason": "The down-left avoidance turns attention inward and away from scrutiny."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd06",
+            "reason": "A lowered head keeps the thinking private."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l06",
+            "reason": "The lowered lids reinforce uncertainty."
+          }
+        ],
+        "blink": {
+          "performative": [
+            {
+              "source_tag": "pb01",
+              "reason": "The slow blink functions as a deliberate time-buying pause."
+            }
+          ],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "Uh... It's just a question, master tutor. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E07",
+      "source_intent_tag": "i07",
+      "span": {
+        "text": "Yes, I, uh... ",
+        "char_start": 201,
+        "char_end": 215
+      },
+      "intent": "TRYING_TO_REASSURE_WHILE_STILL_UNCERTAIN",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m07",
+            "char_start": 201,
+            "char_end": 215,
+            "value": "Nervous-48",
+            "state": "Nervous",
+            "intensity": 0.48
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h03",
+            "char_start": 201,
+            "char_end": 215,
+            "value": "Afraid-22",
+            "state": "Afraid",
+            "intensity": 0.22
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g07",
+          "char_start": 201,
+          "char_end": 215,
+          "value": "AVERT-DOWN",
+          "mode": "AVERT",
+          "target": "DOWN"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd07",
+          "char_start": 201,
+          "char_end": 215,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l07",
+          "char_start": 201,
+          "char_end": 215,
+          "value": "-1",
+          "lid_state": -1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i07",
+          "reason": "A tries to make the explanation sound harmless before committing to details."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m07",
+              "reason": "Nervousness remains visible but is moderated by an attempt at composure."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h03",
+              "reason": "Residual fear keeps the reassurance from seeming fully secure."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g07",
+            "reason": "Downward avoidance maintains guarded self-control."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd07",
+            "reason": "The slight lowering communicates deference under pressure."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l07",
+            "reason": "Mildly lowered lids show continued caution."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "Yes, I, uh... "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E08",
+      "source_intent_tag": "i08",
+      "span": {
+        "text": "I suppose the air was fresh out here, and... uh, ",
+        "char_start": 215,
+        "char_end": 264
+      },
+      "intent": "INTERNALLY_ASSEMBLING_A_PLAUSIBLE_ACCOUNT",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m08",
+            "char_start": 215,
+            "char_end": 264,
+            "value": "Thinking-52",
+            "state": "Thinking",
+            "intensity": 0.52
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h04",
+            "char_start": 215,
+            "char_end": 264,
+            "value": "Afraid-18",
+            "state": "Afraid",
+            "intensity": 0.18
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g08",
+          "char_start": 215,
+          "char_end": 264,
+          "value": "AVERT-DOWN_LEFT",
+          "mode": "AVERT",
+          "target": "DOWN_LEFT"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd08",
+          "char_start": 215,
+          "char_end": 264,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l08",
+          "char_start": 215,
+          "char_end": 264,
+          "value": "-2",
+          "lid_state": -2
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i08",
+          "reason": "A's attention becomes explicitly internal as he constructs the account step by step."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m08",
+              "reason": "Thinking replaces the earlier raw hesitation with concentrated mental effort."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h04",
+              "reason": "A small amount of fear remains beneath the reasoning."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g08",
+            "reason": "Down-left focus supports inward calculation and avoidance of immediate eye contact."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd08",
+            "reason": "Moderate head involvement marks active thought."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l08",
+            "reason": "Slightly lowered lids help convey concentration."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "I suppose the air was fresh out here, and... uh, "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E09",
+      "source_intent_tag": "i09",
+      "span": {
+        "text": "I saw you with your bird. ",
+        "char_start": 264,
+        "char_end": 290
+      },
+      "intent": "OFFERING_THE_EXPLANATION_WITH_GROWING_CONFIDENCE",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m09",
+            "char_start": 264,
+            "char_end": 290,
+            "value": "Polite-30",
+            "state": "Polite",
+            "intensity": 0.3
+          }
+        ],
+        "hidden": []
+      },
+      "gaze": [
+        {
+          "source_tag": "g09",
+          "char_start": 264,
+          "char_end": 290,
+          "value": "GAZE-RIGHT",
+          "mode": "GAZE",
+          "target": "RIGHT"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd09",
+          "char_start": 264,
+          "char_end": 290,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l09",
+          "char_start": 264,
+          "char_end": 290,
+          "value": "0",
+          "lid_state": 0
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i09",
+          "reason": "A commits to the explanation and presents it in a more socially acceptable manner."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m09",
+              "reason": "Politeness smooths the delivery and makes the account less defensive."
+            }
+          ],
+          "hidden": []
+        },
+        "gaze": [
+          {
+            "source_tag": "g09",
+            "reason": "Direct outward focus helps A sound more credible."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd09",
+            "reason": "A modestly lowered head preserves humility while confidence returns."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l09",
+            "reason": null
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "I saw you with your bird. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E10",
+      "source_intent_tag": "i10",
+      "span": {
+        "text": "It's a hawk. ",
+        "char_start": 290,
+        "char_end": 303
+      },
+      "intent": "CORRECTING_THE_REFERENCE_WITH_SIMPLE_CERTAINTY",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m10",
+            "char_start": 290,
+            "char_end": 303,
+            "value": "Watchful-35",
+            "state": "Watchful",
+            "intensity": 0.35
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h05",
+            "char_start": 290,
+            "char_end": 303,
+            "value": "Surprised-15",
+            "state": "Surprised",
+            "intensity": 0.15
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g10",
+          "char_start": 290,
+          "char_end": 303,
+          "value": "GAZE-RIGHT",
+          "mode": "GAZE",
+          "target": "RIGHT"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd10",
+          "char_start": 290,
+          "char_end": 303,
+          "value": "MEDIUM",
+          "involvement": 0.5
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l10",
+          "char_start": 290,
+          "char_end": 303,
+          "value": "1",
+          "lid_state": 1
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i10",
+          "reason": "A's attention shifts from explaining himself to identifying the object accurately."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m10",
+              "reason": "Watchfulness gives the correction precise, attentive energy."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h05",
+              "reason": "Mild surprise reflects the small moment of recognition."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g10",
+            "reason": "The outward gaze follows the object of attention."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd10",
+            "reason": "A moderate lift highlights the clarification."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l10",
+            "reason": "Slightly raised lids support the recognition beat."
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "It's a hawk. "
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    },
+    {
+      "event_id": "E11",
+      "source_intent_tag": "i11",
+      "span": {
+        "text": "Ah.\n",
+        "char_start": 303,
+        "char_end": 307
+      },
+      "intent": "BRIEF_RECOGNITION_AND_SETTLING_AFTER_THE_CORRECTION",
+      "affect": {
+        "visible": [
+          {
+            "source_tag": "m11",
+            "char_start": 303,
+            "char_end": 307,
+            "value": "Neutral-20",
+            "state": "Neutral",
+            "intensity": 0.2
+          }
+        ],
+        "hidden": [
+          {
+            "source_tag": "h06",
+            "char_start": 303,
+            "char_end": 307,
+            "value": "Surprised-12",
+            "state": "Surprised",
+            "intensity": 0.12
+          }
+        ]
+      },
+      "gaze": [
+        {
+          "source_tag": "g11",
+          "char_start": 303,
+          "char_end": 307,
+          "value": "AVERT-DOWN",
+          "mode": "AVERT",
+          "target": "DOWN"
+        }
+      ],
+      "head": [
+        {
+          "source_tag": "hd11",
+          "char_start": 303,
+          "char_end": 307,
+          "value": "LOW",
+          "involvement": 0.25
+        }
+      ],
+      "lid_state": [
+        {
+          "source_tag": "l11",
+          "char_start": 303,
+          "char_end": 307,
+          "value": "0",
+          "lid_state": 0
+        }
+      ],
+      "blink": {
+        "performative": [],
+        "suppression": []
+      },
+      "rationale": {
+        "intent": {
+          "source_tag": "i11",
+          "reason": "A registers the final identification and lets the moment settle without adding unnecessary emotion."
+        },
+        "affect": {
+          "visible": [
+            {
+              "source_tag": "m11",
+              "reason": "Neutrality returns after the brief clarification."
+            }
+          ],
+          "hidden": [
+            {
+              "source_tag": "h06",
+              "reason": "A trace of surprise remains as a quiet after-reaction."
+            }
+          ]
+        },
+        "gaze": [
+          {
+            "source_tag": "g11",
+            "reason": "Looking down returns A to his inward, self-contained baseline."
+          }
+        ],
+        "head": [
+          {
+            "source_tag": "hd11",
+            "reason": "A slight lowering closes the exchange modestly."
+          }
+        ],
+        "lid_state": [
+          {
+            "source_tag": "l11",
+            "reason": null
+          }
+        ],
+        "blink": {
+          "performative": [],
+          "suppression": []
+        }
+      },
+      "evidence": {
+        "transcript": "Ah.\n"
+      },
+      "locks": {
+        "intent": false,
+        "affect": false,
+        "gaze": false,
+        "head": false,
+        "blink": false
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "proposal_provenance": {
+    "format": "anchor_semantic_v1",
+    "aliases": {
+      "A": "A"
+    },
+    "phrases": [
+      {
+        "proposal_id": "S01",
+        "start_anchor": "w0001",
+        "intent": "CONTROLLED_SOCIAL_OPENING",
+        "affect": "Polite-35",
+        "heart": "NONE",
+        "gaze": "AVERT-DOWN",
+        "head": "LOW",
+        "lid": -1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 0,
+          "char_end": 32
+        },
+        "reasons": {
+          "intent": "A controlled social opening keeps A courteous without suggesting deep warmth or confidence.",
+          "affect": "The polite presentation makes the greeting civil and measured.",
+          "gaze": "A downward gaze suits A's self-contained, inward manner.",
+          "head": "A slight lowered head reinforces formal restraint."
+        }
+      },
+      {
+        "proposal_id": "S02",
+        "start_anchor": "w0008",
+        "intent": "SEEKING_INFORMATION_WITH_FORMAL_CURIOSITY",
+        "affect": "Watchful-30",
+        "heart": "NONE",
+        "gaze": "GAZE-RIGHT",
+        "head": "MEDIUM",
+        "lid": 0,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 32,
+          "char_end": 61
+        },
+        "reasons": {
+          "intent": "A's attention turns toward the person being addressed, with curiosity kept within polite limits.",
+          "affect": "Watchfulness shows active interest without becoming confrontational.",
+          "gaze": "The directional gaze gives the question a clear outward focus.",
+          "head": "Moderate head involvement supports attentive inquiry."
+        }
+      },
+      {
+        "proposal_id": "S03",
+        "start_anchor": "w0013",
+        "intent": "MATTER_OF_FACT_SELF_IDENTIFICATION",
+        "affect": "Neutral-25",
+        "heart": "NONE",
+        "gaze": "AVERT-DOWN",
+        "head": "NONE",
+        "lid": 0,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 61,
+          "char_end": 106
+        },
+        "reasons": {
+          "intent": "A shifts into a plain factual mode while describing his role.",
+          "affect": "Neutrality makes the self-description sound routine and uncomplicated.",
+          "gaze": "Looking down preserves the sense that A is speaking from himself rather than performing for approval."
+        }
+      },
+      {
+        "proposal_id": "S04",
+        "start_anchor": "w0021",
+        "intent": "CAUTIOUSLY_ACKNOWLEDGING_PRIOR_RECOGNITION",
+        "affect": "Watchful-40",
+        "heart": "NONE",
+        "gaze": "GAZE-RIGHT",
+        "head": "MEDIUM",
+        "lid": -1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 106,
+          "char_end": 125
+        },
+        "reasons": {
+          "intent": "Recognition makes A more alert, but he does not yet reveal strong emotion.",
+          "affect": "Watchfulness conveys careful assessment of what the prior acquaintance may imply.",
+          "gaze": "The outward gaze marks renewed attention to the other presence.",
+          "head": "A moderate lift signals engagement and caution."
+        }
+      },
+      {
+        "proposal_id": "S05",
+        "start_anchor": "w0025",
+        "intent": "GUARDING_AGAINST_A_DIRECT_CHALLENGE",
+        "affect": "Nervous-38",
+        "heart": "Afraid-18",
+        "gaze": "AVERT-DOWN",
+        "head": "LOW",
+        "lid": -2,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 125,
+          "char_end": 159
+        },
+        "reasons": {
+          "intent": "The direct challenge causes A to protect himself and monitor the situation.",
+          "affect": "Nervousness exposes guarded uncertainty.",
+          "heart": "A mild fear response indicates concern about being found suspicious.",
+          "gaze": "Downward avoidance softens the confrontation and conceals A's immediate reaction.",
+          "head": "A lowered head supports defensive modesty.",
+          "lid": "Slightly narrowed lids suggest guardedness rather than open panic."
+        }
+      },
+      {
+        "proposal_id": "S06",
+        "start_anchor": "w0031",
+        "intent": "BUYING_TIME_BEFORE_A_SAFE_EXPLANATION",
+        "affect": "Nervous-62",
+        "heart": "Afraid-30",
+        "gaze": "AVERT-DOWN_LEFT",
+        "head": "LOW",
+        "lid": -3,
+        "blink": "SLOW_BLINK",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 159,
+          "char_end": 201
+        },
+        "reasons": {
+          "intent": "The hesitation is used to gain time while A searches for an innocuous answer.",
+          "affect": "Stronger nervousness makes the delay visibly meaningful.",
+          "heart": "Fear increases as A feels pressed to justify himself.",
+          "gaze": "The down-left avoidance turns attention inward and away from scrutiny.",
+          "head": "A lowered head keeps the thinking private.",
+          "lid": "The lowered lids reinforce uncertainty.",
+          "blink": "The slow blink functions as a deliberate time-buying pause."
+        }
+      },
+      {
+        "proposal_id": "S07",
+        "start_anchor": "w0038",
+        "intent": "TRYING_TO_REASSURE_WHILE_STILL_UNCERTAIN",
+        "affect": "Nervous-48",
+        "heart": "Afraid-22",
+        "gaze": "AVERT-DOWN",
+        "head": "LOW",
+        "lid": -1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 201,
+          "char_end": 215
+        },
+        "reasons": {
+          "intent": "A tries to make the explanation sound harmless before committing to details.",
+          "affect": "Nervousness remains visible but is moderated by an attempt at composure.",
+          "heart": "Residual fear keeps the reassurance from seeming fully secure.",
+          "gaze": "Downward avoidance maintains guarded self-control.",
+          "head": "The slight lowering communicates deference under pressure.",
+          "lid": "Mildly lowered lids show continued caution."
+        }
+      },
+      {
+        "proposal_id": "S08",
+        "start_anchor": "w0041",
+        "intent": "INTERNALLY_ASSEMBLING_A_PLAUSIBLE_ACCOUNT",
+        "affect": "Thinking-52",
+        "heart": "Afraid-18",
+        "gaze": "AVERT-DOWN_LEFT",
+        "head": "MEDIUM",
+        "lid": -2,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 215,
+          "char_end": 264
+        },
+        "reasons": {
+          "intent": "A's attention becomes explicitly internal as he constructs the account step by step.",
+          "affect": "Thinking replaces the earlier raw hesitation with concentrated mental effort.",
+          "heart": "A small amount of fear remains beneath the reasoning.",
+          "gaze": "Down-left focus supports inward calculation and avoidance of immediate eye contact.",
+          "head": "Moderate head involvement marks active thought.",
+          "lid": "Slightly lowered lids help convey concentration."
+        }
+      },
+      {
+        "proposal_id": "S09",
+        "start_anchor": "w0051",
+        "intent": "OFFERING_THE_EXPLANATION_WITH_GROWING_CONFIDENCE",
+        "affect": "Polite-30",
+        "heart": "NONE",
+        "gaze": "GAZE-RIGHT",
+        "head": "LOW",
+        "lid": 0,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 264,
+          "char_end": 290
+        },
+        "reasons": {
+          "intent": "A commits to the explanation and presents it in a more socially acceptable manner.",
+          "affect": "Politeness smooths the delivery and makes the account less defensive.",
+          "gaze": "Direct outward focus helps A sound more credible.",
+          "head": "A modestly lowered head preserves humility while confidence returns."
+        }
+      },
+      {
+        "proposal_id": "S10",
+        "start_anchor": "w0057",
+        "intent": "CORRECTING_THE_REFERENCE_WITH_SIMPLE_CERTAINTY",
+        "affect": "Watchful-35",
+        "heart": "Surprised-15",
+        "gaze": "GAZE-RIGHT",
+        "head": "MEDIUM",
+        "lid": 1,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 290,
+          "char_end": 303
+        },
+        "reasons": {
+          "intent": "A's attention shifts from explaining himself to identifying the object accurately.",
+          "affect": "Watchfulness gives the correction precise, attentive energy.",
+          "heart": "Mild surprise reflects the small moment of recognition.",
+          "gaze": "The outward gaze follows the object of attention.",
+          "head": "A moderate lift highlights the clarification.",
+          "lid": "Slightly raised lids support the recognition beat."
+        }
+      },
+      {
+        "proposal_id": "S11",
+        "start_anchor": "w0060",
+        "intent": "BRIEF_RECOGNITION_AND_SETTLING_AFTER_THE_CORRECTION",
+        "affect": "Neutral-20",
+        "heart": "Surprised-12",
+        "gaze": "AVERT-DOWN",
+        "head": "LOW",
+        "lid": 0,
+        "blink": "NONE",
+        "blink_suppression": "NONE",
+        "resolved_interval": {
+          "turn_id": "T01",
+          "char_start": 303,
+          "char_end": 307
+        },
+        "reasons": {
+          "intent": "A registers the final identification and lets the moment settle without adding unnecessary emotion.",
+          "affect": "Neutrality returns after the brief clarification.",
+          "heart": "A trace of surprise remains as a quiet after-reaction.",
+          "gaze": "Looking down returns A to his inward, self-contained baseline.",
+          "head": "A slight lowering closes the exchange modestly."
+        }
+      }
+    ]
+  },
+  "authoring": {
+    "semantic_score_version": "semantic_score_v1",
+    "manually_edited_phrases": []
+  }
+}

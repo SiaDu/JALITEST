@@ -1,0 +1,202 @@
+[ANALYZE]
+A begins with restrained courtesy, then turns inwardly inquisitive and watchful. He gives a concise account of his presence, becomes more guarded when challenged, and hesitates while constructing a harmless explanation. His attention finally settles on the bird, followed by a small moment of recognition.
+
+[PERFORMANCE]
+S01
+start: w0001
+intent: CONTROLLED_SOCIAL_OPENING
+affect: Polite-35
+heart: NONE
+gaze: AVERT-DOWN
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S02
+start: w0008
+intent: SEEKING_INFORMATION_WITH_FORMAL_CURIOSITY
+affect: Watchful-30
+heart: NONE
+gaze: GAZE-RIGHT
+head: MEDIUM
+lid: 0
+blink: NONE
+blink_suppression: NONE
+
+S03
+start: w0013
+intent: MATTER_OF_FACT_SELF_IDENTIFICATION
+affect: Neutral-25
+heart: NONE
+gaze: AVERT-DOWN
+head: NONE
+lid: 0
+blink: NONE
+blink_suppression: NONE
+
+S04
+start: w0021
+intent: CAUTIOUSLY_ACKNOWLEDGING_PRIOR_RECOGNITION
+affect: Watchful-40
+heart: NONE
+gaze: GAZE-RIGHT
+head: MEDIUM
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S05
+start: w0025
+intent: GUARDING_AGAINST_A_DIRECT_CHALLENGE
+affect: Nervous-38
+heart: Afraid-18
+gaze: AVERT-DOWN
+head: LOW
+lid: -2
+blink: NONE
+blink_suppression: NONE
+
+S06
+start: w0031
+intent: BUYING_TIME_BEFORE_A_SAFE_EXPLANATION
+affect: Nervous-62
+heart: Afraid-30
+gaze: AVERT-DOWN_LEFT
+head: LOW
+lid: -3
+blink: SLOW_BLINK
+blink_suppression: NONE
+
+S07
+start: w0038
+intent: TRYING_TO_REASSURE_WHILE_STILL_UNCERTAIN
+affect: Nervous-48
+heart: Afraid-22
+gaze: AVERT-DOWN
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S08
+start: w0041
+intent: INTERNALLY_ASSEMBLING_A_PLAUSIBLE_ACCOUNT
+affect: Thinking-52
+heart: Afraid-18
+gaze: AVERT-DOWN_LEFT
+head: MEDIUM
+lid: -2
+blink: NONE
+blink_suppression: NONE
+
+S09
+start: w0051
+intent: OFFERING_THE_EXPLANATION_WITH_GROWING_CONFIDENCE
+affect: Polite-30
+heart: NONE
+gaze: GAZE-RIGHT
+head: LOW
+lid: 0
+blink: NONE
+blink_suppression: NONE
+
+S10
+start: w0057
+intent: CORRECTING_THE_REFERENCE_WITH_SIMPLE_CERTAINTY
+affect: Watchful-35
+heart: Surprised-15
+gaze: GAZE-RIGHT
+head: MEDIUM
+lid: 1
+blink: NONE
+blink_suppression: NONE
+
+S11
+start: w0060
+intent: BRIEF_RECOGNITION_AND_SETTLING_AFTER_THE_CORRECTION
+affect: Neutral-20
+heart: Surprised-12
+gaze: AVERT-DOWN
+head: LOW
+lid: 0
+blink: NONE
+blink_suppression: NONE
+
+[REASONS]
+S01
+intent: A controlled social opening keeps A courteous without suggesting deep warmth or confidence.
+affect: The polite presentation makes the greeting civil and measured.
+gaze: A downward gaze suits A's self-contained, inward manner.
+head: A slight lowered head reinforces formal restraint.
+
+S02
+intent: A's attention turns toward the person being addressed, with curiosity kept within polite limits.
+affect: Watchfulness shows active interest without becoming confrontational.
+gaze: The directional gaze gives the question a clear outward focus.
+head: Moderate head involvement supports attentive inquiry.
+
+S03
+intent: A shifts into a plain factual mode while describing his role.
+affect: Neutrality makes the self-description sound routine and uncomplicated.
+gaze: Looking down preserves the sense that A is speaking from himself rather than performing for approval.
+
+S04
+intent: Recognition makes A more alert, but he does not yet reveal strong emotion.
+affect: Watchfulness conveys careful assessment of what the prior acquaintance may imply.
+gaze: The outward gaze marks renewed attention to the other presence.
+head: A moderate lift signals engagement and caution.
+
+S05
+intent: The direct challenge causes A to protect himself and monitor the situation.
+affect: Nervousness exposes guarded uncertainty.
+heart: A mild fear response indicates concern about being found suspicious.
+gaze: Downward avoidance softens the confrontation and conceals A's immediate reaction.
+head: A lowered head supports defensive modesty.
+lid: Slightly narrowed lids suggest guardedness rather than open panic.
+
+S06
+intent: The hesitation is used to gain time while A searches for an innocuous answer.
+affect: Stronger nervousness makes the delay visibly meaningful.
+heart: Fear increases as A feels pressed to justify himself.
+gaze: The down-left avoidance turns attention inward and away from scrutiny.
+head: A lowered head keeps the thinking private.
+lid: The lowered lids reinforce uncertainty.
+blink: The slow blink functions as a deliberate time-buying pause.
+
+S07
+intent: A tries to make the explanation sound harmless before committing to details.
+affect: Nervousness remains visible but is moderated by an attempt at composure.
+heart: Residual fear keeps the reassurance from seeming fully secure.
+gaze: Downward avoidance maintains guarded self-control.
+head: The slight lowering communicates deference under pressure.
+lid: Mildly lowered lids show continued caution.
+
+S08
+intent: A's attention becomes explicitly internal as he constructs the account step by step.
+affect: Thinking replaces the earlier raw hesitation with concentrated mental effort.
+heart: A small amount of fear remains beneath the reasoning.
+gaze: Down-left focus supports inward calculation and avoidance of immediate eye contact.
+head: Moderate head involvement marks active thought.
+lid: Slightly lowered lids help convey concentration.
+
+S09
+intent: A commits to the explanation and presents it in a more socially acceptable manner.
+affect: Politeness smooths the delivery and makes the account less defensive.
+gaze: Direct outward focus helps A sound more credible.
+head: A modestly lowered head preserves humility while confidence returns.
+
+S10
+intent: A's attention shifts from explaining himself to identifying the object accurately.
+affect: Watchfulness gives the correction precise, attentive energy.
+heart: Mild surprise reflects the small moment of recognition.
+gaze: The outward gaze follows the object of attention.
+head: A moderate lift highlights the clarification.
+lid: Slightly raised lids support the recognition beat.
+
+S11
+intent: A registers the final identification and lets the moment settle without adding unnecessary emotion.
+affect: Neutrality returns after the brief clarification.
+heart: A trace of surprise remains as a quiet after-reaction.
+gaze: Looking down returns A to his inward, self-contained baseline.
+head: A slight lowering closes the exchange modestly.
