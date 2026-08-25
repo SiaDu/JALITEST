@@ -113,6 +113,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.current_event_index: int | None = None
         self._building = False
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
+        self.character_mapping_rows: list[QtWidgets.QWidget] = []
         self.look_at_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
 
         self._build_ui()
@@ -159,17 +160,20 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addLayout(audio)
         layout.addWidget(QtWidgets.QLabel("Character Mapping"))
         for script_name, rig_name, row in self.character_rows:
-            row_layout = row.layout()
-            if not isinstance(row_layout, QtWidgets.QHBoxLayout):
-                raise RuntimeError("Character mapping row has no horizontal layout.")
-            script_name.setReadOnly(True)
-            row_layout.addWidget(script_name, 1)
+            mapping_row = QtWidgets.QWidget()
+            row_layout = QtWidgets.QHBoxLayout(mapping_row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            script_display = QtWidgets.QLineEdit(script_name.text())
+            script_display.setReadOnly(True)
+            script_name.textChanged.connect(script_display.setText)
+            row_layout.addWidget(script_display, 1)
             row_layout.addWidget(QtWidgets.QLabel("->"))
             row_layout.addWidget(rig_name, 1)
             select = QtWidgets.QPushButton("Use Scene Selection")
             select.clicked.connect(lambda _checked=False, field=rig_name: self._use_scene_selection(field))
             row_layout.addWidget(select)
-            layout.addWidget(row)
+            layout.addWidget(mapping_row)
+            self.character_mapping_rows.append(mapping_row)
         layout.addWidget(QtWidgets.QLabel("Required Look-at Targets"))
         self.look_at_layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.look_at_layout)
@@ -182,6 +186,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         bottom.addStretch(1)
         layout.addLayout(bottom)
         authoring.addWidget(group)
+        self._update_character_mode()
 
     def _build_setup(self, parent: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("SETUP")
@@ -406,6 +411,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         dual = self.mode_combo.currentIndex() == 1
         self.character_rows[1][2].setVisible(dual)
+        if self.character_mapping_rows:
+            self.character_mapping_rows[1].setVisible(dual)
         if dual:
             self.validation_label.setText(
                 "Dual semantic authoring uses one shared conversation plan."
