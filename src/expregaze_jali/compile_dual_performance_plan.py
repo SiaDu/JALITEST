@@ -55,7 +55,12 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
     phrases = _validate_plan(plan, model)
     timings = {alias: discover_character_timing(audio_folder, str(row["sound_file"])) for alias, row in mapping.items()}
     wavs = {alias: _wav_duration(audio_folder, str(row["sound_file"])) for alias,row in mapping.items()}
-    if abs(wavs["A"][1]-wavs["B"][1]) > 0.02: raise ValueError(f"Runtime WAV durations differ: A={wavs['A'][1]:.3f}s B={wavs['B'][1]:.3f}s")
+    shared_duration = min(wavs["A"][1], wavs["B"][1])
+    duration_warning = (
+        f"Runtime WAV durations differ (A={wavs['A'][1]:.3f}s, B={wavs['B'][1]:.3f}s); "
+        f"using the shortest shared duration {shared_duration:.3f}s."
+        if abs(wavs["A"][1] - wavs["B"][1]) > 0.02 else ""
+    )
     cursors = {"A": 0, "B": 0}; anchor_times: dict[str, dict[str, Any]] = {}
     for turn in model.turns:
         alias = next(key for key, name in model.aliases.items() if name == turn.speaker)
@@ -90,7 +95,7 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
                 if value not in (None, "NONE"):
                     events.append({"phrase_id": phrase["phrase_id"], "source_proposal_id": phrase.get("source_proposal_id"), "speaker": phrase.get("speaker"), "actor": alias, "intent": phrase.get("intent"), "channel": channel, "value": value, "source_char_span": phrase.get("span"), "resolved_time": {"start": start, "end": end}, "reason": ((phrase.get("rationale") or {}).get(alias, {}) or {}).get(channel)})
         path=out/"characters"/alias/"semantic_events_resolved.json"; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({"events":events},indent=2)+"\n",encoding="utf-8"); artifacts[alias]=str(path)
-    manifest={"schema_version":"dual_animation_manifest_v0","performance_plan_source":str(performance_plan_path),"full_script_source":str(script_source or "<provided script text>"),"fps":float(fps),"character_runtime_mapping":runtime_mapping,"wav_durations":{a:{"path":str(wavs[a][0]),"seconds":wavs[a][1]} for a in wavs},"artifacts":artifacts,"warnings":[]}
+    manifest={"schema_version":"dual_animation_manifest_v0","performance_plan_source":str(performance_plan_path),"full_script_source":str(script_source or "<provided script text>"),"fps":float(fps),"character_runtime_mapping":runtime_mapping,"wav_durations":{a:{"path":str(wavs[a][0]),"seconds":wavs[a][1]} for a in wavs},"shared_duration_seconds":shared_duration,"artifacts":artifacts,"warnings":[duration_warning] if duration_warning else []}
     path=out/"dual_animation_manifest.json"; path.write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8"); manifest["manifest_path"]=str(path); return manifest
 
 

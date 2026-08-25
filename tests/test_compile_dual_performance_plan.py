@@ -40,3 +40,12 @@ def test_mapping_and_ambiguous_alignment_fail(tmp_path):
     plan,audio=_fixture(tmp_path); (audio/"SeqT_AGNES.TextGrid").write_text("x")
     with pytest.raises(ValueError,match="does not match"): compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,audio_folder=audio,fps=24,runtime_mapping={**MAPPING,"A":{"script_name":"WILL","sound_file":"SeqT_AGNES"}},output_dir=tmp_path/"out")
     with pytest.raises(ValueError,match="Ambiguous"): compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,audio_folder=audio,fps=24,runtime_mapping=MAPPING,output_dir=tmp_path/"out")
+
+
+def test_mismatched_wav_durations_use_shortest_shared_duration(tmp_path):
+    plan, audio = _fixture(tmp_path)
+    with wave.open(str(audio / "SeqT_WILL.wav"), "wb") as f:
+        f.setnchannels(1); f.setsampwidth(2); f.setframerate(100); f.writeframes(b"\0\0" * 150)
+    result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping=MAPPING, output_dir=tmp_path / "out")
+    assert result["shared_duration_seconds"] == 1.5
+    assert "using the shortest shared duration" in result["warnings"][0]
