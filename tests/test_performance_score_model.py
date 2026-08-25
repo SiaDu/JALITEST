@@ -118,6 +118,16 @@ def test_single_score_displays_character_targeted_avert_with_its_resolved_alias(
     assert "<AVERT-B>" in format_single_score(plan)
 
 
+def test_unresolved_avert_is_visible_but_requires_a_score_edit_before_animation():
+    plan = _plan()
+    gaze = plan["events"][0]["gaze"][0]
+    gaze.update({"value": "AVERT-UNRESOLVED", "mode": "AVERT", "target": "UNRESOLVED"})
+    model = PerformanceScoreModel(plan)
+    assert "<AVERT-UNRESOLVED>" in model.score_text
+    assert any("needs resolution before animation" in issue.message for issue in model.validate(model.score_text).errors)
+    assert model.validate(model.score_text.replace("<AVERT-UNRESOLVED>", "<AVERT-DOWN>")).valid
+
+
 def test_resolved_state_is_absent_after_canonical_span_end():
     plan = _plan()
     plan["events"][0]["lid_state"][0]["char_end"] = 13

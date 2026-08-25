@@ -524,6 +524,8 @@ def _parse_tags(
             if gaze is not None:
                 issues.append(ValidationIssue(phrase_number, "Duplicate gaze behavior."))
             human_target = _human_target(target)
+            if human_target == "UNRESOLVED":
+                issues.append(ValidationIssue(phrase_number, "gaze target needs resolution before animation."))
             if human_target not in known_targets:
                 issues.append(ValidationIssue(phrase_number, f"Unknown behavior <{token}>"))
             gaze = (mode, human_target)

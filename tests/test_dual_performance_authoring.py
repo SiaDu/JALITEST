@@ -242,7 +242,7 @@ def test_dual_known_character_gaze_normalizes_and_unknown_character_fails():
         build_dual_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="bad")
 
 
-def test_dual_bare_avert_resolves_to_the_other_character_without_a_direction_guess():
+def test_dual_bare_avert_remains_unresolved_until_the_author_edits_it():
     model = build_conversation_anchor_model(SCRIPT, character_a="AGNES", character_b="WILL")
     proposal = parse_dual_performance_proposal(
         dual_proposal()
@@ -252,8 +252,8 @@ def test_dual_bare_avert_resolves_to_the_other_character_without_a_direction_gue
     )
     resolved = resolve_dual_phrase_boundaries(proposal, model)
 
-    assert resolved[0]["states"]["A"]["gaze"] == "AVERT-B"
-    assert resolved[0]["states"]["B"]["gaze"] == "AVERT-A"
+    assert resolved[0]["states"]["A"]["gaze"] == "AVERT-UNRESOLVED"
+    assert resolved[0]["states"]["B"]["gaze"] == "AVERT-UNRESOLVED"
 
 
 def test_dual_explicit_avert_directions_remain_unchanged():

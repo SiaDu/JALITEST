@@ -418,16 +418,16 @@ def validate_and_resolve_proposal_targets(
     }
     for phrase in proposal.get("phrases", []):
         gaze = str(phrase.get("gaze") or "NONE")
-        if gaze == "NONE":
+        if gaze in {"NONE", "AVERT-UNRESOLVED"}:
             continue
         if gaze == "AVERT":
-            counterpart = anchor_model.aliases.get("B")
-            if not counterpart:
-                raise ProposalValidationError(
-                    f'{phrase["proposal_id"]}: Bare AVERT requires a known social counterpart '
-                    "or an explicit direction/target."
-                )
-            phrase["gaze"] = "AVERT-B"
+            # Authoring can continue without inventing a social or spatial
+            # target. The Score exposes this as a required human correction
+            # before animation.
+            phrase["gaze"] = "AVERT-UNRESOLVED"
+            proposal.setdefault("diagnostics", {}).setdefault("warnings", []).append(
+                f'{phrase["proposal_id"]}: bare AVERT needs semantic target resolution before animation'
+            )
             continue
         mode, target = gaze.split("-", 1)
         if target in anchor_model.aliases or target in DIRECTION_TARGETS or target.startswith("OBJECT_"):

@@ -275,7 +275,7 @@ def test_known_character_gaze_names_normalize_through_anchor_aliases(
     assert plan["events"][0]["gaze"][0]["value"] == expected_canonical
 
 
-def test_bare_avert_resolves_to_the_known_social_counterpart_without_guessing_direction():
+def test_bare_avert_is_authoring_valid_but_remains_explicitly_unresolved():
     from expregaze_jali.performance_plan_from_proposal import build_performance_plan_from_proposal
 
     model = build_transcript_anchor_model(
@@ -286,9 +286,10 @@ def test_bare_avert_resolves_to_the_known_social_counterpart_without_guessing_di
     )
     validate_and_resolve_proposal_targets(parsed, model)
 
-    assert parsed["phrases"][0]["gaze"] == "AVERT-B"
+    assert parsed["phrases"][0]["gaze"] == "AVERT-UNRESOLVED"
     plan = build_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="bare_avert")
-    assert plan["events"][0]["gaze"][0]["value"] == "AVERT-CHARACTER_WILL"
+    assert plan["events"][0]["gaze"][0]["value"] == "AVERT-UNRESOLVED"
+    assert any("needs semantic target resolution" in warning for warning in plan["diagnostics"]["warnings"])
 
 
 @pytest.mark.parametrize("gaze", ["GAZE", "GLANCE"])
@@ -299,14 +300,14 @@ def test_bare_gaze_and_glance_remain_invalid(gaze):
         )
 
 
-def test_bare_avert_requires_a_known_social_counterpart():
+def test_bare_avert_does_not_require_a_social_counterpart_for_authoring():
     model = build_transcript_anchor_model("AGNES: one two three", target_character="AGNES")
     model = replace(model, aliases={"A": "AGNES"})
     parsed = parse_performance_proposal(
         proposal_text(starts=("w0001",), gaze="AVERT", heart="NONE"), vocabulary=VOCAB
     )
-    with pytest.raises(ProposalValidationError, match="Bare AVERT requires a known social counterpart"):
-        validate_and_resolve_proposal_targets(parsed, model)
+    validate_and_resolve_proposal_targets(parsed, model)
+    assert parsed["phrases"][0]["gaze"] == "AVERT-UNRESOLVED"
 
 
 def test_unknown_character_gaze_target_is_rejected_after_anchor_context_is_known():

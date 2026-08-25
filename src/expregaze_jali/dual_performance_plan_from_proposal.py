@@ -19,8 +19,7 @@ def _resolve_gaze(
     if value == "NONE":
         return value
     if value == "AVERT":
-        counterpart = "B" if actor_alias == "A" else "A"
-        return f"AVERT-{counterpart}"
+        return "AVERT-UNRESOLVED"
     mode, target = value.split("-", 1)
     if target in model.aliases or target in DIRECTION_TARGETS or target.startswith("OBJECT_"):
         return value

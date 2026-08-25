@@ -51,6 +51,11 @@ from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
     current_scene_fps,
 )
+from authoring_requirements import (  # noqa: E402
+    animation_setup_issues,
+    refresh_look_at_mappings,
+    required_look_at_targets,
+)
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -137,7 +142,35 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._build_acting_interpretation(authoring)
         self._build_semantic_score(authoring)
         self._build_reason_view(authoring)
+        self._build_animation_setup(authoring)
+        scroll.setWidget(content)
+        self.tabs.addTab(scroll, "Authoring")
 
+    def _build_animation_setup(self, authoring: QtWidgets.QVBoxLayout) -> None:
+        group = QtWidgets.QGroupBox("ANIMATION SETUP")
+        layout = QtWidgets.QVBoxLayout(group)
+        audio = QtWidgets.QHBoxLayout()
+        audio.addWidget(QtWidgets.QLabel("Input Audio Folder"))
+        self.audio_folder = QtWidgets.QLineEdit()
+        audio.addWidget(self.audio_folder, 1)
+        choose_audio = QtWidgets.QPushButton("Select Folder")
+        choose_audio.clicked.connect(self._select_audio_folder)
+        audio.addWidget(choose_audio)
+        layout.addLayout(audio)
+        layout.addWidget(QtWidgets.QLabel("Character Mapping"))
+        for script_name, rig_name, row in self.character_rows:
+            row_layout = row.layout()
+            if not isinstance(row_layout, QtWidgets.QHBoxLayout):
+                raise RuntimeError("Character mapping row has no horizontal layout.")
+            script_name.setReadOnly(True)
+            row_layout.addWidget(script_name, 1)
+            row_layout.addWidget(QtWidgets.QLabel("->"))
+            row_layout.addWidget(rig_name, 1)
+            row_layout.addWidget(select)
+            layout.addWidget(row)
+        layout.addWidget(QtWidgets.QLabel("Required Look-at Targets"))
+        self.look_at_layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(self.look_at_layout)
         bottom = QtWidgets.QHBoxLayout()
         self.generate_animation_button = QtWidgets.QPushButton("Generate Animation")
         self.generate_animation_button.clicked.connect(self.generate_animation)
@@ -145,9 +178,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.animation_status = QtWidgets.QLabel("Ready.")
         bottom.addWidget(self.animation_status)
         bottom.addStretch(1)
-        authoring.addLayout(bottom)
-        scroll.setWidget(content)
-        self.tabs.addTab(scroll, "Authoring")
+        layout.addLayout(bottom)
+        authoring.addWidget(group)
 
     def _build_setup(self, parent: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("SETUP")
@@ -166,15 +198,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         _configure_multiline_editor(self.input_context, height=200)
         layout.addWidget(self.input_context)
 
-        audio = QtWidgets.QHBoxLayout()
-        audio.addWidget(QtWidgets.QLabel("Input Audio Folder"))
-        self.audio_folder = QtWidgets.QLineEdit()
-        audio.addWidget(self.audio_folder, 1)
-        choose_audio = QtWidgets.QPushButton("Select Folder")
-        choose_audio.clicked.connect(self._select_audio_folder)
-        audio.addWidget(choose_audio)
-        layout.addLayout(audio)
-
         mode_row = QtWidgets.QHBoxLayout()
         mode_row.addWidget(QtWidgets.QLabel("Authoring Mode"))
         self.mode_combo = QtWidgets.QComboBox()
@@ -184,10 +207,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         mode_row.addStretch(1)
         layout.addLayout(mode_row)
 
-        layout.addWidget(QtWidgets.QLabel("Character Mapping"))
+        layout.addWidget(QtWidgets.QLabel("Script Characters"))
         character_grid = QtWidgets.QGridLayout()
         character_grid.addWidget(QtWidgets.QLabel("Script Character"), 0, 0)
-        character_grid.addWidget(QtWidgets.QLabel("Maya Rig / Node"), 0, 2)
         for row_index in range(2):
             row_widget = QtWidgets.QWidget()
             row_layout = QtWidgets.QHBoxLayout(row_widget)
@@ -200,19 +222,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             select.clicked.connect(lambda _checked=False, field=rig_name: self._use_scene_selection(field))
             row_layout.addWidget(script_name, 1)
             row_layout.addWidget(QtWidgets.QLabel("→"))
-            row_layout.addWidget(rig_name, 1)
-            row_layout.addWidget(select)
             character_grid.addWidget(row_widget, row_index + 1, 0, 1, 4)
             self.character_rows.append((script_name, rig_name, row_widget))
         layout.addLayout(character_grid)
-
-        layout.addWidget(QtWidgets.QLabel("Potential Look-at Target Mapping"))
-        self.look_at_layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.look_at_layout)
-        add_target = QtWidgets.QPushButton("+ Add Look-at Target")
-        add_target.clicked.connect(self._add_look_at_target)
-        layout.addWidget(add_target, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
-        self._add_look_at_target("CRYSTAL")
 
         self.generate_plan_button = QtWidgets.QPushButton("Generate Performance Plan")
         self.generate_plan_button.clicked.connect(self.generate_performance_plan)
@@ -461,8 +473,20 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     f"The plan loaded, but its authoring session could not be saved: {exc}"
                 )
                 return
-            self.generation_status.setText("Performance plan generated.")
-            self.generation_status.setStyleSheet("color: #166534;")
+            unresolved = []
+            if self.score_model is not None:
+                unresolved = [
+                    issue for issue in self.score_model.validate(self.score_editor.toPlainText()).errors
+                    if "needs resolution before animation" in issue.message
+                ]
+            if unresolved:
+                self.generation_status.setText(
+                    f"Performance Plan generated with {len(unresolved)} item(s) to resolve."
+                )
+                self.generation_status.setStyleSheet("color: #92400e;")
+            else:
+                self.generation_status.setText("Performance plan generated — animation setup incomplete.")
+                self.generation_status.setStyleSheet("color: #166534;")
         else:
             self._generation_failed("The backend completed, but the generated plan could not be loaded.")
 
@@ -544,6 +568,22 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         if not self.validate_score(show_dialog=True):
             return
+        setup_issues = animation_setup_issues(
+            plan=self.plan,
+            audio_folder=audio_folder,
+            characters=[{
+                "script_name": script_character, "maya_node": character_node,
+            }],
+            look_at_mappings=self._look_at_mapping_data(),
+            node_exists=lambda node: bool(cmds.objExists(node)),
+        )
+        if setup_issues:
+            message = "Animation Setup is incomplete:\n\n" + "\n".join(
+                f"- {issue}" for issue in setup_issues
+            ) + "\n\nFill the missing mappings and click Generate Animation again."
+            QtWidgets.QMessageBox.warning(self, "Animation Setup Incomplete", message)
+            self._append_backend_output(message)
+            return
 
         animation_dir = self.source_path.parent / "animation"
         runtime_plan = animation_dir / "performance_plan_runtime.json"
@@ -623,6 +663,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.look_at_layout.removeWidget(row)
             row.deleteLater()
         self.look_at_rows = []
+
+    def _refresh_required_look_at_targets(self) -> None:
+        if self.plan is None:
+            return
+        rows = refresh_look_at_mappings(
+            required_look_at_targets(self.plan), self._look_at_mapping_data()
+        )
+        self._clear_look_at_targets()
+        for mapping in rows:
+            self._add_look_at_target(mapping["semantic_target"])
+            self.look_at_rows[-1][1].setText(mapping["maya_node"])
 
     def _restore_authoring_session(
         self, session: dict[str, Any], *, preserve_authoring_text: bool = False
@@ -729,6 +780,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if not self.validate_score(show_dialog=True) or self.score_model is None:
             return False
         self.plan = self.score_model.apply(self.score_editor.toPlainText())
+        self._refresh_required_look_at_targets()
         self._refresh_phrase_reason()
         self._refresh_metadata_and_diagnostics()
         if show_success:
@@ -883,6 +935,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.phrase_number.setValue(1)
         self._building = False
         self.validate_score()
+        self._refresh_required_look_at_targets()
         self._refresh_phrase_reason()
         self._refresh_metadata_and_diagnostics()
         self._building = True

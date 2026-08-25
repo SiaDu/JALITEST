@@ -257,7 +257,8 @@ def test_generation_ui_reports_progress_and_loads_backend_result():
     assert 'setText("Generating performance plan...")' in generation
     assert "self.backend_runner.start(" in generation
     assert "self.load_plan(path, preserve_authoring_text=True)" in generation
-    assert 'setText("Performance plan generated.")' in generation
+    assert 'setText("Performance plan generated — animation setup incomplete.")' in generation
+    assert "Performance Plan generated with" in generation
     assert 'setText("Performance plan generation failed.")' in generation
 
 

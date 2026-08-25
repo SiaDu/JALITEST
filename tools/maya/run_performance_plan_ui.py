@@ -25,6 +25,7 @@ _LOCAL_MODULES = (
     "performance_plan_ui_data",
     "performance_score_model",
     "authoring_session_data",
+    "authoring_requirements",
     "backend_process_runner",
     "animation_apply_runner",
 )
