@@ -13,9 +13,14 @@ from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, spea
 SCHEMA_VERSION = "dual_performance_plan_v0"
 
 
-def _resolve_gaze(value: str, model: ConversationAnchorModel, phrase_id: str) -> str:
+def _resolve_gaze(
+    value: str, model: ConversationAnchorModel, phrase_id: str, actor_alias: str
+) -> str:
     if value == "NONE":
         return value
+    if value == "AVERT":
+        counterpart = "B" if actor_alias == "A" else "A"
+        return f"AVERT-{counterpart}"
     mode, target = value.split("-", 1)
     if target in model.aliases or target in DIRECTION_TARGETS or target.startswith("OBJECT_"):
         return value
@@ -57,7 +62,7 @@ def resolve_dual_phrase_boundaries(
         row.update({"turn_id": anchor.turn_id, "start_index": index})
         for alias in ("A", "B"):
             row["states"][alias]["gaze"] = _resolve_gaze(
-                row["states"][alias]["gaze"], anchor_model, phrase_id
+                row["states"][alias]["gaze"], anchor_model, phrase_id, alias
             )
         resolved.append(row)
 

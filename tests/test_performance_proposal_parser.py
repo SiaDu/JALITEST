@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from expregaze_jali.performance_proposal_parser import (
@@ -252,6 +254,10 @@ def test_three_or_more_starts_partition_one_turn_without_gaps_or_overlaps():
         ("GAZE-AGNES", "GAZE-A", "GAZE-CHARACTER_AGNES"),
         ("GAZE-CHARACTER_WILL", "GAZE-B", "GAZE-CHARACTER_WILL"),
         ("GLANCE-WILL", "GLANCE-B", "GLANCE-CHARACTER_WILL"),
+        ("AVERT-WILL", "AVERT-B", "AVERT-CHARACTER_WILL"),
+        ("AVERT-CHARACTER_WILL", "AVERT-B", "AVERT-CHARACTER_WILL"),
+        ("AVERT-DOWN", "AVERT-DOWN", "AVERT-DOWN"),
+        ("AVERT-UP_LEFT", "AVERT-UP_LEFT", "AVERT-UP_LEFT"),
     ],
 )
 def test_known_character_gaze_names_normalize_through_anchor_aliases(
@@ -267,6 +273,40 @@ def test_known_character_gaze_names_normalize_through_anchor_aliases(
     assert parsed["phrases"][0]["gaze"] == expected_proposal
     plan = build_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="gaze")
     assert plan["events"][0]["gaze"][0]["value"] == expected_canonical
+
+
+def test_bare_avert_resolves_to_the_known_social_counterpart_without_guessing_direction():
+    from expregaze_jali.performance_plan_from_proposal import build_performance_plan_from_proposal
+
+    model = build_transcript_anchor_model(
+        "AGNES: one two three\nWILL: four five", target_character="AGNES"
+    )
+    parsed = parse_performance_proposal(
+        proposal_text(starts=("w0001",), gaze="AVERT", heart="NONE"), vocabulary=VOCAB
+    )
+    validate_and_resolve_proposal_targets(parsed, model)
+
+    assert parsed["phrases"][0]["gaze"] == "AVERT-B"
+    plan = build_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="bare_avert")
+    assert plan["events"][0]["gaze"][0]["value"] == "AVERT-CHARACTER_WILL"
+
+
+@pytest.mark.parametrize("gaze", ["GAZE", "GLANCE"])
+def test_bare_gaze_and_glance_remain_invalid(gaze):
+    with pytest.raises(ProposalValidationError, match=f'Invalid gaze value "{gaze}"'):
+        parse_performance_proposal(
+            proposal_text(starts=("w0001",), gaze=gaze, heart="NONE"), vocabulary=VOCAB
+        )
+
+
+def test_bare_avert_requires_a_known_social_counterpart():
+    model = build_transcript_anchor_model("AGNES: one two three", target_character="AGNES")
+    model = replace(model, aliases={"A": "AGNES"})
+    parsed = parse_performance_proposal(
+        proposal_text(starts=("w0001",), gaze="AVERT", heart="NONE"), vocabulary=VOCAB
+    )
+    with pytest.raises(ProposalValidationError, match="Bare AVERT requires a known social counterpart"):
+        validate_and_resolve_proposal_targets(parsed, model)
 
 
 def test_unknown_character_gaze_target_is_rejected_after_anchor_context_is_known():

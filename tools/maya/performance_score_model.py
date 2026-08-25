@@ -169,12 +169,15 @@ def _active(spans: list[dict[str, Any]], start: int, end: int) -> list[dict[str,
     ]
 
 
-def _human_target(value: str) -> str:
+def _human_target(value: str, character_aliases: dict[str, str] | None = None) -> str:
     target = value.strip()
     for prefix in ("CHARACTER_", "OBJECT_"):
         if target.upper().startswith(prefix):
-            return target[len(prefix):].upper()
-    return target.upper()
+            target = target[len(prefix):]
+            break
+    target = target.upper()
+    target_key = re.sub(r"[^A-Z0-9]+", "_", target).strip("_")
+    return (character_aliases or {}).get(target_key, target)
 
 
 def _affect_state(span: dict[str, Any] | None) -> tuple[str, int] | None:
@@ -191,7 +194,9 @@ def _affect_state(span: dict[str, Any] | None) -> tuple[str, int] | None:
     return state, int(round((intensity or 0.0) * 100))
 
 
-def _gaze_state(span: dict[str, Any] | None) -> tuple[str, str] | None:
+def _gaze_state(
+    span: dict[str, Any] | None, character_aliases: dict[str, str] | None = None
+) -> tuple[str, str] | None:
     if not span:
         return None
     mode = str(span.get("mode") or "").strip().upper()
@@ -199,7 +204,7 @@ def _gaze_state(span: dict[str, Any] | None) -> tuple[str, str] | None:
     if not mode:
         mode, separator, target_from_value = str(span.get("value") or "").partition("-")
         target = target or (target_from_value if separator else "")
-    return (mode.upper(), _human_target(target)) if mode and target else None
+    return (mode.upper(), _human_target(target, character_aliases)) if mode and target else None
 
 
 def _lid_state(span: dict[str, Any] | None) -> float | None:
@@ -245,6 +250,13 @@ def _phrase_text(event: dict[str, Any], start: int, end: int) -> str:
 
 def derive_phrases(plan: dict[str, Any], *, alias: str = "A") -> list[ScorePhrase]:
     """Derive deterministic phrases with complete resolved persistent state."""
+    provenance = _as_dict(plan.get("proposal_provenance"))
+    character_aliases = {
+        re.sub(r"[^A-Z0-9]+", "_", str(character).strip().upper()).strip("_"):
+        str(short_alias).strip().upper()
+        for short_alias, character in _as_dict(provenance.get("aliases")).items()
+        if str(short_alias).strip() and str(character).strip()
+    }
     affect = _all_spans(plan, ("affect", "visible"))
     hidden_affect = _all_spans(plan, ("affect", "hidden"))
     gaze = _all_spans(plan, ("gaze",))
@@ -288,7 +300,7 @@ def derive_phrases(plan: dict[str, Any], *, alias: str = "A") -> list[ScorePhras
                 lid=_lid_state(lid_ref),
                 affect=_affect_state(affect_ref),
                 hidden_affect=_affect_state(hidden_ref),
-                gaze=_gaze_state(gaze_ref),
+                gaze=_gaze_state(gaze_ref, character_aliases),
                 head=_head_state(head_ref),
                 blinks=blink_values,
             )

@@ -168,6 +168,11 @@ def _normalize_gaze(value: str, *, phrase_id: str) -> str:
     raw = re.sub(r"\s+", "_", value.strip()).upper()
     if raw == "NONE":
         return raw
+    # Bare AVERT means social eye-contact avoidance, but its counterpart can
+    # only be determined once the transcript aliases are available. Keep it as
+    # a temporary semantic value; GAZE and GLANCE still require a target.
+    if raw == "AVERT":
+        return raw
     mode, separator, target = raw.partition("-")
     if mode not in {"GAZE", "GLANCE", "AVERT"} or not separator or not target:
         raise ProposalValidationError(f'{phrase_id}: Invalid gaze value "{value.strip()}"')
@@ -414,6 +419,15 @@ def validate_and_resolve_proposal_targets(
     for phrase in proposal.get("phrases", []):
         gaze = str(phrase.get("gaze") or "NONE")
         if gaze == "NONE":
+            continue
+        if gaze == "AVERT":
+            counterpart = anchor_model.aliases.get("B")
+            if not counterpart:
+                raise ProposalValidationError(
+                    f'{phrase["proposal_id"]}: Bare AVERT requires a known social counterpart '
+                    "or an explicit direction/target."
+                )
+            phrase["gaze"] = "AVERT-B"
             continue
         mode, target = gaze.split("-", 1)
         if target in anchor_model.aliases or target in DIRECTION_TARGETS or target.startswith("OBJECT_"):

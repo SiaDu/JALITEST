@@ -242,6 +242,32 @@ def test_dual_known_character_gaze_normalizes_and_unknown_character_fails():
         build_dual_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="bad")
 
 
+def test_dual_bare_avert_resolves_to_the_other_character_without_a_direction_guess():
+    model = build_conversation_anchor_model(SCRIPT, character_a="AGNES", character_b="WILL")
+    proposal = parse_dual_performance_proposal(
+        dual_proposal()
+        .replace("A.gaze: GAZE-WILL", "A.gaze: AVERT", 1)
+        .replace("B.gaze: AVERT-DOWN", "B.gaze: AVERT", 1),
+        vocabulary=VOCAB,
+    )
+    resolved = resolve_dual_phrase_boundaries(proposal, model)
+
+    assert resolved[0]["states"]["A"]["gaze"] == "AVERT-B"
+    assert resolved[0]["states"]["B"]["gaze"] == "AVERT-A"
+
+
+def test_dual_explicit_avert_directions_remain_unchanged():
+    model = build_conversation_anchor_model(SCRIPT, character_a="AGNES", character_b="WILL")
+    proposal = parse_dual_performance_proposal(
+        dual_proposal().replace("A.gaze: GAZE-WILL", "A.gaze: AVERT-UP_LEFT", 1),
+        vocabulary=VOCAB,
+    )
+    resolved = resolve_dual_phrase_boundaries(proposal, model)
+
+    assert resolved[0]["states"]["A"]["gaze"] == "AVERT-UP_LEFT"
+    assert resolved[0]["states"]["B"]["gaze"] == "AVERT-DOWN"
+
+
 def test_dual_score_exact_form_hides_inactive_state_and_supports_validated_edits():
     model = DualPerformanceScoreModel(build_plan())
     score = model.score_text
@@ -297,6 +323,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons." in prompt
     assert "[REASONS]\nS01\nintent: natural-language explanation" in prompt
     assert "do not repeat `S##.` before every field" in prompt
+    assert "Bare `AVERT` is tolerated only as shorthand" in prompt
     calls = []
 
     def runner(**kwargs):

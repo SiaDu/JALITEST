@@ -112,6 +112,10 @@ Repeat the S-block for every proposed phrase. In `[REASONS]`, each `S##` appears
 block header; do not repeat `S##.` before every field. Under `intent:`, write a natural-language
 explanation, not another intent label. Reasons explain the proposal and never redefine `[PERFORMANCE]`.
 Explain intent, active affect/heart/gaze, meaningful head choices, and active blink behavior; lid rationale
-is optional unless it represents an important acting choice. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
+is optional unless it represents an important acting choice. Gaze values normally use `MODE-TARGET`.
+For social eye-contact avoidance, prefer `AVERT-B` when A avoids B. For spatially meaningful avoidance,
+use an explicit direction such as `AVERT-DOWN`, `AVERT-DOWN_LEFT`, or `AVERT-UP_RIGHT`. Do not output
+bare `GAZE` or `GLANCE`. Bare `AVERT` is tolerated only as shorthand when there is one unambiguous social
+counterpart; prefer the explicit A/B form. Allowed gaze modes are `GAZE`, `GLANCE`, and `AVERT`. Prefer `A` and `B` for
 character targets; known character names and `CHARACTER_NAME` are also accepted and normalize to
 their A/B alias. Object targets use `OBJECT_NAME`; direction targets use the supplied directions.

@@ -109,6 +109,15 @@ def test_single_format_is_numbered_human_facing_and_expands_resolved_state():
     assert "</" not in score
 
 
+def test_single_score_displays_character_targeted_avert_with_its_resolved_alias():
+    plan = _plan()
+    plan["proposal_provenance"] = {"aliases": {"A": "AGNES", "B": "WILL"}}
+    gaze = plan["events"][0]["gaze"][0]
+    gaze.update({"value": "AVERT-CHARACTER_WILL", "mode": "AVERT", "target": "CHARACTER_WILL"})
+
+    assert "<AVERT-B>" in format_single_score(plan)
+
+
 def test_resolved_state_is_absent_after_canonical_span_end():
     plan = _plan()
     plan["events"][0]["lid_state"][0]["char_end"] = 13
