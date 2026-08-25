@@ -1,0 +1,806 @@
+{
+  "format": "transcript_anchor_v1",
+  "target_character": "CHAYTON",
+  "aliases": {
+    "A": "CHAYTON"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "char_start": 0,
+      "char_end": 259,
+      "utterance_start": 0,
+      "utterance_end": 259,
+      "utterance_text": "Evening, ma'am. We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently? No. Bert! Is he in there with you, ma'am? He's not what he seems. God forbid you let him into your home. And if so, we need to act.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "Evening,",
+          "char_start": 0,
+          "char_end": 8
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "ma'am.",
+          "char_start": 9,
+          "char_end": 15
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "We're",
+          "char_start": 16,
+          "char_end": 21
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "in",
+          "char_start": 22,
+          "char_end": 24
+        },
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "pursuit",
+          "char_start": 25,
+          "char_end": 32
+        },
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "of",
+          "char_start": 33,
+          "char_end": 35
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "someone",
+          "char_start": 36,
+          "char_end": 43
+        },
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "very",
+          "char_start": 44,
+          "char_end": 48
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "dangerous.",
+          "char_start": 49,
+          "char_end": 59
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "He",
+          "char_start": 60,
+          "char_end": 62
+        },
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "might've",
+          "char_start": 63,
+          "char_end": 71
+        },
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "come",
+          "char_start": 72,
+          "char_end": 76
+        },
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "onto",
+          "char_start": 77,
+          "char_end": 81
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "your",
+          "char_start": 82,
+          "char_end": 86
+        },
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "property.",
+          "char_start": 87,
+          "char_end": 96
+        },
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "Have",
+          "char_start": 97,
+          "char_end": 101
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "you",
+          "char_start": 102,
+          "char_end": 105
+        },
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "seen",
+          "char_start": 106,
+          "char_end": 110
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "anyone",
+          "char_start": 111,
+          "char_end": 117
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "recently?",
+          "char_start": 118,
+          "char_end": 127
+        },
+        {
+          "anchor_id": "w0021",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "No.",
+          "char_start": 128,
+          "char_end": 131
+        },
+        {
+          "anchor_id": "w0022",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "Bert!",
+          "char_start": 132,
+          "char_end": 137
+        },
+        {
+          "anchor_id": "w0023",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "Is",
+          "char_start": 138,
+          "char_end": 140
+        },
+        {
+          "anchor_id": "w0024",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "he",
+          "char_start": 141,
+          "char_end": 143
+        },
+        {
+          "anchor_id": "w0025",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "in",
+          "char_start": 144,
+          "char_end": 146
+        },
+        {
+          "anchor_id": "w0026",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "there",
+          "char_start": 147,
+          "char_end": 152
+        },
+        {
+          "anchor_id": "w0027",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "with",
+          "char_start": 153,
+          "char_end": 157
+        },
+        {
+          "anchor_id": "w0028",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "you,",
+          "char_start": 158,
+          "char_end": 162
+        },
+        {
+          "anchor_id": "w0029",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "ma'am?",
+          "char_start": 163,
+          "char_end": 169
+        },
+        {
+          "anchor_id": "w0030",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "He's",
+          "char_start": 170,
+          "char_end": 174
+        },
+        {
+          "anchor_id": "w0031",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "not",
+          "char_start": 175,
+          "char_end": 178
+        },
+        {
+          "anchor_id": "w0032",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "what",
+          "char_start": 179,
+          "char_end": 183
+        },
+        {
+          "anchor_id": "w0033",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "he",
+          "char_start": 184,
+          "char_end": 186
+        },
+        {
+          "anchor_id": "w0034",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "seems.",
+          "char_start": 187,
+          "char_end": 193
+        },
+        {
+          "anchor_id": "w0035",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "God",
+          "char_start": 194,
+          "char_end": 197
+        },
+        {
+          "anchor_id": "w0036",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "forbid",
+          "char_start": 198,
+          "char_end": 204
+        },
+        {
+          "anchor_id": "w0037",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "you",
+          "char_start": 205,
+          "char_end": 208
+        },
+        {
+          "anchor_id": "w0038",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "let",
+          "char_start": 209,
+          "char_end": 212
+        },
+        {
+          "anchor_id": "w0039",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "him",
+          "char_start": 213,
+          "char_end": 216
+        },
+        {
+          "anchor_id": "w0040",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "into",
+          "char_start": 217,
+          "char_end": 221
+        },
+        {
+          "anchor_id": "w0041",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "your",
+          "char_start": 222,
+          "char_end": 226
+        },
+        {
+          "anchor_id": "w0042",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "home.",
+          "char_start": 227,
+          "char_end": 232
+        },
+        {
+          "anchor_id": "w0043",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "And",
+          "char_start": 233,
+          "char_end": 236
+        },
+        {
+          "anchor_id": "w0044",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "if",
+          "char_start": 237,
+          "char_end": 239
+        },
+        {
+          "anchor_id": "w0045",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "so,",
+          "char_start": 240,
+          "char_end": 243
+        },
+        {
+          "anchor_id": "w0046",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "we",
+          "char_start": 244,
+          "char_end": 246
+        },
+        {
+          "anchor_id": "w0047",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "need",
+          "char_start": 247,
+          "char_end": 251
+        },
+        {
+          "anchor_id": "w0048",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "to",
+          "char_start": 252,
+          "char_end": 254
+        },
+        {
+          "anchor_id": "w0049",
+          "turn_id": "T01",
+          "speaker": "CHAYTON",
+          "text": "act.",
+          "char_start": 255,
+          "char_end": 259
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "Evening,",
+      "char_start": 0,
+      "char_end": 8
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "ma'am.",
+      "char_start": 9,
+      "char_end": 15
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "We're",
+      "char_start": 16,
+      "char_end": 21
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "in",
+      "char_start": 22,
+      "char_end": 24
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "pursuit",
+      "char_start": 25,
+      "char_end": 32
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "of",
+      "char_start": 33,
+      "char_end": 35
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "someone",
+      "char_start": 36,
+      "char_end": 43
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "very",
+      "char_start": 44,
+      "char_end": 48
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "dangerous.",
+      "char_start": 49,
+      "char_end": 59
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "He",
+      "char_start": 60,
+      "char_end": 62
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "might've",
+      "char_start": 63,
+      "char_end": 71
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "come",
+      "char_start": 72,
+      "char_end": 76
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "onto",
+      "char_start": 77,
+      "char_end": 81
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "your",
+      "char_start": 82,
+      "char_end": 86
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "property.",
+      "char_start": 87,
+      "char_end": 96
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "Have",
+      "char_start": 97,
+      "char_end": 101
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "you",
+      "char_start": 102,
+      "char_end": 105
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "seen",
+      "char_start": 106,
+      "char_end": 110
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "anyone",
+      "char_start": 111,
+      "char_end": 117
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "recently?",
+      "char_start": 118,
+      "char_end": 127
+    },
+    {
+      "anchor_id": "w0021",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "No.",
+      "char_start": 128,
+      "char_end": 131
+    },
+    {
+      "anchor_id": "w0022",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "Bert!",
+      "char_start": 132,
+      "char_end": 137
+    },
+    {
+      "anchor_id": "w0023",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "Is",
+      "char_start": 138,
+      "char_end": 140
+    },
+    {
+      "anchor_id": "w0024",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "he",
+      "char_start": 141,
+      "char_end": 143
+    },
+    {
+      "anchor_id": "w0025",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "in",
+      "char_start": 144,
+      "char_end": 146
+    },
+    {
+      "anchor_id": "w0026",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "there",
+      "char_start": 147,
+      "char_end": 152
+    },
+    {
+      "anchor_id": "w0027",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "with",
+      "char_start": 153,
+      "char_end": 157
+    },
+    {
+      "anchor_id": "w0028",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "you,",
+      "char_start": 158,
+      "char_end": 162
+    },
+    {
+      "anchor_id": "w0029",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "ma'am?",
+      "char_start": 163,
+      "char_end": 169
+    },
+    {
+      "anchor_id": "w0030",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "He's",
+      "char_start": 170,
+      "char_end": 174
+    },
+    {
+      "anchor_id": "w0031",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "not",
+      "char_start": 175,
+      "char_end": 178
+    },
+    {
+      "anchor_id": "w0032",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "what",
+      "char_start": 179,
+      "char_end": 183
+    },
+    {
+      "anchor_id": "w0033",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "he",
+      "char_start": 184,
+      "char_end": 186
+    },
+    {
+      "anchor_id": "w0034",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "seems.",
+      "char_start": 187,
+      "char_end": 193
+    },
+    {
+      "anchor_id": "w0035",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "God",
+      "char_start": 194,
+      "char_end": 197
+    },
+    {
+      "anchor_id": "w0036",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "forbid",
+      "char_start": 198,
+      "char_end": 204
+    },
+    {
+      "anchor_id": "w0037",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "you",
+      "char_start": 205,
+      "char_end": 208
+    },
+    {
+      "anchor_id": "w0038",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "let",
+      "char_start": 209,
+      "char_end": 212
+    },
+    {
+      "anchor_id": "w0039",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "him",
+      "char_start": 213,
+      "char_end": 216
+    },
+    {
+      "anchor_id": "w0040",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "into",
+      "char_start": 217,
+      "char_end": 221
+    },
+    {
+      "anchor_id": "w0041",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "your",
+      "char_start": 222,
+      "char_end": 226
+    },
+    {
+      "anchor_id": "w0042",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "home.",
+      "char_start": 227,
+      "char_end": 232
+    },
+    {
+      "anchor_id": "w0043",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "And",
+      "char_start": 233,
+      "char_end": 236
+    },
+    {
+      "anchor_id": "w0044",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "if",
+      "char_start": 237,
+      "char_end": 239
+    },
+    {
+      "anchor_id": "w0045",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "so,",
+      "char_start": 240,
+      "char_end": 243
+    },
+    {
+      "anchor_id": "w0046",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "we",
+      "char_start": 244,
+      "char_end": 246
+    },
+    {
+      "anchor_id": "w0047",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "need",
+      "char_start": 247,
+      "char_end": 251
+    },
+    {
+      "anchor_id": "w0048",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "to",
+      "char_start": 252,
+      "char_end": 254
+    },
+    {
+      "anchor_id": "w0049",
+      "turn_id": "T01",
+      "speaker": "CHAYTON",
+      "text": "act.",
+      "char_start": 255,
+      "char_end": 259
+    }
+  ]
+}

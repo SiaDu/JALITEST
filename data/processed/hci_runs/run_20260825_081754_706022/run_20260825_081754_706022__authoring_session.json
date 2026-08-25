@@ -1,0 +1,21 @@
+{
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260825_081754_706022",
+  "mode": "dual",
+  "audio_folder": "",
+  "input_script": "CHAYTON: Evening, ma'am.\nCHAYTON: We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently?\nJOAN: No.\nJOAN: Bert!\nCHAYTON: Is he in there with you, ma'am?\nCHAYTON: He's not what he seems. God forbid you let him into your home. And if so, we need to act.",
+  "input_context": "Scene:\nAt sunset, Chayton and a Choctaw search party arrive at Joan and Bert's farmhouse looking for a dangerous man.\n\nStory:\nOnly moments earlier, Joan and Bert admitted an injured stranger into their house. The stranger claimed that a Choctaw group had attacked him and his wife, and he offered Bert gold in exchange for protection. Joan and Bert therefore know that the man Chayton is searching for is currently inside their home.\n\nCharacter:\nJOAN is armed, wary, and protective of her household. She does not trust the visitors and has already committed to sheltering the injured stranger.\nCHAYTON is the leader of the search party. He believes the stranger poses an immediate danger and is trying to persuade Joan to take the warning seriously.\n\nPerformance Context:\nJoan is deliberately concealing information while trying not to surrender control of the encounter. Chayton becomes increasingly convinced that she is withholding something, but his goal is to warn rather than openly threaten her. The exchange carries suspicion and urgency beneath outwardly controlled language.",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "CHAYTON",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "JOAN",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}

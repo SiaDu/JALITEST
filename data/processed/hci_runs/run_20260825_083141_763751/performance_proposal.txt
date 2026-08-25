@@ -1,0 +1,155 @@
+[ANALYZE]
+Chayton begins with controlled courtesy, presenting the encounter as official and purposeful. He then lets the danger of the suspect become more visible, probing the resident for information while watching for hesitation. A sudden negative response sharpens his suspicion, prompting a forceful call toward the property. He resumes guarded questioning, then shifts into a stern warning that becomes openly coercive and urgent, ending with an unmistakable demand for action.
+
+[PERFORMANCE]
+S01
+start: w0001
+intent: CONTROLLED_OFFICIAL_COURTESY
+affect: Polite-35
+heart: NONE
+gaze: GAZE-B
+head: LOW
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S02
+start: w0010
+intent: REVEAL_DANGER_AND_MONITOR_REACTION
+affect: Watchful-48
+heart: Afraid-25
+gaze: GAZE-B
+head: MEDIUM
+lid: -2
+blink: SLOW_BLINK
+blink_suppression: NONE
+
+S03
+start: w0016
+intent: CAREFUL_INFORMATION_GATHERING
+affect: Watchful-55
+heart: NONE
+gaze: GAZE-B
+head: MEDIUM
+lid: -1
+blink: NONE
+blink_suppression: NONE
+
+S04
+start: w0021
+intent: PROCESS_UNEXPECTED_DENIAL
+affect: Confused-42
+heart: Surprised-30
+gaze: AVERT
+head: LOW
+lid: 0
+blink: DOUBLE_BLINK
+blink_suppression: NONE
+
+S05
+start: w0022
+intent: PROJECT_SUDDEN_COMMANDING_AUTHORITY
+affect: Intimidating-72
+heart: Angry-38
+gaze: GAZE-B
+head: HIGH
+lid: -3
+blink: NONE
+blink_suppression: SUPPRESS
+
+S06
+start: w0023
+intent: RESUME_SUSPICIOUS_INTERROGATION
+affect: Watchful-65
+heart: Contempt-28
+gaze: GAZE-B
+head: MEDIUM
+lid: -2
+blink: NONE
+blink_suppression: SUPPRESS
+
+S07
+start: w0030
+intent: DELIVER_A_STERN_COERCIVE_WARNING
+affect: Intimidating-78
+heart: Disgusted-45
+gaze: GAZE-B
+head: HIGH
+lid: -3
+blink: NONE
+blink_suppression: SUPPRESS
+
+S08
+start: w0043
+intent: ESCALATE_TO_IMMEDIATE_URGENCY
+affect: Angered-82
+heart: Angry-58
+gaze: GAZE-B
+head: FULL
+lid: -5
+blink: EYE_CLOSE_HOLD
+blink_suppression: SUPPRESS
+
+[REASONS]
+S01
+intent: He establishes authority without hostility, using practiced courtesy to keep the interaction controlled.
+affect: The polite presentation makes the official approach socially acceptable.
+gaze: Direct attention signals confidence and keeps the resident engaged.
+head: A restrained forward inclination supports formal civility.
+lid: Slightly lowered lids keep the courtesy composed rather than overly warm.
+
+S02
+intent: He introduces the threat while measuring how the resident reacts to the information.
+affect: Watchfulness makes the danger feel credible and shows active assessment.
+heart: A contained fear response acknowledges the seriousness of the pursuit without making him appear panicked.
+gaze: Sustained attention looks for evasions or signs of recognition.
+head: The stronger head involvement marks a clear increase in seriousness.
+blink: A slow blink gives the warning deliberate weight.
+
+S03
+intent: He turns from announcement to evidence-gathering, remaining patient but alert.
+affect: Watchfulness supports focused questioning and suspicion.
+gaze: Direct observation helps him evaluate the resident's answer in real time.
+head: A steady, moderately engaged posture keeps the inquiry controlled.
+
+S04
+intent: The unexpected denial interrupts his working assumption and briefly exposes recalculation.
+affect: Confusion shows a momentary disruption in his read of the situation.
+heart: Surprise registers the sudden contradiction before he regains control.
+gaze: A brief aversion marks an internal check rather than acceptance.
+head: The lowered head suggests a quick reassessment.
+blink: The double blink punctuates the abrupt mental reset.
+
+S05
+intent: He immediately redirects the encounter outward and asserts command over the scene.
+affect: Intimidation turns the call into a forceful display of authority.
+heart: Anger fuels the abrupt escalation after the unhelpful response.
+gaze: Direct focus projects a demand for compliance.
+head: The lifted, forceful head posture amplifies the command.
+blink_suppression: Suppressing blinks maintains an unbroken, pressuring presence.
+
+S06
+intent: He returns to the resident with heightened suspicion, treating the situation as potentially deceptive.
+affect: Watchfulness keeps him searching for concealed information.
+heart: Contempt suggests reduced patience with perceived evasiveness.
+gaze: Fixed attention makes the renewed questioning feel investigative.
+head: A firm, engaged head position sustains pressure without yet reaching a full outburst.
+blink_suppression: Suppression supports an unwavering interrogative stare.
+
+S07
+intent: He reframes the unseen suspect as a serious threat and pressures the resident to reject access.
+affect: Intimidation makes the warning feel personal and coercive.
+heart: Disgust conveys moral revulsion toward the suspect's hidden nature.
+gaze: Direct focus places responsibility on the resident to respond.
+head: The elevated posture reinforces dominance and certainty.
+blink_suppression: The unbroken stare prevents the warning from softening.
+
+S08
+intent: He closes the exchange by converting warning into an immediate operational demand.
+affect: Anger gives the conclusion force and removes any remaining softness.
+heart: Anger supplies the emotional drive for decisive intervention.
+gaze: Direct focus makes the urgency confrontational and unmistakable.
+head: Full head involvement marks the peak of command and readiness.
+lid: Strongly narrowed lids intensify the final pressure.
+blink: The held eye closure creates a hard, decisive punctuation before action.
+blink_suppression: Suppression around the held blink preserves the sense of controlled urgency.

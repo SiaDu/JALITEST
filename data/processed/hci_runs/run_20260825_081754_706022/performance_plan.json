@@ -1,0 +1,442 @@
+{
+  "schema_version": "dual_performance_plan_v0",
+  "sequence_id": "run_20260825_081754_706022",
+  "characters": {
+    "A": "CHAYTON",
+    "B": "JOAN"
+  },
+  "acting_interpretation": "Chayton opens with controlled courtesy while leading a tense search. Joan answers with a clipped denial and immediately summons Bert, using the household connection to regain control without revealing the injured stranger. As Chayton’s questions become more specific, his suspicion rises, but he frames the confrontation as a warning and an attempt to protect Joan rather than as an overt threat. Joan remains guarded and protective, increasingly watchful as the possibility of forced action becomes clear.",
+  "phrases": [
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "A",
+      "span": {
+        "text": "Evening, ma'am.",
+        "turn_id": "T01",
+        "char_start": 9,
+        "char_end": 24
+      },
+      "intent": "CONTROLLED_OPENING_BETWEEN_STRANGERS",
+      "states": {
+        "A": {
+          "affect": "Polite-28",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "LOW",
+          "lid": 0,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Watchful-30",
+          "heart": "Afraid-18",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -1,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "The exchange begins with formal restraint, establishing a civil surface over mutual caution.",
+        "A": {
+          "affect": "Chayton uses measured politeness to avoid making the arrival feel like an immediate assault.",
+          "gaze": "He keeps Joan as his primary focus while assessing whether she is receptive.",
+          "head": "A slight lowered head supports respectful authority rather than submission."
+        },
+        "B": {
+          "affect": "Joan’s watchfulness lets her receive the greeting without becoming openly hostile.",
+          "gaze": "She monitors Chayton as the apparent leader and source of danger.",
+          "head": "Her restrained posture preserves control while signaling caution.",
+          "heart": "Fear is present beneath her guarded social composure."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "A",
+      "span": {
+        "text": "We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently?",
+        "turn_id": "T02",
+        "char_start": 34,
+        "char_end": 145
+      },
+      "intent": "CAUTIOUS_WARNING_AND_INFORMATION_REQUEST",
+      "states": {
+        "A": {
+          "affect": "Intimidating-30",
+          "heart": "Afraid-22",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Nervous-34",
+          "heart": "Afraid-30",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -2,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Chayton moves from courtesy into a serious warning and request for information, while Joan recognizes that the search may reach her door.",
+        "A": {
+          "affect": "His contained intimidation communicates the danger without becoming an explicit threat.",
+          "gaze": "Direct focus makes the warning personal and difficult to dismiss.",
+          "head": "The raised head gives the warning authority and urgency.",
+          "heart": "His fear reflects genuine concern about the dangerous man’s immediate potential."
+        },
+        "B": {
+          "affect": "Joan’s nervousness is controlled so she does not expose what she knows.",
+          "gaze": "She watches Chayton for signs of whether persuasion may turn into intrusion.",
+          "head": "Her lowered head keeps her guarded and avoids volunteering confidence.",
+          "heart": "Fear comes from the risk to her household and the concealed stranger."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "B",
+      "span": {
+        "text": "No.",
+        "turn_id": "T03",
+        "char_start": 152,
+        "char_end": 155
+      },
+      "intent": "DEFENSIVE_DENIAL_UNDER_PRESSURE",
+      "states": {
+        "A": {
+          "affect": "Watchful-38",
+          "heart": "Afraid-25",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "NONE",
+          "heart": "NONE",
+          "gaze": "NONE",
+          "head": "NONE",
+          "lid": "NONE",
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Joan gives the smallest possible denial, creating a hard conversational barrier.",
+        "A": {
+          "affect": "Chayton’s watchfulness registers that the answer may be incomplete without yet accusing her.",
+          "gaze": "He studies her for hesitation or contradiction.",
+          "head": "The steady lift marks increased attention rather than aggression.",
+          "heart": "His concern remains active but controlled."
+        },
+        "B": {
+          "affect": "No new visible affect is assigned because the denial is intentionally compressed and opaque.",
+          "heart": "No separate heart shift is made during the brief refusal.",
+          "gaze": "No distinct gaze change is required for the minimal answer.",
+          "head": "No new head action is needed; the established guarded stance carries through."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "B",
+      "span": {
+        "text": "Bert!",
+        "turn_id": "T04",
+        "char_start": 162,
+        "char_end": 167
+      },
+      "intent": "HOUSEHOLD_CONTROL_THROUGH_A_CALL",
+      "states": {
+        "A": {
+          "affect": "Thinking-38",
+          "heart": "Afraid-24",
+          "gaze": "GAZE-B",
+          "head": "LOW",
+          "lid": -1,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Watchful-48",
+          "heart": "Afraid-34",
+          "gaze": "AVERT-A",
+          "head": "MEDIUM",
+          "lid": -2,
+          "blink": "DOUBLE_BLINK",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Joan redirects the encounter toward her household by calling Bert, attempting to make the visitors wait on her terms.",
+        "A": {
+          "affect": "Chayton thinks through the sudden domestic interruption and becomes more alert to concealment.",
+          "gaze": "He remains trained on Joan, treating her call as evidence rather than distraction.",
+          "head": "The lowered head suggests scrutiny and restrained patience.",
+          "heart": "His concern persists as the possibility of an unseen person becomes more immediate."
+        },
+        "B": {
+          "affect": "Joan’s heightened watchfulness supports a deliberate attempt to summon help without explaining herself.",
+          "gaze": "Her brief aversion toward Bert indicates that the household is now part of her defensive strategy.",
+          "head": "The raised head asserts ownership of the space and readiness to manage the encounter.",
+          "heart": "Fear deepens because the call may expose the secret she is protecting.",
+          "blink": "The double blink marks a quick internal recalculation while she keeps her composure."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "A",
+      "span": {
+        "text": "Is he in there with you, ma'am?",
+        "turn_id": "T05",
+        "char_start": 177,
+        "char_end": 208
+      },
+      "intent": "DIRECT_SUSPICION_MEETS_PROTECTIVE_RESISTANCE",
+      "states": {
+        "A": {
+          "affect": "Watchful-58",
+          "heart": "Afraid-30",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -2,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Intimidating-42",
+          "heart": "Angry-28",
+          "gaze": "GAZE-A",
+          "head": "HIGH",
+          "lid": -2,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        }
+      },
+      "rationale": {
+        "intent": "Chayton tests the household boundary directly, and Joan answers with controlled resistance rather than surrender.",
+        "A": {
+          "affect": "His watchfulness becomes pointed suspicion as he connects Joan’s behavior with someone inside.",
+          "gaze": "Direct eye contact pressures her for a truthful response.",
+          "head": "The firm raised position makes the question authoritative while remaining controlled.",
+          "heart": "Fear is tied to the danger he believes is nearby, not to a wish to dominate Joan."
+        },
+        "B": {
+          "affect": "Joan’s intimidation is protective, warning that she will resist entry or coercion.",
+          "gaze": "She confronts Chayton directly to reclaim control of the threshold.",
+          "head": "The high head reinforces her armed, defensive authority.",
+          "heart": "Anger gives structure to fear and strengthens her commitment to shelter the stranger.",
+          "blink_suppression": "Suppressed blinking conveys deliberate refusal to show uncertainty."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "A",
+      "span": {
+        "text": "He's not what he seems. God forbid you let him into your home. And if so, we need to act.",
+        "turn_id": "T06",
+        "char_start": 218,
+        "char_end": 307
+      },
+      "intent": "URGENT_PROTECTIVE_WARNING_WITH_CONTAINED_FORCE",
+      "states": {
+        "A": {
+          "affect": "Intimidating-62",
+          "heart": "Afraid-38",
+          "gaze": "GAZE-B",
+          "head": "HIGH",
+          "lid": -3,
+          "blink": "BLINK_CLUSTER",
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Nervous-52",
+          "heart": "Afraid-48",
+          "gaze": "GAZE-A",
+          "head": "HIGH",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        }
+      },
+      "rationale": {
+        "intent": "Chayton delivers an urgent final warning, asking Joan to act before the hidden danger turns into violence.",
+        "A": {
+          "affect": "His intimidation reaches its strongest controlled level, conveying consequence without an open threat.",
+          "gaze": "He holds Joan’s gaze to make the warning unmistakably sincere.",
+          "head": "The high head presents leadership and immediate resolve.",
+          "heart": "Fear exposes the stakes beneath his forceful delivery.",
+          "blink": "The blink cluster releases pressure while preserving the sense of urgency."
+        },
+        "B": {
+          "affect": "Joan’s nervousness reveals the strain of concealment, though she still avoids capitulation.",
+          "gaze": "She keeps Chayton in view because his next action may determine the safety of the household.",
+          "head": "Her raised head maintains a defensive challenge at the threshold.",
+          "heart": "Fear is now prominent beneath her resistance.",
+          "blink_suppression": "Suppressed blinking shows that she is forcing herself not to reveal panic."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "proposal_provenance": {
+    "format": "dual_anchor_semantic_v1",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260825_081754_706022\\performance_proposal.txt",
+    "aliases": {
+      "A": "CHAYTON",
+      "B": "JOAN"
+    },
+    "phrase_ids": [
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06"
+    ]
+  }
+}
