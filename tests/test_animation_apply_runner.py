@@ -195,6 +195,35 @@ def test_gaze_state_machine_resets_detailed_eyes_after_avert():
     assert schedule[1]["eye_stare"] == [9,8,7] and schedule[1]["eyes"] == [1,2]
 
 
+def test_first_gaze_at_timeline_start_initializes_directly_without_neutral_transition():
+    raw = [{"channel": "gaze", "value": "GAZE-B", "resolved_time": {"start": 0, "end": 10}}]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[9, 9, 9], neutral_eyes=[4, 5], target_positions={"B": [1, 2, 3]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=1, transition_frames=3)
+    assert keys == [{"frame": 0.0, "eye_stare": [1, 2, 3], "eyes": [4, 5]}]
+
+
+def test_first_avert_at_timeline_start_initializes_its_complete_state():
+    raw = [{"channel": "gaze", "value": "AVERT-DOWN", "resolved_time": {"start": 0, "end": 10}}]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[9, 8, 7], neutral_eyes=[1, 2], target_positions={})
+    keys = build_dual_gaze_key_schedule(schedule, fps=1, transition_frames=3)
+    assert keys == [{"frame": 0.0, "eye_stare": [9, 8, 7], "eyes": [1, -3.0]}]
+
+
+def test_first_gaze_after_timeline_start_keeps_neutral_then_uses_transition():
+    raw = [{"channel": "gaze", "value": "GAZE-B", "resolved_time": {"start": 2, "end": 10}}]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[9, 9, 9], neutral_eyes=[4, 5], target_positions={"B": [1, 2, 3]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=1, transition_frames=3)
+    assert keys == [{"frame": 2.0, "eye_stare": [9, 9, 9], "eyes": [4, 5]}, {"frame": 5.0, "eye_stare": [1, 2, 3], "eyes": [4, 5]}]
+
+
+def test_later_persistent_state_still_uses_explicit_transition_frames():
+    raw = [{"channel": "gaze", "value": "GAZE-A", "resolved_time": {"start": 0, "end": 4}}, {"channel": "gaze", "value": "AVERT-DOWN", "resolved_time": {"start": 4, "end": 10}}]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[0, 0, 0], neutral_eyes=[0, 0], target_positions={"A": [1, 2, 3]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=1, transition_frames=3)
+    assert {key["frame"] for key in keys if key["eye_stare"] == [1, 2, 3]} == {0.0, 4.0}
+    assert any(key["frame"] == 7.0 and key["eye_stare"] == [0, 0, 0] and key["eyes"] == [0, -5.0] for key in keys)
+
+
 def test_adapted_chain_and_glance_return_emit_complete_key_states():
     raw=[{"channel":"gaze","value":"GAZE-A","resolved_time":{"start":0,"end":20}},{"channel":"gaze","value":"GLANCE-B","resolved_time":{"start":5,"end":12}}]
     schedule=build_dual_gaze_schedule(adapt_dual_gaze_events(raw),neutral_position=[0,0,0],neutral_eyes=[0,0],target_positions={"A":[1,1,1],"B":[2,2,2]})

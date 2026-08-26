@@ -289,11 +289,18 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
     return schedule
 
 
-def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_frames: int = 6) -> list[dict[str, Any]]:
+def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_frames: int = 6, timeline_start: float = 0.0, initialization_epsilon: float = 1e-6) -> list[dict[str, Any]]:
     """Expand complete semantic states into chronological Maya key states."""
     keys=[]
-    for state in schedule:
+    ordered = list(schedule)
+    for index, state in enumerate(ordered):
         event=state["event"]; start=state["start"]*fps; end=state["end"]*fps; previous=state.get("previous_state", state)
+        # A canonical persistent state at scene start is initialization, not a
+        # transition from an invented neutral state.  GLANCE stays temporary
+        # and deliberately retains its existing transition/return behavior.
+        if index == 0 and event["mode"] != "GLANCE" and state["start"] <= timeline_start + initialization_epsilon:
+            keys.append({"frame": start, "eye_stare": list(state["eye_stare"]), "eyes": list(state["eyes"])})
+            continue
         arrival=min(start+transition_frames,end)
         keys.append({"frame":start,"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
         if event["mode"]=="GLANCE":
