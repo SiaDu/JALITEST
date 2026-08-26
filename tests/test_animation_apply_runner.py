@@ -20,6 +20,7 @@ from animation_apply_runner import (  # noqa: E402
     directional_eye_offset,
     build_dual_gaze_schedule,
     build_dual_gaze_key_schedule,
+    clear_character_gaze_animation,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
@@ -116,6 +117,20 @@ def test_adapted_chain_and_glance_return_emit_complete_key_states():
     schedule=build_dual_gaze_schedule(adapt_dual_gaze_events(raw),neutral_position=[0,0,0],neutral_eyes=[0,0],target_positions={"A":[1,1,1],"B":[2,2,2]})
     keys=build_dual_gaze_key_schedule(schedule,fps=1,transition_frames=1,glance_frames=2)
     assert len(schedule)==2 and any(key["frame"]==12 and key["eye_stare"]==[1,1,1] and key["eyes"]==[0,0] for key in keys)
+
+
+def test_glance_restores_persistent_previous_state_and_uses_own_end():
+    raw=[{"channel":"gaze","value":"GAZE-A","resolved_time":{"start":0,"end":20}},{"channel":"gaze","value":"GLANCE-B","resolved_time":{"start":5,"end":6}},{"channel":"gaze","value":"GAZE-C","resolved_time":{"start":9,"end":20}}]
+    schedule=build_dual_gaze_schedule(adapt_dual_gaze_events(raw),neutral_position=[0,0,0],neutral_eyes=[0,0],target_positions={"A":[1,0,0],"B":[2,0,0],"C":[3,0,0]})
+    assert schedule[1]["end"]==6 and schedule[2]["previous_state"]["eye_stare"]==[1,0,0]
+
+
+def test_clear_character_gaze_animation_is_attribute_scoped():
+    calls=[]
+    class Cmds:
+        def cutKey(self,*args,**kwargs): calls.append((args,kwargs))
+    clear_character_gaze_animation({"eye_stare_node":"eye","both_eyes_node":"both"},cmds_module=Cmds())
+    assert calls == [(('eye',),{'attribute':'translateX','clear':True}),(('eye',),{'attribute':'translateY','clear':True}),(('eye',),{'attribute':'translateZ','clear':True}),(('both',),{'attribute':'translateX','clear':True}),(('both',),{'attribute':'translateY','clear':True})]
 
 
 class _JSyncCmds:

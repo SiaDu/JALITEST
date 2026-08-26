@@ -259,12 +259,23 @@ def directional_eye_offset(target: str, *, magnitude: float = 5.0, limit: float 
     return max(-abs(limit), min(abs(limit), x)), max(-abs(limit), min(abs(limit), y))
 
 
+def clear_character_gaze_animation(reference: dict[str, Any], *, cmds_module: Any | None = None) -> None:
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    for node, attributes in ((reference["eye_stare_node"], ("translateX", "translateY", "translateZ")), (reference["both_eyes_node"], ("translateX", "translateY"))):
+        for attribute in attributes:
+            cmds_module.cutKey(node, attribute=attribute, clear=True)
+
+
 def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_position: list[float], neutral_eyes: list[float], target_positions: dict[str, list[float]], magnitude: float = 5.0, limit: float = 6.0) -> list[dict[str, Any]]:
     """Return complete two-layer gaze states, ordered by canonical intervals."""
     schedule=[]; previous={"eye_stare":list(neutral_position),"eyes":list(neutral_eyes)}
     ordered=sorted(events, key=lambda e:(float(e["resolved_time"]["start"]),float(e["resolved_time"]["end"])))
     for index,event in enumerate(ordered):
-        mode,target=event["mode"],event["target"]; state={"event":event,"start":float(event["resolved_time"]["start"]),"end":float(ordered[index+1]["resolved_time"]["start"]) if index+1<len(ordered) else float(event["resolved_time"]["end"])}
+        mode,target=event["mode"],event["target"]; next_start=float(ordered[index+1]["resolved_time"]["start"]) if index+1<len(ordered) else None
+        raw_end=float(event["resolved_time"]["end"])
+        end=min(raw_end,next_start) if mode=="GLANCE" and next_start is not None else (next_start if next_start is not None else raw_end)
+        state={"event":event,"start":float(event["resolved_time"]["start"]),"end":end}
         state["previous_state"]=dict(previous)
         if mode in {"GAZE","GLANCE"}:
             if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
@@ -273,7 +284,8 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
         else:
             x,y=directional_eye_offset(target,magnitude=magnitude,limit=limit,social=bool(event.get("social_avert")))
             state.update({"eye_stare":list(neutral_position),"eyes":[neutral_eyes[0]+x,neutral_eyes[1]+y]})
-        previous={"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])}; schedule.append(state)
+        if mode != "GLANCE": previous={"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])}
+        schedule.append(state)
     return schedule
 
 
@@ -319,6 +331,7 @@ def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappi
         provided_reference=row.get("gaze_reference") if isinstance(row.get("gaze_reference"),dict) else None
         reference=dict(provided_reference) if provided_reference else capture_character_gaze_reference(node)
         reference.setdefault("eye_stare_node",qualify_rig_control(node,"eyeStare_world")); reference.setdefault("both_eyes_node",qualify_rig_control(node,"CNT_BOTH_EYES"))
+        clear_character_gaze_animation(reference, cmds_module=cmds)
         actor_target_map=dict(target_map)
         for item in gaze:
             if item["target"] not in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}:
