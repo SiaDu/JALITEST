@@ -21,11 +21,94 @@ from animation_apply_runner import (  # noqa: E402
     build_dual_gaze_schedule,
     build_dual_gaze_key_schedule,
     clear_character_gaze_animation,
+    prepare_dual_animation_overlay,
+    apply_dual_animation_artifacts,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
     validate_gaze_target_mappings,
 )
+
+
+def _dual_manifest(tmp_path: Path) -> Path:
+    artifacts = {}
+    for alias, target in (("A", "B"), ("B", "A")):
+        path = tmp_path / f"{alias}_events.json"
+        path.write_text(json.dumps({"events": [{"channel": "gaze", "value": f"GAZE-{target}", "phrase_id": f"P{alias}", "resolved_time": {"start": 0.0, "end": 1.0}}]}), encoding="utf-8")
+        artifacts[alias] = str(path)
+    manifest = tmp_path / "dual_manifest.json"
+    manifest.write_text(json.dumps({"schema_version": "dual_animation_manifest_v0", "fps": 24.0, "character_runtime_mapping": {"A": {"script_name": "AGNES", "sound_file": "SeqT_AGNES"}, "B": {"script_name": "WILL", "sound_file": "SeqT_WILL"}}, "artifacts": artifacts}), encoding="utf-8")
+    return manifest
+
+
+class _DualCmds:
+    def __init__(self):
+        self.calls = []
+    def objExists(self, _node): return True
+    def getAttr(self, _attribute): return "SeqT_AGNES" if "jSync1" in _attribute else "SeqT_WILL"
+    def cutKey(self, *args, **kwargs): self.calls.append(("cutKey", args, kwargs))
+    def xform(self, *args, **kwargs): self.calls.append(("xform", args, kwargs))
+    def setKeyframe(self, *args, **kwargs): self.calls.append(("setKeyframe", args, kwargs))
+    def setAttr(self, *args, **kwargs): self.calls.append(("setAttr", args, kwargs))
+
+
+def _dual_mappings():
+    return {"A": {"script_name": "AGNES", "maya_node": "|A:ROOT", "gaze_targets": {"B": [1, 2, 3]}, "gaze_reference": {"eye_stare_node": "A:eyeStare_world", "both_eyes_node": "A:CNT_BOTH_EYES", "eye_stare_world_position": [10, 0, 0], "both_eyes_translate": [1, 2]}}, "B": {"script_name": "WILL", "maya_node": "|B:ROOT", "gaze_targets": {"A": [4, 5, 6]}, "gaze_reference": {"eye_stare_node": "B:eyeStare_world", "both_eyes_node": "B:CNT_BOTH_EYES", "eye_stare_world_position": [20, 0, 0], "both_eyes_translate": [3, 4]}}}
+
+
+def _patch_dual_runtime(monkeypatch, cmds):
+    import animation_apply_runner as runner
+    import expregaze_jali.maya_apply_eye_performance as eye_module
+    import expregaze_jali.maya_apply_gaze as gaze_module
+    monkeypatch.setitem(sys.modules, "maya", SimpleNamespace(cmds=cmds))
+    monkeypatch.setattr(gaze_module, "load_maya_gaze_config", lambda _path: {})
+    monkeypatch.setattr(eye_module, "load_maya_eye_config", lambda _path: {})
+    monkeypatch.setattr(eye_module, "apply_eye_performance_events", lambda **_kwargs: None)
+    def resolve(node, expected, **_kwargs):
+        return "|A:ROOT|jSync1" if node == "|A:ROOT" else "|B:ROOT|jSync2"
+    monkeypatch.setattr(runner, "resolve_jsync_for_character", resolve)
+
+
+def test_prepare_dual_overlay_is_non_destructive_and_resolves_both_jsync(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    prepared = prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings())
+    assert prepared["jsync_nodes"] == {"A": "|A:ROOT|jSync1", "B": "|B:ROOT|jSync2"}
+    assert prepared["A"]["gaze_reference"]["eye_stare_world_position"] == [10, 0, 0]
+    assert prepared["B"]["gaze_key_schedule"]
+    assert cmds.calls == []
+
+
+def test_prepare_dual_overlay_fails_before_any_actor_is_modified(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    mappings = _dual_mappings(); del mappings["B"]["gaze_targets"]["A"]
+    with pytest.raises(ValueError, match="Character B requires an artist-captured gaze target"):
+        prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=mappings)
+    assert cmds.calls == []
+
+
+def test_prepare_dual_overlay_rejects_invalid_b_jsync_before_any_write(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    import animation_apply_runner as runner
+    def resolve(node, expected, **_kwargs):
+        if node == "|B:ROOT":
+            raise RuntimeError("No jSync node found beneath character '|B:ROOT'.")
+        return "|A:ROOT|jSync1"
+    monkeypatch.setattr(runner, "resolve_jsync_for_character", resolve)
+    with pytest.raises(RuntimeError, match="No jSync node"):
+        prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings())
+    assert cmds.calls == []
+
+
+def test_post_freeze_dual_apply_uses_prepared_context_without_jsync(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    prepared = prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings())
+    import animation_apply_runner as runner
+    monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda *_a, **_k: pytest.fail("apply must not resolve jSync"))
+    result = apply_dual_animation_artifacts(prepared_context=prepared)
+    assert result["jsync_nodes"]["A"].endswith("jSync1")
+    assert {call[1][0] for call in cmds.calls if call[0] == "cutKey"} == {"A:eyeStare_world", "A:CNT_BOTH_EYES", "B:eyeStare_world", "B:CNT_BOTH_EYES"}
+    assert any(call[0] == "setKeyframe" and call[1][0] == "A:eyeStare_world" for call in cmds.calls)
+    assert any(call[0] == "setKeyframe" and call[1][0] == "B:eyeStare_world" for call in cmds.calls)
 
 
 def test_scene_fps_supports_named_and_numeric_maya_units():

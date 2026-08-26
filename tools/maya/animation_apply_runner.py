@@ -303,54 +303,114 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
     return sorted(keys,key=lambda key:key["frame"])
 
 
-def apply_dual_animation_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], look_at_mappings: Iterable[dict[str, Any]], maya_config_path: str | Path | None = None) -> dict[str, Any]:
-    """Apply only dual gaze/lid/blink overlays; existing jSync speech is untouched."""
+def _dual_eye_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Build the small eye adapter payload and reject malformed resolved rows."""
+    eye: list[dict[str, Any]] = []
+    channels = {"lid": "lid_state", "blink": "performative_blink", "blink_suppression": "blink_suppression"}
+    for event in events:
+        kind = channels.get(str(event.get("channel") or ""))
+        if not kind:
+            continue
+        resolved_time = event.get("resolved_time")
+        if not isinstance(resolved_time, dict) or "start" not in resolved_time or "end" not in resolved_time:
+            raise ValueError(f"Dual {kind} event is missing resolved_time.")
+        eye.append({"type": kind, "value": event.get("value"), "resolved_time": dict(resolved_time)})
+    return eye
+
+
+def _validate_gaze_reference(reference: dict[str, Any], *, cmds_module: Any) -> None:
+    for key in ("eye_stare_node", "both_eyes_node"):
+        node = str(reference.get(key) or "")
+        if not node or not cmds_module.objExists(node):
+            raise RuntimeError(f"Prepared neutral gaze reference has no existing {key}.")
+    if not isinstance(reference.get("eye_stare_world_position"), (list, tuple)) or len(reference["eye_stare_world_position"]) != 3:
+        raise ValueError("Prepared neutral gaze reference requires eye_stare_world_position.")
+    if not isinstance(reference.get("both_eyes_translate"), (list, tuple)) or len(reference["both_eyes_translate"]) != 2:
+        raise ValueError("Prepared neutral gaze reference requires both_eyes_translate.")
+
+
+def prepare_dual_animation_overlay(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], look_at_mappings: Iterable[dict[str, Any]] = (), maya_config_path: str | Path | None = None) -> dict[str, Any]:
+    """Validate and capture a dual overlay before native jSync is frozen/deleted.
+
+    This phase is deliberately read-only with respect to Maya animation.  The
+    resulting context is the only input required by the post-freeze overlay.
+    """
     from maya import cmds  # type: ignore
     manifest = load_dual_animation_manifest(manifest_path)
     runtime = manifest["character_runtime_mapping"]
     config_path = Path(maya_config_path or os.environ.get("JALITEST_MAYA_CONFIG") or DEFAULT_MAYA_CONFIG)
     source_path=str(REPO_ROOT / "src")
     if source_path not in sys.path: sys.path.insert(0, source_path)
-    from expregaze_jali.maya_apply_gaze import apply_gaze_events, load_maya_gaze_config  # noqa: PLC0415
-    from expregaze_jali.maya_apply_eye_performance import apply_eye_performance_events, load_maya_eye_config  # noqa: PLC0415
+    from expregaze_jali.maya_apply_gaze import load_maya_gaze_config  # noqa: PLC0415
+    from expregaze_jali.maya_apply_eye_performance import load_maya_eye_config  # noqa: PLC0415
     gaze_config, eye_config = load_maya_gaze_config(config_path), load_maya_eye_config(config_path)
-    target_map=build_explicit_target_map(look_at_mappings)
+    # Retain validation of supplied generic session rows without using scene
+    # geometry for calibrated character gaze positions.
+    build_explicit_target_map(look_at_mappings)
     for alias in ("A","B"):
         row=character_mappings.get(alias)
         if not isinstance(row,dict) or not str(row.get("maya_node") or ""):
             raise ValueError(f"Missing Maya character mapping for {alias}.")
         if str(row.get("script_name") or "").strip().upper()!=str(runtime[alias].get("script_name") or "").strip().upper():
             raise ValueError(f"Maya character mapping {alias} does not match manifest runtime mapping.")
-    result={}
+    prepared: dict[str, Any] = {"schema_version": "dual_animation_overlay_prepared_v0", "manifest_path": str(manifest_path), "fps": float(manifest["fps"]), "jsync_nodes": {}}
     for alias in ("A","B"):
         row=character_mappings[alias]; node=str(row["maya_node"])
         if not cmds.objExists(node): raise RuntimeError(f"Maya character node does not exist for {alias}: {node}")
         jsync=resolve_jsync_for_character(node, str(runtime[alias]["sound_file"]))
+        if cmds.getAttr(f"{jsync}.sound_file") != str(runtime[alias]["sound_file"]):
+            raise RuntimeError(f"jSync for {alias} does not have expected sound_file {runtime[alias]['sound_file']!r}.")
         events=json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events",[])
+        if not isinstance(events, list):
+            raise ValueError(f"Dual semantic artifact for {alias} requires an events list.")
         gaze=adapt_dual_gaze_events(events)
         provided_reference=row.get("gaze_reference") if isinstance(row.get("gaze_reference"),dict) else None
-        reference=dict(provided_reference) if provided_reference else capture_character_gaze_reference(node)
+        reference=dict(provided_reference) if provided_reference else capture_character_gaze_reference(node, cmds_module=cmds)
         reference.setdefault("eye_stare_node",qualify_rig_control(node,"eyeStare_world")); reference.setdefault("both_eyes_node",qualify_rig_control(node,"CNT_BOTH_EYES"))
-        clear_character_gaze_animation(reference, cmds_module=cmds)
-        actor_target_map=dict(target_map)
+        _validate_gaze_reference(reference, cmds_module=cmds)
+        positions: dict[str, list[float]] = {}
         for item in gaze:
             if item["target"] not in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}:
-                actor_target_map[item["target"]]={"position":resolve_actor_target_position(alias,item["target"],character_mappings)}
-        positions={key: spec["position"] for key,spec in actor_target_map.items() if isinstance(spec,dict) and "position" in spec}
+                positions[item["target"]] = resolve_actor_target_position(alias,item["target"],character_mappings)
         schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_world_position"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
         key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_frames=int(gaze_config.get("glance_transition_frames",6)))
-        for state in key_schedule:
+        eye = _dual_eye_events(events)
+        prepared["jsync_nodes"][alias] = jsync
+        prepared[alias] = {"maya_node": node, "jsync_node": jsync, "sound_file": runtime[alias]["sound_file"], "gaze_reference": reference, "gaze_events": gaze, "gaze_schedule": schedule, "gaze_key_schedule": key_schedule, "eye_events": eye, "eyelid_control_suffix": qualify_rig_control(node, str(eye_config.get("eyelid_control_suffix", "LIDS_jSync_plusMinus"))), "eyelid_attr": str(eye_config.get("eyelid_attr", "Down_upLids_jSync")), "affect_event_count_compiled_not_applied": sum(e.get("channel")=="affect" for e in events), "heart_event_count_compiled_not_applied": sum(e.get("channel")=="heart" for e in events), "head_event_count_compiled_not_applied": sum(e.get("channel")=="head" for e in events)}
+    return prepared
+
+
+def apply_dual_animation_artifacts(*, manifest_path: str | Path | None = None, character_mappings: dict[str, dict[str, Any]] | None = None, look_at_mappings: Iterable[dict[str, Any]] = (), maya_config_path: str | Path | None = None, prepared_context: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Apply a prepared dual overlay.  A prepared context permits deleted jSync nodes."""
+    from maya import cmds  # type: ignore
+    if prepared_context is None:
+        if manifest_path is None or character_mappings is None:
+            raise ValueError("manifest_path and character_mappings are required when no prepared_context is supplied.")
+        prepared_context = prepare_dual_animation_overlay(manifest_path=manifest_path, character_mappings=character_mappings, look_at_mappings=look_at_mappings, maya_config_path=maya_config_path)
+    if not isinstance(prepared_context, dict) or prepared_context.get("schema_version") != "dual_animation_overlay_prepared_v0":
+        raise ValueError("Invalid prepared dual animation overlay context.")
+    source_path=str(REPO_ROOT / "src")
+    if source_path not in sys.path: sys.path.insert(0, source_path)
+    from expregaze_jali.maya_apply_eye_performance import apply_eye_performance_events  # noqa: PLC0415
+    fps = float(prepared_context["fps"])
+    base_path = Path(str(prepared_context.get("manifest_path") or manifest_path or "")).parent
+    result: dict[str, Any] = {"jsync_nodes": dict(prepared_context.get("jsync_nodes") or {})}
+    # Context has already validated both actors.  Only now may either actor be mutated.
+    for alias in ("A", "B"):
+        item = prepared_context.get(alias)
+        if not isinstance(item, dict):
+            raise ValueError(f"Prepared dual animation overlay is missing {alias}.")
+        reference = dict(item["gaze_reference"])
+        clear_character_gaze_animation(reference, cmds_module=cmds)
+        for state in item["gaze_key_schedule"]:
             frame=state["frame"]; cmds.xform(reference["eye_stare_node"],worldSpace=True,translation=state["eye_stare"]); cmds.setKeyframe(reference["eye_stare_node"],attribute="translate",time=frame)
             cmds.setAttr(f"{reference['both_eyes_node']}.translateX",state["eyes"][0]); cmds.setAttr(f"{reference['both_eyes_node']}.translateY",state["eyes"][1]); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateX",time=frame); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateY",time=frame)
-        eye=[]
-        for e in events:
-            kind={"lid":"lid_state","blink":"performative_blink","blink_suppression":"blink_suppression"}.get(e.get("channel"))
-            if kind: eye.append({"type":kind,"value":e.get("value"),"resolved_time":e.get("resolved_time")})
-        adapter_dir=Path(manifest_path).parent / "maya_adapter" / alias; adapter_dir.mkdir(parents=True,exist_ok=True)
+        adapter_dir=base_path / "maya_adapter" / alias; adapter_dir.mkdir(parents=True,exist_ok=True)
         gaze_path=adapter_dir / "gaze_events.json"; eye_path=adapter_dir / "eye_events.json"
-        gaze_path.write_text(json.dumps({"events":gaze,"schedule":schedule,"key_schedule":key_schedule}),encoding="utf-8"); eye_path.write_text(json.dumps({"events":eye}),encoding="utf-8")
-        if eye: apply_eye_performance_events(eye_events_path=str(eye_path), fps=float(manifest["fps"]), eyelid_control_suffix=qualify_rig_control(node,str(eye_config.get("eyelid_control_suffix","LIDS_jSync_plusMinus"))), eyelid_attr=str(eye_config.get("eyelid_attr","Down_upLids_jSync")))
-        result[alias]={"jsync_node":jsync,"sound_file":runtime[alias]["sound_file"],"gaze_reference":reference,"gaze_event_count":len(gaze),"eye_event_count":len(eye),"affect_event_count_compiled_not_applied":sum(e.get("channel")=="affect" for e in events),"heart_event_count_compiled_not_applied":sum(e.get("channel")=="heart" for e in events),"head_event_count_compiled_not_applied":sum(e.get("channel")=="head" for e in events),"warnings":["affect/heart compiled but not yet applied in dual runtime","head compiled but not yet applied"]}
+        gaze_path.write_text(json.dumps({"events":item["gaze_events"],"schedule":item["gaze_schedule"],"key_schedule":item["gaze_key_schedule"]}),encoding="utf-8"); eye_path.write_text(json.dumps({"events":item["eye_events"]}),encoding="utf-8")
+        if item["eye_events"]: apply_eye_performance_events(eye_events_path=str(eye_path), fps=fps, eyelid_control_suffix=item["eyelid_control_suffix"], eyelid_attr=item["eyelid_attr"])
+        result[alias] = {key: item[key] for key in ("jsync_node", "sound_file", "gaze_reference", "affect_event_count_compiled_not_applied", "heart_event_count_compiled_not_applied", "head_event_count_compiled_not_applied")}
+        result[alias].update({"gaze_event_count":len(item["gaze_events"]), "eye_event_count":len(item["eye_events"]), "warnings":["affect/heart compiled but not yet applied in dual runtime", "head compiled but not yet applied"]})
     return result
 
 
