@@ -1,0 +1,6 @@
+<mask=Polite-100> Good day, sir </mask=Polite-100> .
+<mask=Watchful-35> What brings you to Hewlands </mask=Watchful-35> ?
+<mask=Smug-100> The Latin tutor. I've heard of you </mask=Smug-100> .
+<mask=Watchful-100> What brought you into the garden </mask=Watchful-100> ?
+<mask=Sassy-100> It's just a question, master tutor </mask=Sassy-100> .
+<mask=Sassy-100> <heart=Happy-15> It's a hawk </mask=Sassy-100> </heart=Happy-15> .

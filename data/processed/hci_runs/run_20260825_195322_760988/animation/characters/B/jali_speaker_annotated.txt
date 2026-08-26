@@ -1,0 +1,4 @@
+<mask=Nervous-100> Good day to you </mask=Nervous-100> .
+<mask=Nervous-100> I'm tutoring the boys here </mask=Nervous-100> .
+<mask=Thinking-100> <heart=Afraid-100> Uh </mask=Thinking-100> </heart=Afraid-100> ...
+<mask=Nervous-100> <heart=Surprised-100> Yes, I, uh... I </mask=Nervous-100> </heart=Surprised-100> <mask=Thinking-100> suppose the air was fresh out here, and... uh, I saw you with your bird </mask=Thinking-100> .

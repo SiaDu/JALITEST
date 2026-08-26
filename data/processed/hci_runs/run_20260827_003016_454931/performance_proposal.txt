@@ -1,0 +1,293 @@
+[ANALYZE]
+The exchange begins with formal politeness and mutual observation. Agnes maintains composure while assessing the unfamiliar tutor, and Will answers courteously but with restrained uncertainty. Her questions become more direct, prompting his nervous search for an acceptable explanation for being in the garden. His attention to her hawk reveals personal interest, while Agnes gently corrects his imprecise description and keeps control of the encounter. The shared emotional movement is from guarded formality toward cautious curiosity, with attraction expressed through sustained attention, hesitation, and socially careful restraint.
+
+[PERFORMANCE]
+S01
+start: w0001
+intent: FORMAL_FIRST_CONTACT
+A.affect: Polite-35
+A.heart: NONE
+A.gaze: GAZE-B
+A.head: LOW
+A.lid: 0
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Watchful-30
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: MEDIUM
+B.lid: -1
+B.blink: NONE
+B.blink_suppression: NONE
+
+S02
+start: w0004
+intent: MUTUAL_FORMAL_ACKNOWLEDGMENT
+A.affect: Polite-40
+A.heart: NONE
+A.gaze: GAZE-B
+A.head: LOW
+A.lid: 0
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Polite-35
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: LOW
+B.lid: 0
+B.blink: NONE
+B.blink_suppression: NONE
+
+S03
+start: w0008
+intent: AGNES_TESTS_THE_UNFAMILIARITY_OF_THE_ENCOUNTER
+A.affect: Nervous-25
+A.heart: Surprised-15
+A.gaze: AVERT-B
+A.head: LOW
+A.lid: -1
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Watchful-45
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: MEDIUM
+B.lid: -2
+B.blink: NONE
+B.blink_suppression: NONE
+
+S04
+start: w0013
+intent: WILL_IDENTIFIES_HIMSELF_WHILE_SEEKING_SOCIAL_FOOTING
+A.affect: Nervous-30
+A.heart: NONE
+A.gaze: GAZE-B
+A.head: LOW
+A.lid: -1
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Thinking-35
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: LOW
+B.lid: -1
+B.blink: NONE
+B.blink_suppression: NONE
+
+S05
+start: w0018
+intent: AGNES_RECOGNIZES_WILL_AND_HEIGHTENS_HIS_SELF_CONSCIOUSNESS
+A.affect: Nervous-45
+A.heart: Surprised-20
+A.gaze: AVERT-B
+A.head: LOW
+A.lid: -2
+A.blink: DOUBLE_BLINK
+A.blink_suppression: NONE
+B.affect: Watchful-50
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: MEDIUM
+B.lid: -2
+B.blink: NONE
+B.blink_suppression: NONE
+
+S06
+start: w0025
+intent: AGNES_INVITES_A_MORE_PERSONAL_EXPLANATION
+A.affect: Nervous-50
+A.heart: Surprised-25
+A.gaze: AVERT-DOWN
+A.head: LOW
+A.lid: -2
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Watchful-55
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: MEDIUM
+B.lid: -2
+B.blink: NONE
+B.blink_suppression: NONE
+
+S07
+start: w0031
+intent: WILL_HESITATES_WHILE_SEARCHING_FOR_A_SAFE_ANSWER
+A.affect: Confused-35
+A.heart: Surprised-25
+A.gaze: AVERT-DOWN
+A.head: LOW
+A.lid: -3
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Thinking-40
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: LOW
+B.lid: -1
+B.blink: NONE
+B.blink_suppression: NONE
+
+S08
+start: w0032
+intent: AGNES_SOFTENS_THE_PRESSURE_WITH_LIGHT_TEASING
+A.affect: Nervous-55
+A.heart: Surprised-30
+A.gaze: AVERT-B
+A.head: LOW
+A.lid: -2
+A.blink: DOUBLE_BLINK
+A.blink_suppression: NONE
+B.affect: Sassy-35
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: LOW
+B.lid: -1
+B.blink: NONE
+B.blink_suppression: NONE
+
+S09
+start: w0038
+intent: WILL_OFFERS_A_PLAUSIBLE_REASON_WHILE_REVEALING_HIS_ATTENTION_TO_AGNES
+A.affect: Nervous-45
+A.heart: Happy-20
+A.gaze: GAZE-B
+A.head: LOW
+A.lid: -1
+A.blink: BLINK_CLUSTER
+A.blink_suppression: NONE
+B.affect: Watchful-60
+B.heart: Surprised-15
+B.gaze: GAZE-A
+B.head: MEDIUM
+B.lid: -2
+B.blink: NONE
+B.blink_suppression: NONE
+
+S10
+start: w0057
+intent: AGNES_CORRECTS_HIM_WHILE_KEEPING_THE_CONNECTION_ALIVE
+A.affect: Confused-30
+A.heart: Happy-20
+A.gaze: GAZE-B
+A.head: LOW
+A.lid: -1
+A.blink: NONE
+A.blink_suppression: NONE
+B.affect: Polite-30
+B.heart: NONE
+B.gaze: GAZE-A
+B.head: MEDIUM
+B.lid: -1
+B.blink: NONE
+B.blink_suppression: NONE
+
+[REASONS]
+S01
+intent: The opening establishes respectful distance and the cautious awareness of two strangers meeting for the first time.
+A.affect: Will uses controlled politeness to conceal uncertainty.
+A.gaze: He looks toward Agnes because her presence has already caught his attention.
+A.head: His slight lowered head reflects social caution.
+B.affect: Agnes appears watchful rather than immediately welcoming, preserving her boundaries.
+B.gaze: She observes Will directly to assess him.
+B.head: Her raised attention signals composed appraisal.
+
+S02
+intent: Both characters maintain the formal exchange while allowing the first moment of contact to settle.
+A.affect: Will remains courteous and tries to appear at ease.
+A.gaze: He sustains attention toward Agnes despite his uncertainty.
+A.head: The lowered posture keeps his response deferential.
+B.affect: Agnes answers with measured civility rather than suspicion or warmth.
+B.gaze: She continues studying him openly.
+B.head: Her lowered head briefly mirrors the conventional politeness of the exchange.
+
+S03
+intent: Agnes shifts from greeting to inquiry, making Will aware that she is actively evaluating his presence.
+A.affect: Will becomes nervous because the direct question demands an explanation.
+A.gaze: He avoids her eyes momentarily while formulating an answer.
+A.head: His lowered head supports the feeling of being caught unprepared.
+B.affect: Agnes's watchfulness communicates alert curiosity without hostility.
+B.gaze: She keeps her attention fixed on Will to read his response.
+B.head: Her medium head position gives the question quiet firmness.
+A.heart: His brief surprise reflects the sudden personal attention.
+B.heart: NONE
+
+S04
+intent: Will gives a factual introduction, using his employment as a safe and respectable basis for continuing the conversation.
+A.affect: His nervousness remains visible beneath the polite explanation.
+A.gaze: He looks back to Agnes, hoping the answer satisfies her.
+A.head: The low head position shows modesty and social uncertainty.
+B.affect: Agnes thinks over the information and places him within the household.
+B.gaze: She watches for more than the literal content of his answer.
+B.head: Her slight lowering signals concentrated consideration.
+A.heart: NONE
+B.heart: NONE
+
+S05
+intent: Agnes reveals that Will is already known by reputation, increasing his awareness that she has formed an impression before meeting him.
+A.affect: Will's nervousness intensifies as he realizes he is not an unknown quantity to her.
+A.gaze: He briefly averts his eyes to manage the self-consciousness.
+A.head: His lowered head reinforces his exposed, uncertain feeling.
+A.blink: The quick double blink marks a small start of embarrassment.
+B.affect: Agnes remains observant, allowing the disclosure to test his composure.
+B.gaze: She watches him directly for a reaction.
+B.head: Her medium head position conveys calm confidence.
+A.heart: The surprise reflects his discomfort at being recognized.
+B.heart: NONE
+
+S06
+intent: Agnes presses gently for the reason behind his arrival in the garden, while Will senses that the question may concern more than simple geography.
+A.affect: Will grows visibly nervous because he must explain a personal choice.
+A.gaze: His eyes drop toward the ground as he searches for an answer.
+A.head: The lowered head shows inward concentration and embarrassment.
+B.affect: Agnes's watchfulness becomes more focused as she waits for candor.
+B.gaze: She maintains direct attention without becoming aggressive.
+B.head: Her steady medium position gives the question quiet authority.
+A.heart: His surprise indicates that her interest feels unexpectedly personal.
+B.heart: NONE
+
+S07
+intent: Will's hesitation exposes his lack of preparation and makes the silence between them more intimate.
+A.affect: Confusion expresses his difficulty turning attraction and curiosity into a socially acceptable explanation.
+A.gaze: He looks down rather than risk revealing too much in his face.
+A.head: His lowered head emphasizes the stalled response.
+B.affect: Agnes thinks through his hesitation and waits to see whether he will recover.
+B.gaze: She keeps him in view, attentive but not threatening.
+B.head: Her lower head position softens the scrutiny slightly.
+A.heart: The surprise remains from being personally examined.
+B.heart: NONE
+
+S08
+intent: Agnes reassures him that the question is ordinary, but her phrasing carries a controlled, lightly teasing challenge.
+A.affect: Will becomes more nervous because the reassurance does not fully remove the social pressure.
+A.gaze: He avoids direct eye contact while trying to regain composure.
+A.head: His lowered head conveys bashful uncertainty.
+A.blink: The double blink marks his attempt to reset after being teased.
+B.affect: Agnes uses mild sass to make the moment less formal and to draw out his answer.
+B.gaze: She keeps her eyes on him, inviting him to continue.
+B.head: The slight lowering adds a playful, knowing quality.
+A.heart: His surprise persists beneath the embarrassment.
+B.heart: NONE
+
+S09
+intent: Will gives a harmless explanation but cannot avoid revealing that Agnes herself drew him farther into the garden; Agnes recognizes the personal attention beneath his words.
+A.affect: Nervousness remains, though a trace of happiness appears because he has found a reason to speak about her.
+A.gaze: He meets Agnes's gaze in a tentative admission of interest.
+A.head: The low head position keeps the admission modest and nonassertive.
+A.blink: The clustered blinking conveys verbal stumbling and heightened self-consciousness.
+B.affect: Agnes watches closely as his explanation becomes more revealing.
+B.gaze: She studies him directly to distinguish courtesy from genuine interest.
+B.head: Her medium head position signals growing engagement.
+A.heart: A small happiness reflects the pleasure of remaining near her.
+B.heart: Her surprise registers the unexpected personal focus of his answer.
+
+S10
+intent: Agnes corrects the object of his attention with precise calm, preserving the hawk as a safer subject while leaving the new connection open.
+A.affect: Will is briefly confused by the correction but remains pleased that the exchange continues.
+A.gaze: He keeps looking toward Agnes, following her lead.
+A.head: His lowered head acknowledges the correction without defensiveness.
+B.affect: Agnes returns to polite composure while retaining quiet control of the conversation.
+B.gaze: She looks toward Will to see how he receives the distinction.
+B.head: Her medium head position maintains self-possession and authority.
+A.heart: The happiness remains as relief that she has not withdrawn.
+B.heart: NONE
