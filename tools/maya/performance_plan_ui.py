@@ -660,8 +660,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             with redirect_stdout(stream), redirect_stderr(stream):
                 if self._pending_animation_mode == "dual_emotion_only":
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
-                    for alias, item in result.items(): self._append_backend_output(f"{alias} / {item['script_name']}: jSync={item['jsync_node']}; mask_tags={item['mask_tag_count']}; heart_tags={item['heart_tag_count']}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_expression={item['calculate_expression']}; calculate_blinks=false; mask_binding={'applied' if item['mask_binding'] else 'skipped'}; heart_binding={'applied' if item['heart_binding'] else 'skipped'}")
-                    self._append_backend_output("Applied: native speaker Mask/Heart\nNot applied: listener affect; gaze; blink/lid/head\njSync preserved: yes")
+                    for alias, item in result.items(): self._append_backend_output(f"{alias} / {item['script_name']}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; heart_tags={item['heart_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_expression={item['calculate_expression']}; calculate_blinks=false; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}; heart_binding={'applied' if item['heart_binding'] else 'skipped'}")
+                    self._append_backend_output("Applied: native speaker Mask/Heart with JALI realignment\nNot applied: listener affect; gaze; JALITEST blink/lid/head\njSync preserved: yes")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),

@@ -49,18 +49,46 @@ def test_dual_emotion_preflight_failure_mutates_neither_actor(monkeypatch, tmp_p
         event = tmp_path / f"{alias}.json"; event.write_text('{"events": []}'); artifacts[alias] = str(event)
         text = tmp_path / f"{alias}.txt"; text.write_text("hello"); artifacts[f"{alias}_jali_speaker_annotated"] = str(text)
         diag = tmp_path / f"{alias}_diag.json"; diag.write_text(json.dumps({"alias":alias,"script_name":"AGNES" if alias == "A" else "WILL","mask_tag_count":0,"heart_tag_count":0})); artifacts[f"{alias}_jali_speaker_annotation"] = str(diag)
-    manifest=tmp_path/"manifest.json"; manifest.write_text(json.dumps({"schema_version":"dual_animation_manifest_v0","character_runtime_mapping":{"A":{"script_name":"AGNES","sound_file":"SA"},"B":{"script_name":"WILL","sound_file":"SB"}},"artifacts":artifacts}))
+    wavs={}
+    for alias in ("A","B"):
+        wav=tmp_path/f"{alias}.wav"; wav.write_bytes(b"wav"); wavs[alias]={"path":str(wav)}
+    manifest=tmp_path/"manifest.json"; manifest.write_text(json.dumps({"schema_version":"dual_animation_manifest_v0","character_runtime_mapping":{"A":{"script_name":"AGNES","sound_file":"SA"},"B":{"script_name":"WILL","sound_file":"SB"}},"wav_durations":wavs,"artifacts":artifacts}))
     class Cmds:
         calls=[]
         def objExists(self, plug): return "jSync2.calculate_expression" not in plug
         def getAttr(self, plug): return "SA" if "jSync1" in plug else "SB"
         def attributeQuery(self, *_a, **_k): return ["from Annotation:From Transcript Tags"]
         def setAttr(self,*a,**k): self.calls.append((a,k))
-    cmds=Cmds(); mel=SimpleNamespace(eval=lambda *_: pytest.fail("MEL must not run"))
+    cmds=Cmds(); mel=SimpleNamespace(eval=lambda value: 1 if "exists" in value else pytest.fail("MEL must not run"))
     monkeypatch.setattr(runner,"resolve_jsync_for_character",lambda rig,*_a,**_k: "|A:ROOT|jSync1" if rig == "|A:ROOT" else "|B:ROOT|jSync2")
     with pytest.raises(RuntimeError,match="B: jSync is missing"):
         apply_dual_speaker_emotion_artifacts(manifest_path=manifest,character_mappings={"A":{"maya_node":"|A:ROOT"},"B":{"maya_node":"|B:ROOT"}},cmds_module=cmds,mel_module=mel)
     assert cmds.calls == []
+
+
+def test_dual_emotion_realigns_from_separate_staging_and_restores_paths(monkeypatch, tmp_path):
+    import animation_apply_runner as runner
+    artifacts={}; wavs={}
+    for alias, stem in (("A","SA"),("B","SB")):
+        event=tmp_path/f"{alias}.json"; event.write_text('{"events": []}'); artifacts[alias]=str(event)
+        text=tmp_path/f"{alias}_tagged.txt"; text.write_text(f"<mask=Polite-20> {alias} </mask=Polite-20>"); artifacts[f"{alias}_jali_speaker_annotated"]=str(text)
+        diag=tmp_path/f"{alias}_diag.json"; diag.write_text(json.dumps({"alias":alias,"script_name":alias,"mask_tag_count":1,"heart_tag_count":0})); artifacts[f"{alias}_jali_speaker_annotation"]=str(diag)
+        wav=tmp_path/f"{stem}.wav"; wav.write_bytes(alias.encode()); wavs[alias]={"path":str(wav)}
+    manifest=tmp_path/"manifest.json"; manifest.write_text(json.dumps({"schema_version":"dual_animation_manifest_v0","character_runtime_mapping":{"A":{"script_name":"A","sound_file":"SA"},"B":{"script_name":"B","sound_file":"SB"}},"wav_durations":wavs,"artifacts":artifacts}))
+    class Cmds:
+        def __init__(self): self.values={}; self.calls=[]; self.selection=[]
+        def objExists(self,_): return True
+        def getAttr(self,p): return self.values.get(p, "SA" if "jSync1.sound_file" in p else "SB" if "jSync2.sound_file" in p else "original/")
+        def attributeQuery(self,*_a,**_k): return ["from Annotation:From Transcript Tags"]
+        def setAttr(self,*a,**k): self.values[a[0]]=a[1]; self.calls.append(a)
+        def ls(self,**k): return self.selection if k.get("selection") else []
+        def select(self,items=None,**k): self.selection=[] if k.get("clear") else list(items or [])
+    cmds=Cmds(); mel_calls=[]; mel=SimpleNamespace(eval=lambda value: mel_calls.append(value) or (1 if "exists" in value else None))
+    monkeypatch.setattr(runner,"resolve_jsync_for_character",lambda rig,*_a,**_k: "|A:ROOT|jSync1" if rig == "|A:ROOT" else "|B:ROOT|jSync2")
+    result=apply_dual_speaker_emotion_artifacts(manifest_path=manifest,character_mappings={"A":{"maya_node":"|A:ROOT"},"B":{"maya_node":"|B:ROOT"}},cmds_module=cmds,mel_module=mel)
+    assert all(Path(result[a]["staging_txt"]).read_text().startswith("<mask=") for a in ("A","B"))
+    assert Path(result["A"]["staging_wav"]).read_bytes() == b"A" and Path(result["B"]["staging_wav"]).read_bytes() == b"B"
+    assert all(result[a]["paths_restored"] for a in ("A","B")) and sum(call.startswith('realign_node ') for call in mel_calls) == 2
 
 
 def _dual_manifest(tmp_path: Path) -> Path:

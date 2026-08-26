@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import re
+import shutil
 import sys
 from typing import Any, Iterable
 
@@ -176,7 +177,7 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         from maya import cmds as cmds_module  # type: ignore
     if mel_module is None:
         from maya import mel as mel_module  # type: ignore
-    manifest = load_dual_animation_manifest(manifest_path); prepared: dict[str, Any] = {}
+    manifest_file = Path(manifest_path); manifest = load_dual_animation_manifest(manifest_file); prepared: dict[str, Any] = {}
     for alias in ("A", "B"):
         row=character_mappings.get(alias) or {}; rig=str(row.get("maya_node") or ""); runtime=manifest["character_runtime_mapping"][alias]
         if not rig or not cmds_module.objExists(rig): raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
@@ -188,23 +189,39 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         diagnostic=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotation") or "")
         if not artifact.is_file() or not diagnostic.is_file(): raise FileNotFoundError(f"{alias}: dual speaker emotion artifacts are missing.")
         info=json.loads(diagnostic.read_text(encoding="utf-8")); mask=bool(info.get("mask_tag_count")); heart=bool(info.get("heart_tag_count"))
-        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","calculate_expression","expression_source","expression_strength","override_annotation","calculate_blinks","transcript")
+        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","calculate_expression","expression_source","expression_strength","override_annotation","calculate_blinks","transcript","text_input_path","sound_input_path","output_path")
         missing=[attr for attr in attrs if not cmds_module.objExists(f"{jsync}.{attr}")]
         if missing: raise RuntimeError(f"{alias}: jSync is missing required attributes: {', '.join(missing)}")
-        prepared[alias]={"rig":rig,"jsync":jsync,"prefix":prefix,"artifact":artifact,"info":info,"mask":mask,"heart":heart,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None,"heart_source":_enum_index(jsync,"expression_source","from Annotation",cmds_module) if heart else None,"heart_strength":_enum_index(jsync,"expression_strength","From Transcript Tags",cmds_module) if heart else None}
+        wav=Path(str((manifest.get("wav_durations",{}).get(alias,{}) or {}).get("path") or ""))
+        if not wav.is_file(): raise FileNotFoundError(f"{alias}: original runtime WAV not found: {wav}")
+        if not mel_module.eval('exists "realign_node"'): raise RuntimeError("Installed JALI realign_node procedure is unavailable.")
+        stage=manifest_file.parent/"jali_runtime"/alias
+        original={attr: cmds_module.getAttr(f"{jsync}.{attr}") for attr in ("text_input_path","sound_input_path","output_path")}
+        prepared[alias]={"rig":rig,"jsync":jsync,"leaf":jsync.rsplit("|",1)[-1],"prefix":prefix,"artifact":artifact,"wav":wav,"stage":stage,"original_paths":original,"info":info,"mask":mask,"heart":heart,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None,"heart_source":_enum_index(jsync,"expression_source","from Annotation",cmds_module) if heart else None,"heart_strength":_enum_index(jsync,"expression_strength","From Transcript Tags",cmds_module) if heart else None}
+    selection=cmds_module.ls(selection=True, long=True) or []
     result: dict[str, Any] = {}
-    for alias, item in prepared.items():
+    changed: list[dict[str, Any]] = []
+    try:
+     for alias, item in prepared.items():
         jsync=item["jsync"]; prefix=item["prefix"]; mask=item["mask"]; heart=item["heart"]
+        item["stage"].mkdir(parents=True,exist_ok=True); staged_txt=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.txt"; staged_wav=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.wav"
+        shutil.copy2(item["artifact"],staged_txt); shutil.copy2(item["wav"],staged_wav)
         for attr, value in (("calculate_paralinguals", mask),("override_annotation",False),("calculate_blinks",False)):
             cmds_module.setAttr(f"{jsync}.{attr}", value)
         if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
         cmds_module.setAttr(f"{jsync}.calculate_expression",heart)
         if heart: cmds_module.setAttr(f"{jsync}.expression_source",item["heart_source"]); cmds_module.setAttr(f"{jsync}.expression_strength",item["heart_strength"])
         cmds_module.setAttr(f"{jsync}.transcript",item["artifact"].read_text(encoding="utf-8"),type="string")
-        mel_module.eval(f'jSync_force_compute "{jsync}";')
+        for attr in item["original_paths"]: cmds_module.setAttr(f"{jsync}.{attr}",str(item["stage"])+os.sep,type="string")
+        changed.append(item); mel_module.eval(f'realign_node "{item["leaf"]}";')
         if mask: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
         if heart: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 1;')
-        result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"calculate_paralinguals":mask,"calculate_expression":heart,"calculate_blinks":False,"mask_binding":mask,"heart_binding":heart,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
+        result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_expression":heart,"calculate_blinks":False,"mask_binding":mask,"heart_binding":heart,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
+    finally:
+     for item in changed:
+        for attr,value in item["original_paths"].items(): cmds_module.setAttr(f"{item['jsync']}.{attr}",value,type="string")
+     cmds_module.select(selection,replace=True) if selection else cmds_module.select(clear=True)
+     for alias in result: result[alias]["paths_restored"]=True
     return result
 
 
