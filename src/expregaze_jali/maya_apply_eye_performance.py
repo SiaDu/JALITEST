@@ -406,6 +406,82 @@ def _blink_pattern(
     return keys
 
 
+def performative_blink_frame_span(
+    event: dict[str, Any], fps: float, presets: dict[str, Any], default_value: float = 0.0
+) -> tuple[int, int] | None:
+    """Return the exact local override window for an explicit blink preset."""
+    frame = _blink_time_frame(event, fps)
+    if frame is None:
+        return None
+    keys = _blink_pattern(str(event.get("mode") or event.get("value") or "SINGLE_BLINK"), frame, default_value, presets)
+    return int(min(key[0] for key in keys)), int(max(key[0] for key in keys))
+
+
+def blink_suppression_frame_intervals(events: list[dict[str, Any]], fps: float) -> list[tuple[int, int, dict[str, Any]]]:
+    """Return canonical SUPPRESS windows; explicit performative blinks win later."""
+    intervals: list[tuple[int, int, dict[str, Any]]] = []
+    for event in events:
+        if str(event.get("value") or "").upper() != "SUPPRESS":
+            continue
+        start, end = _event_start_frame(event, fps), _event_end_frame(event, fps)
+        if start is None or end is None or end <= start:
+            continue
+        intervals.append((start, end, event))
+    return sorted(intervals, key=lambda item: (item[0], item[1]))
+
+
+def _key_value_at_frame(node: str, attr: str, frame: int, default_value: float, cmds: Any) -> float:
+    try:
+        values = cmds.keyframe(node, attribute=attr, query=True, eval=True, time=(frame, frame)) or []
+        if values:
+            return float(values[0])
+    except Exception:
+        pass
+    return float(default_value)
+
+
+def _key_with_cmds(node: str, attr: str, frame: int, value: float, cmds: Any) -> None:
+    cmds.setAttr(_plug(node, attr), float(value))
+    cmds.setKeyframe(node, attribute=attr, time=float(frame))
+
+
+def _clear_eyelid_window(node: str, attr: str, start: int, end: int, default_value: float, cmds: Any) -> None:
+    """Remove only a local regulatory window and stabilize its boundaries."""
+    start_value = _key_value_at_frame(node, attr, start, default_value, cmds)
+    end_value = _key_value_at_frame(node, attr, end, default_value, cmds)
+    cmds.cutKey(node, attribute=attr, time=(start, end), clear=True)
+    _key_with_cmds(node, attr, start, start_value, cmds)
+    _key_with_cmds(node, attr, end, end_value, cmds)
+
+
+def _apply_preserving_jali_blinks(
+    node: str,
+    attr: str,
+    *,
+    performative_events: list[dict[str, Any]],
+    suppression_events: list[dict[str, Any]],
+    fps: float,
+    default_value: float,
+    presets: dict[str, Any],
+) -> None:
+    """JALI owns regulatory keys; JALITEST owns scoped suppressions/blinks."""
+    cmds = _cmds()
+    for start, end, event in blink_suppression_frame_intervals(suppression_events, fps):
+        _clear_eyelid_window(node, attr, start, end, default_value, cmds)
+        print(f"[BLINK SUPPRESS] {event.get('id') or event.get('phrase_id')} frames {start}->{end}, reason={event.get('reason', '')}")
+    for event in sorted(performative_events, key=lambda item: float((item.get("resolved_time") or {}).get("start", item.get("time", 0.0)))):
+        span = performative_blink_frame_span(event, fps, presets, default_value)
+        if span is None:
+            continue
+        start, end = span
+        baseline = _key_value_at_frame(node, attr, start, default_value, cmds)
+        _clear_eyelid_window(node, attr, start, end, baseline, cmds)
+        mode = str(event.get("mode") or event.get("value") or "SINGLE_BLINK").upper()
+        for key_frame, value in _blink_pattern(mode, start, baseline, presets):
+            _key_with_cmds(node, attr, int(key_frame), value, cmds)
+        print(f"[PERFORMATIVE BLINK] {event.get('id') or event.get('phrase_id')} {mode} frames {start}->{end}, reason={event.get('reason', '')}")
+
+
 def _apply_blinks(
     node: str,
     attr: str,
@@ -455,6 +531,8 @@ def apply_eye_performance_events(
     lid_state_transition_frames: int = 8,
     apply_weighted_flat_tangents: bool = True,
     blink_presets: dict[str, Any] | None = None,
+    preserve_existing_regulatory_blinks: bool = False,
+    apply_lid_states: bool = True,
 ) -> None:
     cmds = _cmds()
 
@@ -464,7 +542,7 @@ def apply_eye_performance_events(
     if not cmds.objExists(_plug(node, eyelid_attr)):
         raise RuntimeError(f"Eyelid attribute does not exist: {node}.{eyelid_attr}")
 
-    if clear_existing_eyelid_keys:
+    if clear_existing_eyelid_keys and not preserve_existing_regulatory_blinks:
         _clear_attr_keys(node, eyelid_attr)
 
     presets = blink_presets or {}
@@ -479,28 +557,34 @@ def apply_eye_performance_events(
     print(f"[INFO] Applying eye performance to {node}.{eyelid_attr}")
     print(f"[INFO] fps={fps}, default_lid_state={default_lid_state}, lid states={len(schedule)}")
 
-    _apply_lid_states(
-        node=node,
-        attr=eyelid_attr,
-        schedule=schedule,
-        default_value=default_lid_state,
-        transition_frames=lid_state_transition_frames,
-    )
+    if apply_lid_states:
+        _apply_lid_states(
+            node=node,
+            attr=eyelid_attr,
+            schedule=schedule,
+            default_value=default_lid_state,
+            transition_frames=lid_state_transition_frames,
+        )
 
-    blink_events = list(data.get("regulatory_blink_events", [])) + list(
-        data.get("performative_blink_events", [])
-    )
-    _apply_blinks(
-        node=node,
-        attr=eyelid_attr,
-        blink_events=blink_events,
-        schedule=schedule,
-        fps=fps,
-        default_value=default_lid_state,
-        presets=presets,
-    )
+    if preserve_existing_regulatory_blinks:
+        _apply_preserving_jali_blinks(
+            node, eyelid_attr,
+            performative_events=list(data.get("performative_blink_events", [])),
+            suppression_events=list(data.get("blink_suppression_events", [])),
+            fps=fps, default_value=default_lid_state, presets=presets,
+        )
+    else:
+        blink_events = list(data.get("regulatory_blink_events", [])) + list(
+            data.get("performative_blink_events", [])
+        )
+        _apply_blinks(
+            node=node, attr=eyelid_attr, blink_events=blink_events,
+            schedule=schedule, fps=fps, default_value=default_lid_state, presets=presets,
+        )
 
-    if apply_weighted_flat_tangents:
+    # The preserve-JALI mode must not retangent regulatory keys outside an
+    # explicit semantic override window.
+    if apply_weighted_flat_tangents and not preserve_existing_regulatory_blinks:
         _apply_flat_weighted_tangents(node, eyelid_attr)
 
     print("[DONE] Eye performance overlay applied.")

@@ -268,6 +268,16 @@ def clear_character_gaze_animation(reference: dict[str, Any], *, cmds_module: An
             cmds_module.cutKey(node, attribute=attribute, clear=True)
 
 
+def capture_eyelid_animation_reference(node: str, attr: str, *, cmds_module: Any) -> dict[str, Any]:
+    """Read JALI's existing eyelid curve without changing it."""
+    plug = f"{node}.{attr}"
+    if not cmds_module.objExists(plug):
+        raise RuntimeError(f"Eyelid attribute does not exist: {plug}")
+    times = list(cmds_module.keyframe(node, attribute=attr, query=True, timeChange=True) or [])
+    values = list(cmds_module.keyframe(node, attribute=attr, query=True, valueChange=True) or [])
+    return {"node": node, "attr": attr, "keys": [{"frame": float(frame), "value": float(value)} for frame, value in zip(times, values)]}
+
+
 def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_position: list[float], neutral_eyes: list[float], target_positions: dict[str, list[float]], magnitude: float = 5.0, limit: float = 6.0) -> list[dict[str, Any]]:
     """Return complete two-layer gaze states, ordered by canonical intervals."""
     schedule=[]; previous={"eye_stare":list(neutral_position),"eyes":list(neutral_eyes)}
@@ -330,7 +340,7 @@ def _dual_eye_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
         resolved_time = event.get("resolved_time")
         if not isinstance(resolved_time, dict) or "start" not in resolved_time or "end" not in resolved_time:
             raise ValueError(f"Dual {kind} event is missing resolved_time.")
-        eye.append({"type": kind, "value": event.get("value"), "resolved_time": dict(resolved_time)})
+        eye.append({"id": event.get("id") or event.get("phrase_id"), "phrase_id": event.get("phrase_id"), "source_proposal_id": event.get("source_proposal_id"), "reason": event.get("reason"), "type": kind, "value": event.get("value"), "mode": event.get("value"), "resolved_time": dict(resolved_time)})
     return eye
 
 
@@ -391,8 +401,11 @@ def prepare_dual_animation_overlay(*, manifest_path: str | Path, character_mappi
         schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_world_position"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
         key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_min_hold_seconds=float(gaze_config.get("glance_min_hold_seconds",0.5)))
         eye = _dual_eye_events(events)
+        eyelid_control = qualify_rig_control(node, str(eye_config.get("eyelid_control_suffix", "LIDS_jSync_plusMinus")))
+        eyelid_attr = str(eye_config.get("eyelid_attr", "Down_upLids_jSync"))
+        eyelid_reference = capture_eyelid_animation_reference(eyelid_control, eyelid_attr, cmds_module=cmds)
         prepared["jsync_nodes"][alias] = jsync
-        prepared[alias] = {"maya_node": node, "jsync_node": jsync, "sound_file": runtime[alias]["sound_file"], "gaze_reference": reference, "gaze_events": gaze, "gaze_schedule": schedule, "gaze_key_schedule": key_schedule, "eye_events": eye, "eyelid_control_suffix": qualify_rig_control(node, str(eye_config.get("eyelid_control_suffix", "LIDS_jSync_plusMinus"))), "eyelid_attr": str(eye_config.get("eyelid_attr", "Down_upLids_jSync")), "affect_event_count_compiled_not_applied": sum(e.get("channel")=="affect" for e in events), "heart_event_count_compiled_not_applied": sum(e.get("channel")=="heart" for e in events), "head_event_count_compiled_not_applied": sum(e.get("channel")=="head" for e in events)}
+        prepared[alias] = {"maya_node": node, "jsync_node": jsync, "sound_file": runtime[alias]["sound_file"], "gaze_reference": reference, "gaze_events": gaze, "gaze_schedule": schedule, "gaze_key_schedule": key_schedule, "eye_events": eye, "eyelid_reference": eyelid_reference, "eyelid_control_suffix": eyelid_control, "eyelid_attr": eyelid_attr, "affect_event_count_compiled_not_applied": sum(e.get("channel")=="affect" for e in events), "heart_event_count_compiled_not_applied": sum(e.get("channel")=="heart" for e in events), "head_event_count_compiled_not_applied": sum(e.get("channel")=="head" for e in events), "lid_event_count_compiled_deferred": sum(e.get("channel")=="lid" for e in events)}
     return prepared
 
 
@@ -424,9 +437,9 @@ def apply_dual_animation_artifacts(*, manifest_path: str | Path | None = None, c
         adapter_dir=base_path / "maya_adapter" / alias; adapter_dir.mkdir(parents=True,exist_ok=True)
         gaze_path=adapter_dir / "gaze_events.json"; eye_path=adapter_dir / "eye_events.json"
         gaze_path.write_text(json.dumps({"events":item["gaze_events"],"schedule":item["gaze_schedule"],"key_schedule":item["gaze_key_schedule"]}),encoding="utf-8"); eye_path.write_text(json.dumps({"events":item["eye_events"]}),encoding="utf-8")
-        if item["eye_events"]: apply_eye_performance_events(eye_events_path=str(eye_path), fps=fps, eyelid_control_suffix=item["eyelid_control_suffix"], eyelid_attr=item["eyelid_attr"])
-        result[alias] = {key: item[key] for key in ("jsync_node", "sound_file", "gaze_reference", "affect_event_count_compiled_not_applied", "heart_event_count_compiled_not_applied", "head_event_count_compiled_not_applied")}
-        result[alias].update({"gaze_event_count":len(item["gaze_events"]), "eye_event_count":len(item["eye_events"]), "warnings":["affect/heart compiled but not yet applied in dual runtime", "head compiled but not yet applied"]})
+        if item["eye_events"]: apply_eye_performance_events(eye_events_path=str(eye_path), fps=fps, eyelid_control_suffix=item["eyelid_control_suffix"], eyelid_attr=item["eyelid_attr"], clear_existing_eyelid_keys=False, preserve_existing_regulatory_blinks=True, apply_lid_states=False, apply_weighted_flat_tangents=False)
+        result[alias] = {key: item[key] for key in ("jsync_node", "sound_file", "gaze_reference", "eyelid_reference", "affect_event_count_compiled_not_applied", "heart_event_count_compiled_not_applied", "head_event_count_compiled_not_applied", "lid_event_count_compiled_deferred")}
+        result[alias].update({"gaze_event_count":len(item["gaze_events"]), "eye_event_count":len(item["eye_events"]), "warnings":["affect/heart compiled but not yet applied in dual runtime", "head compiled but not yet applied", "dual semantic lid_state compiled but deferred until eyelid layering is implemented"]})
     return result
 
 

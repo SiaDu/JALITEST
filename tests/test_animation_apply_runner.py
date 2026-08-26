@@ -23,6 +23,7 @@ from animation_apply_runner import (  # noqa: E402
     clear_character_gaze_animation,
     prepare_dual_animation_overlay,
     apply_dual_animation_artifacts,
+    capture_eyelid_animation_reference,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     scene_fps_from_unit,
@@ -50,6 +51,8 @@ class _DualCmds:
     def xform(self, *args, **kwargs): self.calls.append(("xform", args, kwargs))
     def setKeyframe(self, *args, **kwargs): self.calls.append(("setKeyframe", args, kwargs))
     def setAttr(self, *args, **kwargs): self.calls.append(("setAttr", args, kwargs))
+    def keyframe(self, *_args, **kwargs):
+        return [1.0] if kwargs.get("timeChange") else [0.25] if kwargs.get("valueChange") else []
 
 
 def _dual_mappings():
@@ -74,7 +77,18 @@ def test_prepare_dual_overlay_is_non_destructive_and_resolves_both_jsync(monkeyp
     prepared = prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings())
     assert prepared["jsync_nodes"] == {"A": "|A:ROOT|jSync1", "B": "|B:ROOT|jSync2"}
     assert prepared["A"]["gaze_reference"]["eye_stare_world_position"] == [10, 0, 0]
+    assert prepared["A"]["eyelid_reference"] == {"node": "A:LIDS_jSync_plusMinus", "attr": "Down_upLids_jSync", "keys": [{"frame": 1.0, "value": 0.25}]}
     assert prepared["B"]["gaze_key_schedule"]
+    assert cmds.calls == []
+
+
+def test_dual_eye_adapter_preserves_event_provenance_and_snapshot_is_read_only():
+    import animation_apply_runner as runner
+    events = [{"id": "e6", "phrase_id": "P06", "source_proposal_id": "S06", "channel": "blink_suppression", "value": "SUPPRESS", "reason": "still", "resolved_time": {"start": 1, "end": 2}}]
+    adapted = runner._dual_eye_events(events)
+    assert adapted[0] == {"id": "e6", "phrase_id": "P06", "source_proposal_id": "S06", "reason": "still", "type": "blink_suppression", "value": "SUPPRESS", "mode": "SUPPRESS", "resolved_time": {"start": 1, "end": 2}}
+    cmds = _DualCmds()
+    assert capture_eyelid_animation_reference("A:lids", "lid", cmds_module=cmds)["keys"] == [{"frame": 1.0, "value": 0.25}]
     assert cmds.calls == []
 
 
@@ -109,6 +123,27 @@ def test_post_freeze_dual_apply_uses_prepared_context_without_jsync(monkeypatch,
     assert {call[1][0] for call in cmds.calls if call[0] == "cutKey"} == {"A:eyeStare_world", "A:CNT_BOTH_EYES", "B:eyeStare_world", "B:CNT_BOTH_EYES"}
     assert any(call[0] == "setKeyframe" and call[1][0] == "A:eyeStare_world" for call in cmds.calls)
     assert any(call[0] == "setKeyframe" and call[1][0] == "B:eyeStare_world" for call in cmds.calls)
+
+
+def test_post_freeze_dual_apply_uses_preserve_jali_blink_ownership(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    manifest = _dual_manifest(tmp_path)
+    for alias in ("A", "B"):
+        path = tmp_path / f"{alias}_events.json"
+        payload = json.loads(path.read_text())
+        payload["events"].append({"id": f"{alias}blink", "phrase_id": f"P{alias}", "channel": "blink", "value": "DOUBLE_BLINK", "resolved_time": {"start": 0.0, "end": 1.0}})
+        payload["events"].append({"id": f"{alias}suppress", "phrase_id": f"P{alias}", "channel": "blink_suppression", "value": "SUPPRESS", "resolved_time": {"start": 0.0, "end": 1.0}})
+        payload["events"].append({"id": f"{alias}lid", "phrase_id": f"P{alias}", "channel": "lid", "value": -1, "resolved_time": {"start": 0.0, "end": 1.0}})
+        path.write_text(json.dumps(payload))
+    import expregaze_jali.maya_apply_eye_performance as eye_module
+    calls = []
+    monkeypatch.setattr(eye_module, "apply_eye_performance_events", lambda **kwargs: calls.append(kwargs))
+    prepared = prepare_dual_animation_overlay(manifest_path=manifest, character_mappings=_dual_mappings())
+    assert prepared["A"]["lid_event_count_compiled_deferred"] == 1
+    assert prepared["A"]["eye_events"][0]["phrase_id"] == "PA"
+    apply_dual_animation_artifacts(prepared_context=prepared)
+    assert len(calls) == 2
+    assert all(call["preserve_existing_regulatory_blinks"] is True and call["apply_lid_states"] is False and call["clear_existing_eyelid_keys"] is False for call in calls)
 
 
 def test_scene_fps_supports_named_and_numeric_maya_units():
