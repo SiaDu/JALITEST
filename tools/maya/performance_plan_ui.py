@@ -49,7 +49,9 @@ from authoring_session_data import (  # noqa: E402
 )
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
+    apply_dual_speaker_emotion_artifacts,
     current_scene_fps,
+    resolve_jsync_for_character,
 )
 from authoring_requirements import (  # noqa: E402
     animation_setup_issues,
@@ -115,6 +117,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
         self.character_mapping_rows: list[QtWidgets.QWidget] = []
         self.look_at_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
+        self._pending_animation_mode = "single"
+        self._pending_dual_mappings: dict[str, dict[str, str]] = {}
 
         self._build_ui()
         self.backend_runner = BackendProcessRunner(self)
@@ -521,12 +525,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def generate_animation(self) -> None:
         if self.mode_combo.currentIndex() == 1:
-            QtWidgets.QMessageBox.warning(
-                self,
-                "Dual Animation Not Supported",
-                "Dual-character animation execution is not connected yet.\n"
-                "The dual semantic Performance Plan can still be generated, edited, and saved.",
-            )
+            self._generate_dual_speaker_emotion()
             return
         if self.plan is None or self.score_model is None or self.source_path is None:
             QtWidgets.QMessageBox.warning(
@@ -628,11 +627,34 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._append_backend_output(f"Animation output: {command.output_dir}")
         self._append_backend_output(f"Maya scene FPS: {fps}")
 
+    def _generate_dual_speaker_emotion(self) -> None:
+        if self.plan is None or self.score_model is None or self.source_path is None or not self.commit_current_event(show_error=True) or not self.validate_score(show_dialog=True): return
+        script=self.input_script.toPlainText(); audio=self.audio_folder.text().strip()
+        if not script.strip() or not audio:
+            QtWidgets.QMessageBox.warning(self,"Animation Setup Incomplete","Input Script and Input Audio Folder are required."); return
+        mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}
+        try:
+            for alias, index in (("A",0),("B",1)):
+                name=self.character_rows[index][0].text().strip(); node=self.character_rows[index][1].text().strip()
+                if not name or not node or not cmds.objExists(node): raise RuntimeError(f"{alias}: valid script character and Maya rig mapping are required.")
+                jsync=resolve_jsync_for_character(node)
+                sound=str(cmds.getAttr(f"{jsync}.sound_file") or "").strip()
+                if not sound: raise RuntimeError(f"{alias}: resolved jSync has no sound_file.")
+                mappings[alias]={"script_name":name,"maya_node":node}; runtime[alias]={"script_name":name,"sound_file":sound}
+            if any(str(self.plan.get("characters",{}).get(a,"")).upper()!=runtime[a]["script_name"].upper() for a in ("A","B")): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
+            animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self.score_editor.toPlainText(),runtime_plan); fps=current_scene_fps()
+            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.backend_log.clear(); self.generate_animation_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
+            command=self.animation_runner.start_dual(performance_plan=runtime_plan,script=script,audio_folder=audio,output_dir=animation_dir,fps=fps,runtime_mapping=runtime)
+            self._append_backend_output(f"Dual emotion-only output: {command.output_dir}")
+        except Exception as exc: self._animation_failed(str(exc))
+
     def _animation_compile_succeeded(self, manifest_path: object) -> None:
         stream = io.StringIO()
         try:
             with redirect_stdout(stream), redirect_stderr(stream):
-                apply_animation_artifacts(
+                if self._pending_animation_mode == "dual_emotion_only":
+                    apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),
                     look_at_mappings=self._look_at_mapping_data(),
@@ -643,7 +665,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         self._append_backend_output(stream.getvalue())
         self.generate_animation_button.setEnabled(True)
-        self.animation_status.setText("Animation generated.")
+        self.animation_status.setText("Dual speaker emotion applied." if self._pending_animation_mode == "dual_emotion_only" else "Animation generated.")
         self.animation_status.setStyleSheet("color: #166534;")
         QtWidgets.QMessageBox.information(
             self, "Animation Generated", "Animation artifacts were compiled and applied in Maya."

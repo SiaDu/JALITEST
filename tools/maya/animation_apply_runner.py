@@ -152,6 +152,42 @@ def resolve_jsync_for_character(
     return candidates[0]
 
 
+def _enum_index(node: str, attr: str, label: str, cmds_module: Any) -> int:
+    values = (cmds_module.attributeQuery(attr, node=node, listEnum=True) or [""])[0].split(":")
+    for index, value in enumerate(values):
+        if value.strip().casefold() == label.casefold(): return index
+    raise RuntimeError(f"{node}.{attr} has no enum label {label!r}: {values}")
+
+
+def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None, mel_module: Any | None = None) -> dict[str, Any]:
+    """Apply native JALI speaker mask/heart only; no overlay channels."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if mel_module is None:
+        from maya import mel as mel_module  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path); result: dict[str, Any] = {}
+    for alias in ("A", "B"):
+        row=character_mappings.get(alias) or {}; rig=str(row.get("maya_node") or ""); runtime=manifest["character_runtime_mapping"][alias]
+        if not rig or not cmds_module.objExists(rig): raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
+        jsync=resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
+        if cmds_module.getAttr(f"{jsync}.sound_file") != runtime["sound_file"]: raise RuntimeError(f"{alias}: jSync sound_file mismatch before mutation.")
+        prefix=_rig_namespace(rig) + ":" if _rig_namespace(rig) else ""
+        if not cmds_module.objExists(prefix+"altFACSMaster"): raise RuntimeError(f"{alias}: missing rig control {prefix}altFACSMaster.")
+        artifact=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotated") or "")
+        diagnostic=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotation") or "")
+        if not artifact.is_file() or not diagnostic.is_file(): raise FileNotFoundError(f"{alias}: dual speaker emotion artifacts are missing.")
+        info=json.loads(diagnostic.read_text(encoding="utf-8")); heart=bool(info.get("heart_tag_count"))
+        for attr, value in (("calculate_paralinguals", True),("paralingual_bearing", _enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module)),("paralingual_intensity",_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module)),("override_annotation",False),("calculate_blinks",False)):
+            cmds_module.setAttr(f"{jsync}.{attr}", value)
+        if heart:
+            cmds_module.setAttr(f"{jsync}.calculate_expression", True); cmds_module.setAttr(f"{jsync}.expression_source",_enum_index(jsync,"expression_source","from Annotation",cmds_module)); cmds_module.setAttr(f"{jsync}.expression_strength",_enum_index(jsync,"expression_strength","From Transcript Tags",cmds_module))
+        cmds_module.setAttr(f"{jsync}.transcript",artifact.read_text(encoding="utf-8"),type="string")
+        mel_module.eval(f'jSync_force_compute "{jsync}";'); mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
+        if heart: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 1;')
+        result[alias]={**info,"maya_node":rig,"jsync_node":jsync,"rig_prefix":prefix,"calculate_blinks":False,"mask_binding":True,"heart_binding":heart,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
+    return result
+
+
 def load_animation_manifest(path: str | Path) -> dict[str, Any]:
     manifest_path = Path(path)
     value = json.loads(manifest_path.read_text(encoding="utf-8"))

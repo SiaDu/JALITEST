@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 import re
 from typing import Any
+from expregaze_jali.text_utils import iter_word_tokens, normalize_word
 
 
 def _jali_tag_name(event_type: str) -> str:
@@ -89,3 +90,30 @@ def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> st
             parts.append(clean[pos])
 
     return _space_jali_tags("".join(parts))
+
+
+def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str, Any]], *, alias: str, script_name: str) -> tuple[str, dict[str, Any]]:
+    """Tag only this actor's spoken phrases, preserving its original transcript."""
+    tokens = iter_word_tokens(source_text); cursor = 0; events: list[dict[str, Any]] = []
+    included: list[str] = []; skipped: list[str] = []; order = 0
+    for phrase in phrases:
+        phrase_id = str(phrase.get("phrase_id", "?"))
+        if str(phrase.get("speaker")) != alias:
+            skipped.append(phrase_id); continue
+        wanted = [item["norm"] for item in iter_word_tokens(str((phrase.get("span") or {}).get("text", "")))]
+        if not wanted: raise ValueError(f"{alias} {phrase_id}: speaker phrase has no words to map.")
+        actual = [item["norm"] for item in tokens[cursor:cursor + len(wanted)]]
+        if actual != wanted:
+            raise ValueError(f"{alias} {phrase_id}: isolated transcript words do not match phrase; expected {wanted}, found {actual}.")
+        start, end = tokens[cursor]["start"], tokens[cursor + len(wanted) - 1]["end"]
+        cursor += len(wanted); included.append(phrase_id)
+        state = ((phrase.get("states") or {}).get(alias) or {})
+        for channel, kind in (("affect", "mask"), ("heart", "heart")):
+            value = state.get(channel)
+            if value not in (None, "", "NONE"):
+                events.append({"type": kind, "value": str(value), "span": {"start": start, "end": end}, "order": order, "phrase_id": phrase_id}); order += 1
+    if cursor != len(tokens):
+        remaining = [item["text"] for item in tokens[cursor:cursor + 5]]
+        raise ValueError(f"{alias}: isolated transcript has unconsumed word(s): {remaining}.")
+    text = export_jali_annotation({"clean_transcript": source_text}, {"events": events})
+    return text, {"alias": alias, "script_name": script_name, "included_phrase_ids": included, "skipped_listener_phrase_ids": skipped, "mask_tag_count": sum(e["type"] == "mask" for e in events), "heart_tag_count": sum(e["type"] == "heart" for e in events), "events": events}

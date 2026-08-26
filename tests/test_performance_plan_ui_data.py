@@ -273,7 +273,8 @@ def test_generate_animation_uses_current_score_runtime_plan_and_real_handler():
     assert "self.score_editor.toPlainText()" in animation
     assert "self.animation_runner.start(" in animation
     assert 'setText("Generating animation...")' in animation
-    assert "Dual Animation Not Supported" in animation
+    assert "self._generate_dual_speaker_emotion()" in animation
+    assert "start_dual(" in animation
     assert "performance_annotation" not in animation
     assert "sequence_config" not in animation
 

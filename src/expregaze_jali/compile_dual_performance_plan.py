@@ -11,6 +11,7 @@ from expregaze_jali.compile_performance_plan import TimingAlignment, _validate_w
 from expregaze_jali.performance_event_resolver import load_words_jsonl
 from expregaze_jali.text_utils import normalize_word
 from expregaze_jali.textgrid_parser import parse_textgrid_words
+from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
 
 
@@ -157,6 +158,13 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
                 if value not in (None, "NONE"):
                     events.append({"phrase_id": phrase["phrase_id"], "source_proposal_id": phrase.get("source_proposal_id"), "speaker": phrase.get("speaker"), "actor": alias, "intent": phrase.get("intent"), "channel": channel, "value": value, "source_char_span": phrase.get("span"), "resolved_time": {"start": timing["canonical_start"], "end": timing["canonical_end"]}, "reason": ((phrase.get("rationale") or {}).get(alias, {}) or {}).get(channel)})
         path=out/"characters"/alias/"semantic_events_resolved.json"; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({"events":events},indent=2)+"\n",encoding="utf-8"); artifacts[alias]=str(path)
+        source = Path(audio_folder) / f"{mapping[alias]['sound_file']}.txt"
+        if not source.is_file(): raise FileNotFoundError(f"Speaker transcript not found for {alias}: {source}")
+        annotated, diagnostic = build_dual_speaker_jali_annotation(source.read_text(encoding="utf-8"), phrases, alias=alias, script_name=str(mapping[alias]["script_name"]))
+        target = out / "characters" / alias / "jali_speaker_annotated.txt"; target.write_text(annotated, encoding="utf-8")
+        diagnostic.update({"sound_file": mapping[alias]["sound_file"], "source_transcript_path": str(source), "annotated_transcript_path": str(target)})
+        diagnostic_path = target.with_name("jali_speaker_annotation.json"); diagnostic_path.write_text(json.dumps(diagnostic, indent=2)+"\n", encoding="utf-8")
+        artifacts[f"{alias}_jali_speaker_annotated"] = str(target); artifacts[f"{alias}_jali_speaker_annotation"] = str(diagnostic_path)
     manifest={"schema_version":"dual_animation_manifest_v0","performance_plan_source":str(performance_plan_path),"full_script_source":str(script_source or "<provided script text>"),"fps":float(fps),"character_runtime_mapping":runtime_mapping,"wav_durations":{a:{"path":str(wavs[a][0]),"seconds":wavs[a][1]} for a in wavs},"shared_duration_seconds":shared_duration,"artifacts":artifacts,"warnings":[duration_warning] if duration_warning else []}
     path=out/"dual_animation_manifest.json"; path.write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8"); manifest["manifest_path"]=str(path); return manifest
 

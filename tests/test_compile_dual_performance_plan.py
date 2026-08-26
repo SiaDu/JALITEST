@@ -14,6 +14,7 @@ def _words(path:Path, rows): path.write_text("\n".join(json.dumps(x) for x in ro
 def _fixture(tmp_path:Path):
     audio=tmp_path/"audio"; audio.mkdir(); _wav(audio/"SeqT_AGNES.wav"); _wav(audio/"SeqT_WILL.wav")
     _words(audio/"SeqT_AGNES_words.jsonl",[{"word":"one","start":0.,"end":.2},{"word":"three","start":1.,"end":1.2}]); _words(audio/"SeqT_WILL_words.jsonl",[{"word":"two","start":.5,"end":.7}])
+    (audio/"SeqT_AGNES.txt").write_text("one three",encoding="utf-8"); (audio/"SeqT_WILL.txt").write_text("two",encoding="utf-8")
     model=build_conversation_anchor_model(SCRIPT,character_a="AGNES",character_b="WILL")
     phrases=[]
     for i,turn in enumerate(model.turns,1):
@@ -89,6 +90,8 @@ def test_shared_timing_preserves_listener_states_and_resumes_speaker_alignment(t
     assert [row["phrase_id"] for row in phrase_timing] == ["P01", "P02", "P03"]
     assert all(row["canonical_end"] == phrase_timing[index + 1]["canonical_start"] for index, row in enumerate(phrase_timing[:-1]))
     assert result["full_script_source"]=="script.txt" and result["performance_plan_source"]==str(plan)
+    assert "<mask=Friendly-50> one </mask=Friendly-50>" in Path(result["artifacts"]["A_jali_speaker_annotated"]).read_text()
+    assert "Thinking-40" in Path(result["artifacts"]["B_jali_speaker_annotated"]).read_text()
 
 
 def test_all_channels_and_actors_receive_one_canonical_phrase_interval(tmp_path):

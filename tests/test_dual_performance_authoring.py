@@ -359,13 +359,14 @@ def test_backend_runner_keeps_single_command_and_builds_dual_command(tmp_path: P
     assert dual.arguments[dual.arguments.index("--character-b") + 1] == "WILL"
 
 
-def test_maya_ui_source_routes_dual_generation_and_retains_clear_animation_block():
+def test_maya_ui_source_routes_dual_generation_to_emotion_only_stage():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     assert 'mode="dual" if dual else "single"' in source
     assert "character_a=character_a" in source and "character_b=character_b if dual else None" in source
     assert "DualPerformanceScoreModel" in source
-    assert "Dual-character animation execution is not connected yet." in source
-    assert "The dual semantic Performance Plan can still be generated, edited, and saved." in source
+    assert "self._generate_dual_speaker_emotion()" in source
+    assert "apply_dual_speaker_emotion_artifacts" in source
+    assert "Dual Animation Not Supported" not in source
 
 
 def test_maya_plan_loader_accepts_dual_phrase_schema(tmp_path: Path):

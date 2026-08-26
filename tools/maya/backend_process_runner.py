@@ -182,6 +182,14 @@ def prepare_animation_command(
         manifest=animation_dir / "animation_manifest.json",
     )
 
+def prepare_dual_animation_command(*, performance_plan: str | Path, script: str, audio_folder: str | Path, output_dir: str | Path, fps: float, runtime_mapping: dict[str, Any], repo_root: str | Path | None = None, backend_python: str | Path | None = None) -> AnimationCommand:
+    root = resolve_repo_root(repo_root); plan = Path(performance_plan).resolve(); audio = Path(audio_folder).resolve(); out = Path(output_dir).resolve()
+    if not plan.is_file() or not audio.is_dir(): raise FileNotFoundError("Dual animation requires an existing plan and audio folder.")
+    out.mkdir(parents=True, exist_ok=True); script_file = out / "input_script.txt"; script_file.write_text(str(script), encoding="utf-8")
+    mapping_path = out / "runtime_mapping.json"; import json; mapping_path.write_text(json.dumps(runtime_mapping, indent=2), encoding="utf-8")
+    args=("-m","expregaze_jali.compile_dual_performance_plan","--performance-plan",str(plan),"--script-file",str(script_file),"--audio-folder",str(audio),"--fps",format(float(fps),".12g"),"--runtime-mapping",str(mapping_path),"--output-dir",str(out))
+    return AnimationCommand(str(resolve_backend_python(root, backend_python)),args,root,plan,script_file,audio,out,out/"dual_animation_manifest.json")
+
 
 if QtCore is not None:
 
@@ -361,6 +369,18 @@ if QtCore is not None:
             self.process.errorOccurred.connect(self._process_error)
             self.process.start(self.command.program, list(self.command.arguments))
             return self.command
+
+        def start_dual(self, **kwargs: Any) -> AnimationCommand:
+            if self.running:
+                raise RuntimeError("Animation compilation is already running.")
+            self.command = prepare_dual_animation_command(repo_root=self.repo_root, backend_python=self.backend_python, **kwargs)
+            self.stdout = self.stderr = ""; self._reported_failure = False
+            self.process = QtCore.QProcess(self); self.process.setWorkingDirectory(str(self.command.repo_root))
+            env = QtCore.QProcessEnvironment.systemEnvironment(); source = str(self.command.repo_root / "src"); old = env.value("PYTHONPATH")
+            env.insert("PYTHONPATH", source if not old else source + os.pathsep + old); self.process.setProcessEnvironment(env)
+            self.process.readyReadStandardOutput.connect(self._read_stdout); self.process.readyReadStandardError.connect(self._read_stderr)
+            self.process.finished.connect(self._finished); self.process.errorOccurred.connect(self._process_error)
+            self.process.start(self.command.program, list(self.command.arguments)); return self.command
 
         def _read_stdout(self) -> None:
             text = bytes(self.process.readAllStandardOutput()).decode("utf-8", errors="replace")
