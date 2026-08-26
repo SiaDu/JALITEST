@@ -26,9 +26,19 @@ from animation_apply_runner import (  # noqa: E402
     capture_eyelid_animation_reference,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
+    resolve_jali_source_transcript_path,
     scene_fps_from_unit,
     validate_gaze_target_mappings,
 )
+
+
+def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
+    a = tmp_path / "SeqT_AGNES.txt"; a.write_text("one", encoding="utf-8")
+    b_dir = tmp_path / "other"; b_dir.mkdir(); b = b_dir / "SeqT_WILL.txt"; b.write_text("two", encoding="utf-8")
+    assert resolve_jali_source_transcript_path(tmp_path, "SeqT_AGNES") == a.resolve()
+    assert resolve_jali_source_transcript_path(b, "SeqT_WILL") == b.resolve()
+    with pytest.raises(FileNotFoundError, match="JALI source transcript not found"):
+        resolve_jali_source_transcript_path(tmp_path, "MISSING")
 
 
 def _dual_manifest(tmp_path: Path) -> Path:

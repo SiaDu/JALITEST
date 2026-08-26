@@ -128,3 +128,13 @@ def test_mismatched_wav_durations_use_shortest_shared_duration(tmp_path):
     result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping=MAPPING, output_dir=tmp_path / "out")
     assert result["shared_duration_seconds"] == 1.5
     assert "using the shortest shared duration" in result["warnings"][0]
+
+def test_compiler_prefers_explicit_original_transcript_and_never_modifies_it(tmp_path):
+    plan, audio = _fixture(tmp_path); originals=tmp_path/"originals"; originals.mkdir()
+    source=originals/"agnes_original.txt"; source.write_text("one three",encoding="utf-8")
+    mapping={**MAPPING,"A":{**MAPPING["A"],"transcript_path":str(source)}}
+    (audio/"SeqT_AGNES.txt").write_text("wrong words",encoding="utf-8")
+    first=compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,audio_folder=audio,fps=24,runtime_mapping=mapping,output_dir=tmp_path/"out1")
+    second=compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,audio_folder=audio,fps=24,runtime_mapping=mapping,output_dir=tmp_path/"out2")
+    assert source.read_text(encoding="utf-8") == "one three"
+    assert Path(first["artifacts"]["A_jali_speaker_annotated"]).read_text() == Path(second["artifacts"]["A_jali_speaker_annotated"]).read_text()

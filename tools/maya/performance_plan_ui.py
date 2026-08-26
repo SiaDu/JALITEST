@@ -51,6 +51,7 @@ from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
     apply_dual_speaker_emotion_artifacts,
     current_scene_fps,
+    resolve_jali_source_transcript_path,
     resolve_jsync_for_character,
 )
 from authoring_requirements import (  # noqa: E402
@@ -640,7 +641,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 jsync=resolve_jsync_for_character(node)
                 sound=str(cmds.getAttr(f"{jsync}.sound_file") or "").strip()
                 if not sound: raise RuntimeError(f"{alias}: resolved jSync has no sound_file.")
-                mappings[alias]={"script_name":name,"maya_node":node}; runtime[alias]={"script_name":name,"sound_file":sound}
+                text_input_path=str(cmds.getAttr(f"{jsync}.text_input_path") or "").strip()
+                transcript=resolve_jali_source_transcript_path(text_input_path, sound)
+                mappings[alias]={"script_name":name,"maya_node":node}; runtime[alias]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
+                self._append_backend_output(f"{alias} / {name}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
             if any(str(self.plan.get("characters",{}).get(a,"")).upper()!=runtime[a]["script_name"].upper() for a in ("A","B")): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
             animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self.score_editor.toPlainText(),runtime_plan); fps=current_scene_fps()
             self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.backend_log.clear(); self.generate_animation_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")

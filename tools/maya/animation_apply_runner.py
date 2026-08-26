@@ -117,6 +117,17 @@ def _rig_namespace(active_node: str) -> str:
     return leaf.rsplit(":", 1)[0] if ":" in leaf else ""
 
 
+def resolve_jali_source_transcript_path(text_input_path: str | Path, sound_file: str) -> Path:
+    """Resolve a JALI text_input_path without consulting live transcript text."""
+    raw = Path(str(text_input_path).strip())
+    if not str(raw):
+        raise ValueError("JALI text_input_path is empty.")
+    path = raw if raw.suffix.lower() == ".txt" else raw / f"{Path(str(sound_file)).name}.txt"
+    if not path.is_file():
+        raise FileNotFoundError(f"JALI source transcript not found: {path}")
+    return path.resolve()
+
+
 def qualify_rig_control(active_node: str, configured_name: str) -> str:
     name = str(configured_name).strip()
     namespace = _rig_namespace(active_node)

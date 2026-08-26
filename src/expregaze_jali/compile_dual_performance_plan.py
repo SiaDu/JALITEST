@@ -158,8 +158,8 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
                 if value not in (None, "NONE"):
                     events.append({"phrase_id": phrase["phrase_id"], "source_proposal_id": phrase.get("source_proposal_id"), "speaker": phrase.get("speaker"), "actor": alias, "intent": phrase.get("intent"), "channel": channel, "value": value, "source_char_span": phrase.get("span"), "resolved_time": {"start": timing["canonical_start"], "end": timing["canonical_end"]}, "reason": ((phrase.get("rationale") or {}).get(alias, {}) or {}).get(channel)})
         path=out/"characters"/alias/"semantic_events_resolved.json"; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({"events":events},indent=2)+"\n",encoding="utf-8"); artifacts[alias]=str(path)
-        source = Path(audio_folder) / f"{mapping[alias]['sound_file']}.txt"
-        if not source.is_file(): raise FileNotFoundError(f"Speaker transcript not found for {alias}: {source}")
+        source = Path(mapping[alias].get("transcript_path") or (Path(audio_folder) / f"{mapping[alias]['sound_file']}.txt"))
+        if not source.is_file(): raise FileNotFoundError(f"{alias} / {mapping[alias]['script_name']}: JALI source transcript not found: {source}")
         annotated, diagnostic = build_dual_speaker_jali_annotation(source.read_text(encoding="utf-8"), phrases, alias=alias, script_name=str(mapping[alias]["script_name"]))
         target = out / "characters" / alias / "jali_speaker_annotated.txt"; target.write_text(annotated, encoding="utf-8")
         diagnostic.update({"sound_file": mapping[alias]["sound_file"], "source_transcript_path": str(source), "annotated_transcript_path": str(target)})
