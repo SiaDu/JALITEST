@@ -448,6 +448,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 "Enter Script Character A before generating.",
             )
             return
+        self._pending_animation_mode = "single"
+        self._pending_dual_mappings = {}
         self.backend_log.clear()
         self.generate_plan_button.setEnabled(False)
         self.generation_status.setText("Generating performance plan...")
@@ -633,7 +635,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         script=self.input_script.toPlainText(); audio=self.audio_folder.text().strip()
         if not script.strip() or not audio:
             QtWidgets.QMessageBox.warning(self,"Animation Setup Incomplete","Input Script and Input Audio Folder are required."); return
-        mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}
+        mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}; self.backend_log.clear()
         try:
             for alias, index in (("A",0),("B",1)):
                 name=self.character_rows[index][0].text().strip(); node=self.character_rows[index][1].text().strip()
@@ -647,7 +649,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self._append_backend_output(f"{alias} / {name}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
             if any(str(self.plan.get("characters",{}).get(a,"")).upper()!=runtime[a]["script_name"].upper() for a in ("A","B")): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
             animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self.score_editor.toPlainText(),runtime_plan); fps=current_scene_fps()
-            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.backend_log.clear(); self.generate_animation_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
+            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.generate_animation_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
             command=self.animation_runner.start_dual(performance_plan=runtime_plan,script=script,audio_folder=audio,output_dir=animation_dir,fps=fps,runtime_mapping=runtime)
             self._append_backend_output(f"Dual emotion-only output: {command.output_dir}")
         except Exception as exc: self._animation_failed(str(exc))
@@ -657,7 +659,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         try:
             with redirect_stdout(stream), redirect_stderr(stream):
                 if self._pending_animation_mode == "dual_emotion_only":
-                    apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                    result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                    for alias, item in result.items(): self._append_backend_output(f"{alias} / {item['script_name']}: jSync={item['jsync_node']}; mask_tags={item['mask_tag_count']}; heart_tags={item['heart_tag_count']}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_expression={item['calculate_expression']}; calculate_blinks=false; mask_binding={'applied' if item['mask_binding'] else 'skipped'}; heart_binding={'applied' if item['heart_binding'] else 'skipped'}")
+                    self._append_backend_output("Applied: native speaker Mask/Heart\nNot applied: listener affect; gaze; blink/lid/head\njSync preserved: yes")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),
@@ -671,11 +675,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.generate_animation_button.setEnabled(True)
         self.animation_status.setText("Dual speaker emotion applied." if self._pending_animation_mode == "dual_emotion_only" else "Animation generated.")
         self.animation_status.setStyleSheet("color: #166534;")
+        self._pending_animation_mode = "single"; self._pending_dual_mappings = {}
         QtWidgets.QMessageBox.information(
             self, "Animation Generated", "Animation artifacts were compiled and applied in Maya."
         )
 
     def _animation_failed(self, message: str) -> None:
+        self._pending_animation_mode = "single"; self._pending_dual_mappings = {}
         self.generate_animation_button.setEnabled(True)
         self.animation_status.setText("Animation generation failed.")
         self.animation_status.setStyleSheet("color: #9b1c1c;")

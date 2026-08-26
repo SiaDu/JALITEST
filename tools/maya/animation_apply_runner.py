@@ -176,7 +176,7 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         from maya import cmds as cmds_module  # type: ignore
     if mel_module is None:
         from maya import mel as mel_module  # type: ignore
-    manifest = load_dual_animation_manifest(manifest_path); result: dict[str, Any] = {}
+    manifest = load_dual_animation_manifest(manifest_path); prepared: dict[str, Any] = {}
     for alias in ("A", "B"):
         row=character_mappings.get(alias) or {}; rig=str(row.get("maya_node") or ""); runtime=manifest["character_runtime_mapping"][alias]
         if not rig or not cmds_module.objExists(rig): raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
@@ -187,15 +187,24 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         artifact=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotated") or "")
         diagnostic=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotation") or "")
         if not artifact.is_file() or not diagnostic.is_file(): raise FileNotFoundError(f"{alias}: dual speaker emotion artifacts are missing.")
-        info=json.loads(diagnostic.read_text(encoding="utf-8")); heart=bool(info.get("heart_tag_count"))
-        for attr, value in (("calculate_paralinguals", True),("paralingual_bearing", _enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module)),("paralingual_intensity",_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module)),("override_annotation",False),("calculate_blinks",False)):
+        info=json.loads(diagnostic.read_text(encoding="utf-8")); mask=bool(info.get("mask_tag_count")); heart=bool(info.get("heart_tag_count"))
+        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","calculate_expression","expression_source","expression_strength","override_annotation","calculate_blinks","transcript")
+        missing=[attr for attr in attrs if not cmds_module.objExists(f"{jsync}.{attr}")]
+        if missing: raise RuntimeError(f"{alias}: jSync is missing required attributes: {', '.join(missing)}")
+        prepared[alias]={"rig":rig,"jsync":jsync,"prefix":prefix,"artifact":artifact,"info":info,"mask":mask,"heart":heart,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None,"heart_source":_enum_index(jsync,"expression_source","from Annotation",cmds_module) if heart else None,"heart_strength":_enum_index(jsync,"expression_strength","From Transcript Tags",cmds_module) if heart else None}
+    result: dict[str, Any] = {}
+    for alias, item in prepared.items():
+        jsync=item["jsync"]; prefix=item["prefix"]; mask=item["mask"]; heart=item["heart"]
+        for attr, value in (("calculate_paralinguals", mask),("override_annotation",False),("calculate_blinks",False)):
             cmds_module.setAttr(f"{jsync}.{attr}", value)
-        if heart:
-            cmds_module.setAttr(f"{jsync}.calculate_expression", True); cmds_module.setAttr(f"{jsync}.expression_source",_enum_index(jsync,"expression_source","from Annotation",cmds_module)); cmds_module.setAttr(f"{jsync}.expression_strength",_enum_index(jsync,"expression_strength","From Transcript Tags",cmds_module))
-        cmds_module.setAttr(f"{jsync}.transcript",artifact.read_text(encoding="utf-8"),type="string")
-        mel_module.eval(f'jSync_force_compute "{jsync}";'); mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
+        if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
+        cmds_module.setAttr(f"{jsync}.calculate_expression",heart)
+        if heart: cmds_module.setAttr(f"{jsync}.expression_source",item["heart_source"]); cmds_module.setAttr(f"{jsync}.expression_strength",item["heart_strength"])
+        cmds_module.setAttr(f"{jsync}.transcript",item["artifact"].read_text(encoding="utf-8"),type="string")
+        mel_module.eval(f'jSync_force_compute "{jsync}";')
+        if mask: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
         if heart: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 1;')
-        result[alias]={**info,"maya_node":rig,"jsync_node":jsync,"rig_prefix":prefix,"calculate_blinks":False,"mask_binding":True,"heart_binding":heart,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
+        result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"calculate_paralinguals":mask,"calculate_expression":heart,"calculate_blinks":False,"mask_binding":mask,"heart_binding":heart,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
     return result
 
 

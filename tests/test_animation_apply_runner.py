@@ -23,6 +23,7 @@ from animation_apply_runner import (  # noqa: E402
     clear_character_gaze_animation,
     prepare_dual_animation_overlay,
     apply_dual_animation_artifacts,
+    apply_dual_speaker_emotion_artifacts,
     capture_eyelid_animation_reference,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
@@ -39,6 +40,27 @@ def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp
     assert resolve_jali_source_transcript_path(b, "SeqT_WILL") == b.resolve()
     with pytest.raises(FileNotFoundError, match="JALI source transcript not found"):
         resolve_jali_source_transcript_path(tmp_path, "MISSING")
+
+
+def test_dual_emotion_preflight_failure_mutates_neither_actor(monkeypatch, tmp_path):
+    import animation_apply_runner as runner
+    artifacts = {}
+    for alias in ("A", "B"):
+        event = tmp_path / f"{alias}.json"; event.write_text('{"events": []}'); artifacts[alias] = str(event)
+        text = tmp_path / f"{alias}.txt"; text.write_text("hello"); artifacts[f"{alias}_jali_speaker_annotated"] = str(text)
+        diag = tmp_path / f"{alias}_diag.json"; diag.write_text(json.dumps({"alias":alias,"script_name":"AGNES" if alias == "A" else "WILL","mask_tag_count":0,"heart_tag_count":0})); artifacts[f"{alias}_jali_speaker_annotation"] = str(diag)
+    manifest=tmp_path/"manifest.json"; manifest.write_text(json.dumps({"schema_version":"dual_animation_manifest_v0","character_runtime_mapping":{"A":{"script_name":"AGNES","sound_file":"SA"},"B":{"script_name":"WILL","sound_file":"SB"}},"artifacts":artifacts}))
+    class Cmds:
+        calls=[]
+        def objExists(self, plug): return "jSync2.calculate_expression" not in plug
+        def getAttr(self, plug): return "SA" if "jSync1" in plug else "SB"
+        def attributeQuery(self, *_a, **_k): return ["from Annotation:From Transcript Tags"]
+        def setAttr(self,*a,**k): self.calls.append((a,k))
+    cmds=Cmds(); mel=SimpleNamespace(eval=lambda *_: pytest.fail("MEL must not run"))
+    monkeypatch.setattr(runner,"resolve_jsync_for_character",lambda rig,*_a,**_k: "|A:ROOT|jSync1" if rig == "|A:ROOT" else "|B:ROOT|jSync2")
+    with pytest.raises(RuntimeError,match="B: jSync is missing"):
+        apply_dual_speaker_emotion_artifacts(manifest_path=manifest,character_mappings={"A":{"maya_node":"|A:ROOT"},"B":{"maya_node":"|B:ROOT"}},cmds_module=cmds,mel_module=mel)
+    assert cmds.calls == []
 
 
 def _dual_manifest(tmp_path: Path) -> Path:
