@@ -6,6 +6,7 @@ maya_gaze:
   eye_stare_node_suffix: eyeStare_world
   clear_existing_eye_stare_translate_keys: true
   gaze_transition_frames: 3
+  glance_min_hold_seconds: 0.5
   glance_transition_frames: 3
   apply_weighted_flat_tangents: true
 

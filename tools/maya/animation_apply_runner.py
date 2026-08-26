@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -289,7 +290,7 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
     return schedule
 
 
-def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_frames: int = 6, timeline_start: float = 0.0, initialization_epsilon: float = 1e-6) -> list[dict[str, Any]]:
+def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_min_hold_seconds: float = 0.5, timeline_start: float = 0.0, initialization_epsilon: float = 1e-6) -> list[dict[str, Any]]:
     """Expand complete semantic states into chronological Maya key states."""
     keys=[]
     ordered = list(schedule)
@@ -304,7 +305,15 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
         arrival=min(start+transition_frames,end)
         keys.append({"frame":start,"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
         if event["mode"]=="GLANCE":
-            out=min(start+transition_frames,end); back=max(out,min(end-transition_frames,start+glance_frames)); returned=state["return_state"]; keys.extend(({"frame":out,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":back,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":end,"eye_stare":list(returned["eye_stare"]),"eyes":list(returned["eyes"])}))
+            transition = max(1, int(transition_frames))
+            minimum_hold = max(1, int(math.ceil(float(glance_min_hold_seconds) * float(fps))))
+            out = start + transition
+            back = end - transition
+            if back - out < minimum_hold:
+                raise ValueError(
+                    "GLANCE interval is too short for configured transition and minimum hold."
+                )
+            returned=state["return_state"]; keys.extend(({"frame":out,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":back,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":end,"eye_stare":list(returned["eye_stare"]),"eyes":list(returned["eyes"])}))
         else: keys.append({"frame":arrival,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])})
     # Never allow an older semantic state to key after a newer start.
     return sorted(keys,key=lambda key:key["frame"])
@@ -380,7 +389,7 @@ def prepare_dual_animation_overlay(*, manifest_path: str | Path, character_mappi
             if item["target"] not in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}:
                 positions[item["target"]] = resolve_actor_target_position(alias,item["target"],character_mappings)
         schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_world_position"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
-        key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_frames=int(gaze_config.get("glance_transition_frames",6)))
+        key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_min_hold_seconds=float(gaze_config.get("glance_min_hold_seconds",0.5)))
         eye = _dual_eye_events(events)
         prepared["jsync_nodes"][alias] = jsync
         prepared[alias] = {"maya_node": node, "jsync_node": jsync, "sound_file": runtime[alias]["sound_file"], "gaze_reference": reference, "gaze_events": gaze, "gaze_schedule": schedule, "gaze_key_schedule": key_schedule, "eye_events": eye, "eyelid_control_suffix": qualify_rig_control(node, str(eye_config.get("eyelid_control_suffix", "LIDS_jSync_plusMinus"))), "eyelid_attr": str(eye_config.get("eyelid_attr", "Down_upLids_jSync")), "affect_event_count_compiled_not_applied": sum(e.get("channel")=="affect" for e in events), "heart_event_count_compiled_not_applied": sum(e.get("channel")=="heart" for e in events), "head_event_count_compiled_not_applied": sum(e.get("channel")=="head" for e in events)}

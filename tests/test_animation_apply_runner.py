@@ -227,7 +227,7 @@ def test_later_persistent_state_still_uses_explicit_transition_frames():
 def test_adapted_chain_and_glance_return_emit_complete_key_states():
     raw=[{"channel":"gaze","value":"GAZE-A","resolved_time":{"start":0,"end":20}},{"channel":"gaze","value":"GLANCE-B","resolved_time":{"start":5,"end":12}}]
     schedule=build_dual_gaze_schedule(adapt_dual_gaze_events(raw),neutral_position=[0,0,0],neutral_eyes=[0,0],target_positions={"A":[1,1,1],"B":[2,2,2]})
-    keys=build_dual_gaze_key_schedule(schedule,fps=1,transition_frames=1,glance_frames=2)
+    keys=build_dual_gaze_key_schedule(schedule,fps=1,transition_frames=1,glance_min_hold_seconds=0.5)
     assert len(schedule)==2 and any(key["frame"]==12 and key["eye_stare"]==[1,1,1] and key["eyes"]==[0,0] for key in keys)
 
 
@@ -235,6 +235,38 @@ def test_glance_restores_persistent_previous_state_and_uses_own_end():
     raw=[{"channel":"gaze","value":"GAZE-A","resolved_time":{"start":0,"end":20}},{"channel":"gaze","value":"GLANCE-B","resolved_time":{"start":5,"end":6}},{"channel":"gaze","value":"GAZE-C","resolved_time":{"start":9,"end":20}}]
     schedule=build_dual_gaze_schedule(adapt_dual_gaze_events(raw),neutral_position=[0,0,0],neutral_eyes=[0,0],target_positions={"A":[1,0,0],"B":[2,0,0],"C":[3,0,0]})
     assert schedule[1]["end"]==6 and schedule[2]["previous_state"]["eye_stare"]==[1,0,0]
+
+
+def test_glance_uses_rapid_out_hold_and_rapid_return_at_24_fps():
+    raw = [
+        {"channel": "gaze", "value": "GAZE-A", "resolved_time": {"start": 0, "end": 2}},
+        {"channel": "gaze", "value": "GLANCE-B", "resolved_time": {"start": 2, "end": 3}},
+    ]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[0, 0, 0], neutral_eyes=[4, 5], target_positions={"A": [1, 1, 1], "B": [2, 2, 2]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_min_hold_seconds=0.5)
+    glance_keys = [key for key in keys if key["frame"] >= 48]
+    assert glance_keys == [
+        {"frame": 48.0, "eye_stare": [1, 1, 1], "eyes": [4, 5]},
+        {"frame": 51.0, "eye_stare": [2, 2, 2], "eyes": [4, 5]},
+        {"frame": 69.0, "eye_stare": [2, 2, 2], "eyes": [4, 5]},
+        {"frame": 72.0, "eye_stare": [1, 1, 1], "eyes": [4, 5]},
+    ]
+    assert not any(key["frame"] == 54.0 for key in glance_keys)
+
+
+@pytest.mark.parametrize("transition_frames", [2, 3])
+def test_glance_hold_stays_at_least_half_second_for_configured_transition(transition_frames):
+    raw = [{"channel": "gaze", "value": "GLANCE-B", "resolved_time": {"start": 2, "end": 3}}]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[0, 0, 0], neutral_eyes=[4, 5], target_positions={"B": [2, 2, 2]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=transition_frames, glance_min_hold_seconds=0.5)
+    assert keys[2]["frame"] - keys[1]["frame"] >= 12
+
+
+def test_glance_too_short_for_transitions_and_half_second_hold_is_rejected():
+    raw = [{"channel": "gaze", "value": "GLANCE-B", "resolved_time": {"start": 2, "end": 2.5}}]
+    schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[0, 0, 0], neutral_eyes=[4, 5], target_positions={"B": [2, 2, 2]})
+    with pytest.raises(ValueError, match="GLANCE interval is too short"):
+        build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_min_hold_seconds=0.5)
 
 
 def test_clear_character_gaze_animation_is_attribute_scoped():
