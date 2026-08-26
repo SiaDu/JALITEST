@@ -96,8 +96,14 @@ def build_canonical_phrase_timeline(
             item["canonical_end"] = float(timeline[index + 1]["canonical_start"])
         else:
             item["canonical_end"] = max(float(item["canonical_start"]), float(item["raw_source_end"]))
-        if item["canonical_end"] + epsilon < item["canonical_start"]:
-            raise ValueError(f"Phrase {item['phrase_id']} has invalid canonical timing.")
+        if item["canonical_end"] <= item["canonical_start"] + epsilon:
+            raise ValueError(
+                f"Canonical timing collapsed phrase {item['phrase_id']} to zero duration after alignment repair."
+            )
+        if item["start_adjusted"] and item["canonical_start"] > item["raw_source_end"] + epsilon:
+            raise ValueError(
+                f"Canonical timing places phrase {item['phrase_id']} after its own source end after alignment repair."
+            )
     for index, item in enumerate(timeline[1:], start=1):
         previous = timeline[index - 1]
         if item["canonical_start"] + epsilon < previous["canonical_start"] or previous["canonical_end"] != item["canonical_start"]:

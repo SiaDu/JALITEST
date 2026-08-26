@@ -51,6 +51,17 @@ def test_canonical_phrase_timeline_preserves_real_pauses_and_second_overlap_orde
     phrases, model, times = _timeline_fixture("AGNES: alpha\nWILL: beta", ["P1", "P2"], [(0.0, 2.0), (3.5, 4.0)])
     timeline = build_canonical_phrase_timeline(phrases, model, times)
     assert [(item["canonical_start"], item["canonical_end"]) for item in timeline] == [(0.0, 3.5), (3.5, 4.0)]
+    assert all(item["canonical_end"] > item["canonical_start"] + 1e-6 for item in timeline)
+
+
+def test_canonical_phrase_timeline_rejects_collapsed_phrase_after_alignment_repair():
+    phrases, model, times = _timeline_fixture(
+        "AGNES: one\nWILL: two\nAGNES: three",
+        ["P1", "P2", "P3"],
+        [(0.0, 10.0), (1.0, 2.0), (3.0, 4.0)],
+    )
+    with pytest.raises(ValueError, match="Canonical timing collapsed phrase P2 to zero duration"):
+        build_canonical_phrase_timeline(phrases, model, times)
 
 
 def test_canonical_phrase_timeline_keeps_same_turn_splits_on_their_own_anchors():
