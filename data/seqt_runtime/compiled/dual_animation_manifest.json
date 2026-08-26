@@ -26,6 +26,7 @@
   "shared_duration_seconds": 39.2,
   "artifacts": {
     "conversation_anchor_timing": "data\\seqt_runtime\\compiled\\conversation_anchor_timing.json",
+    "conversation_phrase_timing": "data\\seqt_runtime\\compiled\\conversation_phrase_timing.json",
     "A": "data\\seqt_runtime\\compiled\\characters\\A\\semantic_events_resolved.json",
     "B": "data\\seqt_runtime\\compiled\\characters\\B\\semantic_events_resolved.json"
   },
