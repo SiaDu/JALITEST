@@ -127,7 +127,6 @@ def test_nothing_with_nonzero_intensity_is_rejected_clearly():
         ("heart", "Happy-twenty-eight", "Happy-28"),
         ("affect", "Watchful-sixty-two", "Watchful-62"),
         ("affect", "Nervous-one-hundred", "Nervous-100"),
-        ("affect", "Neutral-zero", "Neutral-0"),
         ("affect", "Smug-twenty eight", "Smug-28"),
         ("affect", "Smug-30", "Smug-30"),
         ("affect", "Smug-30%", "Smug-30"),
@@ -153,7 +152,6 @@ def test_affect_and_heart_intensities_normalize_digits_and_english_number_words(
         ("Smug-kind-of-30", "Invalid affect value"),
         ("Smug-one-fifty", "Invalid affect value"),
         ("Smug-one-hundred-one", "Invalid affect value"),
-        ("Smug-101", "affect intensity must be between 0 and 100"),
     ],
 )
 def test_invalid_or_out_of_range_affect_intensities_are_rejected(value, message):

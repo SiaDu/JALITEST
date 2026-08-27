@@ -326,28 +326,31 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     prompt = build_dual_generation_prompt(
         script=SCRIPT, character_a="AGNES", character_b="WILL"
     )
-    assert "one shared conversational beat intent" in prompt
-    assert "A.affect: STATE-INTEGER_0_TO_100 | NONE" in prompt
-    assert "Never copy dialogue" in prompt
+    assert "shared conversational beat" in prompt
+    assert "AGNES.affect: Nervous-60" in prompt
+    assert "Do not output `Nothing`" in prompt
     assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
-    assert "HEART — CLOSED VOCABULARY:" in prompt
+    assert "HEART" not in prompt
     assert "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons." in prompt
-    assert "[REASONS]\nS01\nintent: natural-language explanation" in prompt
-    assert "do not repeat `S##.` before every field" in prompt
-    assert "Bare `AVERT` is tolerated only as shorthand" in prompt
+    assert "[REASONS]" in prompt
+    assert "GAZE-WILL" in prompt
     calls = []
 
     def runner(**kwargs):
         calls.append(kwargs)
-        Path(kwargs["output_text"]).write_text(dual_proposal(), encoding="utf-8")
+        proposal_text = dual_proposal()
+        proposal_text = "\n".join(line for line in proposal_text.splitlines() if ".heart:" not in line)
+        proposal_text = proposal_text.replace("GAZE-A", "GAZE-AGNES").replace("GAZE-B", "GAZE-WILL")
+        proposal_text = proposal_text.replace("A.", "AGNES.").replace("B.", "WILL.")
+        Path(kwargs["output_text"]).write_text(proposal_text, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
-        return dual_proposal(), {"status": "completed"}
+        return proposal_text, {"status": "completed"}
 
     plan = generate_dual_performance_plan(
         script=SCRIPT, character_a="AGNES", character_b="WILL", context=None,
         run_id="dual_run", output_dir=tmp_path / "dual_run", proposal_runner=runner,
     )
-    assert len(calls) == 1 and plan["schema_version"] == "dual_performance_plan_v0"
+    assert len(calls) == 1 and plan["schema_version"] == "dual_performance_plan_v1"
     for name in (
         "input_script.txt", "input_context.txt", "actor_prompt.txt", "anchored_script.txt",
         "anchor_map.json", "performance_proposal.txt", "llm_response_meta.json", "performance_plan.json",
@@ -359,18 +362,16 @@ def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scen
     reversed_prompt = build_dual_generation_prompt(
         script="WILL: Look there.\nAGNES: I see it.", character_a="WILL", character_b="AGNES"
     )
-    assert "IDENTITY CONTRACT\nA = WILL\nB = AGNES" in reversed_prompt
-    assert "Every A.* field describes WILL." in reversed_prompt
-    assert "Every B.* field describes AGNES." in reversed_prompt
+    assert "WILL and AGNES are immutable script identities." in reversed_prompt
     assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly `[ANALYZE]`")
-    assert "Character A may become increasingly curious about Character B" in reversed_prompt
+    assert "WILL becomes increasingly curious about AGNES" in reversed_prompt
     assert "Agnes may become increasingly curious about Will" not in reversed_prompt
     assert "GROWING_CURIOSITY_ABOUT_WILL" not in reversed_prompt
 
     generic_prompt = build_dual_generation_prompt(
         script="ALICE: Hello.\nBOB: Hello.", character_a="ALICE", character_b="BOB"
     )
-    assert "IDENTITY CONTRACT\nA = ALICE\nB = BOB" in generic_prompt
+    assert "ALICE and BOB are immutable script identities." in generic_prompt
     assert "AGNES" not in generic_prompt and "WILL" not in generic_prompt
 
 

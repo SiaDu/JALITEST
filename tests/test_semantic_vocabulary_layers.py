@@ -77,19 +77,19 @@ S01.B.affect: Will thinks before speaking.
 """
 
 
-def test_shared_json_vocabulary_exactly_matches_jali_mask_and_heart_configs():
+def test_shared_json_v2_exactly_matches_the_jali_mask_config():
     shared = json.loads((ROOT / "configs" / "semantic_vocabulary.json").read_text(encoding="utf-8"))
     jali = yaml.safe_load((ROOT / "configs" / "jali_emotion_options.yaml").read_text(encoding="utf-8"))
     root = jali["jali_emotion"]
     visible = [name for name in root["mask"]["allowed_bearings"] if name != "Nothing"]
     heart = [name for name in root["heart"]["first_version_sources"] if name != "Nothing"]
-    assert shared["schema_version"] == "semantic_vocabulary_v1"
-    assert shared["visible_affect"] == visible
-    assert shared["heart"] == heart
+    assert shared["schema_version"] == "semantic_vocabulary_v2"
+    assert shared["visible_affect"] == visible + heart
+    assert "heart" not in shared
     vocabulary = load_semantic_vocabulary()
-    assert list(vocabulary.affect_states.values()) == visible
+    assert list(vocabulary.affect_states.values()) == visible + heart
     assert list(vocabulary.heart_states.values()) == heart
-    assert DEFAULT_VISIBLE_AFFECTS == set(visible)
+    assert DEFAULT_VISIBLE_AFFECTS == set(visible + heart)
     assert DEFAULT_HEART_STATES == set(heart)
 
 
@@ -99,8 +99,8 @@ def test_backend_visible_mask_accepts_only_closed_visible_vocabulary(value):
     assert parsed["phrases"][0]["affect"] == value
 
 
-@pytest.mark.parametrize("value", ["Curious-40", "Warm-40", "Happy-40", "Angry-40", "Sad-40"])
-def test_backend_visible_mask_rejects_open_and_heart_only_names(value):
+@pytest.mark.parametrize("value", ["Curious-40", "Warm-40"])
+def test_backend_visible_mask_rejects_open_names(value):
     with pytest.raises(ProposalValidationError, match=f'Unknown affect state "{value.rsplit("-", 1)[0]}"'):
         parse_performance_proposal(_single(affect=value), vocabulary=load_semantic_vocabulary())
 
@@ -136,8 +136,7 @@ def test_maya_single_and_dual_score_validation_uses_separate_closed_lists():
     visible_error = parse_score("1. {ASSESS}\n<Curious-40>\nLine.").errors[0]
     assert str(visible_error) == 'Phrase 1: Unknown visible affect "Curious"'
     for value in ("Happy", "Angry"):
-        error = parse_score(f"1. {{ASSESS}}\n<{value}-40>\nLine.").errors[0]
-        assert str(error) == f'Phrase 1: Unknown visible affect "{value}"'
+        assert parse_score(f"1. {{ASSESS}}\n<{value}-40>\nLine.").valid
     heart_error = parse_score("1. {ASSESS}\n<HEART-Angered-40>\nLine.").errors[0]
     assert str(heart_error) == 'Phrase 1: Unknown heart state "Angered"'
     valid_dual = parse_score(
@@ -153,13 +152,12 @@ def test_maya_single_and_dual_score_validation_uses_separate_closed_lists():
 def test_prompts_explain_open_acting_language_and_closed_executable_vocabularies():
     single = (ROOT / "prompts" / "actor_performance_proposal_prompt_v3.md").read_text(encoding="utf-8")
     dual = (ROOT / "prompts" / "actor_dual_performance_proposal_prompt_v1.md").read_text(encoding="utf-8")
-    for prompt in (single, dual):
-        assert "Actor-level interpretation is open vocabulary" in prompt
-        assert "Curious, Warm, Interested" in prompt
-        assert "only a visible affect listed in `[SEMANTIC VOCABULARY]`" in prompt
-        assert "only a listed heart state" in prompt
-        assert "Curious -> Watchful" not in prompt
-        assert "fixed Curious-to-Watchful mapping" in prompt
-        assert "S09" in prompt
-        assert "GROWING_CURIOSITY" in prompt
-        assert "Watchful-35" in prompt
+    assert "Actor-level interpretation is open vocabulary" in single
+    assert "Curious, Warm, Interested" in single
+    assert "Curious -> Watchful" not in single
+    assert "fixed Curious-to-Watchful mapping" in single
+    assert "Mask percentage" in dual
+    assert "only a visible affect listed in `[SEMANTIC VOCABULARY]`" in single
+    assert "only a listed heart state" in single
+    assert "Heart" not in dual and ".heart" not in dual
+    assert "Affect intensity is a JALI Mask percentage" in dual

@@ -10,7 +10,23 @@ from expregaze_jali.performance_proposal_parser import DIRECTION_TARGETS, Propos
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 
 
-SCHEMA_VERSION = "dual_performance_plan_v0"
+SCHEMA_VERSION = "dual_performance_plan_v1"
+
+
+def adapt_dual_performance_plan_v0(plan: dict[str, Any]) -> dict[str, Any]:
+    """Structurally convert a persisted A/B v0 plan to name-keyed v1."""
+    if plan.get("schema_version") != "dual_performance_plan_v0":
+        return deepcopy(plan)
+    aliases = plan.get("characters")
+    if not isinstance(aliases, dict) or set(aliases) != {"A", "B"}:
+        raise ValueError("dual_performance_plan_v0 requires A/B character aliases.")
+    result = deepcopy(plan); result["schema_version"] = SCHEMA_VERSION; result["characters"] = [aliases["A"], aliases["B"]]
+    for phrase in result.get("phrases", []):
+        phrase["speaker"] = aliases.get(phrase.get("speaker"), phrase.get("speaker"))
+        phrase["states"] = {aliases.get(key, key): value for key, value in phrase.get("states", {}).items()}
+        phrase["rationale"] = {aliases.get(key, key): value for key, value in phrase.get("rationale", {}).items()}
+        phrase.get("locks", {}).pop("A", None); phrase.get("locks", {}).pop("B", None)
+    return result
 
 
 def _resolve_gaze(
@@ -21,7 +37,7 @@ def _resolve_gaze(
     if value == "AVERT":
         return "AVERT-UNRESOLVED"
     mode, target = value.split("-", 1)
-    if target in model.aliases or target in DIRECTION_TARGETS:
+    if target in model.aliases.values() or target in DIRECTION_TARGETS:
         return value
     if target.startswith(("OBJECT_", "PROP_", "PERSON_")):
         return value
@@ -37,7 +53,7 @@ def _resolve_gaze(
         )
     if alias is None:
         return value
-    return f"{mode}-{alias}"
+    return f"{mode}-{model.aliases[alias]}"
 
 
 def resolve_dual_phrase_boundaries(
@@ -64,10 +80,17 @@ def resolve_dual_phrase_boundaries(
         previous_index = index
         row = deepcopy(phrase)
         row.update({"turn_id": anchor.turn_id, "start_index": index})
-        for alias in ("A", "B"):
-            row["states"][alias]["gaze"] = _resolve_gaze(
-                row["states"][alias]["gaze"], anchor_model, phrase_id, alias
+        legacy_aliases = set(row["states"]) == {"A", "B"}
+        for actor in row["states"]:
+            gaze = _resolve_gaze(
+                row["states"][actor]["gaze"], anchor_model, phrase_id, actor
             )
+            if legacy_aliases:
+                mode, target = gaze.split("-", 1)
+                alias = next((key for key, name in anchor_model.aliases.items() if name == target), None)
+                if alias is not None:
+                    gaze = f"{mode}-{alias}"
+            row["states"][actor]["gaze"] = gaze
         resolved.append(row)
 
     for turn in anchor_model.turns:
@@ -100,19 +123,31 @@ def resolve_dual_phrase_boundaries(
 
 
 def _locks() -> dict[str, Any]:
-    state = {key: False for key in ("affect", "heart", "gaze", "head", "lid", "blink", "blink_suppression")}
-    return {"intent": False, "A": dict(state), "B": dict(state)}
+    state = {key: False for key in ("affect", "gaze", "head", "lid", "blink", "blink_suppression")}
+    return {"intent": False}
 
 
 def build_dual_performance_plan_from_proposal(
     proposal: dict[str, Any], *, anchor_model: ConversationAnchorModel,
     sequence_id: str, proposal_path: str | None = None,
 ) -> dict[str, Any]:
+    # Structural legacy proposal adapter: A/B are mapped only through the
+    # anchor model's declared aliases, never inferred from dialogue semantics.
+    legacy_source = bool(proposal.get("phrases") and set(proposal["phrases"][0].get("states", {})) == {"A", "B"})
+    if legacy_source:
+        proposal = deepcopy(proposal)
+        names = anchor_model.aliases
+        for phrase in proposal["phrases"]:
+            phrase["states"] = {names[alias]: value for alias, value in phrase["states"].items()}
+        proposal["reasons"] = {
+            phrase_id: {names.get(key, key): value for key, value in row.items()}
+            for phrase_id, row in proposal.get("reasons", {}).items()
+        }
     phrases = resolve_dual_phrase_boundaries(proposal, anchor_model)
     output_phrases: list[dict[str, Any]] = []
     for number, phrase in enumerate(phrases, 1):
         speaker = next(
-            alias for alias, name in anchor_model.aliases.items()
+            name for _alias, name in anchor_model.aliases.items()
             if speaker_key(name) == speaker_key(next(
                 turn.speaker for turn in anchor_model.turns if turn.turn_id == phrase["turn_id"]
             ))
@@ -133,8 +168,7 @@ def build_dual_performance_plan_from_proposal(
             "states": deepcopy(phrase["states"]),
             "rationale": {
                 "intent": reasons.get("intent"),
-                "A": deepcopy(reasons.get("A", {})),
-                "B": deepcopy(reasons.get("B", {})),
+                **{name: deepcopy(reasons.get(name, {})) for name in anchor_model.aliases.values()},
             },
             "locks": _locks(),
         })
@@ -142,7 +176,7 @@ def build_dual_performance_plan_from_proposal(
     plan = {
         "schema_version": SCHEMA_VERSION,
         "sequence_id": sequence_id,
-        "characters": dict(anchor_model.aliases),
+        "characters": list(anchor_model.aliases.values()),
         "acting_interpretation": str(proposal.get("analyze") or ""),
         "phrases": output_phrases,
         "diagnostics": {
@@ -152,9 +186,21 @@ def build_dual_performance_plan_from_proposal(
         "proposal_provenance": {
             "format": "dual_anchor_semantic_v1",
             "source_proposal": proposal_path,
-            "aliases": dict(anchor_model.aliases),
             "phrase_ids": [phrase["proposal_id"] for phrase in phrases],
         },
     }
     assert_no_timing_fields(plan)
+    if legacy_source:
+        inverse = {name: alias for alias, name in anchor_model.aliases.items()}
+        legacy = deepcopy(plan); legacy["schema_version"] = "dual_performance_plan_v0"; legacy["characters"] = dict(anchor_model.aliases)
+        for phrase in legacy["phrases"]:
+            phrase["speaker"] = inverse[phrase["speaker"]]
+            phrase["states"] = {inverse[name]: value for name, value in phrase["states"].items()}
+            for state in phrase["states"].values():
+                mode, target = state["gaze"].split("-", 1)
+                if target in inverse:
+                    state["gaze"] = f"{mode}-{inverse[target]}"
+            phrase["rationale"] = {inverse.get(name, name): value for name, value in phrase["rationale"].items()}
+            phrase["locks"] = {"intent": False, **{alias: {key: False for key in (*value.keys(), "heart")} for alias, value in phrase["states"].items()}}
+        return legacy
     return plan

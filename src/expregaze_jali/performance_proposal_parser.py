@@ -88,7 +88,9 @@ def load_semantic_vocabulary(
     if data.get("schema_version") not in {"semantic_vocabulary_v1", "semantic_vocabulary_v2"}:
         raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1 or semantic_vocabulary_v2.")
     visible = data.get("visible_affect")
-    heart = data.get("heart")
+    # v2 removes Heart from new dual authoring.  Preserve it only for legacy
+    # single-actor callers that still share this loader.
+    heart = data.get("heart", ["Angry", "Sad", "Disgusted", "Afraid", "Contempt", "Surprised", "Happy"])
     if not isinstance(visible, list) or not isinstance(heart, list):
         raise ValueError("Semantic vocabulary must contain visible_affect and heart lists.")
     if not all(isinstance(name, str) and name.strip() for name in visible + heart):
@@ -159,8 +161,8 @@ def _normalize_affect(
     canonical = vocabulary.get(_name_key(state))
     if canonical is None:
         raise ProposalValidationError(f'{phrase_id}: Unknown {field} state "{state}"')
-    if not 0 <= intensity <= 100:
-        raise ProposalValidationError(f"{phrase_id}: {field} intensity must be between 0 and 100")
+    if intensity <= 0:
+        raise ProposalValidationError(f"{phrase_id}: {field} intensity must be a positive integer percentage")
     return f"{canonical}-{intensity}"
 
 

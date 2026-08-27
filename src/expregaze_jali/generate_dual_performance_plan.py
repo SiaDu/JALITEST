@@ -38,11 +38,8 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
         raise ValueError("A JALI emotion vocabulary config is required.")
     vocabulary = load_semantic_vocabulary(paths[0])
     return "\n".join((
-        "VISIBLE AFFECT — CLOSED VOCABULARY: "
-        + " | ".join(vocabulary.affect_states.values()) + " | NONE",
-        "HEART — CLOSED VOCABULARY: "
-        + " | ".join(vocabulary.heart_states.values()) + " | NONE",
-        "Any other value is invalid in these two executable fields.",
+        "VISIBLE AFFECT — CLOSED VOCABULARY: " + " | ".join(vocabulary.affect_states.values()) + " | NONE",
+        "Any other value is invalid in this executable field.",
         "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.",
         "Head values: " + ", ".join(HEAD_VALUES),
         "Lid values: " + ", ".join(str(value) for value in sorted(LID_VALUES)),
@@ -50,24 +47,13 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
         "Blink suppression: " + ", ".join(sorted(SUPPRESSION_VALUES)),
         "Direction targets: " + ", ".join(sorted(DIRECTION_TARGETS)),
     ))
-
-
 def _render_dual_prompt(
     *, anchor_model: ConversationAnchorModel, context: str | None,
     prompt_template_path: str | Path, extra_config_paths: Iterable[str | Path],
 ) -> str:
     prompt = load_prompt_template(prompt_template_path)
     character_a, character_b = anchor_model.aliases["A"], anchor_model.aliases["B"]
-    identity_contract = "\n".join((
-        "IDENTITY CONTRACT",
-        f"A = {character_a}",
-        f"B = {character_b}",
-        "",
-        f"Every A.* field describes {character_a}.",
-        f"Every B.* field describes {character_b}.",
-        "Never reinterpret or swap these aliases based on dialogue order, personality, "
-        "speaker order, examples, or narrative role.",
-    ))
+    identity_contract = "\n".join(("IDENTITY CONTRACT", f"{character_a} and {character_b} are immutable script identities.", "Never reinterpret, swap, or infer identity from dialogue order, personality, speaker order, examples, or narrative role."))
     replacements = {
         "{{character_a}}": character_a,
         "{{character_b}}": character_b,
@@ -149,7 +135,7 @@ def generate_dual_performance_plan(
         artifact_name="proposal", overwrite=overwrite,
     )
     vocabulary = load_semantic_vocabulary(extras[0])
-    proposal = parse_dual_performance_proposal(proposal_text, vocabulary=vocabulary)
+    proposal = parse_dual_performance_proposal(proposal_text, vocabulary=vocabulary, character_names=(character_a, character_b))
     plan = build_dual_performance_plan_from_proposal(
         proposal, anchor_model=model, sequence_id=resolved_run_id,
         proposal_path=str(paths.proposal),

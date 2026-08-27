@@ -41,7 +41,7 @@ def load_score_vocabulary(path: str | Path = SEMANTIC_VOCABULARY_PATH) -> tuple[
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     if data.get("schema_version") not in {"semantic_vocabulary_v1", "semantic_vocabulary_v2"}:
         raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1 or semantic_vocabulary_v2.")
-    visible, heart = data.get("visible_affect"), data.get("heart")
+    visible, heart = data.get("visible_affect"), data.get("heart", ["Angry", "Sad", "Disgusted", "Afraid", "Contempt", "Surprised", "Happy"])
     if not isinstance(visible, list) or not isinstance(heart, list):
         raise ValueError("Semantic vocabulary must contain visible_affect and heart lists.")
     if not all(isinstance(name, str) and name.strip() for name in visible + heart):

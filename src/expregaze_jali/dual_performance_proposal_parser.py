@@ -21,17 +21,17 @@ from expregaze_jali.performance_proposal_parser import (
 )
 
 
-STATE_FIELDS = REQUIRED_FIELDS[2:]
+STATE_FIELDS = ("affect", "gaze", "head", "lid", "blink", "blink_suppression")
 _SECTION = re.compile(r"^\[(ANALYZE|PERFORMANCE|REASONS)\]\s*$", re.IGNORECASE)
 _PROPOSAL_ID = re.compile(r"^S\d+$", re.IGNORECASE)
-_FIELD = re.compile(r"^(?:(A|B)\.)?([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
-_REASON_FIELD = re.compile(r"^(?:([a-z]+)\.)?([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
+_FIELD = re.compile(r"^(?:([^\.\s]+)\.)?([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
+_REASON_FIELD = re.compile(r"^(?:([^\.\s]+)\.)?([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _START = re.compile(r"^w\d{4,}$", re.IGNORECASE)
-_REASON = re.compile(r"^(S\d+)\.(?:([a-z]+)\.)?([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
+_REASON = re.compile(r"^(S\d+)\.(?:([^\.\s]+)\.)?([a-z_]+)\s*:\s*(.+?)\s*$", re.IGNORECASE)
 
 
 def _normalize_state(
-    raw: dict[str, str], *, phrase_id: str, alias: str, vocabulary: SemanticVocabulary
+    raw: dict[str, str], *, phrase_id: str, alias: str, vocabulary: SemanticVocabulary, legacy_heart: bool = False
 ) -> dict[str, Any]:
     missing = [field for field in STATE_FIELDS if field not in raw]
     if missing:
@@ -61,14 +61,10 @@ def _normalize_state(
         raise ProposalValidationError(
             f'{phrase_id}: Unknown {alias}.blink_suppression value "{raw["blink_suppression"]}"'
         )
-    return {
+    result = {
         "affect": _normalize_affect(
             raw["affect"], phrase_id=phrase_id, field=f"{alias}.affect",
             vocabulary=vocabulary.affect_states,
-        ),
-        "heart": _normalize_affect(
-            raw["heart"], phrase_id=phrase_id, field=f"{alias}.heart",
-            vocabulary=vocabulary.heart_states,
         ),
         "gaze": _normalize_gaze(raw["gaze"], phrase_id=phrase_id),
         "head": head,
@@ -76,11 +72,19 @@ def _normalize_state(
         "blink": blink,
         "blink_suppression": suppression,
     }
+    if legacy_heart:
+        result["heart"] = _normalize_affect(raw["heart"], phrase_id=phrase_id, field=f"{alias}.heart", vocabulary=vocabulary.heart_states)
+    return result
 
 
 def parse_dual_performance_proposal(
-    source: str | Path, *, vocabulary: SemanticVocabulary
+    source: str | Path, *, vocabulary: SemanticVocabulary, character_names: tuple[str, str] = ("A", "B")
 ) -> dict[str, Any]:
+    if len(character_names) != 2 or len(set(character_names)) != 2:
+        raise ValueError("Dual proposal requires exactly two distinct character names.")
+    actors = tuple(str(name) for name in character_names)
+    legacy_heart = actors == ("A", "B")
+    state_fields = STATE_FIELDS + (("heart",) if legacy_heart else ())
     text = Path(source).read_text(encoding="utf-8") if isinstance(source, Path) else str(source)
     sections: dict[str, list[str]] = {"ANALYZE": [], "PERFORMANCE": [], "REASONS": []}
     current: str | None = None
@@ -106,7 +110,7 @@ def parse_dual_performance_proposal(
         if not stripped:
             continue
         if _PROPOSAL_ID.fullmatch(stripped):
-            phrase = {"proposal_id": stripped.upper(), "states": {"A": {}, "B": {}}}
+            phrase = {"proposal_id": stripped.upper(), "states": {actor: {} for actor in actors}}
             raw_phrases.append(phrase)
             continue
         match = _FIELD.fullmatch(stripped)
@@ -120,9 +124,12 @@ def parse_dual_performance_proposal(
             destination = phrase
         else:
             alias = alias.upper()
-            if field not in STATE_FIELDS:
-                raise ProposalValidationError(f"{phrase['proposal_id']}: Unknown field {alias}.{field}")
-            destination = phrase["states"][alias]
+            actor = next((name for name in actors if name.upper() == alias), None)
+            if actor is None:
+                raise ProposalValidationError(f"{phrase['proposal_id']}: Unknown actor field {alias}.{field}")
+            if field not in state_fields:
+                raise ProposalValidationError(f"{phrase['proposal_id']}: Unknown field {actor}.{field}")
+            destination = phrase["states"][actor]
         if field in destination:
             raise ProposalValidationError(f"{phrase['proposal_id']}: Duplicate field {alias + '.' if alias else ''}{field}")
         destination[field] = value
@@ -150,10 +157,10 @@ def parse_dual_performance_proposal(
             "start_anchor": start,
             "intent": intent,
             "states": {
-                alias: _normalize_state(
-                    raw["states"][alias], phrase_id=phrase_id, alias=alias, vocabulary=vocabulary
+                actor: _normalize_state(
+                    raw["states"][actor], phrase_id=phrase_id, alias=actor, vocabulary=vocabulary, legacy_heart=legacy_heart
                 )
-                for alias in ("A", "B")
+                for actor in actors
             },
         })
 
@@ -170,11 +177,12 @@ def parse_dual_performance_proposal(
             destination = reasons.setdefault(phrase_id, {})
         else:
             alias = alias.upper()
-            if alias not in {"A", "B"}:
+            actor = next((name for name in actors if name.upper() == alias), None)
+            if actor is None:
                 raise ProposalValidationError(f"{phrase_id}: Unknown rationale alias {alias}")
-            if field not in STATE_FIELDS:
+            if field not in state_fields:
                 raise ProposalValidationError(f"{phrase_id}: Unknown reason field {alias}.{field}")
-            destination = reasons.setdefault(phrase_id, {}).setdefault(alias, {})
+            destination = reasons.setdefault(phrase_id, {}).setdefault(actor, {})
         if field in destination:
             prefix = f"{alias}." if alias else ""
             raise ProposalValidationError(f"{phrase_id}: Duplicate reason for {prefix}{field}")
@@ -214,15 +222,15 @@ def parse_dual_performance_proposal(
         reason = reasons.get(phrase["proposal_id"], {})
         if "intent" not in reason:
             warnings.append(f"{phrase['proposal_id']}: missing rationale for intent")
-        for alias in ("A", "B"):
-            alias_reasons = reason.get(alias, {})
-            for field, value in phrase["states"][alias].items():
+        for actor in actors:
+            alias_reasons = reason.get(actor, {})
+            for field, value in phrase["states"][actor].items():
                 active = (
                     (field == "head" and value != "NONE")
                     or (field not in {"head", "lid"} and value not in ("NONE", None))
                 )
                 if active and field not in alias_reasons:
-                    warnings.append(f"{phrase['proposal_id']}: missing rationale for {alias}.{field}")
+                    warnings.append(f"{phrase['proposal_id']}: missing rationale for {actor}.{field}")
     return {
         "analyze": "\n".join(sections["ANALYZE"]).strip("\n"),
         "phrases": phrases,

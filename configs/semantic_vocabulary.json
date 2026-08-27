@@ -14,8 +14,5 @@
     {"name": "Expressive", "value": 100}, {"name": "Forceful", "value": 120},
     {"name": "Theatrical", "value": 140}, {"name": "Excessive", "value": 160},
     {"name": "Extreme", "value": 180}, {"name": "Ludicrous", "value": 200}
-  ],
-  "heart": [
-    "Angry", "Sad", "Disgusted", "Afraid", "Contempt", "Surprised", "Happy"
   ]
 }
