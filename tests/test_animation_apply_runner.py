@@ -27,6 +27,7 @@ from animation_apply_runner import (  # noqa: E402
     apply_dual_listener_mask_artifacts,
     build_listener_mask_key_schedule,
     build_listener_mask_timeline,
+    capture_character_gaze_reference,
     capture_eyelid_animation_reference,
     prepare_dual_listener_mask_artifacts,
     resolve_character_look_at_target,
@@ -35,6 +36,7 @@ from animation_apply_runner import (  # noqa: E402
     scene_fps_from_unit,
     validate_gaze_target_mappings,
     apply_dual_gaze_only_artifacts,
+    prepare_dual_gaze_only_artifacts,
     gaze_layer_name,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
@@ -199,6 +201,37 @@ def test_gaze_only_uses_dedicated_layers_and_never_clears_base_controls():
     assert keyed and all(call[2]["animLayer"].startswith("JALITEST_gaze_") for call in keyed)
 
 
+def test_dual_gaze_neutral_is_automatic_local_xy_zero_and_preserves_z_baseline():
+    cmds = _DualCmds()
+    reference = capture_character_gaze_reference("|A:ROOT", cmds_module=cmds)
+    assert reference["eye_stare_translate"] == [0.0, 0.0, 9.0]
+    assert reference["baseline_translateZ"] == 9.0
+    assert reference["both_eyes_translate"] == [1.0, 2.0]
+    assert not any(call[0] == "xform" for call in cmds.calls)
+
+
+def test_dual_gaze_uses_local_target_pose_not_world_provenance(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    prepared = prepare_dual_gaze_only_artifacts(
+        manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings(), cmds_module=cmds
+    )
+    assert prepared["A"]["schedule"][0]["eye_stare"] == [1.0, 2.0, 3.0]
+    apply_dual_gaze_only_artifacts(prepared_context=prepared, cmds_module=cmds)
+    local_keys = [call for call in cmds.calls if call[0] == "setKeyframe" and call[1][0] == "A:eyeStare_world"]
+    assert local_keys and {call[2]["value"] for call in local_keys} <= {1.0, 2.0, 3.0}
+    assert all(call[2]["animLayer"] == "JALITEST_gaze_A" for call in local_keys)
+
+
+def test_legacy_world_only_target_calibration_must_be_recaptured(monkeypatch, tmp_path):
+    cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
+    mappings = _dual_mappings()
+    mappings["A"]["gaze_targets"]["B"] = [10.0, 20.0, 30.0]
+    with pytest.raises(ValueError, match="Missing calibrated look-at for A -> B"):
+        prepare_dual_gaze_only_artifacts(
+            manifest_path=_dual_manifest(tmp_path), character_mappings=mappings, cmds_module=cmds
+        )
+
+
 def _dual_manifest(tmp_path: Path) -> Path:
     artifacts = {}
     for alias, target in (("A", "B"), ("B", "A")):
@@ -212,10 +245,15 @@ def _dual_manifest(tmp_path: Path) -> Path:
 
 class _DualCmds:
     def __init__(self):
-        self.calls = []
+        self.calls = []; self.values = {
+            "A:eyeStare_world.translateZ": 9.0, "B:eyeStare_world.translateZ": 11.0,
+            "A:CNT_BOTH_EYES.translateX": 1.0, "A:CNT_BOTH_EYES.translateY": 2.0,
+            "B:CNT_BOTH_EYES.translateX": 3.0, "B:CNT_BOTH_EYES.translateY": 4.0,
+        }
     def objExists(self, _node): return True
-    def getAttr(self, _attribute): return "SeqT_AGNES" if "jSync1" in _attribute else "SeqT_WILL"
+    def getAttr(self, attribute): return self.values.get(attribute, "SeqT_AGNES" if "jSync1" in attribute else "SeqT_WILL")
     def cutKey(self, *args, **kwargs): self.calls.append(("cutKey", args, kwargs))
+    def animLayer(self, *args, **kwargs): self.calls.append(("animLayer", args, kwargs)); return [] if kwargs.get("query") else args[0]
     def xform(self, *args, **kwargs): self.calls.append(("xform", args, kwargs))
     def setKeyframe(self, *args, **kwargs): self.calls.append(("setKeyframe", args, kwargs))
     def setAttr(self, *args, **kwargs): self.calls.append(("setAttr", args, kwargs))
@@ -224,7 +262,7 @@ class _DualCmds:
 
 
 def _dual_mappings():
-    return {"A": {"script_name": "AGNES", "maya_node": "|A:ROOT", "gaze_targets": {"B": [1, 2, 3]}, "gaze_reference": {"eye_stare_node": "A:eyeStare_world", "both_eyes_node": "A:CNT_BOTH_EYES", "eye_stare_world_position": [10, 0, 0], "both_eyes_translate": [1, 2]}}, "B": {"script_name": "WILL", "maya_node": "|B:ROOT", "gaze_targets": {"A": [4, 5, 6]}, "gaze_reference": {"eye_stare_node": "B:eyeStare_world", "both_eyes_node": "B:CNT_BOTH_EYES", "eye_stare_world_position": [20, 0, 0], "both_eyes_translate": [3, 4]}}}
+    return {"A": {"script_name": "AGNES", "maya_node": "|A:ROOT", "gaze_targets": {"B": {"eye_stare_translate": [1, 2, 3], "eye_stare_world_position": [10, 0, 0]}}, "gaze_reference": {"eye_stare_world_position": [999, 999, 999]}}, "B": {"script_name": "WILL", "maya_node": "|B:ROOT", "gaze_targets": {"A": {"eye_stare_translate": [4, 5, 6], "eye_stare_world_position": [20, 0, 0]}}, "gaze_reference": {"eye_stare_world_position": [999, 999, 999]}}}
 
 
 def _patch_dual_runtime(monkeypatch, cmds):
@@ -244,7 +282,8 @@ def test_prepare_dual_overlay_is_non_destructive_and_resolves_both_jsync(monkeyp
     cmds = _DualCmds(); _patch_dual_runtime(monkeypatch, cmds)
     prepared = prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings())
     assert prepared["jsync_nodes"] == {"A": "|A:ROOT|jSync1", "B": "|B:ROOT|jSync2"}
-    assert prepared["A"]["gaze_reference"]["eye_stare_world_position"] == [10, 0, 0]
+    assert prepared["A"]["gaze_reference"]["eye_stare_translate"] == [0.0, 0.0, 9.0]
+    assert prepared["A"]["gaze_reference"]["both_eyes_translate"] == [1.0, 2.0]
     assert prepared["A"]["eyelid_reference"] == {"node": "A:LIDS_jSync_plusMinus", "attr": "Down_upLids_jSync", "keys": [{"frame": 1.0, "value": 0.25}]}
     assert prepared["B"]["gaze_key_schedule"]
     assert cmds.calls == []

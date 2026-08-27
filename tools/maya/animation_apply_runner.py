@@ -349,22 +349,18 @@ def prepare_dual_gaze_only_artifacts(*, manifest_path: str | Path, character_map
         jsync = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
         events = json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events", [])
         gaze = adapt_dual_gaze_events(events)
-        reference = row.get("gaze_reference") if isinstance(row.get("gaze_reference"), dict) else None
-        if not reference:
-            raise ValueError(f"Missing neutral gaze calibration for {alias}.")
-        required_neutral = ("eye_stare_node", "eye_stare_world_position", "both_eyes_node", "both_eyes_translate")
-        if any(key not in reference for key in required_neutral):
-            raise ValueError(f"Invalid neutral gaze calibration for {alias}.")
-        reference = dict(reference)
+        # Neutral is a rig convention, not an artist-authored calibration.
+        # Deliberately ignore legacy gaze_reference/dual_gaze_neutrals data.
+        reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
         positions: dict[str, list[float]] = {}
         for event in gaze:
             target = event["target"]
             if target in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}: continue
             value = (row.get("gaze_targets") or {}).get(target)
-            if not isinstance(value, (list, tuple)) or len(value) != 3:
+            if not isinstance(value, dict) or not isinstance(value.get("eye_stare_translate"), (list, tuple)) or len(value["eye_stare_translate"]) != 3:
                 raise ValueError(f"Missing calibrated look-at for {alias} -> {target}.")
-            positions[target] = [float(item) for item in value]
-        schedule = build_dual_gaze_schedule(gaze, neutral_position=reference["eye_stare_world_position"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions)
+            positions[target] = [float(item) for item in value["eye_stare_translate"]]
+        schedule = build_dual_gaze_schedule(gaze, neutral_position=reference["eye_stare_translate"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions)
         prepared["jsync_nodes"][alias] = jsync
         plugs = [f"{reference['eye_stare_node']}.translate{axis}" for axis in "XYZ"] + [f"{reference['both_eyes_node']}.translateX", f"{reference['both_eyes_node']}.translateY"]
         if any(not cmds_module.objExists(plug) for plug in plugs): raise RuntimeError(f"{alias}: required gaze controls do not exist.")
@@ -522,17 +518,19 @@ def adapt_dual_gaze_events(events: Iterable[dict[str, Any]]) -> list[dict[str, A
 
 
 def capture_character_gaze_reference(character_node: str, *, cmds_module: Any | None = None) -> dict[str, Any]:
-    """Capture artist-authored neutral gaze; never assume world origin."""
+    """Snapshot automatic baselines and derive the internal forward neutral."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     eye_stare = qualify_rig_control(character_node, "eyeStare_world")
     both_eyes = qualify_rig_control(character_node, "CNT_BOTH_EYES")
     if not cmds_module.objExists(eye_stare) or not cmds_module.objExists(both_eyes):
         raise RuntimeError(f"Could not resolve eyeStare_world/CNT_BOTH_EYES for {character_node}")
-    return {"eye_stare_node": eye_stare, "eye_stare_world_position": list(cmds_module.xform(eye_stare, query=True, worldSpace=True, translation=True)), "both_eyes_node": both_eyes, "both_eyes_translate": [float(cmds_module.getAttr(f"{both_eyes}.translateX")), float(cmds_module.getAttr(f"{both_eyes}.translateY"))]}
+    baseline_z = float(cmds_module.getAttr(f"{eye_stare}.translateZ"))
+    return {"eye_stare_node": eye_stare, "baseline_translateZ": baseline_z, "eye_stare_translate": [0.0, 0.0, baseline_z], "both_eyes_node": both_eyes, "both_eyes_translate": [float(cmds_module.getAttr(f"{both_eyes}.translateX")), float(cmds_module.getAttr(f"{both_eyes}.translateY"))]}
 
 
 def capture_current_look_at_position(character_node: str, *, cmds_module: Any | None = None) -> list[float]:
+    """Return world-space debug provenance only, never a gaze translate value."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     node=qualify_rig_control(character_node,"eyeStare_world")
@@ -543,9 +541,9 @@ def capture_current_look_at_position(character_node: str, *, cmds_module: Any | 
 def resolve_actor_target_position(alias: str, target: str, character_mappings: dict[str, dict[str, Any]]) -> list[float]:
     targets = (character_mappings.get(alias) or {}).get("gaze_targets") or {}
     value = targets.get(target)
-    if not isinstance(value, (list, tuple)) or len(value) != 3:
+    if not isinstance(value, dict) or not isinstance(value.get("eye_stare_translate"), (list, tuple)) or len(value["eye_stare_translate"]) != 3:
         raise ValueError(f"Character {alias} requires an artist-captured gaze target position for {target}.")
-    return [float(item) for item in value]
+    return [float(item) for item in value["eye_stare_translate"]]
 
 
 def directional_eye_offset(target: str, *, magnitude: float = 5.0, limit: float = 6.0, social: bool = False) -> tuple[float, float]:
@@ -646,8 +644,8 @@ def _validate_gaze_reference(reference: dict[str, Any], *, cmds_module: Any) -> 
         node = str(reference.get(key) or "")
         if not node or not cmds_module.objExists(node):
             raise RuntimeError(f"Prepared neutral gaze reference has no existing {key}.")
-    if not isinstance(reference.get("eye_stare_world_position"), (list, tuple)) or len(reference["eye_stare_world_position"]) != 3:
-        raise ValueError("Prepared neutral gaze reference requires eye_stare_world_position.")
+    if not isinstance(reference.get("eye_stare_translate"), (list, tuple)) or len(reference["eye_stare_translate"]) != 3:
+        raise ValueError("Prepared neutral gaze reference requires eye_stare_translate.")
     if not isinstance(reference.get("both_eyes_translate"), (list, tuple)) or len(reference["both_eyes_translate"]) != 2:
         raise ValueError("Prepared neutral gaze reference requires both_eyes_translate.")
 
@@ -687,15 +685,14 @@ def prepare_dual_animation_overlay(*, manifest_path: str | Path, character_mappi
         if not isinstance(events, list):
             raise ValueError(f"Dual semantic artifact for {alias} requires an events list.")
         gaze=adapt_dual_gaze_events(events)
-        provided_reference=row.get("gaze_reference") if isinstance(row.get("gaze_reference"),dict) else None
-        reference=dict(provided_reference) if provided_reference else capture_character_gaze_reference(node, cmds_module=cmds)
-        reference.setdefault("eye_stare_node",qualify_rig_control(node,"eyeStare_world")); reference.setdefault("both_eyes_node",qualify_rig_control(node,"CNT_BOTH_EYES"))
+        # Old world-space neutral captures are intentionally not reusable.
+        reference=capture_character_gaze_reference(node, cmds_module=cmds)
         _validate_gaze_reference(reference, cmds_module=cmds)
         positions: dict[str, list[float]] = {}
         for item in gaze:
             if item["target"] not in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}:
                 positions[item["target"]] = resolve_actor_target_position(alias,item["target"],character_mappings)
-        schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_world_position"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
+        schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_translate"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
         key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_min_hold_seconds=float(gaze_config.get("glance_min_hold_seconds",0.5)))
         eye = _dual_eye_events(events)
         eyelid_control = qualify_rig_control(node, str(eye_config.get("eyelid_control_suffix", "LIDS_jSync_plusMinus")))
@@ -729,7 +726,10 @@ def apply_dual_animation_artifacts(*, manifest_path: str | Path | None = None, c
         reference = dict(item["gaze_reference"])
         clear_character_gaze_animation(reference, cmds_module=cmds)
         for state in item["gaze_key_schedule"]:
-            frame=state["frame"]; cmds.xform(reference["eye_stare_node"],worldSpace=True,translation=state["eye_stare"]); cmds.setKeyframe(reference["eye_stare_node"],attribute="translate",time=frame)
+            frame=state["frame"]
+            for axis, value in zip("XYZ", state["eye_stare"]):
+                cmds.setAttr(f"{reference['eye_stare_node']}.translate{axis}", value)
+                cmds.setKeyframe(reference["eye_stare_node"], attribute=f"translate{axis}", time=frame)
             cmds.setAttr(f"{reference['both_eyes_node']}.translateX",state["eyes"][0]); cmds.setAttr(f"{reference['both_eyes_node']}.translateY",state["eyes"][1]); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateX",time=frame); cmds.setKeyframe(reference["both_eyes_node"],attribute="translateY",time=frame)
         adapter_dir=base_path / "maya_adapter" / alias; adapter_dir.mkdir(parents=True,exist_ok=True)
         gaze_path=adapter_dir / "gaze_events.json"; eye_path=adapter_dir / "eye_events.json"

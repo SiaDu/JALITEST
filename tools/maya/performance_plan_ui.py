@@ -65,7 +65,7 @@ from authoring_requirements import (  # noqa: E402
     required_look_at_targets,
 )
 from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
-from dual_gaze_calibration import required_calibration_pairs, calibration_key, display_target  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -125,8 +125,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
         self.character_mapping_rows: list[QtWidgets.QWidget] = []
         self.look_at_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
-        self.dual_gaze_calibrations: dict[str, list[float]] = {}
-        self.dual_gaze_neutrals: dict[str, dict[str, object]] = {}
+        self.dual_gaze_calibrations: dict[str, dict[str, list[float]]] = {}
+        self.dual_gaze_baselines: dict[str, dict[str, object]] = {}
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
 
@@ -703,7 +703,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 if self._pending_animation_mode == "dual_emotion_only":
                     # Validate both User lanes before speaker realignment changes either rig.
                     listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
-                    gaze_mappings = {alias: {**row, "gaze_reference": self.dual_gaze_neutrals.get(alias), "gaze_targets": {key.split("->", 1)[1]: value for key, value in self.dual_gaze_calibrations.items() if key.startswith(alias + "->")}} for alias, row in self._pending_dual_mappings.items()}
+                    gaze_mappings = {alias: {**row, "gaze_targets": {key.split("->", 1)[1]: value for key, value in self.dual_gaze_calibrations.items() if key.startswith(alias + "->")}} for alias, row in self._pending_dual_mappings.items()}
                     gaze_context = prepare_dual_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
@@ -763,10 +763,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 item=self.gaze_calibration_layout.takeAt(0)
                 if item.widget(): item.widget().deleteLater()
             names = self.plan.get("characters") or {}
+            # Snapshot automatic baselines while the calibration UI is built;
+            # artists only author semantic target poses.
             for actor in ("A", "B"):
-                row=QtWidgets.QWidget(); layout=QtWidgets.QHBoxLayout(row); layout.setContentsMargins(0,0,0,0)
-                layout.addWidget(QtWidgets.QLabel(display_target(actor, names))); layout.addWidget(QtWidgets.QLabel("Neutral"))
-                button=QtWidgets.QPushButton("Capture Neutral"); button.clicked.connect(lambda _checked=False,a=actor: self._capture_dual_neutral(a)); layout.addWidget(button); self.gaze_calibration_layout.addWidget(row)
+                self._capture_dual_baseline(actor)
             for actor, target in required_calibration_pairs(self.plan):
                 row=QtWidgets.QWidget(); layout=QtWidgets.QHBoxLayout(row); layout.setContentsMargins(0,0,0,0)
                 layout.addWidget(QtWidgets.QLabel(display_target(actor, names))); layout.addWidget(QtWidgets.QLabel("→")); layout.addWidget(QtWidgets.QLabel(display_target(target, names)))
@@ -785,17 +785,25 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _capture_dual_look_at(self, actor: str, target: str) -> None:
         node=self.character_rows[0 if actor == "A" else 1][1].text().strip()
-        eye=qualify_rig_control(node, "eyeStare_world")
-        if not node or not cmds.objExists(eye):
-            QtWidgets.QMessageBox.warning(self, "Look-at Capture", f"{actor} needs a mapped rig with eyeStare_world."); return
-        self.dual_gaze_calibrations[calibration_key(actor,target)] = list(cmds.xform(eye, query=True, worldSpace=True, translation=True))
+        eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
+        if not node or not cmds.objExists(eye) or not cmds.objExists(both):
+            QtWidgets.QMessageBox.warning(self, "Look-at Capture", f"{actor} needs a mapped rig with eyeStare_world and CNT_BOTH_EYES."); return
+        baseline = self.dual_gaze_baselines.get(actor) or self._capture_dual_baseline(actor)
+        if not baseline:
+            return
+        self.dual_gaze_calibrations[calibration_key(actor,target)] = capture_target_pose_and_restore(
+            eye, both, baseline_translate_z=float(baseline["baseline_translateZ"]),
+            both_eyes_translate=baseline["both_eyes_translate"], cmds_module=cmds,
+        )
         names=(self.plan or {}).get("characters") or {}; self._append_backend_output(f"Captured look-at: {display_target(actor,names)} -> {display_target(target,names)}")
 
-    def _capture_dual_neutral(self, actor: str) -> None:
+    def _capture_dual_baseline(self, actor: str) -> dict[str, object] | None:
         node=self.character_rows[0 if actor == "A" else 1][1].text().strip(); eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
         if not node or not cmds.objExists(eye) or not cmds.objExists(both):
-            QtWidgets.QMessageBox.warning(self, "Neutral Capture", "Mapped rig needs eyeStare_world and CNT_BOTH_EYES."); return
-        self.dual_gaze_neutrals[actor] = {"eye_stare_node": eye, "eye_stare_world_position": list(cmds.xform(eye, query=True, worldSpace=True, translation=True)), "both_eyes_node": both, "both_eyes_translate": [float(cmds.getAttr(both + ".translateX")), float(cmds.getAttr(both + ".translateY"))]}
+            return None
+        result: dict[str, object] = {"baseline_translateZ": float(cmds.getAttr(eye + ".translateZ")), "both_eyes_translate": [float(cmds.getAttr(both + ".translateX")), float(cmds.getAttr(both + ".translateY"))]}
+        self.dual_gaze_baselines[actor] = result
+        return result
 
     def _restore_authoring_session(
         self, session: dict[str, Any], *, preserve_authoring_text: bool = False
@@ -809,8 +817,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.input_script.setPlainText(str(session.get("input_script") or ""))
             self.input_context.setPlainText(str(session.get("input_context") or ""))
         self.audio_folder.setText(str(session.get("audio_folder") or ""))
-        self.dual_gaze_calibrations = {str(key): list(value) for key, value in (session.get("gaze_calibrations") or {}).items() if isinstance(value, (list, tuple)) and len(value) == 3}
-        self.dual_gaze_neutrals = dict(session.get("gaze_neutrals") or {})
+        # Legacy lists contain world positions only and must be recaptured.
+        self.dual_gaze_calibrations = {str(key): dict(value) for key, value in (session.get("gaze_calibrations") or {}).items() if isinstance(value, dict) and isinstance(value.get("eye_stare_translate"), (list, tuple)) and len(value["eye_stare_translate"]) == 3}
+        self.dual_gaze_baselines = {}
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
             maya_field.clear()
@@ -861,7 +870,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             input_context=self.input_context.toPlainText(),
             characters=characters,
             look_at_targets=self._look_at_mapping_data(),
-            base={**(self.authoring_session or {}), "gaze_calibrations": self.dual_gaze_calibrations, "gaze_neutrals": self.dual_gaze_neutrals},
+            base={**{key: value for key, value in (self.authoring_session or {}).items() if key != "gaze_neutrals"}, "gaze_calibrations": self.dual_gaze_calibrations},
         )
 
     def _save_authoring_session_for_path(self, plan_path: Path) -> Path:

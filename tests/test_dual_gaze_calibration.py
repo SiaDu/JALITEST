@@ -3,7 +3,7 @@ import sys
 
 MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 sys.path.insert(0, str(MAYA_TOOLS))
-from dual_gaze_calibration import calibration_key, display_target, required_calibration_pairs  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, calibration_key, display_target, required_calibration_pairs  # noqa: E402
 
 
 def test_calibration_pairs_are_actor_specific_and_display_real_names():
@@ -22,3 +22,16 @@ def test_object_targets_are_independent_calibration_pairs():
         {"states": {"A": {"gaze": "GAZE-OBJECT_HAWK"}, "B": {"gaze": "NONE"}}},
     ]}
     assert required_calibration_pairs(plan) == [("A", "OBJECT_HAWK")]
+
+
+def test_capture_look_at_keeps_local_pose_as_data_and_restores_forward_neutral():
+    class Cmds:
+        values = {"eye.translateX": 4.0, "eye.translateY": -3.0, "eye.translateZ": 12.0}
+        writes: list[tuple[str, float]] = []
+        def getAttr(self, plug): return self.values[plug]
+        def xform(self, *_args, **_kwargs): return [100.0, 200.0, 300.0]
+        def setAttr(self, plug, value): self.writes.append((plug, value))
+    cmds = Cmds()
+    captured = capture_target_pose_and_restore("eye", "eyes", baseline_translate_z=7.0, both_eyes_translate=[1.5, -2.5], cmds_module=cmds)
+    assert captured == {"eye_stare_translate": [4.0, -3.0, 12.0], "eye_stare_world_position": [100.0, 200.0, 300.0]}
+    assert cmds.writes == [("eye.translateX", 0.0), ("eye.translateY", 0.0), ("eye.translateZ", 7.0), ("eyes.translateX", 1.5), ("eyes.translateY", -2.5)]
