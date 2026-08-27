@@ -4,7 +4,8 @@ from typing import Any, Iterable
 
 
 def display_target(target: str, characters: dict[str, str]) -> str:
-    return str(characters.get(str(target).strip().upper()) or target).strip()
+    raw = str(target).strip()
+    return str(characters.get(raw.upper()) or raw.removeprefix("OBJECT_").removeprefix("PROP_").removeprefix("CHARACTER_")).strip()
 
 
 def required_calibration_pairs(plan: dict[str, Any]) -> list[tuple[str, str]]:
@@ -14,7 +15,7 @@ def required_calibration_pairs(plan: dict[str, Any]) -> list[tuple[str, str]]:
         for actor, state in (phrase.get("states") or {}).items():
             gaze = str((state or {}).get("gaze") or "")
             mode, _, target = gaze.partition("-")
-            if mode not in {"GAZE", "GLANCE"} or not target or target not in characters:
+            if mode not in {"GAZE", "GLANCE"} or not target:
                 continue
             pair = (str(actor), target)
             if pair not in pairs: pairs.append(pair)

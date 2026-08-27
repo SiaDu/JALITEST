@@ -14,4 +14,11 @@ def test_calibration_pairs_are_actor_specific_and_display_real_names():
     assert required_calibration_pairs(plan) == [("A", "B"), ("B", "A")]
     assert calibration_key("A", "B") != calibration_key("B", "A")
     assert display_target("B", plan["characters"]) == "WILL"
-    assert display_target("HAWK", plan["characters"]) == "HAWK"
+    assert display_target("OBJECT_HAWK", plan["characters"]) == "HAWK"
+
+
+def test_object_targets_are_independent_calibration_pairs():
+    plan = {"characters": {"A": "AGNES", "B": "WILL"}, "phrases": [
+        {"states": {"A": {"gaze": "GAZE-OBJECT_HAWK"}, "B": {"gaze": "NONE"}}},
+    ]}
+    assert required_calibration_pairs(plan) == [("A", "OBJECT_HAWK")]

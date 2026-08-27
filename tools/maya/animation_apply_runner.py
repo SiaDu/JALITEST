@@ -344,7 +344,13 @@ def prepare_dual_gaze_only_artifacts(*, manifest_path: str | Path, character_map
         jsync = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
         events = json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events", [])
         gaze = adapt_dual_gaze_events(events)
-        reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
+        reference = row.get("gaze_reference") if isinstance(row.get("gaze_reference"), dict) else None
+        if not reference:
+            raise ValueError(f"Missing neutral gaze calibration for {alias}.")
+        required_neutral = ("eye_stare_node", "eye_stare_world_position", "both_eyes_node", "both_eyes_translate")
+        if any(key not in reference for key in required_neutral):
+            raise ValueError(f"Invalid neutral gaze calibration for {alias}.")
+        reference = dict(reference)
         positions: dict[str, list[float]] = {}
         for event in gaze:
             target = event["target"]
