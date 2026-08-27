@@ -1,7 +1,7 @@
 """Pure-Python JSON helpers for the Maya Performance Plan Editor.
 
-This module deliberately has no Maya, Qt, or backend-package imports so it can
-be exercised by the normal Python test suite.
+This module deliberately has no Maya or Qt imports so it can be exercised by
+the normal Python test suite.
 """
 
 from __future__ import annotations
@@ -9,7 +9,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import sys
 from typing import Any
+
+REPO_SRC = Path(__file__).resolve().parents[2] / "src"
+if str(REPO_SRC) not in sys.path:
+    sys.path.insert(0, str(REPO_SRC))
 
 from expregaze_jali.dual_v2_authored_content import canonical_v2_authored_content
 
