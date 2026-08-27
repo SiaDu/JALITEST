@@ -102,7 +102,9 @@ maya_eye_performance:
 
 maya_head_overlay:
   control_suffix: jNeck_ctl
-  transition_frames: 4
+  attack_frames: 15
+  settle_frames: 5
+  overshoot_ratio: 0.20
   strength_degrees:
     SUBTLE: 3
     MEDIUM: 6

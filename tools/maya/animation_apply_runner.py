@@ -766,7 +766,9 @@ def _head_target(value: str, config: dict[str, Any]) -> dict[str, float]:
 
 
 def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
-    transition = int(config.get("transition_frames", 4))
+    attack = int(config["attack_frames"])
+    settle = int(config["settle_frames"])
+    overshoot_ratio = float(config["overshoot_ratio"])
     previous = {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
     keys: list[dict[str, Any]] = []
     for event in events:
@@ -775,17 +777,21 @@ def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: fl
             continue
         frame = float(event["resolved_start"]) * float(fps)
         target = _head_target(str(value), config)
-        role = str(event.get("timing_role") or "SPEAK_ONSET")
+        role = str(event.get("timing_role") or "")
         if role == "INITIAL_STATE":
             keys.append({"frame": 0.0, "values": target, "event_id": event.get("event_id")})
-        elif role == "LISTEN_REACTION":
-            keys.append({"frame": frame, "values": dict(previous), "event_id": event.get("event_id")})
-            keys.append({"frame": frame + transition, "values": target, "event_id": event.get("event_id")})
         else:
-            keys.append({"frame": max(0.0, frame - transition), "values": dict(previous), "event_id": event.get("event_id")})
-            keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
+            overshoot = {axis: target[axis] + (target[axis] - previous[axis]) * overshoot_ratio for axis in target}
+            if role == "SPEAK_ONSET":
+                keys.append({"frame": max(0.0, frame - attack), "values": dict(previous), "event_id": event.get("event_id")})
+                keys.append({"frame": frame, "values": overshoot, "event_id": event.get("event_id")})
+                keys.append({"frame": frame + settle, "values": target, "event_id": event.get("event_id")})
+            else:
+                keys.append({"frame": frame, "values": dict(previous), "event_id": event.get("event_id")})
+                keys.append({"frame": frame + attack, "values": overshoot, "event_id": event.get("event_id")})
+                keys.append({"frame": frame + attack + settle, "values": target, "event_id": event.get("event_id")})
         previous = target
-    return keys
+    return sorted(keys, key=lambda key: key["frame"])
 
 
 def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:

@@ -122,18 +122,23 @@ def _configure_multiline_editor(
         editor.setMinimumHeight(height)
 
 
+def panel_dialogue_role(panel_actor: str, speaker: str) -> str:
+    return "speaking" if speaker_key(panel_actor) == speaker_key(speaker) else "listening"
+
+
 class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
     """Color immutable dialogue by original speaker and tags distinctly."""
 
-    def __init__(self, document: QtGui.QTextDocument, projection: Any, characters: list[str]):
+    def __init__(self, document: QtGui.QTextDocument, projection: Any, characters: list[str], *, panel_actor: str):
         super().__init__(document)
         self.projection = projection
         self.characters = list(characters)
-        self.speaker_formats = []
-        for color in ("#b58900", "#2563eb"):
+        self.panel_actor = panel_actor
+        self.speaker_formats = {}
+        for role, color in (("speaking", "#b58900"), ("listening", "#2563eb")):
             fmt = QtGui.QTextCharFormat()
             fmt.setForeground(QtGui.QColor(color))
-            self.speaker_formats.append(fmt)
+            self.speaker_formats[role] = fmt
         self.tag_format = QtGui.QTextCharFormat()
         self.tag_format.setForeground(QtGui.QColor("#c026d3"))
         self.tag_format.setFontWeight(QtGui.QFont.Weight.Bold)
@@ -158,8 +163,7 @@ class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
             speaker_index = next((i for i, row in enumerate(ranges) if row.start <= plain_offset < row.end), None)
             if speaker_index is not None:
                 speaker = ranges[speaker_index].speaker
-                actor_index = next((i for i, name in enumerate(self.characters) if speaker_key(name) == speaker_key(speaker)), 0)
-                self.setFormat(index, 1, self.speaker_formats[actor_index])
+                self.setFormat(index, 1, self.speaker_formats[panel_dialogue_role(self.panel_actor, speaker)])
             plain_offset += 1
 
 class PerformancePlanEditor(QtWidgets.QDialog):
@@ -331,7 +335,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         parent.addWidget(group)
 
     def _build_semantic_score(self, parent: QtWidgets.QVBoxLayout) -> None:
-        group = QtWidgets.QGroupBox("SEMANTIC PERFORMANCE SCORE")
+        group = QtWidgets.QGroupBox("SEMANTIC PERFORMANCE TAG")
         layout = QtWidgets.QVBoxLayout(group)
         self.score_title_a = QtWidgets.QLabel("PERFORMANCE")
         layout.addWidget(self.score_title_a)
@@ -348,14 +352,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_editor_b.hide()
         layout.addWidget(self.score_title_b)
         layout.addWidget(self.score_editor_b)
-        self.score_legend = QtWidgets.QLabel("Speaker colors: first character = yellow; second character = blue; semantic tags = magenta.")
+        self.score_legend = QtWidgets.QLabel("Current panel character: speaking = yellow; listening = blue; semantic tags = magenta.")
         self.score_legend.hide()
         layout.addWidget(self.score_legend)
         controls = QtWidgets.QHBoxLayout()
-        self.validate_score_button = QtWidgets.QPushButton("Validate Score")
+        self.validate_score_button = QtWidgets.QPushButton("Validate Tag")
         self.validate_score_button.clicked.connect(self.validate_score)
         controls.addWidget(self.validate_score_button)
-        self.apply_score_button = QtWidgets.QPushButton("Apply Score Edits")
+        self.apply_score_button = QtWidgets.QPushButton("Apply Tag Edits")
         self.apply_score_button.clicked.connect(self.apply_score_edits)
         controls.addWidget(self.apply_score_button)
         self.validation_label = QtWidgets.QLabel("No plan loaded")
@@ -1065,7 +1069,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _score_changed(self) -> None:
         if not self._building and self.score_model is not None:
-            self.validation_label.setText("Score changed — validate before saving.")
+            self.validation_label.setText("Tag changed — validate before saving.")
             self.validation_label.setStyleSheet("color: #92400e;")
 
     def validate_score(self, *, show_dialog: bool = False) -> bool:
@@ -1077,18 +1081,18 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         result = self.score_model.validate(self._score_payload())
         if result.valid:
             noun = "changes" if isinstance(self.score_model, DualSparseScoreModel) else "phrases"
-            self.validation_label.setText(f"Valid score — {len(result.phrases)} {noun}")
+            self.validation_label.setText(f"Valid tag — {len(result.phrases)} {noun}")
             self.validation_label.setStyleSheet("color: #166534;")
             self.validation_details.clear()
             self.validation_details.hide()
             return True
         details = "\n".join(str(error) for error in result.errors)
-        self.validation_label.setText(f"Invalid score — {len(result.errors)} error(s)")
+        self.validation_label.setText(f"Invalid tag — {len(result.errors)} error(s)")
         self.validation_label.setStyleSheet("color: #9b1c1c;")
         self.validation_details.setPlainText(details)
         self.validation_details.show()
         if show_dialog:
-            QtWidgets.QMessageBox.warning(self, "Invalid Semantic Performance Score", details)
+            QtWidgets.QMessageBox.warning(self, "Invalid Semantic Performance Tag", details)
         return False
 
     def apply_score_edits(self, *, show_success: bool = True) -> bool:
@@ -1100,7 +1104,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._refresh_metadata_and_diagnostics()
         if show_success:
             QtWidgets.QMessageBox.information(
-                self, "Score Applied", "Valid semantic edits were applied to the canonical Performance Plan."
+                self, "Tag Applied", "Valid semantic tag edits were applied to the canonical Performance Plan."
             )
         return True
 
@@ -1276,8 +1280,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.score_legend.show()
             self.reason_group.setTitle("REASON BY CHANGE")
             self._score_highlighters = [
-                _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection, self.score_model.characters),
-                _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection, self.score_model.characters),
+                _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection, self.score_model.characters, panel_actor=first),
+                _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection, self.score_model.characters, panel_actor=second),
             ]
         else:
             self.score_title_a.setText("PERFORMANCE")

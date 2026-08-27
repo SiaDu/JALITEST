@@ -401,6 +401,17 @@ def test_dual_ui_keeps_acting_interpretation_read_only_and_regenerate_placeholde
     assert "Confirm Original Reason" not in source and "Replace Animator Reason" not in source
 
 
+def test_dual_ui_uses_performance_tag_wording_and_panel_relative_dialogue_roles():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert "SEMANTIC PERFORMANCE TAG" in source
+    assert 'QPushButton("Validate Tag")' in source
+    assert 'QPushButton("Apply Tag Edits")' in source
+    assert "def panel_dialogue_role(panel_actor: str, speaker: str)" in source
+    assert "speaker_key(panel_actor) == speaker_key(speaker)" in source
+    assert "panel_actor=first" in source and "panel_actor=second" in source
+    assert "first character = yellow" not in source
+
+
 def test_v2_runtime_plan_saves_edited_semantics_without_reason_confirmation(tmp_path: Path):
     from tools.maya.dual_sparse_score_model import DualSparseScoreModel
     from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
