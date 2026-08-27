@@ -439,10 +439,13 @@ def prepare_dual_listener_mask_artifacts(
     return prepared
 
 
-def _clear_listener_layer_keys(layer: str, plugs: Iterable[str], *, scene_range: tuple[float, float] | None, cmds_module: Any) -> None:
-    """Clear only curves belonging to JALITEST's dedicated listener layer."""
+def _clear_listener_layer_keys(layer: str, plugs: Iterable[str], *, scene_range: tuple[float, float] | None, cmds_module: Any, override: bool = False) -> None:
+    """Clear only curves belonging to a JALITEST-owned animation layer."""
     if not cmds_module.objExists(layer):
-        cmds_module.animLayer(layer)
+        cmds_module.animLayer(layer, override=override)
+    elif override:
+        # Repair layers created by prior JALITEST versions as additive layers.
+        cmds_module.animLayer(layer, edit=True, override=True)
     for plug in plugs:
         cmds_module.animLayer(layer, edit=True, attribute=plug)
     for curve in cmds_module.animLayer(layer, query=True, animCurves=True) or []:
@@ -520,7 +523,7 @@ def apply_dual_gaze_only_artifacts(*, prepared_context: dict[str, Any], cmds_mod
     result: dict[str, Any] = {}
     for alias in ("A", "B"):
         item = prepared_context[alias]; reference = item["reference"]
-        _clear_listener_layer_keys(item["layer"], item["managed_gaze_plugs"], scene_range=None, cmds_module=cmds_module)
+        _clear_listener_layer_keys(item["layer"], item["managed_gaze_plugs"], scene_range=None, cmds_module=cmds_module, override=True)
         for state in item["keys"]:
             for axis, value in zip("XYZ", state["eye_stare"]): cmds_module.setKeyframe(reference["eye_stare_node"], attribute=f"translate{axis}", time=state["frame"], value=value, animLayer=item["layer"])
             cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateX", time=state["frame"], value=state["eyes"][0], animLayer=item["layer"])

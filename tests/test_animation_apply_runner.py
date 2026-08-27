@@ -173,6 +173,7 @@ def test_listener_preflight_and_apply_only_write_user_mask_controls(monkeypatch,
     keyed = [call[1][0] for call in cmds.calls if call[0] == "setKeyframe"]
     assert keyed and all(plug.startswith(("A:usr_", "B:usr_")) for plug in keyed)
     assert result["B"]["eyelid_channels_filtered"] is True and result["A"]["FACS_animationSource"] == "Add"
+    assert not any(call[0] == "animLayer" and call[2].get("override") is True for call in cmds.calls)
 
 
 def test_listener_unsupported_mask_fails_preflight_before_either_actor_mutates(tmp_path):
@@ -199,6 +200,8 @@ def test_gaze_only_uses_dedicated_layers_and_never_clears_base_controls():
     assert all(call[0] != "xform" for call in cmds.calls)
     keyed = [call for call in cmds.calls if call[0] == "setKeyframe"]
     assert keyed and all(call[2]["animLayer"].startswith("JALITEST_gaze_") for call in keyed)
+    override_calls = [call for call in cmds.calls if call[0] == "animLayer" and call[2].get("override") is True]
+    assert {call[1][0] for call in override_calls} == {"JALITEST_gaze_A", "JALITEST_gaze_B"}
 
 
 def test_dual_gaze_neutral_is_automatic_local_xy_zero_and_preserves_z_baseline():
