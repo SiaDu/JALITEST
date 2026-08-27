@@ -48,9 +48,25 @@ from animation_apply_runner import (  # noqa: E402
     plan_v2_blinks,
     diagnose_v2_blink_ownership,
     prepare_dual_v2_listener_mask_artifacts,
+    _v2_overlay_config,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 from diagnose_eyelid_user_mappings import diagnose_eyelid_user_mappings  # noqa: E402
+
+
+def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypatch):
+    import builtins
+
+    original_import = builtins.__import__
+    def no_pyyaml(name, *args, **kwargs):
+        if name == "yaml":
+            raise ModuleNotFoundError("No module named 'yaml'")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_pyyaml)
+    config = _v2_overlay_config()
+    assert config["head"]["control_suffix"] == "jNeck_ctl"
+    assert config["blink"]["presets"]["BLINK"]["closure"] == 7
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):

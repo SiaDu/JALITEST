@@ -717,8 +717,12 @@ def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
 
 
 def _v2_overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]:
-    import yaml
-    value = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
+    source_path = str(REPO_ROOT / "src")
+    if source_path not in sys.path:
+        sys.path.insert(0, source_path)
+    from expregaze_jali.maya_apply_gaze import _load_yaml_file  # noqa: PLC0415
+
+    value = _load_yaml_file(Path(path))
     head = value.get("maya_head_overlay")
     blink = value.get("maya_performative_blink_overlay")
     if not isinstance(head, dict) or not isinstance(blink, dict):

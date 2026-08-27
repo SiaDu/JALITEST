@@ -175,6 +175,14 @@ def _parse_scalar(value: str) -> Any:
     text = value.strip()
     if not text:
         return ""
+    if text.startswith("{") and text.endswith("}"):
+        result: dict[str, Any] = {}
+        for item in text[1:-1].split(","):
+            key, separator, item_value = item.partition(":")
+            if not separator:
+                raise ValueError(f"Unsupported inline YAML mapping: {value!r}")
+            result[key.strip()] = _parse_scalar(item_value)
+        return result
     if text.startswith("[") and text.endswith("]"):
         items = [item.strip() for item in text[1:-1].split(",") if item.strip()]
         return [_parse_scalar(item) for item in items]
