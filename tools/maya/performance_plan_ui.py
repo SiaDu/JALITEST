@@ -50,11 +50,15 @@ from authoring_session_data import (  # noqa: E402
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
     apply_dual_listener_mask_artifacts,
+    apply_dual_gaze_only_artifacts,
     apply_dual_speaker_emotion_artifacts,
     current_scene_fps,
+    qualify_rig_control,
     resolve_jali_source_transcript_path,
     resolve_jsync_for_character,
     prepare_dual_listener_mask_artifacts,
+    prepare_dual_gaze_only_artifacts,
+    freeze_dual_jsync_nodes,
 )
 from authoring_requirements import (  # noqa: E402
     animation_setup_issues,
@@ -62,6 +66,7 @@ from authoring_requirements import (  # noqa: E402
     required_look_at_targets,
 )
 from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
+from dual_gaze_calibration import required_calibration_pairs, calibration_key, display_target  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -121,6 +126,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
         self.character_mapping_rows: list[QtWidgets.QWidget] = []
         self.look_at_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
+        self.dual_gaze_calibrations: dict[str, list[float]] = {}
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
 
@@ -176,6 +182,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addWidget(QtWidgets.QLabel("Required Look-at Targets"))
         self.look_at_layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.look_at_layout)
+        self.gaze_calibration_label = QtWidgets.QLabel("LOOK-AT CALIBRATION")
+        layout.addWidget(self.gaze_calibration_label)
+        self.gaze_calibration_layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(self.gaze_calibration_layout)
         bottom = QtWidgets.QHBoxLayout()
         self.generate_animation_button = QtWidgets.QPushButton("Generate Animation")
         self.generate_animation_button.clicked.connect(self.generate_animation)
@@ -686,13 +696,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 if self._pending_animation_mode == "dual_emotion_only":
                     # Validate both User lanes before speaker realignment changes either rig.
                     listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                    gaze_mappings = {alias: {**row, "gaze_targets": {target: self.dual_gaze_calibrations[calibration_key(alias, target)] for target in ("A", "B") if calibration_key(alias, target) in self.dual_gaze_calibrations}} for alias, row in self._pending_dual_mappings.items()}
+                    gaze_context = prepare_dual_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
+                    freeze_dual_jsync_nodes(gaze_context)
+                    gaze_result = apply_dual_gaze_only_artifacts(prepared_context=gaze_context)
                     for alias, item in result.items(): self._append_backend_output(f"{alias} / {item['script_name']}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; heart_tags={item['heart_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_expression={item['calculate_expression']}; calculate_blinks=false; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}; heart_binding={'applied' if item['heart_binding'] else 'skipped'}")
                     for alias in ("A", "B"):
                         item = listener_result[alias]
                         self._append_backend_output(f"{alias}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; eyelid_channels_filtered=yes; FACS_animationSource=Add")
-                    self._append_backend_output("Applied: native speaker Mask/Heart; listener User Mask reactions\nNot applied: listener Heart; gaze; blink/lid; head\njSync preserved: yes")
+                    self._append_backend_output(f"Applied: native speaker Mask/Heart; listener User Mask reactions; calibrated gaze ({gaze_result['A']['gaze_events'] + gaze_result['B']['gaze_events']} events)\nNot applied: listener Heart; blink/lid; head\nJALI base: frozen")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),
@@ -736,6 +750,18 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _refresh_required_look_at_targets(self) -> None:
         if self.plan is None:
             return
+        if self.plan.get("schema_version") == "dual_performance_plan_v0":
+            while self.gaze_calibration_layout.count():
+                item=self.gaze_calibration_layout.takeAt(0)
+                if item.widget(): item.widget().deleteLater()
+            names = self.plan.get("characters") or {}
+            for actor, target in required_calibration_pairs(self.plan):
+                row=QtWidgets.QWidget(); layout=QtWidgets.QHBoxLayout(row); layout.setContentsMargins(0,0,0,0)
+                layout.addWidget(QtWidgets.QLabel(display_target(actor, names))); layout.addWidget(QtWidgets.QLabel("→")); layout.addWidget(QtWidgets.QLabel(display_target(target, names)))
+                button=QtWidgets.QPushButton("Capture Look-at")
+                button.clicked.connect(lambda _checked=False,a=actor,t=target: self._capture_dual_look_at(a,t))
+                layout.addWidget(button); self.gaze_calibration_layout.addWidget(row)
+            return
         rows = refresh_look_at_mappings(
             required_look_at_targets(self.plan), self._look_at_mapping_data()
         )
@@ -743,6 +769,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         for mapping in rows:
             self._add_look_at_target(mapping["semantic_target"])
             self.look_at_rows[-1][1].setText(mapping["maya_node"])
+
+    def _capture_dual_look_at(self, actor: str, target: str) -> None:
+        node=self.character_rows[0 if actor == "A" else 1][1].text().strip()
+        eye=qualify_rig_control(node, "eyeStare_world")
+        if not node or not cmds.objExists(eye):
+            QtWidgets.QMessageBox.warning(self, "Look-at Capture", f"{actor} needs a mapped rig with eyeStare_world."); return
+        self.dual_gaze_calibrations[calibration_key(actor,target)] = list(cmds.xform(eye, query=True, worldSpace=True, translation=True))
+        self._append_backend_output(f"Captured look-at: {actor} -> {target}")
 
     def _restore_authoring_session(
         self, session: dict[str, Any], *, preserve_authoring_text: bool = False
@@ -756,6 +790,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.input_script.setPlainText(str(session.get("input_script") or ""))
             self.input_context.setPlainText(str(session.get("input_context") or ""))
         self.audio_folder.setText(str(session.get("audio_folder") or ""))
+        self.dual_gaze_calibrations = {str(key): list(value) for key, value in (session.get("gaze_calibrations") or {}).items() if isinstance(value, (list, tuple)) and len(value) == 3}
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
             maya_field.clear()
@@ -806,7 +841,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             input_context=self.input_context.toPlainText(),
             characters=characters,
             look_at_targets=self._look_at_mapping_data(),
-            base=self.authoring_session,
+            base={**(self.authoring_session or {}), "gaze_calibrations": self.dual_gaze_calibrations},
         )
 
     def _save_authoring_session_for_path(self, plan_path: Path) -> Path:

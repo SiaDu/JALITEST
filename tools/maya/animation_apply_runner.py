@@ -331,6 +331,58 @@ def apply_dual_listener_mask_artifacts(*, prepared_context: dict[str, Any], cmds
     return result
 
 
+def prepare_dual_gaze_only_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Read-only gaze preflight; deliberately has no blink/lid/head path."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path)
+    prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}}
+    for alias in ("A", "B"):
+        row, runtime = character_mappings.get(alias) or {}, manifest["character_runtime_mapping"][alias]
+        rig = str(row.get("maya_node") or "")
+        if not rig or not cmds_module.objExists(rig): raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
+        jsync = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
+        events = json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events", [])
+        gaze = adapt_dual_gaze_events(events)
+        reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
+        positions: dict[str, list[float]] = {}
+        for event in gaze:
+            target = event["target"]
+            if target in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}: continue
+            value = (row.get("gaze_targets") or {}).get(target)
+            if not isinstance(value, (list, tuple)) or len(value) != 3:
+                raise ValueError(f"Missing calibrated look-at for {alias} -> {target}.")
+            positions[target] = [float(item) for item in value]
+        schedule = build_dual_gaze_schedule(gaze, neutral_position=reference["eye_stare_world_position"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions)
+        prepared["jsync_nodes"][alias] = jsync
+        prepared[alias] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=4), "gaze_events": len(gaze)}
+    return prepared
+
+
+def freeze_dual_jsync_nodes(prepared_context: dict[str, Any], *, cmds_module: Any | None = None) -> None:
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    for alias in ("A", "B"):
+        cmds_module.delete(prepared_context["jsync_nodes"][alias])
+
+
+def apply_dual_gaze_only_artifacts(*, prepared_context: dict[str, Any], cmds_module: Any | None = None) -> dict[str, Any]:
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if prepared_context.get("schema_version") != "dual_gaze_only_prepared_v1": raise ValueError("Invalid prepared gaze-only context.")
+    result: dict[str, Any] = {}
+    for alias in ("A", "B"):
+        item = prepared_context[alias]; reference = item["reference"]
+        clear_character_gaze_animation(reference, cmds_module=cmds_module)
+        for state in item["keys"]:
+            cmds_module.xform(reference["eye_stare_node"], worldSpace=True, translation=state["eye_stare"])
+            cmds_module.setKeyframe(reference["eye_stare_node"], attribute="translate", time=state["frame"])
+            cmds_module.setAttr(f"{reference['both_eyes_node']}.translateX", state["eyes"][0]); cmds_module.setAttr(f"{reference['both_eyes_node']}.translateY", state["eyes"][1])
+            cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateX", time=state["frame"]); cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateY", time=state["frame"])
+        result[alias] = {"gaze_events": item["gaze_events"], "key_count": len(item["keys"])}
+    return result
+
+
 def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None, mel_module: Any | None = None) -> dict[str, Any]:
     """Apply native JALI speaker mask/heart only; no overlay channels."""
     if cmds_module is None:
