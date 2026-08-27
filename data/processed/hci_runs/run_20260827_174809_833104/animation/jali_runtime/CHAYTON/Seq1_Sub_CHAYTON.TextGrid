@@ -26,10 +26,10 @@ item[]
 				text = "ma'am"
 			intervals [4]:
 				xmin = 1.323125
-				xmax = 3.163750
+				xmax = 3.183750
 				text = "XXNONVERBALXX"
 			intervals [5]:
-				xmin = 3.163750
+				xmin = 3.183750
 				xmax = 3.373750
 				text = "we're"
 			intervals [6]:
@@ -304,10 +304,10 @@ item[]
 				text = "m"
 			intervals [10]:
 				xmin = 1.323125
-				xmax = 3.163750
+				xmax = 3.183750
 				text = "spn"
 			intervals [11]:
-				xmin = 3.163750
+				xmin = 3.183750
 				xmax = 3.283750
 				text = "w"
 			intervals [12]:
