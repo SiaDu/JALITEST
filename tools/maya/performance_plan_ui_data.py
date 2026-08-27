@@ -24,7 +24,17 @@ def load_performance_plan(path: str | Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("Performance Plan JSON must have an object at its root.")
     schema = value.get("schema_version")
-    if schema in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
+    if schema in {"dual_performance_plan_v0", "dual_performance_plan_v1", "dual_performance_plan_v2"}:
+        if schema == "dual_performance_plan_v2":
+            characters = value.get("characters")
+            tracks = value.get("tracks")
+            if not isinstance(characters, list) or len(characters) != 2:
+                raise ValueError("Dual v2 Performance Plan JSON must contain exactly two named characters.")
+            if not isinstance(tracks, dict) or set(tracks) != set(characters):
+                raise ValueError("Dual v2 Performance Plan JSON must contain name-keyed tracks.")
+            if not all(isinstance(tracks[name], list) for name in characters):
+                raise ValueError("Every dual v2 character track must be a list.")
+            return value
         if not isinstance(value.get("phrases"), list):
             raise ValueError("Dual Performance Plan JSON must contain a phrases list.")
         if schema == "dual_performance_plan_v1":

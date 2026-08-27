@@ -41,6 +41,12 @@ from performance_score_model import (  # noqa: E402
     PerformanceScoreModel,
     format_rationale_view,
 )
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_DIR = REPO_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+from dual_sparse_score_model import DualSparseScoreModel  # noqa: E402
+from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key  # noqa: E402
 from authoring_session_data import (  # noqa: E402
     build_authoring_session,
     default_authoring_session_path,
@@ -110,6 +116,54 @@ def _configure_multiline_editor(
         editor.setMinimumHeight(height)
 
 
+class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
+    """Color immutable dialogue by original speaker and tags distinctly."""
+
+    def __init__(self, document: QtGui.QTextDocument, projection: Any):
+        super().__init__(document)
+        self.projection = projection
+        self.speaker_formats = []
+        for color in ("#b58900", "#2563eb"):
+            fmt = QtGui.QTextCharFormat()
+            fmt.setForeground(QtGui.QColor(color))
+            self.speaker_formats.append(fmt)
+        self.tag_format = QtGui.QTextCharFormat()
+        self.tag_format.setForeground(QtGui.QColor("#c026d3"))
+        self.tag_format.setFontWeight(QtGui.QFont.Weight.Bold)
+
+    def highlightBlock(self, text: str) -> None:
+        block_start = self.currentBlock().position()
+        whole = self.document().toPlainText()
+        before = whole[:block_start]
+        plain_offset = len(__import__("re").sub(r"<[^<>\r\n]+>", "", before))
+        ranges = self.projection.speaker_ranges
+        characters = []
+        in_tag = False
+        tag_start = 0
+        for index, char in enumerate(text):
+            if char == "<" and not in_tag:
+                in_tag, tag_start = True, index
+            if in_tag:
+                if char == ">":
+                    self.setFormat(tag_start, index - tag_start + 1, self.tag_format)
+                    in_tag = False
+                continue
+            speaker_index = next((i for i, row in enumerate(ranges) if row.start <= plain_offset < row.end), None)
+            if speaker_index is not None:
+                speaker = ranges[speaker_index].speaker
+                actor_index = next((i for i, name in enumerate(self.projection_characters) if speaker_key(name) == speaker_key(speaker)), 0)
+                self.setFormat(index, 1, self.speaker_formats[actor_index])
+            plain_offset += 1
+
+    @property
+    def projection_characters(self) -> list[str]:
+        result: list[str] = []
+        for row in self.projection.speaker_ranges:
+            if row.speaker not in result:
+                result.append(row.speaker)
+        return result
+
+
 class PerformancePlanEditor(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent or maya_main_window())
@@ -119,7 +173,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.resize(1280, 860)
 
         self.plan: dict[str, Any] | None = None
-        self.score_model: PerformanceScoreModel | DualPerformanceScoreModel | None = None
+        self.score_model: PerformanceScoreModel | DualPerformanceScoreModel | DualSparseScoreModel | None = None
         self.authoring_session: dict[str, Any] | None = None
         self.source_path: Path | None = None
         self.current_event_index: int | None = None
@@ -281,11 +335,24 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _build_semantic_score(self, parent: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("SEMANTIC PERFORMANCE SCORE")
         layout = QtWidgets.QVBoxLayout(group)
+        self.score_title_a = QtWidgets.QLabel("PERFORMANCE")
+        layout.addWidget(self.score_title_a)
         self.score_editor = QtWidgets.QPlainTextEdit()
         self.score_editor.setPlaceholderText("Generate or load a performance plan to begin editing.")
         _configure_multiline_editor(self.score_editor, height=260)
         self.score_editor.textChanged.connect(self._score_changed)
         layout.addWidget(self.score_editor)
+        self.score_title_b = QtWidgets.QLabel("SECOND CHARACTER PERFORMANCE")
+        self.score_editor_b = QtWidgets.QPlainTextEdit()
+        _configure_multiline_editor(self.score_editor_b, height=260)
+        self.score_editor_b.textChanged.connect(self._score_changed)
+        self.score_title_b.hide()
+        self.score_editor_b.hide()
+        layout.addWidget(self.score_title_b)
+        layout.addWidget(self.score_editor_b)
+        self.score_legend = QtWidgets.QLabel("Speaker colors: first character = yellow; second character = blue; semantic tags = magenta.")
+        self.score_legend.hide()
+        layout.addWidget(self.score_legend)
         controls = QtWidgets.QHBoxLayout()
         self.validate_score_button = QtWidgets.QPushButton("Validate Score")
         self.validate_score_button.clicked.connect(self.validate_score)
@@ -306,6 +373,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _build_reason_view(self, parent: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("REASON BY PHRASE")
+        self.reason_group = group
         layout = QtWidgets.QVBoxLayout(group)
         selector = QtWidgets.QHBoxLayout()
         selector.addWidget(QtWidgets.QLabel("Phrase:"))
@@ -489,6 +557,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             except Exception as exc:
                 QtWidgets.QMessageBox.warning(self, "Dual Audio Setup Incomplete", str(exc))
                 return
+        self._invalidate_generated_presentation()
         self._pending_animation_mode = "single"
         self._pending_dual_mappings = {}
         self.backend_log.clear()
@@ -509,6 +578,26 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._append_backend_output(f"Run ID: {command.run_id}")
         self._append_backend_output(f"Backend Python: {command.program}")
         self._append_backend_output(f"Output directory: {command.run_dir}")
+
+    def _invalidate_generated_presentation(self) -> None:
+        """Clear stale generated output while preserving all authoring inputs/setup."""
+        self.plan = None
+        self.score_model = None
+        self.source_path = None
+        self.current_event_index = None
+        self.score_editor.clear()
+        self.score_editor_b.clear()
+        self.score_editor_b.hide()
+        self.score_title_b.hide()
+        self.score_legend.hide()
+        self.acting_interpretation.clear()
+        self.phrase_reason.clear()
+        self.rationale.clear()
+        self.event_list.clear()
+        self.diagnostics.clear()
+        self.validation_details.clear()
+        self.validation_details.hide()
+        self.validation_label.setText("Generating a new plan; previous output invalidated.")
 
     def _append_backend_output(self, value: str) -> None:
         text = str(value).strip()
@@ -536,7 +625,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             unresolved = []
             if self.score_model is not None:
                 unresolved = [
-                    issue for issue in self.score_model.validate(self.score_editor.toPlainText()).errors
+                    issue for issue in self.score_model.validate(self._score_payload()).errors
                     if "needs resolution before animation" in issue.message
                 ]
             if unresolved:
@@ -647,7 +736,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
             self.plan = save_animation_runtime_plan(
                 self.score_model,
-                self.score_editor.toPlainText(),
+                self._score_payload(),
                 runtime_plan,
             )
             self._refresh_phrase_reason()
@@ -698,7 +787,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 mappings[actor]={"script_name":name,"maya_node":node}; runtime[actor]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
                 self._append_backend_output(f"{actor}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
             if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
-            animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self.score_editor.toPlainText(),runtime_plan); fps=current_scene_fps()
+            animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
             if self.jali_base_baseline is None:
                 self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
                 self._save_authoring_session_for_path(self.source_path)
@@ -962,7 +1051,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(self, "No Plan", "Load a Performance Plan first.")
             return False
         self.score_model.targets.update(target.upper() for target in self._known_look_targets())
-        result = self.score_model.validate(self.score_editor.toPlainText())
+        result = self.score_model.validate(self._score_payload())
         if result.valid:
             self.validation_label.setText(f"Valid score — {len(result.phrases)} phrases")
             self.validation_label.setStyleSheet("color: #166534;")
@@ -981,7 +1070,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def apply_score_edits(self, *, show_success: bool = True) -> bool:
         if not self.validate_score(show_dialog=True) or self.score_model is None:
             return False
-        self.plan = self.score_model.apply(self.score_editor.toPlainText())
+        self.plan = self.score_model.apply(self._score_payload())
         self._refresh_required_look_at_targets()
         self._refresh_phrase_reason()
         self._refresh_metadata_and_diagnostics()
@@ -990,6 +1079,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self, "Score Applied", "Valid semantic edits were applied to the canonical Performance Plan."
             )
         return True
+
+    def _score_payload(self) -> str | dict[str, str]:
+        if isinstance(self.score_model, DualSparseScoreModel):
+            return {
+                self.score_model.characters[0]: self.score_editor.toPlainText(),
+                self.score_model.characters[1]: self.score_editor_b.toPlainText(),
+            }
+        return self.score_editor.toPlainText()
 
     def _build_event_metadata(self) -> None:
         group = QtWidgets.QGroupBox("Event Metadata")
@@ -1091,7 +1188,21 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.authoring_session = None
 
         try:
-            if loaded_plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
+            if loaded_plan.get("schema_version") == "dual_performance_plan_v2":
+                characters = loaded_plan.get("characters", [])
+                script_path = path.parent / "input_script.txt"
+                current_script = self.input_script.toPlainText()
+                script_text = current_script if preserve_authoring_text and current_script.strip() else (
+                    script_path.read_text(encoding="utf-8") if script_path.exists() else current_script
+                )
+                anchor_model = build_conversation_anchor_model(
+                    script_text, character_a=str(characters[0]), character_b=str(characters[1])
+                )
+                self.score_model = DualSparseScoreModel(loaded_plan, anchor_model)
+                if self.authoring_session is None:
+                    self.mode_combo.setCurrentIndex(1)
+                    self._update_character_mode()
+            elif loaded_plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
                 self.score_model = DualPerformanceScoreModel(
                     loaded_plan, extra_targets=self._known_look_targets()
                 )
@@ -1103,7 +1214,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     loaded_plan, extra_targets=self._known_look_targets()
                 )
             self.plan = self.score_model.plan
-            self.hidden_affect.parentWidget().setVisible(loaded_plan.get("schema_version") != "dual_performance_plan_v1")
+            self.hidden_affect.parentWidget().setVisible(loaded_plan.get("schema_version") not in {"dual_performance_plan_v1", "dual_performance_plan_v2"})
         except Exception as exc:
             self._append_backend_output(f"Could Not Load Plan: {exc}")
             QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
@@ -1120,14 +1231,36 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             not preserve_authoring_text
             and (not self.authoring_session or not self.authoring_session.get("input_script"))
         ):
-            source_rows = events or dual_phrases
-            self.input_script.setPlainText(" ".join(
-                str(row.get("span", {}).get("text") or "") for row in source_rows
-            ).strip())
+            if isinstance(self.score_model, DualSparseScoreModel):
+                self.input_script.setPlainText(script_text)
+            else:
+                source_rows = events or dual_phrases
+                self.input_script.setPlainText(" ".join(
+                    str(row.get("span", {}).get("text") or "") for row in source_rows
+                ).strip())
         self.acting_interpretation.setPlainText(
             str(self.plan.get("acting_interpretation") or "")
         )
         self.score_editor.setPlainText(self.score_model.score_text)
+        if isinstance(self.score_model, DualSparseScoreModel):
+            first, second = self.score_model.characters
+            self.score_title_a.setText(f"{first} PERFORMANCE")
+            self.score_title_b.setText(f"{second} PERFORMANCE")
+            self.score_editor_b.setPlainText(self.score_model.score_texts[second])
+            self.score_title_b.show()
+            self.score_editor_b.show()
+            self.score_legend.show()
+            self.reason_group.setTitle("REASON BY CHANGE")
+            self._score_highlighters = [
+                _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection),
+                _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection),
+            ]
+        else:
+            self.score_title_a.setText("PERFORMANCE")
+            self.score_title_b.hide()
+            self.score_editor_b.hide()
+            self.score_legend.hide()
+            self.reason_group.setTitle("REASON BY PHRASE")
         target_character = str(self.plan.get("target_character") or "")
         if target_character and self.authoring_session is None:
             self.character_rows[0][0].setText(target_character)
@@ -1136,7 +1269,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if isinstance(characters, dict):
                 self.character_rows[0][0].setText(str(characters.get("A") or ""))
                 self.character_rows[1][0].setText(str(characters.get("B") or ""))
-        if self.plan.get("schema_version") == "dual_performance_plan_v1" and self.authoring_session is None:
+        if self.plan.get("schema_version") in {"dual_performance_plan_v1", "dual_performance_plan_v2"} and self.authoring_session is None:
             characters = self.plan.get("characters", [])
             if isinstance(characters, list) and len(characters) == 2:
                 self.character_rows[0][0].setText(str(characters[0]))
@@ -1165,9 +1298,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if self.score_model is None:
             self.phrase_reason.setPlainText("Load a Performance Plan to inspect phrase reasons.")
             return
-        self.phrase_reason.setPlainText(
-            format_rationale_view(self.score_model, self.phrase_number.value())
-        )
+        if isinstance(self.score_model, DualSparseScoreModel):
+            self.phrase_reason.setPlainText(
+                self.score_model.rationale_view(self.phrase_number.value())
+            )
+        else:
+            self.phrase_reason.setPlainText(
+                format_rationale_view(self.score_model, self.phrase_number.value())
+            )
 
     def _refresh_metadata_and_diagnostics(self) -> None:
         if self.plan is None:

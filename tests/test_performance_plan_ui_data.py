@@ -293,7 +293,7 @@ def test_generate_animation_uses_current_score_runtime_plan_and_real_handler():
 
     assert "self.validate_score(show_dialog=True)" in animation
     assert "save_animation_runtime_plan(" in animation
-    assert "self.score_editor.toPlainText()" in animation
+    assert "self._score_payload()" in animation
     assert "self.animation_runner.start(" in animation
     assert 'setText("Generating animation...")' in animation
     assert "self._generate_dual_speaker_emotion()" in animation
