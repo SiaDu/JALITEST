@@ -474,9 +474,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(
                 self,
                 "Character Mapping Required",
-                "Enter Script Character A and Script Character B before generating."
+                "Enter both Script Character names before generating."
                 if dual else
-                "Enter Script Character A before generating.",
+                "Enter the Script Character name before generating.",
             )
             return
         if dual:
@@ -1063,7 +1063,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.authoring_session = None
 
         try:
-            if loaded_plan.get("schema_version") == "dual_performance_plan_v0":
+            if loaded_plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
                 self.score_model = DualPerformanceScoreModel(
                     loaded_plan, extra_targets=self._known_look_targets()
                 )
@@ -1075,6 +1075,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     loaded_plan, extra_targets=self._known_look_targets()
                 )
             self.plan = self.score_model.plan
+            self.hidden_affect.parentWidget().setVisible(loaded_plan.get("schema_version") != "dual_performance_plan_v1")
         except Exception as exc:
             QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
             return
@@ -1106,6 +1107,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if isinstance(characters, dict):
                 self.character_rows[0][0].setText(str(characters.get("A") or ""))
                 self.character_rows[1][0].setText(str(characters.get("B") or ""))
+        if self.plan.get("schema_version") == "dual_performance_plan_v1" and self.authoring_session is None:
+            characters = self.plan.get("characters", [])
+            if isinstance(characters, list) and len(characters) == 2:
+                self.character_rows[0][0].setText(str(characters[0]))
+                self.character_rows[1][0].setText(str(characters[1]))
         self.phrase_number.setMaximum(max(1, len(self.score_model.phrases)))
         self.phrase_number.setValue(1)
         self._building = False

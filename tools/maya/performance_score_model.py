@@ -30,7 +30,7 @@ HEAD_LEVEL_BY_INVOLVEMENT = {value: key for key, value in HEAD_INVOLVEMENT.items
 _HEADER = re.compile(r"^\s*(\d+)\.\s*(.*?)\s*$")
 _INTENT = re.compile(r"^\{([A-Za-z][A-Za-z0-9_]*)\}$")
 _TAG = re.compile(r"<([^<>]+)>")
-_AFFECT = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
+_AFFECT = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)-(\d+)$")
 _HEART = re.compile(r"^HEART-([A-Za-z][A-Za-z0-9_]*)-(\d{1,3})$")
 _HEAD = re.compile(r"^HEAD-([A-Z]+)$")
 _LID = re.compile(r"^l(-?\d+(?:\.\d+)?)$", re.IGNORECASE)
@@ -50,6 +50,30 @@ def load_score_vocabulary(path: str | Path = SEMANTIC_VOCABULARY_PATH) -> tuple[
 
 
 DEFAULT_VISIBLE_AFFECTS, DEFAULT_HEART_STATES = load_score_vocabulary()
+
+
+def mask_intensity_presets(path: str | Path = SEMANTIC_VOCABULARY_PATH) -> dict[int, str]:
+    """Return JALI Mask preset names keyed by their canonical percentages."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    presets = data.get("mask_intensity_presets", [])
+    if not isinstance(presets, list):
+        raise ValueError("Semantic vocabulary mask_intensity_presets must be a list.")
+    result: dict[int, str] = {}
+    for item in presets:
+        if not isinstance(item, dict) or not isinstance(item.get("name"), str):
+            raise ValueError("Each Mask intensity preset requires a name and integer value.")
+        value = item.get("value")
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("Mask intensity preset values must be positive integers.")
+        result[value] = item["name"]
+    return result
+
+
+def mask_intensity_display(value: int) -> str:
+    """Describe a stored Mask percentage without changing its numeric value."""
+    numeric = int(value)
+    name = mask_intensity_presets().get(numeric, "Custom")
+    return f"{name} ({numeric}%)"
 
 
 @dataclass(frozen=True)
@@ -409,6 +433,26 @@ def _dual_state_from_plan(value: Any, *, intent: str | None) -> SemanticState:
 
 
 def derive_dual_plan_phrases(plan: dict[str, Any]) -> list[ScorePhrase]:
+    characters = plan.get("characters")
+    if plan.get("schema_version") == "dual_performance_plan_v1":
+        if not isinstance(characters, list) or len(characters) != 2 or not all(isinstance(name, str) and name for name in characters):
+            raise ValueError("dual_performance_plan_v1 requires two ordered character names.")
+        result: list[ScorePhrase] = []
+        for index, raw in enumerate(_as_list(plan.get("phrases"))):
+            if not isinstance(raw, dict):
+                continue
+            span, states = _as_dict(raw.get("span")), _as_dict(raw.get("states"))
+            try:
+                start, end = int(span["char_start"]), int(span["char_end"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            result.append(ScorePhrase(
+                number=len(result) + 1, text=str(span.get("text") or "").strip(),
+                event_index=index, char_start=start, char_end=end,
+                states={name: _dual_state_from_plan({key: value for key, value in _as_dict(states.get(name)).items() if key != "heart"}, intent=None) for name in characters},
+                speaker=str(raw.get("speaker") or ""),
+            ))
+        return result
     result: list[ScorePhrase] = []
     for index, raw in enumerate(_as_list(plan.get("phrases"))):
         if not isinstance(raw, dict):
@@ -436,13 +480,36 @@ def format_dual_plan_score(plan_or_phrases: dict[str, Any] | list[ScorePhrase]) 
     phrases = derive_dual_plan_phrases(plan_or_phrases) if isinstance(plan_or_phrases, dict) else plan_or_phrases
     blocks: list[str] = []
     for phrase in phrases:
-        intent = phrase.states["A"].intent or ""
-        blocks.append(
-            f"{phrase.number}. {{{intent}}}\n"
-            f"   A:{format_state(phrase.states['A'])} | B:{format_state(phrase.states['B'])}\n"
-            f"   {phrase.speaker}: {phrase.text}"
-        )
+        names = list(phrase.states)
+        if names != ["A", "B"]:
+            blocks.append("\n".join(
+                [f"{phrase.number}."]
+                + [f"   {name}:{format_v1_state(phrase.states[name])}" for name in names]
+                + [f"   {phrase.speaker}: {phrase.text}"]
+            ))
+        else:
+            intent = phrase.states["A"].intent or ""
+            blocks.append(
+                f"{phrase.number}. {{{intent}}}\n"
+                f"   A:{format_state(phrase.states['A'])} | B:{format_state(phrase.states['B'])}\n"
+                f"   {phrase.speaker}: {phrase.text}"
+            )
     return "\n\n".join(blocks)
+
+
+def format_v1_state(state: SemanticState) -> str:
+    """Format only the executable Mask channels permitted in a v1 dual score."""
+    tags: list[str] = []
+    if state.affect is not None:
+        tags.append(f"<{state.affect[0]}-{state.affect[1]}>")
+    if state.gaze is not None:
+        tags.append(f"<{state.gaze[0]}-{state.gaze[1]}>")
+    if state.head is not None:
+        tags.append(f"<HEAD-{state.head}>")
+    if state.lid is not None:
+        tags.append(f"<l{_format_number(state.lid)}>")
+    tags.extend(f"<{value}>" for value in state.blinks)
+    return "".join(tags)
 
 
 def known_vocabulary(
@@ -475,6 +542,7 @@ def _parse_tags(
     *,
     intent: str | None,
     alias: str | None = None,
+    permit_high_mask_intensity: bool = False,
 ) -> tuple[SemanticState, list[ValidationIssue]]:
     issues: list[ValidationIssue] = []
     tags = _TAG.findall(raw)
@@ -534,7 +602,7 @@ def _parse_tags(
             subject = f"{alias} " if alias else ""
             if name not in known_visible_affects:
                 issues.append(ValidationIssue(phrase_number, f'Unknown {subject}visible affect "{name}"'))
-            elif not 0 <= strength <= 100:
+            elif not (strength > 0 if permit_high_mask_intensity else 0 <= strength <= 100):
                 issues.append(ValidationIssue(phrase_number, f"Visible affect intensity must be between 0 and 100: <{token}>"))
             if affect is not None:
                 issues.append(ValidationIssue(phrase_number, "Duplicate affect state."))
@@ -641,6 +709,76 @@ def parse_score(
     return ParseResult(tuple(phrases), tuple(issues))
 
 
+def parse_named_dual_score(
+    text: str, *, characters: Iterable[str], known_visible_affects: Iterable[str] = DEFAULT_VISIBLE_AFFECTS,
+    known_targets: Iterable[str] = (),
+) -> ParseResult:
+    """Parse the compact name-keyed, Mask-only v1 dual score projection."""
+    names = list(characters)
+    if len(names) != 2 or len(set(names)) != 2:
+        raise ValueError("Named dual score requires exactly two distinct character names.")
+    visible, targets = set(known_visible_affects), {_human_target(value) for value in known_targets}
+    targets.update(names)
+    phrases: list[ParsedPhrase] = []
+    issues: list[ValidationIssue] = []
+    lines, index = text.splitlines(), 0
+    while index < len(lines):
+        if not lines[index].strip():
+            index += 1
+            continue
+        header = _HEADER.match(lines[index])
+        if not header:
+            issues.append(ValidationIssue(None, f"Expected a numbered phrase near line {index + 1}."))
+            index += 1
+            continue
+        number, suffix = int(header.group(1)), header.group(2)
+        if suffix:
+            issues.append(ValidationIssue(number, "Phrase header must be exactly N."))
+        index += 1
+        body: list[str] = []
+        while index < len(lines) and not _HEADER.match(lines[index]):
+            if lines[index].strip():
+                body.append(lines[index].strip())
+            index += 1
+        states: dict[str, SemanticState] = {}
+        for actor in names:
+            row = next((line for line in body if line.startswith(f"{actor}:") and (not line.partition(":")[2].strip() or line.partition(":")[2].lstrip().startswith("<"))), None)
+            if row is None:
+                for line in body:
+                    candidate = line.partition(":")[0].strip()
+                    if candidate and candidate not in names and line.partition(":")[1]:
+                        issues.append(ValidationIssue(number, f'Unknown character "{candidate}"'))
+                        break
+                issues.append(ValidationIssue(number, f'Missing state row for "{actor}".'))
+                states[actor] = SemanticState()
+                continue
+            raw_tags = row.partition(":")[2].strip()
+            state, tag_issues = _parse_tags(raw_tags, number, visible, set(), targets, intent=None, alias=actor, permit_high_mask_intensity=True)
+            for issue in tag_issues:
+                if "heart" in issue.message.lower():
+                    issues.append(ValidationIssue(number, "Unsupported tag in dual v1 score."))
+                elif "between 0 and 100" in issue.message:
+                    issues.append(ValidationIssue(number, "Mask intensity must be a positive integer percentage."))
+                else:
+                    issues.append(issue)
+            if state.hidden_affect is not None:
+                state = SemanticState(lid=state.lid, affect=state.affect, gaze=state.gaze, head=state.head, blinks=state.blinks)
+            states[actor] = state
+        dialogue_line = body[-1] if body else ""
+        speaker, separator, dialogue = dialogue_line.partition(":")
+        speaker, dialogue = speaker.strip(), dialogue.strip()
+        if not separator:
+            issues.append(ValidationIssue(number, "Dialogue must begin with an actual character name."))
+        elif speaker not in names:
+            issues.append(ValidationIssue(number, f'Unknown character "{speaker}"'))
+        elif not dialogue:
+            issues.append(ValidationIssue(number, "Dialogue text is required."))
+        phrases.append(ParsedPhrase(number, dialogue, states, speaker))
+    if [phrase.number for phrase in phrases] != list(range(1, len(phrases) + 1)):
+        issues.append(ValidationIssue(None, "Phrase numbers must be unique, contiguous, and ordered from 1."))
+    return ParseResult(tuple(phrases), tuple(issues))
+
+
 def _set_affect(span: dict[str, Any], state: tuple[str, int]) -> None:
     span["state"], strength = state
     span["intensity"] = strength / 100.0
@@ -674,16 +812,19 @@ def _human_span(phrase: ScorePhrase, value: str) -> dict[str, Any]:
 
 
 class DualPerformanceScoreModel:
-    """Editable score backed by one canonical dual_performance_plan_v0."""
+    """Editable projection for legacy v0 and name-keyed Mask-only v1 plans."""
 
     def __init__(self, plan: dict[str, Any], *, extra_targets: Iterable[str] = ()) -> None:
-        if plan.get("schema_version") != "dual_performance_plan_v0":
-            raise ValueError("DualPerformanceScoreModel requires dual_performance_plan_v0.")
+        if plan.get("schema_version") not in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
+            raise ValueError("DualPerformanceScoreModel requires a dual performance plan.")
         self.plan = deepcopy(plan)
+        self.is_v1 = self.plan.get("schema_version") == "dual_performance_plan_v1"
+        self.characters = list(self.plan.get("characters", [])) if self.is_v1 else ["A", "B"]
         self.phrases = derive_dual_plan_phrases(self.plan)
         self.visible_affects = set(DEFAULT_VISIBLE_AFFECTS)
-        self.heart_states = set(DEFAULT_HEART_STATES)
-        self.targets = set(DEFAULT_GAZE_TARGETS)
+        self.heart_states = set() if self.is_v1 else set(DEFAULT_HEART_STATES)
+        self.targets = ({target for target in DEFAULT_GAZE_TARGETS if target not in {"A", "B"}} if self.is_v1 else set(DEFAULT_GAZE_TARGETS))
+        self.targets.update(self.characters)
         for phrase in self.phrases:
             for state in phrase.states.values():
                 if state.gaze:
@@ -695,10 +836,10 @@ class DualPerformanceScoreModel:
         else:
             self.original = [
                 {
-                    "intent": phrase.states["A"].intent,
+                    "intent": self.plan["phrases"][index].get("intent"),
                     "states": {
                         alias: deepcopy(self.plan["phrases"][index]["states"][alias])
-                        for alias in ("A", "B")
+                        for alias in self.characters
                     },
                 }
                 for index, phrase in enumerate(self.phrases)
@@ -709,9 +850,15 @@ class DualPerformanceScoreModel:
         return format_dual_plan_score(self.phrases)
 
     def validate(self, text: str) -> ParseResult:
-        result = parse_score(
-            text, mode="dual", known_visible_affects=self.visible_affects,
-            known_heart_states=self.heart_states, known_targets=self.targets,
+        result = (
+            parse_named_dual_score(
+                text, characters=self.characters, known_visible_affects=self.visible_affects,
+                known_targets=self.targets,
+            )
+            if self.is_v1 else parse_score(
+                text, mode="dual", known_visible_affects=self.visible_affects,
+                known_heart_states=self.heart_states, known_targets=self.targets,
+            )
         )
         errors = list(result.errors)
         if len(result.phrases) != len(self.phrases):
@@ -725,7 +872,7 @@ class DualPerformanceScoreModel:
 
     @staticmethod
     def _canonical_state(
-        state: SemanticState, original_state: dict[str, Any] | None = None
+        state: SemanticState, original_state: dict[str, Any] | None = None, *, include_heart: bool = True
     ) -> dict[str, Any]:
         performative = next((value for value in state.blinks if value != "SUPPRESS"), "NONE")
         lid: int | float | None = state.lid
@@ -740,13 +887,16 @@ class DualPerformanceScoreModel:
                 and _human_target(original_target) == state.gaze[1]
             ):
                 gaze = original_gaze
-        return {
+        result = {
             "affect": f"{state.affect[0]}-{state.affect[1]}" if state.affect else "NONE",
-            "heart": f"{state.hidden_affect[0]}-{state.hidden_affect[1]}" if state.hidden_affect else "NONE",
             "gaze": gaze,
             "head": state.head or "NONE", "lid": "NONE" if lid is None else lid,
+            "blink": performative,
             "blink_suppression": "SUPPRESS" if "SUPPRESS" in state.blinks else "NONE",
         }
+        if include_heart:
+            result["heart"] = f"{state.hidden_affect[0]}-{state.hidden_affect[1]}" if state.hidden_affect else "NONE"
+        return result
 
     def apply(self, text: str) -> dict[str, Any]:
         result = self.validate(text)
@@ -755,26 +905,27 @@ class DualPerformanceScoreModel:
         records: list[dict[str, Any]] = []
         for index, parsed in enumerate(result.phrases):
             phrase = self.plan["phrases"][index]
-            phrase["intent"] = parsed.states["A"].intent
+            if not self.is_v1:
+                phrase["intent"] = parsed.states["A"].intent
             existing_states = deepcopy(_as_dict(phrase.get("states")))
             phrase["states"] = {
                 alias: self._canonical_state(
-                    parsed.states[alias], _as_dict(existing_states.get(alias))
+                    parsed.states[alias], _as_dict(existing_states.get(alias)), include_heart=not self.is_v1
                 )
-                for alias in ("A", "B")
+                for alias in self.characters
             }
             changed: list[str] = []
             original = self.original[index]
-            if phrase["intent"] != original["intent"]:
+            if phrase.get("intent") != original["intent"]:
                 changed.append("intent")
-            for alias in ("A", "B"):
+            for alias in self.characters:
                 for field, value in phrase["states"][alias].items():
                     if value != original["states"][alias].get(field):
                         changed.append(f"{alias}.{field}")
             if changed:
                 records.append({"phrase_number": index + 1, "phrase_id": phrase.get("phrase_id"), "changed_categories": changed})
         authoring = self.plan.setdefault("authoring", {})
-        authoring["semantic_score_version"] = "dual_semantic_score_v1"
+        authoring["semantic_score_version"] = "dual_semantic_score_v2" if self.is_v1 else "dual_semantic_score_v1"
         authoring.setdefault("original_semantic_proposal", deepcopy(self.original))
         authoring["manually_edited_phrases"] = records
         self.phrases = derive_dual_plan_phrases(self.plan)
@@ -793,14 +944,15 @@ class DualPerformanceScoreModel:
         lines = [f"Phrase {phrase_number}", "", f'"{score_phrase.text}"', ""]
         if self.is_manually_edited(phrase_number):
             lines.extend(["Phrase manually edited. AI rationale corresponds to the original proposal.", ""])
-        lines.extend(["Intent", f"Reason: {rationale.get('intent') or ''}", ""])
+        lines.extend(["Intent", str(phrase.get("intent") or ""), f"Reason: {rationale.get('intent') or ''}", ""])
         characters = _as_dict(self.plan.get("characters"))
         states = _as_dict(phrase.get("states"))
-        for alias in ("A", "B"):
-            lines.append(f"{alias} — {characters.get(alias, alias)}")
+        for alias in self.characters:
+            lines.append(alias if self.is_v1 else f"{alias} — {characters.get(alias, alias)}")
             state = _as_dict(states.get(alias))
             reasons = _as_dict(rationale.get(alias))
-            for field in ("affect", "heart", "gaze", "head", "lid", "blink", "blink_suppression"):
+            fields = ("affect", "gaze", "head", "lid", "blink", "blink_suppression") if self.is_v1 else ("affect", "heart", "gaze", "head", "lid", "blink", "blink_suppression")
+            for field in fields:
                 value = state.get(field, "NONE")
                 if value in (None, "NONE") and not reasons.get(field):
                     continue
