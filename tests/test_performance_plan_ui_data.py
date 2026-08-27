@@ -387,3 +387,23 @@ def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path
     assert saved["authoring"]["manually_edited_phrases"][0]["changed_categories"] == [
         "affect"
     ]
+
+
+def test_v2_runtime_plan_rejects_unconfirmed_reason(tmp_path: Path):
+    from tools.maya.dual_sparse_score_model import DualSparseScoreModel
+    from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
+
+    anchors = build_conversation_anchor_model("ALICE: Hello.\nBOB: No.", character_a="ALICE", character_b="BOB")
+    plan = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"],
+            "initial_states": {"ALICE": {"affect": "Watchful-60"}, "BOB": {"affect": "Neutral-60"}},
+            "initial_reasons": {"ALICE": "Guarded.", "BOB": "Settled."},
+            "tracks": {"ALICE": [], "BOB": [{"event_id": "E1", "anchor_id": "w0002", "changes": {"affect": "Nervous-60"}, "reason": "The refusal unsettles her."}]}}
+    model = DualSparseScoreModel(plan, anchors)
+    texts = dict(model.score_texts)
+    texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-60>")
+    with pytest.raises(ValueError, match="E1"):
+        save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_final.json")
+    model.apply(texts)
+    model.set_reason("BOB", "E1", "She covers the refusal with warmth.")
+    saved = save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_final.json")
+    assert saved["tracks"]["BOB"][0]["reason_status"] == "user_edited"

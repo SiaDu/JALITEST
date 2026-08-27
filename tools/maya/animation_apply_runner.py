@@ -1018,7 +1018,9 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         raise ValueError("Expected dual_animation_manifest_v2.")
     anchor_times = json.loads(Path(manifest["artifacts"]["conversation_anchor_timing"]).read_text(encoding="utf-8"))
     actors = manifest["characters"]
-    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS), "unmapped_expressive_eyelid_aus": list(unmapped_expressive_eyelid_aus())}
+    # Unsupported eyelid AUs are an evidence requirement, not a blink-ownership
+    # decision. They cannot be keyed until the live rig proves their User plugs.
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "expressive_eyelid_mapping_requirement": list(unmapped_expressive_eyelid_aus())}
     for actor in actors:
         events = _load_v2_actor_events(manifest, actor)
         initial_state = _load_v2_actor_initial_state(manifest, actor)

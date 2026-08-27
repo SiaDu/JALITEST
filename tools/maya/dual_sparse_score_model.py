@@ -137,6 +137,18 @@ class DualSparseScoreModel:
             actor: (self.plan.get("initial_reasons") or {}).get(actor)
             for actor in self.characters
         }
+        stored_initial_provenance = self.plan.get("initial_provenance") or {}
+        self.plan["initial_provenance"] = {
+            actor: {
+                "source_event_id": (stored_initial_provenance.get(actor) or {}).get("source_event_id", f"INITIAL:{actor}"),
+                "original_state": deepcopy((stored_initial_provenance.get(actor) or {}).get("original_state", (self.original_plan.get("initial_states") or {}).get(actor) or {})),
+                "original_reason": (stored_initial_provenance.get(actor) or {}).get("original_reason", (self.original_plan.get("initial_reasons") or {}).get(actor)),
+                "reason": (stored_initial_provenance.get(actor) or {}).get("reason", (self.plan.get("initial_reasons") or {}).get(actor)),
+                "edited_by_user": bool((stored_initial_provenance.get(actor) or {}).get("edited_by_user", False)),
+                "reason_status": (stored_initial_provenance.get(actor) or {}).get("reason_status", "llm_original"),
+            }
+            for actor in self.characters
+        }
         self.projection = build_dialogue_projection(anchor_model)
         self.score_texts = {actor: render_actor_score(self.plan, self.projection, actor) for actor in self.characters}
         self.score_text = self.score_texts[self.characters[0]]
@@ -234,6 +246,12 @@ class DualSparseScoreModel:
                     errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {'initial state' if placement_key == '__INITIAL__' else placement_key}"))
                 destination[channel] = value
         events = tuple({"actor": actor, "anchor_id": anchor_id, "changes": changes} for anchor_id, changes in grouped.items())
+        if "affect" not in initial_changes:
+            errors.append(ScoreIssue(actor, "Initial performance must include a visible affect tag"))
+        elif initial_changes["affect"] == "MASK-NONE":
+            errors.append(ScoreIssue(actor, "Initial affect cannot be MASK-NONE"))
+        if not str(self.plan.get("initial_reasons", {}).get(actor) or "").strip():
+            errors.append(ScoreIssue(actor, "Initial performance requires a meaningful reason"))
         if initial_changes:
             events = ({"actor": actor, "initial": True, "changes": initial_changes}, *events)
         return ScoreValidation(events, tuple(errors))
@@ -263,28 +281,108 @@ class DualSparseScoreModel:
             if prior is None:
                 next_id += 1
             changes = deepcopy(row["changes"])
-            original_changes = deepcopy((original or {}).get("changes") or {})
-            changed = original is not None and changes != original_changes
+            original_changes = deepcopy((original or prior or {}).get("original_changes", (original or prior or {}).get("changes") or {}))
+            changed = original is None or changes != original_changes
+            prior_status = (prior or {}).get("reason_status")
+            is_same_pending_edit = bool(
+                changed and prior and prior.get("changes") == changes
+                and prior_status in {"user_confirmed", "user_edited"}
+            )
+            original_reason = (original or prior or {}).get("original_reason", (original or prior or {}).get("reason"))
             tracks[row["actor"]].append({
                 "event_id": event_id, "source_event_id": (original or prior or {}).get("source_event_id", event_id),
                 "anchor_id": row["anchor_id"], "changes": changes,
+                "original_changes": original_changes if original is not None else None,
                 "reason": prior.get("reason") if prior else None,
-                "original_reason": (original or prior or {}).get("original_reason", (original or prior or {}).get("reason")),
+                "original_reason": original_reason,
                 "edited_by_user": changed,
-                "reason_status": "needs_confirmation" if changed else "llm_original",
+                "reason_status": prior_status if is_same_pending_edit else ("needs_confirmation" if changed else "llm_original"),
             })
         self.plan["tracks"] = tracks
         self.plan["initial_states"] = initial_states
+        self._refresh_initial_provenance()
         self.score_texts = dict(texts)
         self.score_text = self.score_texts[self.characters[0]]
         self.phrases = [event for actor in self.characters for event in tracks[actor]]
         return self.plan
 
+    def _refresh_initial_provenance(self) -> None:
+        """Track initial-state edits separately from sparse anchor events."""
+        prior = self.plan.get("initial_provenance") or {}
+        rows: dict[str, dict[str, Any]] = {}
+        for actor in self.characters:
+            old = prior.get(actor) or {}
+            original_state = deepcopy(old.get("original_state", (self.original_plan.get("initial_states") or {}).get(actor) or {}))
+            changed = self.plan["initial_states"][actor] != {**INITIAL_DEFAULTS, **original_state}
+            status = old.get("reason_status")
+            retain_resolution = changed and status in {"user_confirmed", "user_edited"}
+            rows[actor] = {
+                "source_event_id": f"INITIAL:{actor}",
+                "original_state": original_state,
+                "original_reason": old.get("original_reason", (self.original_plan.get("initial_reasons") or {}).get(actor)),
+                "reason": old.get("reason", self.plan["initial_reasons"].get(actor)),
+                "edited_by_user": changed,
+                "reason_status": status if retain_resolution else ("needs_confirmation" if changed else "llm_original"),
+            }
+            self.plan["initial_reasons"][actor] = rows[actor]["reason"]
+        self.plan["initial_provenance"] = rows
+
+    def _provenance_row(self, actor: str, event_id: str) -> dict[str, Any]:
+        if actor not in self.characters:
+            raise ValueError(f"Unknown actor: {actor}")
+        if event_id == f"INITIAL:{actor}":
+            return self.plan["initial_provenance"][actor]
+        for event in self.plan["tracks"][actor]:
+            if event.get("event_id") == event_id:
+                return event
+        raise ValueError(f"Unknown event for {actor}: {event_id}")
+
+    def confirm_reason(self, actor: str, event_id: str) -> None:
+        """Explicitly retain the original LLM reason for a changed decision."""
+        row = self._provenance_row(actor, event_id)
+        if row.get("reason_status") != "needs_confirmation":
+            raise ValueError("Only a changed decision requiring confirmation can confirm its reason")
+        original_reason = str(row.get("original_reason") or "").strip()
+        if not original_reason:
+            raise ValueError("A newly added decision has no original LLM reason; write an animator reason")
+        row["reason"] = original_reason
+        row["reason_status"] = "user_confirmed"
+        if event_id == f"INITIAL:{actor}":
+            self.plan["initial_reasons"][actor] = original_reason
+
+    def set_reason(self, actor: str, event_id: str, reason: str) -> None:
+        """Set an animator-authored rationale for an edited or newly added decision."""
+        clean = str(reason).strip()
+        if not clean:
+            raise ValueError("Animator reason cannot be empty")
+        row = self._provenance_row(actor, event_id)
+        row["reason"] = clean
+        row["reason_status"] = "user_edited"
+        if event_id == f"INITIAL:{actor}":
+            self.plan["initial_reasons"][actor] = clean
+
     def rationale_view(self, event_number: int) -> str:
-        rows = [(actor, event) for actor in self.characters for event in self.plan["tracks"][actor] if event.get("reason")]
+        rows = self.reason_entries()
         if not rows:
             return "No sparse change events have reasons."
         actor, event = rows[max(0, min(event_number - 1, len(rows) - 1))]
+        if event.get("initial"):
+            original = event.get("original_reason")
+            if event.get("reason_status") in {"needs_confirmation", "user_confirmed", "user_edited"}:
+                return f'{actor} INITIAL\n{event["changes"]}\n\nOriginal LLM reason:\n{original or "(none)"}\n\nFinal / Animator reason ({event.get("reason_status")}):\n{event.get("reason") or "(needs confirmation)"}'
+            return f'{actor} INITIAL\n{event["changes"]}\n\nReason:\n{event.get("reason") or "(none)"}'
         anchor = self.projection.anchor_map[event["anchor_id"]]
         changes = "\n".join(f"{channel} -> {value}" for channel, value in event["changes"].items())
+        original = event.get("original_reason")
+        if event.get("reason_status") in {"needs_confirmation", "user_confirmed", "user_edited"}:
+            return f'{actor} @ "{anchor.text}"\n{changes}\n\nOriginal LLM reason:\n{original or "(none)"}\n\nFinal / Animator reason ({event.get("reason_status")}):\n{event.get("reason") or "(needs confirmation)"}'
         return f'{actor} @ "{anchor.text}"\n{changes}\n\nReason:\n{event["reason"]}'
+
+    def reason_entries(self) -> list[tuple[str, dict[str, Any]]]:
+        """Return authored sparse decisions, including those awaiting a reason."""
+        initial = [
+            (actor, {**self.plan["initial_provenance"][actor], "event_id": f"INITIAL:{actor}", "initial": True,
+                     "changes": self.plan["initial_states"][actor]})
+            for actor in self.characters
+        ]
+        return initial + [(actor, event) for actor in self.characters for event in self.plan["tracks"][actor]]

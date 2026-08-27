@@ -73,6 +73,10 @@ def save_animation_runtime_plan(
             event["event_id"] for track in plan.get("tracks", {}).values() for event in track
             if event.get("reason_status") == "needs_confirmation"
         ]
+        unresolved.extend(
+            f"INITIAL:{actor}" for actor, row in (plan.get("initial_provenance") or {}).items()
+            if isinstance(row, dict) and row.get("reason_status") == "needs_confirmation"
+        )
         if unresolved:
             raise ValueError("Edited v2 performance decisions require reason confirmation: " + ", ".join(unresolved))
     save_performance_plan(plan, path)

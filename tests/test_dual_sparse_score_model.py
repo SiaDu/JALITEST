@@ -12,9 +12,9 @@ PLAN = {
     "characters": ["ALICE", "BOB"],
     "initial_states": {
         "ALICE": {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"},
-        "BOB": {"affect": "MASK-NONE", "gaze": "GAZE-NONE", "head": "HEAD-NONE"},
+        "BOB": {"affect": "Neutral-60", "gaze": "GAZE-NONE", "head": "HEAD-NONE"},
     },
-    "initial_reasons": {"ALICE": "Begins guarded.", "BOB": None},
+    "initial_reasons": {"ALICE": "Begins guarded.", "BOB": "Begins composed."},
     "tracks": {
         "ALICE": [
             {"event_id": "E003", "anchor_id": "w0004", "changes": {"affect": "Watchful-100"}, "reason": "The denial increases suspicion."},
@@ -60,8 +60,47 @@ def test_editing_tags_updates_only_sparse_track_and_reason_view():
     assert applied["tracks"]["ALICE"][0]["reason_status"] == "llm_original"
     assert applied["tracks"]["BOB"][0]["source_event_id"] == "E002"
     assert applied["tracks"]["BOB"][0]["reason_status"] == "needs_confirmation"
-    reason = model.rationale_view(1)
+    reason = model.rationale_view(3)
     assert "ALICE @ \"No.\"" in reason and "affect -> Watchful-100" in reason
+
+
+def test_edited_reason_requires_explicit_confirmation_or_animator_replacement():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    texts = dict(model.score_texts)
+    texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-120>")
+    plan = model.apply(texts)
+    assert plan["tracks"]["BOB"][0]["reason_status"] == "needs_confirmation"
+    model.confirm_reason("BOB", "E002")
+    assert model.plan["tracks"]["BOB"][0]["reason_status"] == "user_confirmed"
+    # A subsequent score apply preserves the explicit confirmation.
+    assert model.apply(texts)["tracks"]["BOB"][0]["reason_status"] == "user_confirmed"
+    model.set_reason("BOB", "E002", "The new warmth defuses the threat.")
+    event = model.plan["tracks"]["BOB"][0]
+    assert event["reason_status"] == "user_edited"
+    assert event["original_reason"] == "The threat lands."
+    assert event["original_changes"] == {"affect": "Nervous-60", "gaze": "GAZE-DOWN"}
+    assert "Original LLM reason" in model.rationale_view(4)
+
+
+def test_initial_edit_has_separate_reason_provenance():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    texts = dict(model.score_texts)
+    texts["ALICE"] = texts["ALICE"].replace("<Watchful-80>", "<Happy-80>", 1)
+    plan = model.apply(texts)
+    row = plan["initial_provenance"]["ALICE"]
+    assert row["source_event_id"] == "INITIAL:ALICE"
+    assert row["original_state"]["affect"] == "Watchful-80"
+    assert row["reason_status"] == "needs_confirmation"
+    model.confirm_reason("ALICE", "INITIAL:ALICE")
+    assert model.plan["initial_provenance"]["ALICE"]["reason_status"] == "user_confirmed"
+
+
+def test_score_requires_visible_initial_affect_and_initial_reason():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<Watchful-80>", "", 1)).valid
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<Watchful-80>", "<MASK-NONE>", 1)).valid
+    model.plan["initial_reasons"]["ALICE"] = ""
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"]).valid
 
 
 def test_real_listener_initial_state_and_token_adjacent_changes():
@@ -79,9 +118,10 @@ def test_real_listener_initial_state_and_token_adjacent_changes():
     plan = {
         "schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"],
         "initial_states": {
-            "ALICE": {"affect": "MASK-NONE", "gaze": "GAZE-NONE", "head": "HEAD-NONE"},
+            "ALICE": {"affect": "Neutral-60", "gaze": "GAZE-NONE", "head": "HEAD-NONE"},
             "BOB": {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"},
         },
+        "initial_reasons": {"ALICE": "Begins neutral.", "BOB": "Begins watchful."},
         "tracks": {"ALICE": [], "BOB": [
             {"event_id": "E1", "anchor_id": by_text["dangerous."][0], "changes": {"gaze": "GAZE-DOWN"}, "reason": "The dangerous description raises concern."},
             {"event_id": "E2", "anchor_id": by_text["No."][0], "changes": {"head": "HEAD-DOWN-SUBTLE"}, "reason": "Contains the denial."},

@@ -391,6 +391,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.phrase_reason = QtWidgets.QPlainTextEdit()
         _configure_multiline_editor(self.phrase_reason, height=240, read_only=True)
         layout.addWidget(self.phrase_reason)
+        self.reason_actions = QtWidgets.QHBoxLayout()
+        self.confirm_reason_button = QtWidgets.QPushButton("Confirm Original Reason")
+        self.confirm_reason_button.clicked.connect(self._confirm_sparse_reason)
+        self.reason_actions.addWidget(self.confirm_reason_button)
+        self.edit_reason_button = QtWidgets.QPushButton("Replace Animator Reason...")
+        self.edit_reason_button.clicked.connect(self._replace_sparse_reason)
+        self.reason_actions.addWidget(self.edit_reason_button)
+        self.reason_actions.addStretch(1)
+        layout.addLayout(self.reason_actions)
+        self.confirm_reason_button.hide()
+        self.edit_reason_button.hide()
         parent.addWidget(group)
 
     def _build_advanced_tab(self) -> None:
@@ -826,7 +837,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks={item['calculate_blinks']}; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
                     for actor in self.plan.get("characters", []):
                         item = listener_result[actor]
-                        self._append_backend_output(f"{actor}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; eyelid_channels_filtered=yes; FACS_animationSource=Add")
+                        self._append_backend_output(f"{actor}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; FACS_animationSource=Add")
+                    if is_v2 and listener_context.get("expressive_eyelid_mapping_requirement"):
+                        self._append_backend_output("Expressive eyelid Maya-smoke requirement (no guessed User mapping): " + ", ".join(listener_context["expressive_eyelid_mapping_requirement"]))
                     gaze_events = sum(gaze_result[actor]['gaze_events'] for actor in self.plan.get("characters", []))
                     overlay_summary = f"; additive head/blink overlays ({sum(row['head_key_count'] + row['blink_key_count'] for row in overlay_result.values())} keys)" if overlay_result else ""
                     self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events){overlay_summary}\njSync preserved: yes")
@@ -1300,7 +1313,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if isinstance(characters, list) and len(characters) == 2:
                 self.character_rows[0][0].setText(str(characters[0]))
                 self.character_rows[1][0].setText(str(characters[1]))
-        self.phrase_number.setMaximum(max(1, len(self.score_model.phrases)))
+        reason_count = len(self.score_model.reason_entries()) if isinstance(self.score_model, DualSparseScoreModel) else len(self.score_model.phrases)
+        self.phrase_number.setMaximum(max(1, reason_count))
         self.phrase_number.setValue(1)
         self._building = False
         self.validate_score()
@@ -1328,10 +1342,54 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.phrase_reason.setPlainText(
                 self.score_model.rationale_view(self.phrase_number.value())
             )
+            rows = self.score_model.reason_entries()
+            event = rows[max(0, min(self.phrase_number.value() - 1, len(rows) - 1))][1] if rows else None
+            needs_confirmation = bool(event and event.get("reason_status") == "needs_confirmation")
+            self.confirm_reason_button.setVisible(needs_confirmation and bool(event.get("original_reason")))
+            self.edit_reason_button.setVisible(bool(event))
         else:
             self.phrase_reason.setPlainText(
                 format_rationale_view(self.score_model, self.phrase_number.value())
             )
+            self.confirm_reason_button.hide()
+            self.edit_reason_button.hide()
+
+    def _selected_sparse_reason(self) -> tuple[str, str] | None:
+        if not isinstance(self.score_model, DualSparseScoreModel):
+            return None
+        rows = self.score_model.reason_entries()
+        if not rows:
+            return None
+        actor, event = rows[max(0, min(self.phrase_number.value() - 1, len(rows) - 1))]
+        return actor, str(event.get("event_id") or "")
+
+    def _confirm_sparse_reason(self) -> None:
+        selected = self._selected_sparse_reason()
+        if selected is None:
+            return
+        try:
+            self.score_model.confirm_reason(*selected)
+            self.plan = self.score_model.plan
+            self._refresh_phrase_reason()
+        except Exception as exc:
+            QtWidgets.QMessageBox.warning(self, "Reason Confirmation Required", str(exc))
+
+    def _replace_sparse_reason(self) -> None:
+        selected = self._selected_sparse_reason()
+        if selected is None:
+            return
+        existing = self.score_model._provenance_row(*selected).get("reason") or ""
+        reason, accepted = QtWidgets.QInputDialog.getMultiLineText(
+            self, "Animator Reason", "Final / Animator reason:", str(existing)
+        )
+        if not accepted:
+            return
+        try:
+            self.score_model.set_reason(*selected, reason)
+            self.plan = self.score_model.plan
+            self._refresh_phrase_reason()
+        except Exception as exc:
+            QtWidgets.QMessageBox.warning(self, "Animator Reason Required", str(exc))
 
     def _refresh_metadata_and_diagnostics(self) -> None:
         if self.plan is None:

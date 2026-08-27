@@ -271,7 +271,7 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
         character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}},
         cmds_module=_ListenerCmds(),
     )
-    assert prepared["unmapped_expressive_eyelid_aus"]
+    assert prepared["expressive_eyelid_mapping_requirement"]
     assert prepared["ALICE"]["timeline"][0]["start"] == 0.0
     assert prepared["ALICE"]["timeline"][0]["state"] == "Watchful-80"
     assert any(row["start"] == .5 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
