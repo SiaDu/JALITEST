@@ -50,6 +50,7 @@ from authoring_session_data import (  # noqa: E402
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
     apply_dual_listener_mask_artifacts,
+    capture_dual_jali_base_if_absent,
     apply_dual_gaze_only_artifacts,
     apply_dual_speaker_emotion_artifacts,
     current_scene_fps,
@@ -58,6 +59,7 @@ from animation_apply_runner import (  # noqa: E402
     resolve_jsync_for_character,
     prepare_dual_listener_mask_artifacts,
     prepare_dual_gaze_only_artifacts,
+    restore_dual_jali_base,
 )
 from authoring_requirements import (  # noqa: E402
     animation_setup_issues,
@@ -127,6 +129,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.look_at_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
         self.dual_gaze_calibrations: dict[str, dict[str, list[float]]] = {}
         self.dual_gaze_baselines: dict[str, dict[str, object]] = {}
+        self.jali_base_baseline: dict[str, Any] | None = None
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
 
@@ -191,6 +194,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.generate_animation_button = QtWidgets.QPushButton("Generate Animation")
         self.generate_animation_button.clicked.connect(self.generate_animation)
         bottom.addWidget(self.generate_animation_button)
+        self.restore_jali_base_button = QtWidgets.QPushButton("Restore JALI Base")
+        self.restore_jali_base_button.clicked.connect(self._restore_jali_base)
+        bottom.addWidget(self.restore_jali_base_button)
         self.animation_status = QtWidgets.QLabel("Ready.")
         bottom.addWidget(self.animation_status)
         bottom.addStretch(1)
@@ -691,7 +697,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self._append_backend_output(f"{alias} / {name}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
             if any(str(self.plan.get("characters",{}).get(a,"")).upper()!=runtime[a]["script_name"].upper() for a in ("A","B")): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
             animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self.score_editor.toPlainText(),runtime_plan); fps=current_scene_fps()
-            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.generate_animation_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
+            if self.jali_base_baseline is None:
+                self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
+                self._save_authoring_session_for_path(self.source_path)
+            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.generate_animation_button.setEnabled(False); self.restore_jali_base_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
             command=self.animation_runner.start_dual(performance_plan=runtime_plan,script=script,audio_folder=audio,output_dir=animation_dir,fps=fps,runtime_mapping=runtime)
             self._append_backend_output(f"Dual emotion-only output: {command.output_dir}")
         except Exception as exc: self._animation_failed(str(exc))
@@ -724,6 +733,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         self._append_backend_output(stream.getvalue())
         self.generate_animation_button.setEnabled(True)
+        self.restore_jali_base_button.setEnabled(True)
         self.animation_status.setText("Dual performance animation applied." if self._pending_animation_mode == "dual_emotion_only" else "Animation generated.")
         self.animation_status.setStyleSheet("color: #166534;")
         self._pending_animation_mode = "single"; self._pending_dual_mappings = {}
@@ -734,6 +744,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _animation_failed(self, message: str) -> None:
         self._pending_animation_mode = "single"; self._pending_dual_mappings = {}
         self.generate_animation_button.setEnabled(True)
+        self.restore_jali_base_button.setEnabled(True)
         self.animation_status.setText("Animation generation failed.")
         self.animation_status.setStyleSheet("color: #9b1c1c;")
         self._append_backend_output(message)
@@ -743,6 +754,36 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             "Could Not Generate Animation",
             lines[-1] if lines else "Unknown animation error.",
         )
+
+    def _restore_jali_base(self) -> None:
+        """Restore the captured live JALI base without compiling a new plan."""
+        if not self.jali_base_baseline:
+            QtWidgets.QMessageBox.warning(self, "Restore JALI Base", "No pre-JALITEST dual baseline has been captured yet.")
+            return
+        mappings = {
+            alias: {"script_name": self.character_rows[index][0].text().strip(), "maya_node": self.character_rows[index][1].text().strip()}
+            for alias, index in (("A", 0), ("B", 1))
+        }
+        self.generate_animation_button.setEnabled(False); self.restore_jali_base_button.setEnabled(False)
+        self.animation_status.setText("Restoring JALI Base..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
+        stream = io.StringIO()
+        try:
+            with redirect_stdout(stream), redirect_stderr(stream):
+                result = restore_dual_jali_base(baseline=self.jali_base_baseline, character_mappings=mappings)
+        except Exception as exc:
+            self._append_backend_output(stream.getvalue())
+            self.generate_animation_button.setEnabled(True); self.restore_jali_base_button.setEnabled(True)
+            self.animation_status.setText("Restore JALI Base failed."); self.animation_status.setStyleSheet("color: #9b1c1c;")
+            QtWidgets.QMessageBox.critical(self, "Could Not Restore JALI Base", str(exc))
+            return
+        self._append_backend_output(stream.getvalue())
+        self._append_backend_output("Restored JALI Base")
+        for alias, name in result["restored"].items(): self._append_backend_output(f"{alias} / {name}: yes")
+        self._append_backend_output("Removed JALITEST listener/gaze overlays")
+        self._append_backend_output("jSync preserved: yes")
+        self.generate_animation_button.setEnabled(True); self.restore_jali_base_button.setEnabled(True)
+        self.animation_status.setText("JALI Base restored."); self.animation_status.setStyleSheet("color: #166534;")
+        QtWidgets.QMessageBox.information(self, "Restored JALI Base", "The captured JALI base was restored for both actors.")
 
     def _known_look_targets(self) -> list[str]:
         return [field.text().strip() for field, _maya, _row in self.look_at_rows if field.text().strip()]
@@ -820,6 +861,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         # Legacy lists contain world positions only and must be recaptured.
         self.dual_gaze_calibrations = {str(key): dict(value) for key, value in (session.get("gaze_calibrations") or {}).items() if isinstance(value, dict) and isinstance(value.get("eye_stare_translate"), (list, tuple)) and len(value["eye_stare_translate"]) == 3}
         self.dual_gaze_baselines = {}
+        self.jali_base_baseline = dict(session["jali_base_baseline"]) if isinstance(session.get("jali_base_baseline"), dict) else None
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
             maya_field.clear()
@@ -870,7 +912,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             input_context=self.input_context.toPlainText(),
             characters=characters,
             look_at_targets=self._look_at_mapping_data(),
-            base={**{key: value for key, value in (self.authoring_session or {}).items() if key != "gaze_neutrals"}, "gaze_calibrations": self.dual_gaze_calibrations},
+            base={**{key: value for key, value in (self.authoring_session or {}).items() if key != "gaze_neutrals"}, "gaze_calibrations": self.dual_gaze_calibrations, "jali_base_baseline": self.jali_base_baseline},
         )
 
     def _save_authoring_session_for_path(self, plan_path: Path) -> Path:

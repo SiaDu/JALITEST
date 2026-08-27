@@ -175,6 +175,144 @@ def _enum_index(node: str, attr: str, label: str, cmds_module: Any) -> int:
 
 LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
 GAZE_LAYER_PREFIX = "JALITEST_gaze_"
+JALI_BASELINE_SCHEMA = "dual_jali_base_v1"
+_JSYNC_BASELINE_ATTRS = (
+    "calculate_paralinguals", "paralingual_bearing", "paralingual_intensity",
+    "calculate_expression", "expression_source", "expression_strength",
+    "override_annotation", "calculate_blinks",
+)
+
+
+def _set_jali_attr(cmds_module: Any, plug: str, value: object) -> None:
+    if isinstance(value, str):
+        cmds_module.setAttr(plug, value, type="string")
+    else:
+        cmds_module.setAttr(plug, value)
+
+
+def capture_dual_jali_base(
+    *, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None,
+) -> dict[str, Any]:
+    """Capture immutable pre-JALITEST state for both live dual jSync rigs."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    baseline: dict[str, Any] = {"schema_version": JALI_BASELINE_SCHEMA, "actors": {}}
+    for alias in ("A", "B"):
+        row = character_mappings.get(alias) or {}
+        rig = str(row.get("maya_node") or "").strip()
+        script_name = str(row.get("script_name") or "").strip()
+        if not rig or not script_name or not cmds_module.objExists(rig):
+            raise RuntimeError(f"{alias}: valid mapped JALI_GRP and script_name are required for JALI baseline capture.")
+        jsync = resolve_jsync_for_character(rig, cmds_module=cmds_module)
+        if not jsync.startswith(rig.rstrip("|") + "|"):
+            raise RuntimeError(f"{alias}: resolved jSync does not belong to mapped rig.")
+        required = (*_JSYNC_BASELINE_ATTRS, "sound_file", "text_input_path", "sound_input_path", "output_path", "transcript")
+        missing = [attr for attr in required if not cmds_module.objExists(f"{jsync}.{attr}")]
+        if missing:
+            raise RuntimeError(f"{alias}: jSync is missing baseline attributes: {', '.join(missing)}")
+        facs = qualify_rig_control(rig, "FACSMaster")
+        facs_plug = f"{facs}.FACS_animationSource"
+        if not cmds_module.objExists(facs_plug):
+            raise RuntimeError(f"{alias}: missing {facs_plug}.")
+        values = {attr: cmds_module.getAttr(f"{jsync}.{attr}") for attr in required}
+        baseline["actors"][alias] = {
+            "script_name": script_name, "maya_node": rig, "jsync": jsync,
+            "sound_file": values.pop("sound_file"), "text_input_path": values.pop("text_input_path"),
+            "sound_input_path": values.pop("sound_input_path"), "output_path": values.pop("output_path"),
+            "transcript": values.pop("transcript"), "jsync_attrs": values,
+            "facs_animation_source": cmds_module.getAttr(facs_plug),
+        }
+    return baseline
+
+
+def capture_dual_jali_base_if_absent(
+    baseline: dict[str, Any] | None, *, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None,
+) -> dict[str, Any]:
+    """Keep the first baseline immutable across repeated Generate operations."""
+    return baseline if isinstance(baseline, dict) else capture_dual_jali_base(
+        character_mappings=character_mappings, cmds_module=cmds_module
+    )
+
+
+def _validate_dual_jali_base(
+    baseline: dict[str, Any], character_mappings: dict[str, dict[str, Any]], *, cmds_module: Any, mel_module: Any,
+) -> dict[str, dict[str, Any]]:
+    if baseline.get("schema_version") != JALI_BASELINE_SCHEMA or not isinstance(baseline.get("actors"), dict):
+        raise ValueError("No valid JALI Base baseline is available to restore.")
+    if not mel_module.eval('exists "realign_node"'):
+        raise RuntimeError("Installed JALI realign_node procedure is unavailable.")
+    prepared: dict[str, dict[str, Any]] = {}
+    for alias in ("A", "B"):
+        item = baseline["actors"].get(alias)
+        row = character_mappings.get(alias) or {}
+        if not isinstance(item, dict):
+            raise ValueError(f"{alias}: JALI Base baseline is missing.")
+        rig, jsync = str(item.get("maya_node") or ""), str(item.get("jsync") or "")
+        if rig != str(row.get("maya_node") or "") or str(item.get("script_name") or "") != str(row.get("script_name") or ""):
+            raise RuntimeError(f"{alias}: current mapping does not match the captured JALI Base baseline.")
+        if not rig or not cmds_module.objExists(rig):
+            raise RuntimeError(f"{alias}: mapped JALI_GRP no longer exists.")
+        if not jsync or not cmds_module.objExists(jsync):
+            raise RuntimeError("Cannot restore automatically because the original jSync is missing.")
+        if not jsync.startswith(rig.rstrip("|") + "|"):
+            raise RuntimeError(f"{alias}: baseline jSync does not belong to mapped rig.")
+        if cmds_module.getAttr(f"{jsync}.sound_file") != item.get("sound_file"):
+            raise RuntimeError(f"{alias}: live jSync sound_file does not match JALI Base baseline.")
+        text_input = str(item.get("text_input_path") or "").strip()
+        sound = str(item.get("sound_file") or "").strip()
+        if text_input and sound:
+            resolve_jali_source_transcript_path(text_input, sound)
+        facs_plug = f"{qualify_rig_control(rig, 'FACSMaster')}.FACS_animationSource"
+        if not cmds_module.objExists(facs_plug):
+            raise RuntimeError(f"{alias}: missing {facs_plug}.")
+        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}"]}
+    return prepared
+
+
+def restore_dual_jali_base(
+    *, baseline: dict[str, Any], character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None, mel_module: Any | None = None,
+) -> dict[str, Any]:
+    """Remove JALITEST overlays and regenerate the captured live JALI base."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if mel_module is None:
+        from maya import mel as mel_module  # type: ignore
+    prepared = _validate_dual_jali_base(baseline, character_mappings, cmds_module=cmds_module, mel_module=mel_module)
+    selection = cmds_module.ls(selection=True, long=True) or []
+    removed: list[str] = []
+    try:
+        for alias in ("A", "B"):
+            for layer in prepared[alias]["layers"]:
+                if cmds_module.objExists(layer):
+                    cmds_module.delete(layer); removed.append(layer)
+        for alias in ("A", "B"):
+            item, saved = prepared[alias], prepared[alias]["baseline"]
+            jsync = str(saved["jsync"])
+            for attr, value in saved["jsync_attrs"].items():
+                _set_jali_attr(cmds_module, f"{jsync}.{attr}", value)
+            for attr in ("transcript", "text_input_path", "sound_input_path", "output_path"):
+                _set_jali_attr(cmds_module, f"{jsync}.{attr}", saved[attr])
+            _set_jali_attr(cmds_module, item["facs_plug"], saved["facs_animation_source"])
+            mel_module.eval(f'realign_node "{jsync.rsplit("|", 1)[-1]}"')
+    finally:
+        if selection:
+            cmds_module.select(selection, replace=True)
+        else:
+            cmds_module.select(clear=True)
+    for alias in ("A", "B"):
+        saved, item = prepared[alias]["baseline"], prepared[alias]
+        jsync = str(saved["jsync"])
+        if not cmds_module.objExists(jsync) or cmds_module.getAttr(f"{jsync}.sound_file") != saved["sound_file"]:
+            raise RuntimeError(f"{alias}: JALI Base post-restore jSync validation failed.")
+        if cmds_module.getAttr(f"{jsync}.transcript") != saved["transcript"]:
+            raise RuntimeError(f"{alias}: JALI Base transcript was not restored.")
+        if any(cmds_module.getAttr(f"{jsync}.{attr}") != value for attr, value in saved["jsync_attrs"].items()):
+            raise RuntimeError(f"{alias}: JALI Base jSync attributes were not restored.")
+        if cmds_module.getAttr(item["facs_plug"]) != saved["facs_animation_source"]:
+            raise RuntimeError(f"{alias}: FACSMaster.FACS_animationSource was not restored.")
+        if any(cmds_module.objExists(layer) for layer in item["layers"]):
+            raise RuntimeError(f"{alias}: JALITEST overlay layers remain after restore.")
+    return {"restored": {alias: str(prepared[alias]["baseline"]["script_name"]) for alias in ("A", "B")}, "removed_layers": removed, "jsync_preserved": True}
 
 
 def _listener_affect_by_phrase(events: Iterable[dict[str, Any]]) -> dict[str, object]:
