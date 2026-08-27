@@ -415,6 +415,33 @@ def build_listener_mask_key_schedule(
     return keys
 
 
+def build_v2_listener_mask_key_schedule(
+    intervals: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 4
+) -> list[dict[str, Any]]:
+    """Emit causal v2 User Mask keys without changing legacy v0/v1 behavior."""
+    if fps <= 0 or transition_frames < 1:
+        raise ValueError("V2 Listener Mask timing requires positive fps and transition_frames.")
+    keys: list[dict[str, Any]] = []
+    previous: dict[str, float] | None = None
+    for interval in intervals:
+        pose = dict(interval["pose"])
+        boundary = float(interval["start"]) * fps
+        if previous == pose:
+            continue
+        kind = str(interval.get("boundary_kind") or "INITIAL_STATE")
+        role = str(interval.get("timing_role") or "")
+        if previous is None or kind == "INITIAL_STATE":
+            keys.append({"frame": 0.0, "pose": pose, "phrase_id": interval["phrase_id"]})
+        elif kind == "turn_start" or (kind == "affect" and role == "SPEAK_ONSET"):
+            keys.append({"frame": max(0.0, boundary - transition_frames), "pose": previous, "phrase_id": interval["phrase_id"]})
+            keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
+        else:  # own turn release and LISTEN_REACTION are strictly causal.
+            keys.append({"frame": boundary, "pose": previous, "phrase_id": interval["phrase_id"]})
+            keys.append({"frame": boundary + transition_frames, "pose": pose, "phrase_id": interval["phrase_id"]})
+        previous = pose
+    return keys
+
+
 def _listener_layer_name(alias: str) -> str:
     return f"{LISTENER_MASK_LAYER_PREFIX}{alias}"
 
@@ -738,8 +765,15 @@ def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: fl
             continue
         frame = float(event["resolved_start"]) * float(fps)
         target = _head_target(str(value), config)
-        keys.append({"frame": max(0.0, frame - transition), "values": dict(previous), "event_id": event.get("event_id")})
-        keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
+        role = str(event.get("timing_role") or "SPEAK_ONSET")
+        if role == "INITIAL_STATE":
+            keys.append({"frame": 0.0, "values": target, "event_id": event.get("event_id")})
+        elif role == "LISTEN_REACTION":
+            keys.append({"frame": frame, "values": dict(previous), "event_id": event.get("event_id")})
+            keys.append({"frame": frame + transition, "values": target, "event_id": event.get("event_id")})
+        else:
+            keys.append({"frame": max(0.0, frame - transition), "values": dict(previous), "event_id": event.get("event_id")})
+            keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
         previous = target
     return keys
 
@@ -880,7 +914,7 @@ def prepare_dual_v2_head_blink_overlays(
         initial_state = ((payload.get("initial_state") or {}).get("state") or {})
         head_events = [event for event in events if "head" in (event.get("changes") or {})]
         if initial_state.get("head") not in (None, "NONE", "HEAD-NONE"):
-            head_events = [{"event_id": "INITIAL_STATE", "actor": actor, "resolved_start": 0.0, "changes": {"head": initial_state["head"]}}] + head_events
+            head_events = [{"event_id": "INITIAL_STATE", "actor": actor, "timing_role": "INITIAL_STATE", "resolved_start": 0.0, "changes": {"head": initial_state["head"]}}] + head_events
         blink_events = plan_v2_blinks(events, initial_state=initial_state)
         neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
         head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
@@ -965,32 +999,32 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
             turns.setdefault(str(anchor.get("turn_id") or anchor_id), []).append(anchor)
         for turn in turns.values():
             ordered_turn = sorted(turn, key=lambda anchor: (float(anchor["start"]), float(anchor["end"])))
-            points.append((float(ordered_turn[0]["start"]), 2, "turn_start", str(ordered_turn[0]["speaker"])))
-            points.append((float(ordered_turn[-1]["end"]), 1, "turn_end", str(ordered_turn[-1]["speaker"])))
+            if str(ordered_turn[0]["speaker"]) == actor:
+                points.append((float(ordered_turn[0]["start"]), 2, "turn_start", actor))
+                points.append((float(ordered_turn[-1]["end"]), 1, "turn_end", actor))
         for event in events:
             if "affect" in (event.get("changes") or {}):
-                points.append((float(event["resolved_start"]), 0, "affect", event["changes"]["affect"]))
+                points.append((float(event["resolved_start"]), 0, "affect", event))
         initial_affect = initial_state.get("affect", "MASK-NONE")
         name, intensity = parse_mask_state("NONE" if initial_affect == "MASK-NONE" else initial_affect)
         affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
-        # Both actors establish their initial affect on the User Mask lane at scene start.
-        # The current speaker hands off to native JALI Mask at its own anchor start.
-        speaker: str | None = None
-        intervals: list[dict[str, Any]] = [{"phrase_id": "INITIAL_STATE", "speaker": speaker, "start": 0.0, "end": float(manifest["shared_duration_seconds"]), "state": affect, "pose": user_pose_for_mask(affect)}]
+        # Each actor owns its own speaking state; overlapping dialogue is valid.
+        is_speaking = False
+        intervals: list[dict[str, Any]] = [{"phrase_id": "INITIAL_STATE", "speaker": None, "start": 0.0, "end": float(manifest["shared_duration_seconds"]), "state": affect, "pose": user_pose_for_mask(affect), "boundary_kind": "INITIAL_STATE", "timing_role": "INITIAL_STATE"}]
         for time, _priority, kind, value in sorted(points):
             if kind == "affect":
-                name, intensity = parse_mask_state("NONE" if value == "MASK-NONE" else value)
+                name, intensity = parse_mask_state("NONE" if value["changes"]["affect"] == "MASK-NONE" else value["changes"]["affect"])
                 affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
             elif kind == "turn_end":
-                if speaker == value:
-                    speaker = None
+                is_speaking = False
             else:
-                speaker = value
-            state = "NONE" if speaker == actor else affect
+                is_speaking = True
+            state = "NONE" if is_speaking else affect
+            metadata = {"boundary_kind": kind, "timing_role": value.get("timing_role") if kind == "affect" else None}
             if intervals and intervals[-1]["start"] == time:
-                intervals[-1].update({"state": state, "pose": user_pose_for_mask(state)})
+                intervals[-1].update({"state": state, "pose": user_pose_for_mask(state), **metadata})
             elif not intervals or intervals[-1]["state"] != state:
-                intervals.append({"phrase_id": f"v2@{time:g}", "speaker": speaker, "start": time, "end": float(manifest["shared_duration_seconds"]), "state": state, "pose": user_pose_for_mask(state)})
+                intervals.append({"phrase_id": f"v2@{time:g}", "speaker": actor if is_speaking else None, "start": time, "end": float(manifest["shared_duration_seconds"]), "state": state, "pose": user_pose_for_mask(state), **metadata})
         for index, interval in enumerate(intervals[:-1]):
             interval["end"] = intervals[index + 1]["start"]
         row = character_mappings.get(actor) or {}
@@ -1005,7 +1039,7 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
         if missing:
             raise RuntimeError(f"{actor}: missing User FACS controls: {', '.join(missing)}")
-        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_listener_mask_key_schedule(intervals, fps=float(manifest["fps"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
+        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_v2_listener_mask_key_schedule(intervals, fps=float(manifest["fps"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
     return prepared
 
 

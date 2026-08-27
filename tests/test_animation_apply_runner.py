@@ -26,6 +26,7 @@ from animation_apply_runner import (  # noqa: E402
     apply_dual_speaker_emotion_artifacts,
     apply_dual_listener_mask_artifacts,
     build_listener_mask_key_schedule,
+    build_v2_listener_mask_key_schedule,
     build_listener_mask_timeline,
     capture_character_gaze_reference,
     capture_eyelid_animation_reference,
@@ -314,6 +315,52 @@ def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
     keys = build_head_overlay_key_schedule(events, fps=24, config=config)
     assert keys[1] == {"frame": 24.0, "values": {"rotateX": -10.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "E1"}
     assert keys[-1]["values"] == {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
+
+
+def test_v2_head_transitions_follow_timing_roles_without_early_listener_reaction():
+    config = {"transition_frames": 4, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
+    initial = build_head_overlay_key_schedule([{"event_id": "I", "timing_role": "INITIAL_STATE", "resolved_start": 0, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
+    listener = build_head_overlay_key_schedule([{"event_id": "L", "timing_role": "LISTEN_REACTION", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
+    speaker = build_head_overlay_key_schedule([{"event_id": "S", "timing_role": "SPEAK_ONSET", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
+    assert initial == [{"frame": 0.0, "values": {"rotateX": -3.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "I"}]
+    assert [key["frame"] for key in listener] == [48.0, 52.0]
+    assert [key["frame"] for key in speaker] == [44.0, 48.0]
+
+
+def test_v2_user_mask_schedule_is_causal_for_listener_and_own_turn_boundaries():
+    watchful = {"value": 1.0}; nervous = {"value": 2.0}; none = {"value": 0.0}
+    listener = build_v2_listener_mask_key_schedule([
+        {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
+        {"phrase_id": "listen", "start": 2, "pose": nervous, "boundary_kind": "affect", "timing_role": "LISTEN_REACTION"},
+    ], fps=24)
+    own_turn = build_v2_listener_mask_key_schedule([
+        {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
+        {"phrase_id": "start", "start": 2, "pose": none, "boundary_kind": "turn_start"},
+        {"phrase_id": "end", "start": 4, "pose": watchful, "boundary_kind": "turn_end"},
+    ], fps=24)
+    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, watchful), (52.0, nervous)]
+    assert [(key["frame"], key["pose"]) for key in own_turn] == [(0.0, watchful), (44.0, watchful), (48.0, none), (96.0, none), (100.0, watchful)]
+
+
+def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path):
+    artifacts = {"characters": {}}
+    for actor, affect in (("ALICE", "Watchful-80"), ("BOB", "Nervous-60")):
+        path = tmp_path / f"{actor}.json"
+        path.write_text(json.dumps({"initial_state": {"state": {"affect": affect}}, "events": []}))
+        artifacts["characters"][actor] = {"resolved_sparse_events": str(path)}
+    timing = tmp_path / "timing.json"
+    timing.write_text(json.dumps({
+        "a": {"speaker": "ALICE", "turn_id": "T01", "start": 1.0, "end": 3.0},
+        "b": {"speaker": "BOB", "turn_id": "T02", "start": 2.8, "end": 4.0},
+    }))
+    artifacts["conversation_anchor_timing"] = str(timing)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"schema_version": "dual_animation_manifest_v2", "characters": ["ALICE", "BOB"], "fps": 24, "shared_duration_seconds": 5, "character_runtime_mapping": {"ALICE": {"script_name": "ALICE", "sound_file": "A"}, "BOB": {"script_name": "BOB", "sound_file": "B"}}, "artifacts": artifacts}))
+    prepared = prepare_dual_v2_listener_mask_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=_ListenerCmds())
+    alice = [(row["start"], row["state"]) for row in prepared["ALICE"]["timeline"]]
+    bob = [(row["start"], row["state"]) for row in prepared["BOB"]["timeline"]]
+    assert alice == [(0.0, "Watchful-80"), (1.0, "NONE"), (3.0, "Watchful-80")]
+    assert bob == [(0.0, "Nervous-60"), (2.8, "NONE"), (4.0, "Nervous-60")]
 
 
 def test_v2_blink_schedule_contains_only_explicit_performative_events():

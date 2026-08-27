@@ -904,7 +904,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._append_backend_output(stream.getvalue())
         self._append_backend_output("Restored JALI Base")
         for actor in result["restored"]: self._append_backend_output(f"{actor}: restored")
-        self._append_backend_output("Removed JALITEST listener/gaze overlays")
+        overlay_label = "listener/gaze/head/blink" if (self.plan or {}).get("schema_version") == "dual_performance_plan_v2" else "listener/gaze"
+        self._append_backend_output(f"Removed JALITEST {overlay_label} overlays")
         self._append_backend_output("jSync preserved: yes")
         self.generate_animation_button.setEnabled(True); self.restore_jali_base_button.setEnabled(True)
         self.animation_status.setText("JALI Base restored."); self.animation_status.setStyleSheet("color: #166534;")
@@ -1077,7 +1078,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_model.targets.update(target.upper() for target in self._known_look_targets())
         result = self.score_model.validate(self._score_payload())
         if result.valid:
-            self.validation_label.setText(f"Valid score — {len(result.phrases)} phrases")
+            noun = "changes" if isinstance(self.score_model, DualSparseScoreModel) else "phrases"
+            self.validation_label.setText(f"Valid score — {len(result.phrases)} {noun}")
             self.validation_label.setStyleSheet("color: #166534;")
             self.validation_details.clear()
             self.validation_details.hide()
