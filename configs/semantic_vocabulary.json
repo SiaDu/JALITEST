@@ -1,10 +1,19 @@
 {
-  "schema_version": "semantic_vocabulary_v1",
+  "schema_version": "semantic_vocabulary_v2",
   "visible_affect": [
     "Neutral", "Polite", "Friendly", "Sassy", "Smug", "Cocky", "Nervous",
     "Panicky", "Thinking", "Scheming", "Devious", "Devilish", "Provoked",
     "Angered", "Dislike", "Disgust", "Singing_Serene", "Watchful",
-    "Intimidating", "Confused", "Lost"
+    "Intimidating", "Confused", "Lost", "Angry", "Sad", "Disgusted",
+    "Afraid", "Contempt", "Surprised", "Happy"
+  ],
+  "mask_intensity_presets": [
+    {"name": "Trace", "value": 5}, {"name": "Slight", "value": 10},
+    {"name": "Wooden", "value": 20}, {"name": "Stoic", "value": 40},
+    {"name": "Restrained", "value": 60}, {"name": "Measured", "value": 80},
+    {"name": "Expressive", "value": 100}, {"name": "Forceful", "value": 120},
+    {"name": "Theatrical", "value": 140}, {"name": "Excessive", "value": 160},
+    {"name": "Extreme", "value": 180}, {"name": "Ludicrous", "value": 200}
   ],
   "heart": [
     "Angry", "Sad", "Disgusted", "Afraid", "Contempt", "Surprised", "Happy"

@@ -39,8 +39,8 @@ _LID = re.compile(r"^l(-?\d+(?:\.\d+)?)$", re.IGNORECASE)
 def load_score_vocabulary(path: str | Path = SEMANTIC_VOCABULARY_PATH) -> tuple[set[str], set[str]]:
     """Read the shared JSON vocabulary without backend or YAML dependencies."""
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if data.get("schema_version") != "semantic_vocabulary_v1":
-        raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1.")
+    if data.get("schema_version") not in {"semantic_vocabulary_v1", "semantic_vocabulary_v2"}:
+        raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1 or semantic_vocabulary_v2.")
     visible, heart = data.get("visible_affect"), data.get("heart")
     if not isinstance(visible, list) or not isinstance(heart, list):
         raise ValueError("Semantic vocabulary must contain visible_affect and heart lists.")

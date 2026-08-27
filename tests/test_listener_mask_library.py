@@ -75,6 +75,16 @@ def test_none_is_inactive_but_neutral_is_a_nonzero_factory_pose():
         parse_mask_state("Neutral")
 
 
+def test_all_factory_masks_and_native_jali_percentages_are_supported():
+    assert {"Angry", "Sad", "Disgusted", "Afraid", "Contempt", "Surprised", "Happy"} <= set(FACTORY_MASK_AUS)
+    assert parse_mask_state("Happy-100") == ("Happy", 100.0)
+    assert parse_mask_state("Nervous-120") == ("Nervous", 120.0)
+    assert parse_mask_state("Watchful-200") == ("Watchful", 200.0)
+    assert parse_mask_state("Thinking-31") == ("Thinking", 31.0)
+    assert user_pose_for_mask("Happy-50")["usr_Smile_L.Smile_L"] == FACTORY_MASK_AUS["Happy"]["au12_smileL"] * 0.5
+    assert user_pose_for_mask("Watchful-200")["usr_OuterBrowRaise_L.OuterBrowRaise_L"] == FACTORY_MASK_AUS["Watchful"]["au02_ouBrowL"] * 2.0
+
+
 def test_all_non_eyelid_factory_aus_are_explicitly_mapped_and_lids_are_filtered():
     used = {au for pose in FACTORY_MASK_AUS.values() for au in pose}
     assert all(au in AU_TO_USER_CONTROL or is_eyelid_au(au) for au in used)

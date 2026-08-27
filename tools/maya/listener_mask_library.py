@@ -34,7 +34,8 @@ VISIBLE_AFFECT_STATES: Final = frozenset({
     "Neutral", "Polite", "Friendly", "Sassy", "Smug", "Cocky", "Nervous",
     "Panicky", "Thinking", "Scheming", "Devious", "Devilish", "Provoked",
     "Angered", "Dislike", "Disgust", "Singing_Serene", "Watchful",
-    "Intimidating", "Confused", "Lost",
+    "Intimidating", "Confused", "Lost", "Angry", "Sad", "Disgusted",
+    "Afraid", "Contempt", "Surprised", "Happy",
 })
 
 
@@ -102,6 +103,8 @@ AU_TO_USER_CONTROL: Final[dict[str, str]] = {
     "au17_isoMentalL": "usr_ChinRaise_L.ChinRaise_loLip_L", "au17_isoMentalR": "usr_ChinRaise_R.ChinRaise_loLip_R",
     "au18_incisiL": "usr_Pucker_L.Pucker_L", "au18_incisiR": "usr_Pucker_R.Pucker_R",
     "au20_grimacL": "usr_Grimace_L.Grimace_L", "au20_grimacR": "usr_Grimace_R.Grimace_R",
+    "au16_labInfL": "usr_LoLip_L_ctl.DownUp_loLip_L", "au16_labInfR": "usr_LoLip_R_ctl.DownUp_loLip_R",
+    "au23_uLTighL": "usr_UpLip_L_ctl.TightenFunnel_upLip_L", "au23_uLTighR": "usr_UpLip_R_ctl.TightenFunnel_upLip_R",
     "au23_lLTighL": "usr_LoLip_L_ctl.TightenFunnel_loLip_L", "au23_lLTighR": "usr_LoLip_R_ctl.TightenFunnel_loLip_R",
     "au24_lLPresL": "usr_LoLip_L_ctl.DownUp_loLip_L", "au24_lLPresR": "usr_LoLip_R_ctl.DownUp_loLip_R",
     "au25_lipParL": "usr_UpLip_L_ctl.DownUp_upLip_L", "au25_lipParR": "usr_UpLip_R_ctl.DownUp_upLip_R",
@@ -136,8 +139,8 @@ def parse_mask_state(value: object) -> tuple[str, float]:
         amount = float(intensity)
     except ValueError as exc:
         raise ValueError(f"Mask intensity must be numeric, got {raw!r}.") from exc
-    if not 0.0 <= amount <= 100.0:
-        raise ValueError(f"Mask intensity must be in [0, 100], got {raw!r}.")
+    if amount <= 0 or not amount.is_integer():
+        raise ValueError(f"Mask intensity must be a positive integer percentage, got {raw!r}.")
     return canonical, amount
 
 

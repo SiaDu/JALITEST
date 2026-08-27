@@ -85,8 +85,8 @@ def load_semantic_vocabulary(
 ) -> SemanticVocabulary:
     """Load the dependency-free shared HCI executable vocabulary artifact."""
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if data.get("schema_version") != "semantic_vocabulary_v1":
-        raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1.")
+    if data.get("schema_version") not in {"semantic_vocabulary_v1", "semantic_vocabulary_v2"}:
+        raise ValueError("Semantic vocabulary schema_version must be semantic_vocabulary_v1 or semantic_vocabulary_v2.")
     visible = data.get("visible_affect")
     heart = data.get("heart")
     if not isinstance(visible, list) or not isinstance(heart, list):
