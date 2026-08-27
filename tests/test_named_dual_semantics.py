@@ -20,7 +20,7 @@ def test_named_mask_only_prompt_parser_and_plan():
     assert "[INITIAL]\nALICE" in prompt and "actor: BOB" in prompt and ".heart" not in prompt
     assert not re.search(r"(?m)^A\.affect", prompt) and "any positive integer percentage" in prompt
     model = build_conversation_anchor_model("ALICE: hi\nBOB: yo", character_a="ALICE", character_b="BOB")
-    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-80\nreason: Enters warm.\n\nBOB\naffect: Neutral-60\nreason: Enters composed.\n[CHANGES]\nE001\nactor: ALICE\nanchor: w0001\naffect: Happy-80\nreason: x"
+    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-80\ngaze: GAZE-BOB\nreason: Enters warm.\n\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: Enters composed.\n[CHANGES]\nE001\nactor: ALICE\nanchor: w0001\naffect: Happy-80\nreason: x"
     parsed = parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=model)
     plan = build_dual_performance_plan_v2(parsed, anchor_model=model, sequence_id="x")
     assert plan["schema_version"] == "dual_performance_plan_v2" and plan["characters"] == ["ALICE", "BOB"]

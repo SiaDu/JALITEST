@@ -13,7 +13,7 @@ from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, spea
 
 CHANNEL_ORDER = ("affect", "gaze", "head", "blink")
 PERSISTENT_CHANNELS = ("affect", "gaze", "head")
-INITIAL_DEFAULTS = {"affect": "MASK-NONE", "gaze": "GAZE-NONE", "head": "HEAD-NONE"}
+INITIAL_DEFAULTS = {"affect": "MASK-NONE", "gaze": "__NEUTRAL__", "head": "HEAD-NONE"}
 _TAG = re.compile(r"<([^<>\r\n]+)>")
 _TAG_CLUSTER = re.compile(r"(?:<[^<>\r\n]+>)+")
 _AFFECT = re.compile(r"^(.+)-(\d+)$")
@@ -164,8 +164,6 @@ class DualSparseScoreModel:
         match = _AFFECT.fullmatch(value)
         if match and match.group(1).lower() in self.affect_states and int(match.group(2)) > 0:
             return "affect", f"{self.affect_states[match.group(1).lower()]}-{int(match.group(2))}"
-        if upper == "GAZE-NONE":
-            return "gaze", "GAZE-NONE"
         gaze = _GAZE.fullmatch(value)
         if gaze:
             mode, target = gaze.group(1).upper(), gaze.group(2)
@@ -225,7 +223,7 @@ class DualSparseScoreModel:
                     errors.append(ScoreIssue(actor, "Initial state tag cluster cannot contain blink"))
                     changes = {key: value for key, value in changes.items() if key != "blink"}
                 if str(changes.get("gaze", "")).startswith("GLANCE-"):
-                    errors.append(ScoreIssue(actor, "Initial gaze must be persistent GAZE or GAZE-NONE, not GLANCE"))
+                    errors.append(ScoreIssue(actor, "Initial gaze must be persistent GAZE, not GLANCE"))
                     changes = {key: value for key, value in changes.items() if key != "gaze"}
                 placement_key = "__INITIAL__"
             elif embedded:
@@ -250,6 +248,8 @@ class DualSparseScoreModel:
             errors.append(ScoreIssue(actor, "Initial performance must include a visible affect tag"))
         elif initial_changes["affect"] == "MASK-NONE":
             errors.append(ScoreIssue(actor, "Initial affect cannot be MASK-NONE"))
+        if "gaze" not in initial_changes:
+            errors.append(ScoreIssue(actor, "Initial performance must include a persistent GAZE tag"))
         if not str(self.plan.get("initial_reasons", {}).get(actor) or "").strip():
             errors.append(ScoreIssue(actor, "Initial performance requires a meaningful reason"))
         if initial_changes:
@@ -282,21 +282,24 @@ class DualSparseScoreModel:
                 next_id += 1
             changes = deepcopy(row["changes"])
             original_changes = deepcopy((original or prior or {}).get("original_changes", (original or prior or {}).get("changes") or {}))
-            changed = original is None or changes != original_changes
+            semantic_changed = original is None or changes != original_changes
             prior_status = (prior or {}).get("reason_status")
+            prior_reason = (prior or {}).get("reason")
+            original_reason = (original or prior or {}).get("original_reason", (original or prior or {}).get("reason"))
+            reason_changed = prior is not None and str(prior_reason or "") != str(original_reason or "")
+            changed = semantic_changed or reason_changed
             is_same_pending_edit = bool(
                 changed and prior and prior.get("changes") == changes
                 and prior_status in {"user_confirmed", "user_edited"}
             )
-            original_reason = (original or prior or {}).get("original_reason", (original or prior or {}).get("reason"))
             tracks[row["actor"]].append({
-                "event_id": event_id, "source_event_id": (original or prior or {}).get("source_event_id", event_id),
+                "event_id": event_id, "actor": row["actor"], "source_event_id": (original or prior or {}).get("source_event_id", event_id),
                 "anchor_id": row["anchor_id"], "changes": changes,
                 "original_changes": original_changes if original is not None else None,
                 "reason": prior.get("reason") if prior else None,
                 "original_reason": original_reason,
                 "edited_by_user": changed,
-                "reason_status": prior_status if is_same_pending_edit else ("needs_confirmation" if changed else "llm_original"),
+                "reason_status": prior_status if is_same_pending_edit else ("needs_confirmation" if semantic_changed else ("user_edited" if reason_changed else "llm_original")),
             })
         self.plan["tracks"] = tracks
         self.plan["initial_states"] = initial_states
@@ -313,8 +316,10 @@ class DualSparseScoreModel:
         for actor in self.characters:
             old = prior.get(actor) or {}
             original_state = deepcopy(old.get("original_state", (self.original_plan.get("initial_states") or {}).get(actor) or {}))
-            changed = self.plan["initial_states"][actor] != {**INITIAL_DEFAULTS, **original_state}
+            semantic_changed = self.plan["initial_states"][actor] != {**INITIAL_DEFAULTS, **original_state}
             status = old.get("reason_status")
+            reason_changed = str(old.get("reason", self.plan["initial_reasons"].get(actor)) or "") != str(old.get("original_reason", (self.original_plan.get("initial_reasons") or {}).get(actor)) or "")
+            changed = semantic_changed or reason_changed
             retain_resolution = changed and status in {"user_confirmed", "user_edited"}
             rows[actor] = {
                 "source_event_id": f"INITIAL:{actor}",
@@ -322,7 +327,7 @@ class DualSparseScoreModel:
                 "original_reason": old.get("original_reason", (self.original_plan.get("initial_reasons") or {}).get(actor)),
                 "reason": old.get("reason", self.plan["initial_reasons"].get(actor)),
                 "edited_by_user": changed,
-                "reason_status": status if retain_resolution else ("needs_confirmation" if changed else "llm_original"),
+                "reason_status": status if retain_resolution else ("needs_confirmation" if semantic_changed else ("user_edited" if reason_changed else "llm_original")),
             }
             self.plan["initial_reasons"][actor] = rows[actor]["reason"]
         self.plan["initial_provenance"] = rows

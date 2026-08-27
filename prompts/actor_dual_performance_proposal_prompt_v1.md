@@ -14,7 +14,7 @@ Context: {{context}}
 
 {{identity_contract}}
 
-Return exactly `[ANALYZE]`, `[INITIAL]`, then `[CHANGES]`. Use the supplied names exactly. Both actors enter the scene already performing: `[INITIAL]` must contain one block for each actor with a visible `affect` and a meaningful `reason`. Initial affect may not be `MASK-NONE`; use a real visible Mask such as `Neutral-60` when appropriate. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. It may contain persistent GAZE (not GLANCE) and head; blink is not allowed.
+Return exactly `[ANALYZE]`, `[INITIAL]`, then `[CHANGES]`. Use the supplied names exactly. Both actors enter the scene already performing: `[INITIAL]` must contain one block for each actor with a visible `affect`, a persistent `GAZE-*`, and a meaningful `reason`. Initial affect may not be `MASK-NONE`; use a real visible Mask such as `Neutral-60` when appropriate. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. Initial gaze may not be GLANCE or GAZE-NONE; head is optional and blink is not allowed.
 
 For each actor independently, analyze both speaking behavior and listening behavior. Listeners may react during another actor's utterance: anchor a meaningful listener change to the earliest semantically sufficient heard cue word. Do not automatically wait for sentence completion, dialogue-turn completion, or the listener's next spoken line. Phrase and clause comprehension matter more than punctuation. Do not over-segment; create a listener event only when heard information meaningfully changes the acting state.
 
@@ -24,7 +24,7 @@ Each event has a unique E-number, one actor, an existing word anchor, at least o
 
 Allowed channels are affect, gaze, head, and blink. Never output Heart, Lid, blink_suppression, timing, seconds, frames, latency, duration, SPEAK/LISTEN mode, or speaker. The backend derives timing from actor and anchor speaker.
 
-Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE. Neutral is not NONE. Executable gaze is only GAZE-target, GLANCE-target, or GAZE-NONE. Targets may be characters, objects, or RIGHT/LEFT/DOWN/DOWN_LEFT/DOWN_RIGHT/UP/UP_LEFT/UP_RIGHT. AVERT is never an executable gaze mode.
+Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE. Neutral is not NONE. Executable gaze is only GAZE-target or GLANCE-target. Targets may be characters, objects, or RIGHT/LEFT/DOWN/DOWN_LEFT/DOWN_RIGHT/UP/UP_LEFT/UP_RIGHT. GAZE-NONE and AVERT are never executable authored gaze modes.
 
 Concepts such as avoiding eye contact, averting one's eyes, thinking, recalling, searching for words, guilt, discomfort, hesitation, or suspicion are acting motivations. They should influence the contextual choice of GAZE/GLANCE and target, but are never executable gaze modes. Do not map an emotion or motivation to a fixed direction; choose the target from this scene's acting context. For example, `gaze: GAZE-DOWN` may be motivated by avoiding eye contact, while `gaze: GLANCE-UP_LEFT` may be motivated by briefly trying to recall a detail.
 

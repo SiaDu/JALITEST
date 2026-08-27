@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 HEAD_VALUE_BY_INVOLVEMENT = {
@@ -50,10 +51,18 @@ def load_performance_plan(path: str | Path) -> dict[str, Any]:
 
 
 def default_edited_path(path: str | Path) -> Path:
+    return next_edited_snapshot_path(path)
+
+
+def next_edited_snapshot_path(path: str | Path) -> Path:
+    """Choose a new immutable numbered v2 editor snapshot beside the original."""
     source = Path(path)
-    if source.stem.endswith("_edited"):
-        return source
-    return source.with_name(f"{source.stem}_edited{source.suffix}")
+    base = re.sub(r"_edited_\d+$", "", source.stem)
+    existing = [
+        int(match.group(1)) for item in source.parent.glob(f"{base}_edited_*{source.suffix}")
+        if (match := re.fullmatch(rf"{re.escape(base)}_edited_(\d+)", item.stem))
+    ]
+    return source.with_name(f"{base}_edited_{max(existing, default=0) + 1:02d}{source.suffix}")
 
 
 def save_performance_plan(plan: dict[str, Any], path: str | Path) -> Path:

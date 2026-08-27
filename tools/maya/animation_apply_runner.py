@@ -802,9 +802,19 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
         if value == "EYE_OPEN":
             if not hold_active:
                 raise ValueError("EYE_OPEN requires an active EYE_CLOSE_HOLD.")
-            keys.append({"frame": cursor, "value": opened, "event_id": event.get("event_id")})
+            hold_preset = presets.get("EYE_CLOSE_HOLD") or {}
+            closed = float(hold_preset["closure"])
+            release = int(hold_preset.get("release_frames", hold_preset.get("open_frames", 4)))
+            # Preserve closure at the semantic release boundary; only the
+            # following interpolation opens the central transient blink plug.
+            keys.extend([
+                {"frame": cursor, "value": closed, "event_id": event.get("event_id")},
+                {"frame": cursor + release, "value": opened, "event_id": event.get("event_id")},
+            ])
             hold_active = False
             continue
+        if hold_active:
+            raise ValueError("EYE_CLOSE_HOLD permits only EYE_OPEN until released.")
         preset = presets.get(value)
         if not isinstance(preset, dict):
             raise ValueError(f"Missing performative blink preset {value}")
@@ -845,7 +855,7 @@ def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str,
             groups.append((time, [event]))
     gaze_initialized = initial_state is not None
     affect_initialized = initial_state is not None
-    gaze_state = str((initial_state or {}).get("gaze", "GAZE-NONE"))
+    gaze_state = str((initial_state or {}).get("gaze", "__NEUTRAL__"))
     affect_state = _affect_identity((initial_state or {}).get("affect", "NONE"))
     hold_active = False
     planned: list[dict[str, Any]] = []
@@ -868,6 +878,8 @@ def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str,
                 if not hold_active:
                     raise ValueError("EYE_OPEN requires an active EYE_CLOSE_HOLD.")
                 hold_active = False
+            elif hold_active:
+                raise ValueError("EYE_CLOSE_HOLD permits only EYE_OPEN until released.")
             source = "explicit"
         elif hold_active:
             blink = ""
@@ -1099,24 +1111,22 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
         prepared["jsync_nodes"][actor] = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
         raw = []
         gaze_rows = [event for event in _load_v2_actor_events(manifest, actor) if "gaze" in (event.get("changes") or {})]
-        initial_gaze = _load_v2_actor_initial_state(manifest, actor).get("gaze", "GAZE-NONE")
-        if initial_gaze != "GAZE-NONE":
-            gaze_rows = [{"event_id": "INITIAL_STATE", "resolved_start": 0.0, "changes": {"gaze": initial_gaze}, "reason": None}] + gaze_rows
+        initial_gaze = _load_v2_actor_initial_state(manifest, actor).get("gaze")
+        if not initial_gaze:
+            raise ValueError(f"{actor}: v2 initial gaze is required.")
+        gaze_rows = [{"event_id": "INITIAL_STATE", "resolved_start": 0.0, "timing_role": "INITIAL_STATE", "changes": {"gaze": initial_gaze}, "reason": None}] + gaze_rows
         for index, event in enumerate(gaze_rows):
             value = str(event["changes"]["gaze"])
             start = float(event["resolved_start"])
-            if value == "GAZE-NONE":
-                mode, target = "RESET", "__BASE__"
-            else:
-                mode, target = value.split("-", 1)
-                if mode not in {"GAZE", "GLANCE"}:
-                    raise ValueError(f"{actor}: v2 executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
+            mode, target = value.split("-", 1)
+            if mode not in {"GAZE", "GLANCE"}:
+                raise ValueError(f"{actor}: v2 executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
             if mode == "GLANCE":
                 transition = float(gaze_config.get("glance_transition_frames", 3)) / float(manifest["fps"])
                 end = start + transition + float(gaze_config.get("glance_hold_seconds", 0.5)) + transition
             else:
                 end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])
-            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "social_avert": False, "resolved_time": {"start": start, "end": end}})
+            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "timing_role": event.get("timing_role"), "social_avert": False, "resolved_time": {"start": start, "end": end}})
         reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
         positions: dict[str, list[float]] = {}
         for event in raw:
@@ -1230,7 +1240,7 @@ def capture_character_gaze_reference(character_node: str, *, cmds_module: Any | 
     if not cmds_module.objExists(eye_stare) or not cmds_module.objExists(both_eyes):
         raise RuntimeError(f"Could not resolve eyeStare_world/CNT_BOTH_EYES for {character_node}")
     baseline_z = float(cmds_module.getAttr(f"{eye_stare}.translateZ"))
-    return {"eye_stare_node": eye_stare, "baseline_translateZ": baseline_z, "eye_stare_translate": [0.0, 0.0, baseline_z], "both_eyes_node": both_eyes, "both_eyes_translate": [float(cmds_module.getAttr(f"{both_eyes}.translateX")), float(cmds_module.getAttr(f"{both_eyes}.translateY"))]}
+    return {"eye_stare_node": eye_stare, "baseline_translateZ": baseline_z, "eye_stare_translate": [0.0, 0.0, baseline_z], "both_eyes_node": both_eyes, "both_eyes_translate": [0.0, 0.0]}
 
 
 def capture_current_look_at_position(character_node: str, *, cmds_module: Any | None = None) -> list[float]:
@@ -1293,10 +1303,10 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
             directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
             if target in directions:
                 x, y = directional_eye_offset(target, magnitude=magnitude, limit=limit)
-                state.update({"eye_stare": list(neutral_position), "eyes": [neutral_eyes[0] + x, neutral_eyes[1] + y]})
+                state.update({"eye_stare": list(neutral_position), "eyes": [x, y]})
             else:
                 if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
-                state.update({"eye_stare":list(target_positions[target]),"eyes":list(neutral_eyes)})
+                state.update({"eye_stare":list(target_positions[target]),"eyes":[0.0, 0.0]})
             if mode=="GLANCE": state["return_state"]=dict(previous)
         else:
             x,y=directional_eye_offset(target,magnitude=magnitude,limit=limit,social=bool(event.get("social_avert")))
@@ -1316,6 +1326,13 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
         # transition from an invented neutral state.  GLANCE stays temporary
         # and deliberately retains its existing transition/return behavior.
         if index == 0 and event["mode"] != "GLANCE" and state["start"] <= timeline_start + initialization_epsilon:
+            keys.append({"frame": start, "eye_stare": list(state["eye_stare"]), "eyes": list(state["eyes"])})
+            continue
+        # Semantic time remains exact. A speaker's target may be visually
+        # approached beforehand, while a listener must not move until after
+        # the heard anchor boundary.
+        if event.get("timing_role") == "SPEAK_ONSET" and event["mode"] != "GLANCE":
+            keys.append({"frame": max(0.0, start - transition_frames), "eye_stare": list(previous["eye_stare"]), "eyes": list(previous["eyes"])})
             keys.append({"frame": start, "eye_stare": list(state["eye_stare"]), "eyes": list(state["eyes"])})
             continue
         arrival=min(start+transition_frames,end)

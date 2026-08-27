@@ -15,46 +15,72 @@ from expregaze_jali.textgrid_parser import parse_textgrid_words
 from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation, build_sparse_speaker_jali_annotation
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
 from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0
+from expregaze_jali.dual_sparse_performance_proposal_parser import BLINK_VALUES, HEAD_VALUES
+from expregaze_jali.performance_proposal_parser import load_semantic_vocabulary
 
 def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
     characters = plan.get("characters")
     tracks = plan.get("tracks")
-    if not isinstance(characters, list) or len(characters) != 2:
+    if not isinstance(characters, list) or len(characters) != 2 or len(set(characters)) != 2 or any(not isinstance(name, str) or not name.strip() for name in characters):
         raise ValueError("Dual v2 plan requires two ordered character names.")
     if not isinstance(tracks, dict) or set(tracks) != set(characters):
         raise ValueError("Dual v2 plan requires name-keyed character tracks.")
     initial_states = plan.get("initial_states", {})
-    if not isinstance(initial_states, dict) or not set(initial_states) <= set(characters):
+    initial_reasons = plan.get("initial_reasons")
+    if not isinstance(initial_states, dict) or set(initial_states) != set(characters):
         raise ValueError("Dual v2 initial_states must be name-keyed by plan characters.")
-    for actor, state in initial_states.items():
+    if not isinstance(initial_reasons, dict) or set(initial_reasons) != set(characters):
+        raise ValueError("Dual v2 initial_reasons must be name-keyed by plan characters.")
+    affect_states = {name.casefold() for name in load_semantic_vocabulary().affect_states.values()}
+    def valid_affect(value: object, *, initial: bool) -> bool:
+        text = str(value or "")
+        if text == "MASK-NONE": return not initial
+        name, separator, amount = text.rpartition("-")
+        return bool(separator and name.casefold() in affect_states and re.fullmatch(r"[1-9]\d*", amount))
+    def valid_gaze(value: object, *, initial: bool) -> bool:
+        text = str(value or "")
+        if text == "GAZE-NONE": return False
+        mode, separator, target = text.partition("-")
+        return bool(separator and target and re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target) and mode in ({"GAZE"} if initial else {"GAZE", "GLANCE"}))
+    for actor in characters:
+        state = initial_states[actor]
         if not isinstance(state, dict) or not set(state) <= {"affect", "gaze", "head"}:
             raise ValueError(f"{actor}: v2 initial state may contain only affect, gaze, and head.")
         gaze = state.get("gaze")
-        if gaze is not None and gaze != "GAZE-NONE" and not re.fullmatch(r"GAZE-[A-Za-z][A-Za-z0-9_'-]*", str(gaze)):
+        if not valid_gaze(gaze, initial=True):
             raise ValueError(f"{actor}: invalid v2 initial gaze {gaze!r}.")
         head = state.get("head")
-        if head is not None and head != "HEAD-NONE" and not re.fullmatch(r"HEAD-(?:UP|DOWN|TILT_LEFT|TILT_RIGHT)-(?:SUBTLE|MEDIUM|STRONG)", str(head)):
+        if head is not None and head not in HEAD_VALUES:
             raise ValueError(f"{actor}: invalid v2 initial head {head!r}.")
         affect = state.get("affect")
-        if affect is not None and affect != "MASK-NONE" and not re.fullmatch(r".+-[1-9]\d*", str(affect)):
+        if not valid_affect(affect, initial=True):
             raise ValueError(f"{actor}: invalid v2 initial affect {affect!r}.")
+        if not str(initial_reasons[actor] or "").strip():
+            raise ValueError(f"{actor}: v2 initial reason is required.")
     anchors = {anchor.anchor_id for anchor in model.anchors}
     event_ids: set[str] = set()
     for actor in characters:
         if not isinstance(tracks[actor], list):
             raise ValueError(f"Dual v2 track {actor} must be a list.")
         for event in tracks[actor]:
-            if not isinstance(event, dict) or not event.get("event_id") or event.get("anchor_id") not in anchors:
-                raise ValueError(f"{actor}: v2 event requires event_id and known anchor_id.")
+            if not isinstance(event, dict) or not event.get("event_id") or event.get("actor") != actor or event.get("anchor_id") not in anchors:
+                raise ValueError(f"{actor}: v2 event requires event_id, matching actor, and known anchor_id.")
             if event["event_id"] in event_ids:
                 raise ValueError(f"Duplicate v2 event_id {event['event_id']}.")
             event_ids.add(event["event_id"])
             changes = event.get("changes")
             if not isinstance(changes, dict) or not changes or not set(changes) <= {"affect", "gaze", "head", "blink"}:
                 raise ValueError(f"{event['event_id']}: invalid or empty v2 changes.")
-            gaze = changes.get("gaze")
-            if gaze is not None and gaze != "GAZE-NONE" and not re.fullmatch(r"(?:GAZE|GLANCE)-[A-Za-z][A-Za-z0-9_'-]*", str(gaze)):
-                raise ValueError(f"{event['event_id']}: invalid v2 executable gaze {gaze!r}; use GAZE/GLANCE or GAZE-NONE.")
+            if not str(event.get("reason") or "").strip():
+                raise ValueError(f"{event['event_id']}: v2 event reason is required.")
+            if "affect" in changes and not valid_affect(changes["affect"], initial=False):
+                raise ValueError(f"{event['event_id']}: invalid v2 affect {changes['affect']!r}.")
+            if "gaze" in changes and not valid_gaze(changes["gaze"], initial=False):
+                raise ValueError(f"{event['event_id']}: invalid v2 executable gaze {changes['gaze']!r}.")
+            if "head" in changes and changes["head"] not in HEAD_VALUES:
+                raise ValueError(f"{event['event_id']}: invalid v2 head {changes['head']!r}.")
+            if "blink" in changes and changes["blink"] not in BLINK_VALUES:
+                raise ValueError(f"{event['event_id']}: invalid authored v2 blink {changes['blink']!r}.")
 
 
 def _compile_v2(
@@ -72,7 +98,7 @@ def _compile_v2(
     artifacts["conversation_anchor_timing"] = str(timing_path)
     for actor in characters:
         initial_state = {
-            "affect": "MASK-NONE", "gaze": "GAZE-NONE", "head": "HEAD-NONE",
+            "head": "HEAD-NONE",
             **((plan.get("initial_states") or {}).get(actor) or {}),
         }
         resolved: list[dict[str, Any]] = []

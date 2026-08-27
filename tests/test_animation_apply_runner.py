@@ -389,15 +389,17 @@ def test_v2_eye_close_hold_persists_until_explicit_eye_open_and_suppresses_regul
         {"event_id": "HOLD", "resolved_start": 1, "changes": {"blink": "EYE_CLOSE_HOLD"}},
         {"event_id": "OPEN", "resolved_start": 3, "changes": {"blink": "EYE_OPEN"}},
     ]
-    assert [(key["frame"], key["value"]) for key in build_blink_overlay_key_schedule(events, fps=24, config=config)] == [(24.0, 0.0), (28.0, 9.0), (72.0, 0.0)]
+    assert [(key["frame"], key["value"]) for key in build_blink_overlay_key_schedule(events, fps=24, config=config)] == [(24.0, 0.0), (28.0, 9.0), (72.0, 9.0), (76.0, 0.0)]
     planned = plan_v2_blinks([
         _resolved("HOLD", 1, blink="EYE_CLOSE_HOLD"),
         _resolved("AFFECT", 2, affect="Nervous-80"),
         _resolved("OPEN", 3, blink="EYE_OPEN"),
-    ], initial_state={"affect": "Neutral-60", "gaze": "GAZE-NONE"})
+    ], initial_state={"affect": "Neutral-60", "gaze": "GAZE-BOB"})
     assert [(row["resolved_start"], row["changes"]["blink"]) for row in planned] == [(1.0, "EYE_CLOSE_HOLD"), (3.0, "EYE_OPEN")]
     with pytest.raises(ValueError, match="requires an active EYE_CLOSE_HOLD"):
         build_blink_overlay_key_schedule([{"event_id": "OPEN", "resolved_start": 1, "changes": {"blink": "EYE_OPEN"}}], fps=24, config=config)
+    with pytest.raises(ValueError, match="permits only EYE_OPEN"):
+        plan_v2_blinks([_resolved("HOLD", 1, blink="EYE_CLOSE_HOLD"), _resolved("BLINK", 2, blink="SLOW_BLINK")])
 
 
 def test_v2_blink_schedule_uses_evidenced_per_preset_closure_values():
@@ -571,7 +573,7 @@ def test_dual_gaze_neutral_is_automatic_local_xy_zero_and_preserves_z_baseline()
     reference = capture_character_gaze_reference("|A:ROOT", cmds_module=cmds)
     assert reference["eye_stare_translate"] == [0.0, 0.0, 9.0]
     assert reference["baseline_translateZ"] == 9.0
-    assert reference["both_eyes_translate"] == [1.0, 2.0]
+    assert reference["both_eyes_translate"] == [0.0, 0.0]
     assert not any(call[0] == "xform" for call in cmds.calls)
 
 
@@ -648,7 +650,7 @@ def test_prepare_dual_overlay_is_non_destructive_and_resolves_both_jsync(monkeyp
     prepared = prepare_dual_animation_overlay(manifest_path=_dual_manifest(tmp_path), character_mappings=_dual_mappings())
     assert prepared["jsync_nodes"] == {"A": "|A:ROOT|jSync1", "B": "|B:ROOT|jSync2"}
     assert prepared["A"]["gaze_reference"]["eye_stare_translate"] == [0.0, 0.0, 9.0]
-    assert prepared["A"]["gaze_reference"]["both_eyes_translate"] == [1.0, 2.0]
+    assert prepared["A"]["gaze_reference"]["both_eyes_translate"] == [0.0, 0.0]
     assert prepared["A"]["eyelid_reference"] == {"node": "A:LIDS_jSync_plusMinus", "attr": "Down_upLids_jSync", "keys": [{"frame": 1.0, "value": 0.25}]}
     assert prepared["B"]["gaze_key_schedule"]
     assert cmds.calls == []
@@ -799,14 +801,14 @@ def test_gaze_state_machine_resets_detailed_eyes_after_avert():
     schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[3,4,5], neutral_eyes=[1,2], target_positions={"A":[9,8,7]})
     assert schedule[0]["eye_stare"] == [3,4,5] and schedule[0]["eyes"] == [1, -3.0]
     assert schedule[0]["end"] == 136
-    assert schedule[1]["eye_stare"] == [9,8,7] and schedule[1]["eyes"] == [1,2]
+    assert schedule[1]["eye_stare"] == [9,8,7] and schedule[1]["eyes"] == [0.0,0.0]
 
 
 def test_first_gaze_at_timeline_start_initializes_directly_without_neutral_transition():
     raw = [{"channel": "gaze", "value": "GAZE-B", "resolved_time": {"start": 0, "end": 10}}]
     schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[9, 9, 9], neutral_eyes=[4, 5], target_positions={"B": [1, 2, 3]})
     keys = build_dual_gaze_key_schedule(schedule, fps=1, transition_frames=3)
-    assert keys == [{"frame": 0.0, "eye_stare": [1, 2, 3], "eyes": [4, 5]}]
+    assert keys == [{"frame": 0.0, "eye_stare": [1, 2, 3], "eyes": [0.0, 0.0]}]
 
 
 def test_first_avert_at_timeline_start_initializes_its_complete_state():
@@ -820,7 +822,14 @@ def test_first_gaze_after_timeline_start_keeps_neutral_then_uses_transition():
     raw = [{"channel": "gaze", "value": "GAZE-B", "resolved_time": {"start": 2, "end": 10}}]
     schedule = build_dual_gaze_schedule(adapt_dual_gaze_events(raw), neutral_position=[9, 9, 9], neutral_eyes=[4, 5], target_positions={"B": [1, 2, 3]})
     keys = build_dual_gaze_key_schedule(schedule, fps=1, transition_frames=3)
-    assert keys == [{"frame": 2.0, "eye_stare": [9, 9, 9], "eyes": [4, 5]}, {"frame": 5.0, "eye_stare": [1, 2, 3], "eyes": [4, 5]}]
+    assert keys == [{"frame": 2.0, "eye_stare": [9, 9, 9], "eyes": [4, 5]}, {"frame": 5.0, "eye_stare": [1, 2, 3], "eyes": [0.0, 0.0]}]
+
+
+def test_v2_gaze_role_aware_key_realization_keeps_semantic_boundary_exact():
+    speaker = [{"event": {"mode": "GAZE", "timing_role": "SPEAK_ONSET"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [0, 0, 9], "eyes": [0, 0]}, "eye_stare": [1, 2, 3], "eyes": [0, 0]}]
+    listener = [{"event": {"mode": "GAZE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [0, 0, 9], "eyes": [0, 0]}, "eye_stare": [1, 2, 3], "eyes": [0, 0]}]
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(speaker, fps=24, transition_frames=4)] == [44.0, 48.0]
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(listener, fps=24, transition_frames=4)] == [48.0, 52.0]
 
 
 def test_later_persistent_state_still_uses_explicit_transition_frames():
@@ -853,10 +862,10 @@ def test_glance_uses_rapid_out_hold_and_rapid_return_at_24_fps():
     keys = build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_min_hold_seconds=0.5)
     glance_keys = [key for key in keys if key["frame"] >= 48]
     assert glance_keys == [
-        {"frame": 48.0, "eye_stare": [1, 1, 1], "eyes": [4, 5]},
-        {"frame": 51.0, "eye_stare": [2, 2, 2], "eyes": [4, 5]},
-        {"frame": 69.0, "eye_stare": [2, 2, 2], "eyes": [4, 5]},
-        {"frame": 72.0, "eye_stare": [1, 1, 1], "eyes": [4, 5]},
+        {"frame": 48.0, "eye_stare": [1, 1, 1], "eyes": [0.0, 0.0]},
+        {"frame": 51.0, "eye_stare": [2, 2, 2], "eyes": [0.0, 0.0]},
+        {"frame": 69.0, "eye_stare": [2, 2, 2], "eyes": [0.0, 0.0]},
+        {"frame": 72.0, "eye_stare": [1, 1, 1], "eyes": [0.0, 0.0]},
     ]
     assert not any(key["frame"] == 54.0 for key in glance_keys)
 

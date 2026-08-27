@@ -169,13 +169,15 @@ def test_v2_resolves_independent_role_aware_events_and_persistent_affect(tmp_pat
         "schema_version": "dual_performance_plan_v2",
         "sequence_id": "v2",
         "characters": ["AGNES", "WILL"],
+        "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}},
+        "initial_reasons": {"AGNES": "Begins attentive.", "WILL": "Begins attentive."},
         "tracks": {
             "AGNES": [
-                {"event_id": "E001", "anchor_id": "w0001", "changes": {"affect": "Watchful-80", "gaze": "GAZE-WILL"}, "reason": "Starts watchful."},
-                {"event_id": "E003", "anchor_id": "w0002", "changes": {"gaze": "GAZE-RIGHT"}, "reason": "Looks away while listening."},
+                {"event_id": "E001", "actor": "AGNES", "anchor_id": "w0001", "changes": {"affect": "Watchful-80", "gaze": "GAZE-WILL"}, "reason": "Starts watchful."},
+                {"event_id": "E003", "actor": "AGNES", "anchor_id": "w0002", "changes": {"gaze": "GAZE-RIGHT"}, "reason": "Looks away while listening."},
             ],
             "WILL": [
-                {"event_id": "E002", "anchor_id": "w0001", "changes": {"affect": "Thinking-60"}, "reason": "Reacts to one."},
+                {"event_id": "E002", "actor": "WILL", "anchor_id": "w0001", "changes": {"affect": "Thinking-60"}, "reason": "Reacts to one."},
             ],
         },
     }), encoding="utf-8")
@@ -204,10 +206,10 @@ def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
     _legacy_plan, audio = _fixture(tmp_path)
     plan = tmp_path / "v2.json"
     plan.write_text(json.dumps({
-        "schema_version": "dual_performance_plan_v2", "characters": ["AGNES", "WILL"],
+        "schema_version": "dual_performance_plan_v2", "characters": ["AGNES", "WILL"], "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}}, "initial_reasons": {"AGNES": "Ready.", "WILL": "Ready."},
         "tracks": {
-            "AGNES": [{"event_id": "E001", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}}],
-            "WILL": [{"event_id": "E002", "anchor_id": "w0001", "changes": {"blink": "BLINK"}}],
+            "AGNES": [{"event_id": "E001", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}, "reason": "Raises attention."}],
+            "WILL": [{"event_id": "E002", "actor": "WILL", "anchor_id": "w0001", "changes": {"blink": "SLOW_BLINK"}, "reason": "Closes briefly."}],
         },
     }), encoding="utf-8")
     result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping={"AGNES": MAPPING["A"], "WILL": MAPPING["B"]}, output_dir=tmp_path / "out")
@@ -218,7 +220,7 @@ def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
 
 def test_v2_compiler_rejects_manual_avert_bypass():
     model = build_conversation_anchor_model("AGNES: one\nWILL: two", character_a="AGNES", character_b="WILL")
-    plan = {"characters": ["AGNES", "WILL"], "tracks": {"AGNES": [{"event_id": "E1", "anchor_id": "w0001", "changes": {"gaze": "AVERT-RIGHT"}}], "WILL": []}}
+    plan = {"characters": ["AGNES", "WILL"], "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}}, "initial_reasons": {"AGNES": "Ready.", "WILL": "Ready."}, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "AVERT-RIGHT"}, "reason": "Bad."}], "WILL": []}}
     with pytest.raises(ValueError, match="invalid v2 executable gaze"):
         _validate_v2_plan(plan, model)
 
@@ -241,10 +243,11 @@ def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_pat
             "ALICE": {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"},
             "BOB": {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"},
         },
+        "initial_reasons": {"ALICE": "Begins watchful.", "BOB": "Begins watchful."},
         "tracks": {"ALICE": [], "BOB": [
-            {"event_id": "E1", "anchor_id": by_text["dangerous."], "changes": {"gaze": "GAZE-DOWN"}, "reason": "The threat cue changes her listening behavior."},
-            {"event_id": "E2", "anchor_id": by_text["No."], "changes": {"head": "HEAD-DOWN-SUBTLE"}, "reason": "Contains the denial."},
-            {"event_id": "E3", "anchor_id": by_text["Bert!"], "changes": {"gaze": "GAZE-RIGHT", "head": "HEAD-UP-MEDIUM"}, "reason": "Redirects attention."},
+            {"event_id": "E1", "actor": "BOB", "anchor_id": by_text["dangerous."], "changes": {"gaze": "GAZE-DOWN"}, "reason": "The threat cue changes her listening behavior."},
+            {"event_id": "E2", "actor": "BOB", "anchor_id": by_text["No."], "changes": {"head": "HEAD-DOWN-SUBTLE"}, "reason": "Contains the denial."},
+            {"event_id": "E3", "actor": "BOB", "anchor_id": by_text["Bert!"], "changes": {"gaze": "GAZE-RIGHT", "head": "HEAD-UP-MEDIUM"}, "reason": "Redirects attention."},
         ]},
     }
     audio = tmp_path / "audio"; audio.mkdir()

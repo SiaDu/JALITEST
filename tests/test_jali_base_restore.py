@@ -143,4 +143,4 @@ def test_named_restore_reasserts_gaze_neutral_after_realign(tmp_path, monkeypatc
     assert cmds.values["ALICE:eyeStare_world.translateX"] == 0.0
     assert cmds.values["BOB:eyeStare_world.translateY"] == 0.0
     assert cmds.values["ALICE:eyeStare_world.translateZ"] == 9.0
-    assert cmds.values["BOB:CNT_BOTH_EYES.translateX"] == 3.0
+    assert cmds.values["BOB:CNT_BOTH_EYES.translateX"] == 0.0

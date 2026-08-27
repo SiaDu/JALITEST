@@ -39,7 +39,7 @@ E003
 actor: BOB
 anchor: w0003
 affect: MASK-NONE
-gaze: GAZE-NONE
+gaze: GAZE-DOWN
 head: HEAD-NONE
 reason: Releases the response.""")
     plan = build_dual_performance_plan_v2(proposal, anchor_model=MODEL, sequence_id="test")
@@ -72,7 +72,7 @@ def test_v2_rejects_unknown_actor_anchor_and_empty_event():
 def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
     assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
-    assert "AVERT is never an executable gaze mode" in prompt
+    assert "GAZE-NONE and AVERT are never executable authored gaze modes" in prompt
     assert "gaze: GAZE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
     assert "Do not map an emotion or motivation to a fixed direction" in prompt
     assert not __import__("re").search(r"gaze:\s*AVERT-", prompt)
@@ -84,11 +84,21 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
 
 
 def test_initial_state_requires_visible_affect_and_reason_and_rejects_blink():
-    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-120\nreason: Enters openly.\n\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: Enters composed.\n[CHANGES]\n"
+    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-120\ngaze: GAZE-BOB\nreason: Enters openly.\n\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: Enters composed.\n[CHANGES]\n"
     proposal = parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
-    assert proposal["initial_states"]["ALICE"] == {"affect": "Happy-120", "gaze": "GAZE-NONE", "head": "HEAD-NONE"}
+    assert proposal["initial_states"]["ALICE"] == {"affect": "Happy-120", "gaze": "GAZE-BOB", "head": "HEAD-NONE"}
     assert proposal["initial_states"]["BOB"] == {"affect": "Neutral-60", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}
     assert proposal["initial_reasons"]["ALICE"] == "Enters openly."
+
+
+def test_authored_gaze_none_and_missing_initial_gaze_are_rejected():
+    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-80\ngaze: GAZE-NONE\nreason: x\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: x\n[CHANGES]\n"
+    with pytest.raises(ProposalValidationError, match="GAZE-NONE"):
+        parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    source = source.replace("gaze: GAZE-NONE\n", "", 1)
+    with pytest.raises(ProposalValidationError, match="gaze is required"):
+        parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-120\ngaze: GAZE-BOB\nreason: Enters openly.\n\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: Enters composed.\n[CHANGES]\n"
     with pytest.raises(ProposalValidationError, match="initial channel blink is not allowed"):
         parse_dual_sparse_performance_proposal(source.replace("affect: Happy-120", "blink: BLINK"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     with pytest.raises(ProposalValidationError, match="initial gaze must be persistent"):

@@ -42,7 +42,7 @@ def _normalize_affect(value: str, *, event_id: str, vocabulary: SemanticVocabula
 def _normalize_gaze(value: str, *, event_id: str, characters: tuple[str, str]) -> str:
     text = value.strip()
     if text.upper() == "GAZE-NONE":
-        return "GAZE-NONE"
+        raise ProposalValidationError(f'{event_id}: GAZE-NONE is an internal runtime reset, not an authored gaze value')
     match = _GAZE.fullmatch(text)
     if not match:
         raise ProposalValidationError(f'{event_id}: Invalid gaze value "{value}"')
@@ -113,9 +113,11 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
         affect = _normalize_affect(raw["affect"], event_id=f"{actor} initial", vocabulary=vocabulary)
         if affect == "MASK-NONE":
             raise ProposalValidationError(f"{actor} initial: affect must be a visible Mask, not MASK-NONE")
-        gaze = _normalize_gaze(raw.get("gaze", "GAZE-NONE"), event_id=f"{actor} initial", characters=characters)
+        if not raw.get("gaze", "").strip():
+            raise ProposalValidationError(f"{actor} initial: gaze is required")
+        gaze = _normalize_gaze(raw["gaze"], event_id=f"{actor} initial", characters=characters)
         if gaze.startswith("GLANCE-"):
-            raise ProposalValidationError(f"{actor} initial: GLANCE is instantaneous; initial gaze must be persistent GAZE or GAZE-NONE")
+            raise ProposalValidationError(f"{actor} initial: GLANCE is instantaneous; initial gaze must be persistent GAZE")
         head = raw.get("head", "HEAD-NONE").strip().upper()
         if head not in HEAD_VALUES:
             raise ProposalValidationError(f'{actor} initial: Invalid v2 head value "{raw.get("head")}"')

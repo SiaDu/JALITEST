@@ -102,6 +102,8 @@ def capture_target_pose_and_restore(
     cmds_module.setAttr(f"{eye_stare_node}.translateX", 0.0)
     cmds_module.setAttr(f"{eye_stare_node}.translateY", 0.0)
     cmds_module.setAttr(f"{eye_stare_node}.translateZ", float(baseline_translate_z))
-    cmds_module.setAttr(f"{both_eyes_node}.translateX", baseline_eyes[0])
-    cmds_module.setAttr(f"{both_eyes_node}.translateY", baseline_eyes[1])
+    # Standard jRig neutral is fixed, not sampled from potentially animated
+    # scene state. The argument remains for legacy call compatibility only.
+    cmds_module.setAttr(f"{both_eyes_node}.translateX", 0.0)
+    cmds_module.setAttr(f"{both_eyes_node}.translateY", 0.0)
     return {"eye_stare_translate": local, "eye_stare_world_position": [float(value) for value in world]}

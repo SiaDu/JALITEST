@@ -45,7 +45,7 @@ def test_v2_calibration_pairs_include_initial_and_sparse_named_gazes_only():
                 {"changes": {"gaze": "GAZE-UP_LEFT"}},
                 {"changes": {"gaze": "GAZE-CHAYTON"}},
             ],
-            "CHAYTON": [{"changes": {"gaze": "GAZE-NONE"}}],
+            "CHAYTON": [{"changes": {"gaze": "GAZE-UP"}}],
         },
     }
     assert required_calibration_pairs(plan) == [("JOAN", "CHAYTON"), ("JOAN", "IN_SIDE_ROOM")]
@@ -61,4 +61,4 @@ def test_capture_look_at_keeps_local_pose_as_data_and_restores_forward_neutral()
     cmds = Cmds()
     captured = capture_target_pose_and_restore("eye", "eyes", baseline_translate_z=7.0, both_eyes_translate=[1.5, -2.5], cmds_module=cmds)
     assert captured == {"eye_stare_translate": [4.0, -3.0, 12.0], "eye_stare_world_position": [100.0, 200.0, 300.0]}
-    assert cmds.writes == [("eye.translateX", 0.0), ("eye.translateY", 0.0), ("eye.translateZ", 7.0), ("eyes.translateX", 1.5), ("eyes.translateY", -2.5)]
+    assert cmds.writes == [("eye.translateX", 0.0), ("eye.translateY", 0.0), ("eye.translateZ", 7.0), ("eyes.translateX", 0.0), ("eyes.translateY", 0.0)]

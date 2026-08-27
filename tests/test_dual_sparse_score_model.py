@@ -12,7 +12,7 @@ PLAN = {
     "characters": ["ALICE", "BOB"],
     "initial_states": {
         "ALICE": {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"},
-        "BOB": {"affect": "Neutral-60", "gaze": "GAZE-NONE", "head": "HEAD-NONE"},
+        "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"},
     },
     "initial_reasons": {"ALICE": "Begins guarded.", "BOB": "Begins composed."},
     "tracks": {
@@ -118,7 +118,7 @@ def test_real_listener_initial_state_and_token_adjacent_changes():
     plan = {
         "schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"],
         "initial_states": {
-            "ALICE": {"affect": "Neutral-60", "gaze": "GAZE-NONE", "head": "HEAD-NONE"},
+            "ALICE": {"affect": "Neutral-60", "gaze": "GAZE-BOB", "head": "HEAD-NONE"},
             "BOB": {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"},
         },
         "initial_reasons": {"ALICE": "Begins neutral.", "BOB": "Begins watchful."},

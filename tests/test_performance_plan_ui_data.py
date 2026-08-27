@@ -115,11 +115,12 @@ def test_load_preserves_events_and_default_save_does_not_overwrite_source(tmp_pa
     loaded = load_performance_plan(source)
     assert loaded["events"] == original["events"]
     edited = default_edited_path(source)
-    assert edited == tmp_path / "s029_1talk__performance_plan_edited.json"
+    assert edited == tmp_path / "s029_1talk__performance_plan_edited_01.json"
     assert edited != source
     save_performance_plan(loaded, edited)
     assert json.loads(source.read_text(encoding="utf-8")) == original
     assert edited.exists()
+    assert default_edited_path(source) == tmp_path / "s029_1talk__performance_plan_edited_02.json"
 
 
 def test_load_accepts_dual_v0_and_v1_phrase_plans_but_rejects_malformed_v1(tmp_path: Path):
@@ -395,15 +396,15 @@ def test_v2_runtime_plan_rejects_unconfirmed_reason(tmp_path: Path):
 
     anchors = build_conversation_anchor_model("ALICE: Hello.\nBOB: No.", character_a="ALICE", character_b="BOB")
     plan = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"],
-            "initial_states": {"ALICE": {"affect": "Watchful-60"}, "BOB": {"affect": "Neutral-60"}},
+            "initial_states": {"ALICE": {"affect": "Watchful-60", "gaze": "GAZE-BOB"}, "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE"}},
             "initial_reasons": {"ALICE": "Guarded.", "BOB": "Settled."},
             "tracks": {"ALICE": [], "BOB": [{"event_id": "E1", "anchor_id": "w0002", "changes": {"affect": "Nervous-60"}, "reason": "The refusal unsettles her."}]}}
     model = DualSparseScoreModel(plan, anchors)
     texts = dict(model.score_texts)
     texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-60>")
     with pytest.raises(ValueError, match="E1"):
-        save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_final.json")
+        save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_edited_01.json")
     model.apply(texts)
     model.set_reason("BOB", "E1", "She covers the refusal with warmth.")
-    saved = save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_final.json")
+    saved = save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_edited_01.json")
     assert saved["tracks"]["BOB"][0]["reason_status"] == "user_edited"

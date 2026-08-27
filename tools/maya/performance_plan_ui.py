@@ -124,9 +124,10 @@ def _configure_multiline_editor(
 class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
     """Color immutable dialogue by original speaker and tags distinctly."""
 
-    def __init__(self, document: QtGui.QTextDocument, projection: Any):
+    def __init__(self, document: QtGui.QTextDocument, projection: Any, characters: list[str]):
         super().__init__(document)
         self.projection = projection
+        self.characters = list(characters)
         self.speaker_formats = []
         for color in ("#b58900", "#2563eb"):
             fmt = QtGui.QTextCharFormat()
@@ -156,18 +157,9 @@ class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
             speaker_index = next((i for i, row in enumerate(ranges) if row.start <= plain_offset < row.end), None)
             if speaker_index is not None:
                 speaker = ranges[speaker_index].speaker
-                actor_index = next((i for i, name in enumerate(self.projection_characters) if speaker_key(name) == speaker_key(speaker)), 0)
+                actor_index = next((i for i, name in enumerate(self.characters) if speaker_key(name) == speaker_key(speaker)), 0)
                 self.setFormat(index, 1, self.speaker_formats[actor_index])
             plain_offset += 1
-
-    @property
-    def projection_characters(self) -> list[str]:
-        result: list[str] = []
-        for row in self.projection.speaker_ranges:
-            if row.speaker not in result:
-                result.append(row.speaker)
-        return result
-
 
 class PerformancePlanEditor(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
@@ -803,7 +795,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 mappings[actor]={"script_name":name,"maya_node":node}; runtime[actor]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
                 self._append_backend_output(f"{actor}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
             if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
-            animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_final.json"; self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
+            animation_dir=self.source_path.parent/"animation"; runtime_plan=default_edited_path(self.source_path); self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
             if self.jali_base_baseline is None:
                 self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
                 self._save_authoring_session_for_path(self.source_path)
@@ -990,7 +982,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         node=self.character_rows[row_index][1].text().strip(); eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
         if not node or not cmds.objExists(eye) or not cmds.objExists(both):
             return None
-        result: dict[str, object] = {"baseline_translateZ": float(cmds.getAttr(eye + ".translateZ")), "both_eyes_translate": [float(cmds.getAttr(both + ".translateX")), float(cmds.getAttr(both + ".translateY"))]}
+        result: dict[str, object] = {"baseline_translateZ": float(cmds.getAttr(eye + ".translateZ")), "both_eyes_translate": [0.0, 0.0]}
         self.dual_gaze_baselines[actor] = result
         return result
 
@@ -1291,8 +1283,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.score_legend.show()
             self.reason_group.setTitle("REASON BY CHANGE")
             self._score_highlighters = [
-                _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection),
-                _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection),
+                _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection, self.score_model.characters),
+                _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection, self.score_model.characters),
             ]
         else:
             self.score_title_a.setText("PERFORMANCE")
