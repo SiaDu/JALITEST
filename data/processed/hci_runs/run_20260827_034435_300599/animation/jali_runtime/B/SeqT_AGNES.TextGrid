@@ -122,14 +122,14 @@ item[]
 				text = "<eps>"
 			intervals [28]:
 				xmin = 19.740000
-				xmax = 20.321312
+				xmax = 20.301311
 				text = "XXNONVERBALXX"
 			intervals [29]:
-				xmin = 20.321312
-				xmax = 20.611311
+				xmin = 20.301311
+				xmax = 20.611313
 				text = "brought"
 			intervals [30]:
-				xmin = 20.611311
+				xmin = 20.611313
 				xmax = 20.701311
 				text = "you"
 			intervals [31]:
@@ -468,14 +468,14 @@ item[]
 				text = "sil"
 			intervals [62]:
 				xmin = 19.740000
-				xmax = 20.321312
+				xmax = 20.301311
 				text = "spn"
 			intervals [63]:
-				xmin = 20.321312
-				xmax = 20.431311
+				xmin = 20.301311
+				xmax = 20.431313
 				text = "b"
 			intervals [64]:
-				xmin = 20.431311
+				xmin = 20.431313
 				xmax = 20.471312
 				text = "r\"
 			intervals [65]:
