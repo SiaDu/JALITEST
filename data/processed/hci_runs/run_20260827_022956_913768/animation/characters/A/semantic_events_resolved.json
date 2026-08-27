@@ -1,0 +1,924 @@
+{
+  "events": [
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "FORMAL_FIRST_CONTACT",
+      "channel": "affect",
+      "value": "Polite-35",
+      "source_char_span": {
+        "text": "Good day, sir.",
+        "turn_id": "T01",
+        "char_start": 7,
+        "char_end": 21
+      },
+      "resolved_time": {
+        "start": 0.0,
+        "end": 3.692
+      },
+      "reason": "Agnes uses restrained politeness to remain self-possessed with a stranger."
+    },
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "FORMAL_FIRST_CONTACT",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "Good day, sir.",
+        "turn_id": "T01",
+        "char_start": 7,
+        "char_end": 21
+      },
+      "resolved_time": {
+        "start": 0.0,
+        "end": 3.692
+      },
+      "reason": "She acknowledges Will directly without overcommitting."
+    },
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "FORMAL_FIRST_CONTACT",
+      "channel": "head",
+      "value": "LOW",
+      "source_char_span": {
+        "text": "Good day, sir.",
+        "turn_id": "T01",
+        "char_start": 7,
+        "char_end": 21
+      },
+      "resolved_time": {
+        "start": 0.0,
+        "end": 3.692
+      },
+      "reason": "A slight lowered head preserves social formality."
+    },
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "FORMAL_FIRST_CONTACT",
+      "channel": "lid",
+      "value": 0,
+      "source_char_span": {
+        "text": "Good day, sir.",
+        "turn_id": "T01",
+        "char_start": 7,
+        "char_end": 21
+      },
+      "resolved_time": {
+        "start": 0.0,
+        "end": 3.692
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "MUTUAL_FORMAL_ACKNOWLEDGMENT",
+      "channel": "affect",
+      "value": "Polite-30",
+      "source_char_span": {
+        "text": "Good day to you.",
+        "turn_id": "T02",
+        "char_start": 28,
+        "char_end": 44
+      },
+      "resolved_time": {
+        "start": 3.692,
+        "end": 5.648625
+      },
+      "reason": "Agnes remains composed and receptive."
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "MUTUAL_FORMAL_ACKNOWLEDGMENT",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "Good day to you.",
+        "turn_id": "T02",
+        "char_start": 28,
+        "char_end": 44
+      },
+      "resolved_time": {
+        "start": 3.692,
+        "end": 5.648625
+      },
+      "reason": "She keeps observing him."
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "MUTUAL_FORMAL_ACKNOWLEDGMENT",
+      "channel": "head",
+      "value": "LOW",
+      "source_char_span": {
+        "text": "Good day to you.",
+        "turn_id": "T02",
+        "char_start": 28,
+        "char_end": 44
+      },
+      "resolved_time": {
+        "start": 3.692,
+        "end": 5.648625
+      },
+      "reason": "Her steady posture signals control."
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "MUTUAL_FORMAL_ACKNOWLEDGMENT",
+      "channel": "lid",
+      "value": 0,
+      "source_char_span": {
+        "text": "Good day to you.",
+        "turn_id": "T02",
+        "char_start": 28,
+        "char_end": 44
+      },
+      "resolved_time": {
+        "start": 3.692,
+        "end": 5.648625
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_INVITES_EXPLANATION",
+      "channel": "affect",
+      "value": "Watchful-40",
+      "source_char_span": {
+        "text": "What brings you to Hewlands?",
+        "turn_id": "T03",
+        "char_start": 52,
+        "char_end": 80
+      },
+      "resolved_time": {
+        "start": 5.648625,
+        "end": 6.868625
+      },
+      "reason": "Her watchfulness conveys contained curiosity."
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_INVITES_EXPLANATION",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "What brings you to Hewlands?",
+        "turn_id": "T03",
+        "char_start": 52,
+        "char_end": 80
+      },
+      "resolved_time": {
+        "start": 5.648625,
+        "end": 6.868625
+      },
+      "reason": "She studies him for an answer."
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_INVITES_EXPLANATION",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "What brings you to Hewlands?",
+        "turn_id": "T03",
+        "char_start": 52,
+        "char_end": 80
+      },
+      "resolved_time": {
+        "start": 5.648625,
+        "end": 6.868625
+      },
+      "reason": "The raised head gives the question quiet directness."
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_INVITES_EXPLANATION",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "What brings you to Hewlands?",
+        "turn_id": "T03",
+        "char_start": 52,
+        "char_end": 80
+      },
+      "resolved_time": {
+        "start": 5.648625,
+        "end": 6.868625
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_IDENTIFIES_HIMSELF",
+      "channel": "affect",
+      "value": "Watchful-35",
+      "source_char_span": {
+        "text": "I'm tutoring the boys here.",
+        "turn_id": "T04",
+        "char_start": 87,
+        "char_end": 114
+      },
+      "resolved_time": {
+        "start": 6.868625,
+        "end": 9.673126
+      },
+      "reason": "Agnes listens without revealing too much."
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_IDENTIFIES_HIMSELF",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "I'm tutoring the boys here.",
+        "turn_id": "T04",
+        "char_start": 87,
+        "char_end": 114
+      },
+      "resolved_time": {
+        "start": 6.868625,
+        "end": 9.673126
+      },
+      "reason": "She holds him in her attention."
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_IDENTIFIES_HIMSELF",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "I'm tutoring the boys here.",
+        "turn_id": "T04",
+        "char_start": 87,
+        "char_end": 114
+      },
+      "resolved_time": {
+        "start": 6.868625,
+        "end": 9.673126
+      },
+      "reason": "Her steady head keeps the exchange measured."
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_IDENTIFIES_HIMSELF",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "I'm tutoring the boys here.",
+        "turn_id": "T04",
+        "char_start": 87,
+        "char_end": 114
+      },
+      "resolved_time": {
+        "start": 6.868625,
+        "end": 9.673126
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_RECOGNIZES_WILLS_ROLE",
+      "channel": "affect",
+      "value": "Sassy-25",
+      "source_char_span": {
+        "text": "The Latin tutor. I've heard of you.",
+        "turn_id": "T05",
+        "char_start": 122,
+        "char_end": 157
+      },
+      "resolved_time": {
+        "start": 9.673126,
+        "end": 13.261625
+      },
+      "reason": "A faintly sassy edge makes her recognition probing rather than merely informative."
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_RECOGNIZES_WILLS_ROLE",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "The Latin tutor. I've heard of you.",
+        "turn_id": "T05",
+        "char_start": 122,
+        "char_end": 157
+      },
+      "resolved_time": {
+        "start": 9.673126,
+        "end": 13.261625
+      },
+      "reason": "She watches for his reaction."
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_RECOGNIZES_WILLS_ROLE",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "The Latin tutor. I've heard of you.",
+        "turn_id": "T05",
+        "char_start": 122,
+        "char_end": 157
+      },
+      "resolved_time": {
+        "start": 9.673126,
+        "end": 13.261625
+      },
+      "reason": "The slight lift adds confident familiarity."
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_RECOGNIZES_WILLS_ROLE",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "The Latin tutor. I've heard of you.",
+        "turn_id": "T05",
+        "char_start": 122,
+        "char_end": 157
+      },
+      "resolved_time": {
+        "start": 9.673126,
+        "end": 13.261625
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_TESTS_WILLS_MOTIVE",
+      "channel": "affect",
+      "value": "Watchful-50",
+      "source_char_span": {
+        "text": "What brought you into the garden?",
+        "turn_id": "T06",
+        "char_start": 165,
+        "char_end": 198
+      },
+      "resolved_time": {
+        "start": 13.261625,
+        "end": 24.810438
+      },
+      "reason": "Her watchfulness becomes more focused and investigative."
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_TESTS_WILLS_MOTIVE",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "What brought you into the garden?",
+        "turn_id": "T06",
+        "char_start": 165,
+        "char_end": 198
+      },
+      "resolved_time": {
+        "start": 13.261625,
+        "end": 24.810438
+      },
+      "reason": "She keeps Will as the clear object of attention."
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_TESTS_WILLS_MOTIVE",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "What brought you into the garden?",
+        "turn_id": "T06",
+        "char_start": 165,
+        "char_end": 198
+      },
+      "resolved_time": {
+        "start": 13.261625,
+        "end": 24.810438
+      },
+      "reason": "The raised head gives the question quiet insistence."
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_TESTS_WILLS_MOTIVE",
+      "channel": "lid",
+      "value": -2,
+      "source_char_span": {
+        "text": "What brought you into the garden?",
+        "turn_id": "T06",
+        "char_start": 165,
+        "char_end": 198
+      },
+      "resolved_time": {
+        "start": 13.261625,
+        "end": 24.810438
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P07",
+      "source_proposal_id": "S07",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_SEARCHES_FOR_A_SOCIAL_EXCUSE",
+      "channel": "affect",
+      "value": "Watchful-45",
+      "source_char_span": {
+        "text": "Uh...",
+        "turn_id": "T07",
+        "char_start": 205,
+        "char_end": 210
+      },
+      "resolved_time": {
+        "start": 24.810438,
+        "end": 27.416878
+      },
+      "reason": "Agnes remains alert but does not press aggressively."
+    },
+    {
+      "phrase_id": "P07",
+      "source_proposal_id": "S07",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_SEARCHES_FOR_A_SOCIAL_EXCUSE",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "Uh...",
+        "turn_id": "T07",
+        "char_start": 205,
+        "char_end": 210
+      },
+      "resolved_time": {
+        "start": 24.810438,
+        "end": 27.416878
+      },
+      "reason": "She continues to hold him in a patient, assessing look."
+    },
+    {
+      "phrase_id": "P07",
+      "source_proposal_id": "S07",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_SEARCHES_FOR_A_SOCIAL_EXCUSE",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "Uh...",
+        "turn_id": "T07",
+        "char_start": 205,
+        "char_end": 210
+      },
+      "resolved_time": {
+        "start": 24.810438,
+        "end": 27.416878
+      },
+      "reason": "Her steady head leaves space for him to answer."
+    },
+    {
+      "phrase_id": "P07",
+      "source_proposal_id": "S07",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_SEARCHES_FOR_A_SOCIAL_EXCUSE",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "Uh...",
+        "turn_id": "T07",
+        "char_start": 205,
+        "char_end": 210
+      },
+      "resolved_time": {
+        "start": 24.810438,
+        "end": 27.416878
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P08",
+      "source_proposal_id": "S08",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_SOFTENS_THE_INTERROGATION",
+      "channel": "affect",
+      "value": "Sassy-35",
+      "source_char_span": {
+        "text": "It's just a question, master tutor.",
+        "turn_id": "T08",
+        "char_start": 218,
+        "char_end": 253
+      },
+      "resolved_time": {
+        "start": 27.416878,
+        "end": 29.701687
+      },
+      "reason": "The sassy note makes her reassurance gently teasing rather than tender."
+    },
+    {
+      "phrase_id": "P08",
+      "source_proposal_id": "S08",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_SOFTENS_THE_INTERROGATION",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "It's just a question, master tutor.",
+        "turn_id": "T08",
+        "char_start": 218,
+        "char_end": 253
+      },
+      "resolved_time": {
+        "start": 27.416878,
+        "end": 29.701687
+      },
+      "reason": "She keeps eye contact to show that she is not withdrawing."
+    },
+    {
+      "phrase_id": "P08",
+      "source_proposal_id": "S08",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_SOFTENS_THE_INTERROGATION",
+      "channel": "head",
+      "value": "LOW",
+      "source_char_span": {
+        "text": "It's just a question, master tutor.",
+        "turn_id": "T08",
+        "char_start": 218,
+        "char_end": 253
+      },
+      "resolved_time": {
+        "start": 27.416878,
+        "end": 29.701687
+      },
+      "reason": "The lower head softens the challenge."
+    },
+    {
+      "phrase_id": "P08",
+      "source_proposal_id": "S08",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_SOFTENS_THE_INTERROGATION",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "It's just a question, master tutor.",
+        "turn_id": "T08",
+        "char_start": 218,
+        "char_end": 253
+      },
+      "resolved_time": {
+        "start": 27.416878,
+        "end": 29.701687
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P09",
+      "source_proposal_id": "S09",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_OFFERS_A_HESITANT_EXPLANATION",
+      "channel": "affect",
+      "value": "Watchful-40",
+      "source_char_span": {
+        "text": "Yes, I, uh... I suppose the air was fresh out here, ",
+        "turn_id": "T09",
+        "char_start": 260,
+        "char_end": 312
+      },
+      "resolved_time": {
+        "start": 29.701687,
+        "end": 34.35775
+      },
+      "reason": "Agnes listens with contained curiosity."
+    },
+    {
+      "phrase_id": "P09",
+      "source_proposal_id": "S09",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_OFFERS_A_HESITANT_EXPLANATION",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "Yes, I, uh... I suppose the air was fresh out here, ",
+        "turn_id": "T09",
+        "char_start": 260,
+        "char_end": 312
+      },
+      "resolved_time": {
+        "start": 29.701687,
+        "end": 34.35775
+      },
+      "reason": "She watches the explanation closely."
+    },
+    {
+      "phrase_id": "P09",
+      "source_proposal_id": "S09",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_OFFERS_A_HESITANT_EXPLANATION",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "Yes, I, uh... I suppose the air was fresh out here, ",
+        "turn_id": "T09",
+        "char_start": 260,
+        "char_end": 312
+      },
+      "resolved_time": {
+        "start": 29.701687,
+        "end": 34.35775
+      },
+      "reason": "Her raised head signals interest in the developing answer."
+    },
+    {
+      "phrase_id": "P09",
+      "source_proposal_id": "S09",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_OFFERS_A_HESITANT_EXPLANATION",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "Yes, I, uh... I suppose the air was fresh out here, ",
+        "turn_id": "T09",
+        "char_start": 260,
+        "char_end": 312
+      },
+      "resolved_time": {
+        "start": 29.701687,
+        "end": 34.35775
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P10",
+      "source_proposal_id": "S10",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+      "channel": "affect",
+      "value": "Watchful-50",
+      "source_char_span": {
+        "text": "and... uh, I saw you with your bird.",
+        "turn_id": "T09",
+        "char_start": 312,
+        "char_end": 348
+      },
+      "resolved_time": {
+        "start": 34.35775,
+        "end": 40.322876
+      },
+      "reason": "Agnes becomes more openly attentive because he has noticed something meaningful to her."
+    },
+    {
+      "phrase_id": "P10",
+      "source_proposal_id": "S10",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+      "channel": "heart",
+      "value": "Happy-15",
+      "source_char_span": {
+        "text": "and... uh, I saw you with your bird.",
+        "turn_id": "T09",
+        "char_start": 312,
+        "char_end": 348
+      },
+      "resolved_time": {
+        "start": 34.35775,
+        "end": 40.322876
+      },
+      "reason": "A small happiness acknowledges the pleasant turn without dissolving her caution."
+    },
+    {
+      "phrase_id": "P10",
+      "source_proposal_id": "S10",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "and... uh, I saw you with your bird.",
+        "turn_id": "T09",
+        "char_start": 312,
+        "char_end": 348
+      },
+      "resolved_time": {
+        "start": 34.35775,
+        "end": 40.322876
+      },
+      "reason": "She keeps him in view while also registering the hawk."
+    },
+    {
+      "phrase_id": "P10",
+      "source_proposal_id": "S10",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "and... uh, I saw you with your bird.",
+        "turn_id": "T09",
+        "char_start": 312,
+        "char_end": 348
+      },
+      "resolved_time": {
+        "start": 34.35775,
+        "end": 40.322876
+      },
+      "reason": "The raised head shows increased engagement."
+    },
+    {
+      "phrase_id": "P10",
+      "source_proposal_id": "S10",
+      "speaker": "B",
+      "actor": "A",
+      "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "and... uh, I saw you with your bird.",
+        "turn_id": "T09",
+        "char_start": 312,
+        "char_end": 348
+      },
+      "resolved_time": {
+        "start": 34.35775,
+        "end": 40.322876
+      },
+      "reason": null
+    },
+    {
+      "phrase_id": "P11",
+      "source_proposal_id": "S11",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+      "channel": "affect",
+      "value": "Sassy-30",
+      "source_char_span": {
+        "text": "It's a hawk.",
+        "turn_id": "T10",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "resolved_time": {
+        "start": 40.322876,
+        "end": 41.902874
+      },
+      "reason": "The sassy restraint makes the correction lightly disarming rather than hostile."
+    },
+    {
+      "phrase_id": "P11",
+      "source_proposal_id": "S11",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+      "channel": "heart",
+      "value": "Happy-20",
+      "source_char_span": {
+        "text": "It's a hawk.",
+        "turn_id": "T10",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "resolved_time": {
+        "start": 40.322876,
+        "end": 41.902874
+      },
+      "reason": "Her small happiness suggests she is amused and interested."
+    },
+    {
+      "phrase_id": "P11",
+      "source_proposal_id": "S11",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+      "channel": "gaze",
+      "value": "GAZE-B",
+      "source_char_span": {
+        "text": "It's a hawk.",
+        "turn_id": "T10",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "resolved_time": {
+        "start": 40.322876,
+        "end": 41.902874
+      },
+      "reason": "She looks directly at Will to see how he receives the correction."
+    },
+    {
+      "phrase_id": "P11",
+      "source_proposal_id": "S11",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+      "channel": "head",
+      "value": "MEDIUM",
+      "source_char_span": {
+        "text": "It's a hawk.",
+        "turn_id": "T10",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "resolved_time": {
+        "start": 40.322876,
+        "end": 41.902874
+      },
+      "reason": "The raised head gives the brief statement confidence."
+    },
+    {
+      "phrase_id": "P11",
+      "source_proposal_id": "S11",
+      "speaker": "A",
+      "actor": "A",
+      "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+      "channel": "lid",
+      "value": -1,
+      "source_char_span": {
+        "text": "It's a hawk.",
+        "turn_id": "T10",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "resolved_time": {
+        "start": 40.322876,
+        "end": 41.902874
+      },
+      "reason": null
+    }
+  ]
+}

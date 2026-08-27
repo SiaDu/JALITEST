@@ -1,0 +1,1011 @@
+{
+  "schema_version": "dual_performance_plan_v0",
+  "sequence_id": "run_20260827_022956_913768",
+  "characters": {
+    "A": "AGNES",
+    "B": "WILL"
+  },
+  "acting_interpretation": "The exchange begins with formal politeness and quickly develops into mutual, restrained interest. Agnes is composed and observant, testing Will with direct questions while protecting her privacy. Will is eager to remain near her but becomes visibly awkward when asked to account for himself; he gradually steadies by redirecting his attention to the hawk. Agnes notices his uncertainty without mocking it, and her final correction is precise, lightly disarming, and still guarded.",
+  "phrases": [
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "A",
+      "span": {
+        "text": "Good day, sir.",
+        "turn_id": "T01",
+        "char_start": 7,
+        "char_end": 21
+      },
+      "intent": "FORMAL_FIRST_CONTACT",
+      "states": {
+        "A": {
+          "affect": "Polite-35",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "LOW",
+          "lid": 0,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Polite-30",
+          "heart": "NONE",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": 0,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Both establish a courteous first-contact register while cautiously assessing one another.",
+        "A": {
+          "affect": "Agnes uses restrained politeness to remain self-possessed with a stranger.",
+          "gaze": "She acknowledges Will directly without overcommitting.",
+          "head": "A slight lowered head preserves social formality."
+        },
+        "B": {
+          "affect": "Will mirrors her courtesy while concealing his interest.",
+          "gaze": "He meets her eyes because he wants the interaction to continue.",
+          "head": "His lowered head reflects uncertainty about the proper social approach."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "B",
+      "span": {
+        "text": "Good day to you.",
+        "turn_id": "T02",
+        "char_start": 28,
+        "char_end": 44
+      },
+      "intent": "MUTUAL_FORMAL_ACKNOWLEDGMENT",
+      "states": {
+        "A": {
+          "affect": "Polite-30",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "LOW",
+          "lid": 0,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Nervous-25",
+          "heart": "NONE",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "The greeting is returned, but Will's attention carries more nervous energy.",
+        "A": {
+          "affect": "Agnes remains composed and receptive.",
+          "gaze": "She keeps observing him.",
+          "head": "Her steady posture signals control."
+        },
+        "B": {
+          "affect": "Will is polite but already unsettled by her presence.",
+          "gaze": "He attempts direct eye contact despite his uncertainty.",
+          "head": "The lowered head makes his reply modest and hesitant."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "A",
+      "span": {
+        "text": "What brings you to Hewlands?",
+        "turn_id": "T03",
+        "char_start": 52,
+        "char_end": 80
+      },
+      "intent": "AGNES_INVITES_EXPLANATION",
+      "states": {
+        "A": {
+          "affect": "Watchful-40",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Thinking-25",
+          "heart": "Surprised-15",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Agnes moves from greeting to purposeful inquiry, making Will account for his presence.",
+        "A": {
+          "affect": "Her watchfulness conveys contained curiosity.",
+          "gaze": "She studies him for an answer.",
+          "head": "The raised head gives the question quiet directness."
+        },
+        "B": {
+          "affect": "Will begins thinking about how to present himself.",
+          "gaze": "He remains attentive to her.",
+          "head": "His low head shows caution under scrutiny."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "B",
+      "span": {
+        "text": "I'm tutoring the boys here.",
+        "turn_id": "T04",
+        "char_start": 87,
+        "char_end": 114
+      },
+      "intent": "WILL_IDENTIFIES_HIMSELF",
+      "states": {
+        "A": {
+          "affect": "Watchful-35",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Polite-35",
+          "heart": "NONE",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": 0,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Will gives the safest factual answer and names his employment.",
+        "A": {
+          "affect": "Agnes listens without revealing too much.",
+          "gaze": "She holds him in her attention.",
+          "head": "Her steady head keeps the exchange measured."
+        },
+        "B": {
+          "affect": "Will adopts a more formally confident manner.",
+          "gaze": "He looks toward Agnes to gauge her response.",
+          "head": "His modest posture remains socially careful."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "A",
+      "span": {
+        "text": "The Latin tutor. I've heard of you.",
+        "turn_id": "T05",
+        "char_start": 122,
+        "char_end": 157
+      },
+      "intent": "AGNES_RECOGNIZES_WILLS_ROLE",
+      "states": {
+        "A": {
+          "affect": "Sassy-25",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Nervous-35",
+          "heart": "Surprised-20",
+          "gaze": "AVERT-A",
+          "head": "LOW",
+          "lid": -2,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Agnes shows that she already knows his position, increasing his sense of being observed.",
+        "A": {
+          "affect": "A faintly sassy edge makes her recognition probing rather than merely informative.",
+          "gaze": "She watches for his reaction.",
+          "head": "The slight lift adds confident familiarity."
+        },
+        "B": {
+          "affect": "Will becomes nervous when he realizes she has noticed him before.",
+          "gaze": "He briefly avoids her eyes to manage embarrassment.",
+          "head": "His lowered head supports the awkwardness.",
+          "blink": "The restrained blink cluster marks a small flare of self-consciousness."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "A",
+      "span": {
+        "text": "What brought you into the garden?",
+        "turn_id": "T06",
+        "char_start": 165,
+        "char_end": 198
+      },
+      "intent": "AGNES_TESTS_WILLS_MOTIVE",
+      "states": {
+        "A": {
+          "affect": "Watchful-50",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -2,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Confused-35",
+          "heart": "Surprised-20",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -2,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Agnes asks the more personal question beneath the practical one.",
+        "A": {
+          "affect": "Her watchfulness becomes more focused and investigative.",
+          "gaze": "She keeps Will as the clear object of attention.",
+          "head": "The raised head gives the question quiet insistence."
+        },
+        "B": {
+          "affect": "Will is confused by how directly she has challenged his motive.",
+          "heart": "Surprise registers beneath his uncertainty.",
+          "gaze": "He looks back, searching for a convincing answer.",
+          "head": "His low head shows hesitation rather than defiance."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P07",
+      "source_proposal_id": "S07",
+      "speaker": "B",
+      "span": {
+        "text": "Uh...",
+        "turn_id": "T07",
+        "char_start": 205,
+        "char_end": 210
+      },
+      "intent": "WILL_SEARCHES_FOR_A_SOCIAL_EXCUSE",
+      "states": {
+        "A": {
+          "affect": "Watchful-45",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Nervous-60",
+          "heart": "Afraid-20",
+          "gaze": "AVERT-A",
+          "head": "LOW",
+          "lid": -3,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Will's hesitation reveals that he approached partly from attraction, though he cannot say so.",
+        "A": {
+          "affect": "Agnes remains alert but does not press aggressively.",
+          "gaze": "She continues to hold him in a patient, assessing look.",
+          "head": "Her steady head leaves space for him to answer."
+        },
+        "B": {
+          "affect": "Will becomes visibly nervous while searching for an acceptable explanation.",
+          "heart": "A mild fear of social embarrassment colors the pause.",
+          "gaze": "He averts his eyes from Agnes while he gathers himself.",
+          "head": "His lowered head reinforces the stalled response.",
+          "blink": "The cluster externalizes his sudden discomfort."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P08",
+      "source_proposal_id": "S08",
+      "speaker": "A",
+      "span": {
+        "text": "It's just a question, master tutor.",
+        "turn_id": "T08",
+        "char_start": 218,
+        "char_end": 253
+      },
+      "intent": "AGNES_SOFTENS_THE_INTERROGATION",
+      "states": {
+        "A": {
+          "affect": "Sassy-35",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "LOW",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Nervous-50",
+          "heart": "NONE",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -2,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Agnes lightly reassures him that the question is ordinary, though she retains control of the exchange.",
+        "A": {
+          "affect": "The sassy note makes her reassurance gently teasing rather than tender.",
+          "gaze": "She keeps eye contact to show that she is not withdrawing.",
+          "head": "The lower head softens the challenge."
+        },
+        "B": {
+          "affect": "Will remains nervous but is given permission to continue.",
+          "gaze": "He returns his attention to her.",
+          "head": "His low head shows relief mixed with continued uncertainty."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P09",
+      "source_proposal_id": "S09",
+      "speaker": "B",
+      "span": {
+        "text": "Yes, I, uh... I suppose the air was fresh out here, ",
+        "turn_id": "T09",
+        "char_start": 260,
+        "char_end": 312
+      },
+      "intent": "WILL_OFFERS_A_HESITANT_EXPLANATION",
+      "states": {
+        "A": {
+          "affect": "Watchful-40",
+          "heart": "NONE",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Thinking-45",
+          "heart": "NONE",
+          "gaze": "AVERT-A",
+          "head": "LOW",
+          "lid": -2,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Will begins explaining himself, offering the fresh air as a respectable reason while still struggling to speak smoothly.",
+        "A": {
+          "affect": "Agnes listens with contained curiosity.",
+          "gaze": "She watches the explanation closely.",
+          "head": "Her raised head signals interest in the developing answer."
+        },
+        "B": {
+          "affect": "Thinking captures Will's effort to assemble words and conceal his real impulse.",
+          "gaze": "He avoids sustained eye contact while confessing that he noticed her.",
+          "head": "The low head keeps the admission tentative.",
+          "blink": "The blink cluster marks renewed awkwardness as his explanation becomes more personal."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P10",
+      "source_proposal_id": "S10",
+      "speaker": "B",
+      "span": {
+        "text": "and... uh, I saw you with your bird.",
+        "turn_id": "T09",
+        "char_start": 312,
+        "char_end": 348
+      },
+      "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+      "states": {
+        "A": {
+          "affect": "Watchful-50",
+          "heart": "Happy-15",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Friendly-30",
+          "heart": "Happy-15",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "The mention of the bird gives Will a safer subject and creates the first small point of shared interest.",
+        "A": {
+          "affect": "Agnes becomes more openly attentive because he has noticed something meaningful to her.",
+          "heart": "A small happiness acknowledges the pleasant turn without dissolving her caution.",
+          "gaze": "She keeps him in view while also registering the hawk.",
+          "head": "The raised head shows increased engagement."
+        },
+        "B": {
+          "affect": "Will relaxes into a friendlier tone once he can speak about the bird.",
+          "heart": "A small happiness reflects relief at finding common ground.",
+          "gaze": "He looks to Agnes for confirmation that the subject is welcome.",
+          "head": "His modest head position preserves the tentative quality of the connection."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    },
+    {
+      "phrase_id": "P11",
+      "source_proposal_id": "S11",
+      "speaker": "A",
+      "span": {
+        "text": "It's a hawk.",
+        "turn_id": "T10",
+        "char_start": 356,
+        "char_end": 368
+      },
+      "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+      "states": {
+        "A": {
+          "affect": "Sassy-30",
+          "heart": "Happy-20",
+          "gaze": "GAZE-B",
+          "head": "MEDIUM",
+          "lid": -1,
+          "blink_suppression": "NONE"
+        },
+        "B": {
+          "affect": "Confused-25",
+          "heart": "Surprised-15",
+          "gaze": "GAZE-A",
+          "head": "LOW",
+          "lid": -2,
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Agnes corrects the imprecise description, but the playful precision keeps the conversation open.",
+        "A": {
+          "affect": "The sassy restraint makes the correction lightly disarming rather than hostile.",
+          "heart": "Her small happiness suggests she is amused and interested.",
+          "gaze": "She looks directly at Will to see how he receives the correction.",
+          "head": "The raised head gives the brief statement confidence."
+        },
+        "B": {
+          "affect": "Will is mildly confused by the correction but attentive to her.",
+          "heart": "Surprise marks the quick adjustment he must make.",
+          "gaze": "He watches her, now more interested than embarrassed.",
+          "head": "His lowered head keeps him deferential while he absorbs the distinction."
+        }
+      },
+      "locks": {
+        "intent": false,
+        "A": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        },
+        "B": {
+          "affect": false,
+          "heart": false,
+          "gaze": false,
+          "head": false,
+          "lid": false,
+          "blink": false,
+          "blink_suppression": false
+        }
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": [
+      "S03: missing rationale for B.heart",
+      "S05: missing rationale for B.heart"
+    ]
+  },
+  "proposal_provenance": {
+    "format": "dual_anchor_semantic_v1",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_022956_913768\\performance_proposal.txt",
+    "aliases": {
+      "A": "AGNES",
+      "B": "WILL"
+    },
+    "phrase_ids": [
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08",
+      "S09",
+      "S10",
+      "S11"
+    ]
+  },
+  "authoring": {
+    "semantic_score_version": "dual_semantic_score_v1",
+    "original_semantic_proposal": [
+      {
+        "intent": "FORMAL_FIRST_CONTACT",
+        "states": {
+          "A": {
+            "affect": "Polite-35",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "LOW",
+            "lid": 0,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Polite-30",
+            "heart": "NONE",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": 0,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "MUTUAL_FORMAL_ACKNOWLEDGMENT",
+        "states": {
+          "A": {
+            "affect": "Polite-30",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "LOW",
+            "lid": 0,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Nervous-25",
+            "heart": "NONE",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "AGNES_INVITES_EXPLANATION",
+        "states": {
+          "A": {
+            "affect": "Watchful-40",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Thinking-25",
+            "heart": "Surprised-15",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "WILL_IDENTIFIES_HIMSELF",
+        "states": {
+          "A": {
+            "affect": "Watchful-35",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Polite-35",
+            "heart": "NONE",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": 0,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "AGNES_RECOGNIZES_WILLS_ROLE",
+        "states": {
+          "A": {
+            "affect": "Sassy-25",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Nervous-35",
+            "heart": "Surprised-20",
+            "gaze": "AVERT-A",
+            "head": "LOW",
+            "lid": -2,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "AGNES_TESTS_WILLS_MOTIVE",
+        "states": {
+          "A": {
+            "affect": "Watchful-50",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -2,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Confused-35",
+            "heart": "Surprised-20",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": -2,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "WILL_SEARCHES_FOR_A_SOCIAL_EXCUSE",
+        "states": {
+          "A": {
+            "affect": "Watchful-45",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Nervous-60",
+            "heart": "Afraid-20",
+            "gaze": "AVERT-A",
+            "head": "LOW",
+            "lid": -3,
+            "blink": "BLINK_CLUSTER",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "AGNES_SOFTENS_THE_INTERROGATION",
+        "states": {
+          "A": {
+            "affect": "Sassy-35",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "LOW",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Nervous-50",
+            "heart": "NONE",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": -2,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "WILL_OFFERS_A_HESITANT_EXPLANATION",
+        "states": {
+          "A": {
+            "affect": "Watchful-40",
+            "heart": "NONE",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Thinking-45",
+            "heart": "NONE",
+            "gaze": "AVERT-A",
+            "head": "LOW",
+            "lid": -2,
+            "blink": "BLINK_CLUSTER",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "WILL_FINDS_COMMON_GROUND_IN_THE_HAWK",
+        "states": {
+          "A": {
+            "affect": "Watchful-50",
+            "heart": "Happy-15",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Friendly-30",
+            "heart": "Happy-15",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      },
+      {
+        "intent": "AGNES_PRECISELY_CORRECTS_WILL_WHILE_ALLOWING_CONTACT_TO_CONTINUE",
+        "states": {
+          "A": {
+            "affect": "Sassy-30",
+            "heart": "Happy-20",
+            "gaze": "GAZE-B",
+            "head": "MEDIUM",
+            "lid": -1,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          },
+          "B": {
+            "affect": "Confused-25",
+            "heart": "Surprised-15",
+            "gaze": "GAZE-A",
+            "head": "LOW",
+            "lid": -2,
+            "blink": "NONE",
+            "blink_suppression": "NONE"
+          }
+        }
+      }
+    ],
+    "manually_edited_phrases": []
+  }
+}
