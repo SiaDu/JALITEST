@@ -23,29 +23,29 @@
   "w0004": {
     "speaker": "WILL",
     "text": "Good",
-    "start": 3.692,
-    "end": 3.792,
+    "start": 3.570437,
+    "end": 3.700437,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0005": {
     "speaker": "WILL",
     "text": "day",
-    "start": 3.792,
-    "end": 3.862,
+    "start": 3.700437,
+    "end": 3.860437,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0006": {
     "speaker": "WILL",
     "text": "to",
-    "start": 3.862,
-    "end": 3.992,
+    "start": 3.860437,
+    "end": 3.990438,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0007": {
     "speaker": "WILL",
     "text": "you.",
-    "start": 3.992,
-    "end": 4.142,
+    "start": 3.990438,
+    "end": 4.140437,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0008": {
@@ -86,36 +86,36 @@
   "w0013": {
     "speaker": "WILL",
     "text": "I'm",
-    "start": 4.142,
-    "end": 4.312,
+    "start": 4.140437,
+    "end": 4.310437,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0014": {
     "speaker": "WILL",
     "text": "tutoring",
-    "start": 8.201,
-    "end": 8.531,
+    "start": 8.124001,
+    "end": 8.534,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0015": {
     "speaker": "WILL",
     "text": "the",
-    "start": 8.531,
-    "end": 8.601,
+    "start": 8.534,
+    "end": 8.594,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0016": {
     "speaker": "WILL",
     "text": "boys",
-    "start": 8.601,
-    "end": 8.921,
+    "start": 8.594,
+    "end": 8.924,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0017": {
     "speaker": "WILL",
     "text": "here.",
-    "start": 8.921,
-    "end": 9.141,
+    "start": 8.924,
+    "end": 9.134001,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0018": {
@@ -178,20 +178,20 @@
     "speaker": "AGNES",
     "text": "brought",
     "start": 20.321312,
-    "end": 20.611311,
+    "end": 20.601311,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_AGNES.Textgrid"
   },
   "w0027": {
     "speaker": "AGNES",
     "text": "you",
-    "start": 20.611311,
-    "end": 20.701311,
+    "start": 20.601311,
+    "end": 20.701313,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_AGNES.Textgrid"
   },
   "w0028": {
     "speaker": "AGNES",
     "text": "into",
-    "start": 20.701311,
+    "start": 20.701313,
     "end": 20.891312,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_AGNES.Textgrid"
   },
@@ -212,8 +212,8 @@
   "w0031": {
     "speaker": "WILL",
     "text": "Uh...",
-    "start": 24.810438,
-    "end": 26.000437,
+    "start": 24.461063,
+    "end": 25.031063,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0032": {
@@ -261,134 +261,134 @@
   "w0038": {
     "speaker": "WILL",
     "text": "Yes,",
-    "start": 29.701687,
-    "end": 29.991688,
+    "start": 25.471064,
+    "end": 26.011063,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0039": {
     "speaker": "WILL",
     "text": "I,",
-    "start": 29.991688,
-    "end": 30.021688,
+    "start": 29.709751,
+    "end": 29.809752,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0040": {
     "speaker": "WILL",
     "text": "uh...",
-    "start": 30.021688,
-    "end": 30.121689,
+    "start": 29.809752,
+    "end": 30.119751,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0041": {
     "speaker": "WILL",
     "text": "I",
-    "start": 30.121689,
-    "end": 30.451687,
+    "start": 30.119751,
+    "end": 30.449751,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0042": {
     "speaker": "WILL",
     "text": "suppose",
-    "start": 33.007748,
-    "end": 33.277748,
+    "start": 32.992622,
+    "end": 33.282623,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0043": {
     "speaker": "WILL",
     "text": "the",
-    "start": 33.277748,
-    "end": 33.37775,
+    "start": 33.282623,
+    "end": 33.372623,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0044": {
     "speaker": "WILL",
     "text": "air",
-    "start": 33.37775,
-    "end": 33.507748,
+    "start": 33.372623,
+    "end": 33.512623,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0045": {
     "speaker": "WILL",
     "text": "was",
-    "start": 33.507748,
-    "end": 33.657749,
+    "start": 33.512623,
+    "end": 33.652622,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0046": {
     "speaker": "WILL",
     "text": "fresh",
-    "start": 33.657749,
-    "end": 33.987751,
+    "start": 33.652622,
+    "end": 33.982624,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0047": {
     "speaker": "WILL",
     "text": "out",
-    "start": 33.987751,
-    "end": 34.187748,
+    "start": 33.982624,
+    "end": 34.182621,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0048": {
     "speaker": "WILL",
     "text": "here,",
-    "start": 34.187748,
-    "end": 34.35775,
+    "start": 34.182621,
+    "end": 34.362621,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0049": {
     "speaker": "WILL",
     "text": "and...",
-    "start": 34.35775,
-    "end": 34.617748,
+    "start": 34.362621,
+    "end": 34.622623,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0050": {
     "speaker": "WILL",
     "text": "uh,",
-    "start": 36.127998,
-    "end": 36.547997,
+    "start": 36.132683,
+    "end": 36.542686,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0051": {
     "speaker": "WILL",
     "text": "I",
-    "start": 36.944748,
-    "end": 37.034748,
+    "start": 36.942684,
+    "end": 37.032684,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0052": {
     "speaker": "WILL",
     "text": "saw",
-    "start": 37.034748,
-    "end": 37.254745,
+    "start": 37.032684,
+    "end": 37.252686,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0053": {
     "speaker": "WILL",
     "text": "you",
-    "start": 37.254745,
-    "end": 37.364746,
+    "start": 37.252686,
+    "end": 37.362686,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0054": {
     "speaker": "WILL",
     "text": "with",
-    "start": 37.364746,
-    "end": 37.494747,
+    "start": 37.362686,
+    "end": 37.492683,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0055": {
     "speaker": "WILL",
     "text": "your",
-    "start": 37.494747,
-    "end": 37.624748,
+    "start": 37.492683,
+    "end": 37.622684,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0056": {
     "speaker": "WILL",
     "text": "bird.",
-    "start": 37.624748,
-    "end": 38.104748,
+    "start": 37.622684,
+    "end": 38.102684,
     "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.Textgrid"
   },
   "w0057": {

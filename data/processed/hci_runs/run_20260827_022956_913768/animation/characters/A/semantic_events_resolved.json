@@ -16,7 +16,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": "Agnes uses restrained politeness to remain self-possessed with a stranger."
     },
@@ -36,7 +36,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": "She acknowledges Will directly without overcommitting."
     },
@@ -56,7 +56,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": "A slight lowered head preserves social formality."
     },
@@ -76,7 +76,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": null
     },
@@ -95,7 +95,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": "Agnes remains composed and receptive."
@@ -115,7 +115,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": "She keeps observing him."
@@ -135,7 +135,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": "Her steady posture signals control."
@@ -155,7 +155,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": null
@@ -416,7 +416,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "Her watchfulness becomes more focused and investigative."
     },
@@ -436,7 +436,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "She keeps Will as the clear object of attention."
     },
@@ -456,7 +456,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "The raised head gives the question quiet insistence."
     },
@@ -476,7 +476,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": null
     },
@@ -495,7 +495,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "Agnes remains alert but does not press aggressively."
@@ -515,7 +515,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "She continues to hold him in a patient, assessing look."
@@ -535,7 +535,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "Her steady head leaves space for him to answer."
@@ -555,7 +555,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": null
@@ -576,7 +576,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": "The sassy note makes her reassurance gently teasing rather than tender."
     },
@@ -596,7 +596,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": "She keeps eye contact to show that she is not withdrawing."
     },
@@ -616,7 +616,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": "The lower head softens the challenge."
     },
@@ -636,7 +636,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": null
     },
@@ -655,8 +655,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": "Agnes listens with contained curiosity."
     },
@@ -675,8 +675,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": "She watches the explanation closely."
     },
@@ -695,8 +695,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": "Her raised head signals interest in the developing answer."
     },
@@ -715,8 +715,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": null
     },
@@ -735,7 +735,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "Agnes becomes more openly attentive because he has noticed something meaningful to her."
@@ -755,7 +755,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "A small happiness acknowledges the pleasant turn without dissolving her caution."
@@ -775,7 +775,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "She keeps him in view while also registering the hawk."
@@ -795,7 +795,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "The raised head shows increased engagement."
@@ -815,7 +815,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": null

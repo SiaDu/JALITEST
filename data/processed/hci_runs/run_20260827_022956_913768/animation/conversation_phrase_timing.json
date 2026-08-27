@@ -8,15 +8,15 @@
       "raw_source_end": 2.25,
       "canonical_start": 0.0,
       "start_adjusted": false,
-      "canonical_end": 3.692
+      "canonical_end": 3.570437
     },
     {
       "phrase_id": "P02",
       "plan_index": 1,
       "speaker": "B",
-      "raw_start": 3.692,
-      "raw_source_end": 4.142,
-      "canonical_start": 3.692,
+      "raw_start": 3.570437,
+      "raw_source_end": 4.140437,
+      "canonical_start": 3.570437,
       "start_adjusted": false,
       "canonical_end": 5.648625
     },
@@ -34,8 +34,8 @@
       "phrase_id": "P04",
       "plan_index": 3,
       "speaker": "B",
-      "raw_start": 4.142,
-      "raw_source_end": 9.141,
+      "raw_start": 4.140437,
+      "raw_source_end": 9.134001,
       "canonical_start": 6.868625,
       "start_adjusted": true,
       "adjustment_reason": "raw_start preceded previous phrase source end",
@@ -59,15 +59,15 @@
       "raw_source_end": 21.501312,
       "canonical_start": 13.261625,
       "start_adjusted": false,
-      "canonical_end": 24.810438
+      "canonical_end": 24.461063
     },
     {
       "phrase_id": "P07",
       "plan_index": 6,
       "speaker": "B",
-      "raw_start": 24.810438,
-      "raw_source_end": 26.000437,
-      "canonical_start": 24.810438,
+      "raw_start": 24.461063,
+      "raw_source_end": 25.031063,
+      "canonical_start": 24.461063,
       "start_adjusted": false,
       "canonical_end": 27.416878
     },
@@ -79,25 +79,26 @@
       "raw_source_end": 29.336876,
       "canonical_start": 27.416878,
       "start_adjusted": false,
-      "canonical_end": 29.701687
+      "canonical_end": 29.336876
     },
     {
       "phrase_id": "P09",
       "plan_index": 8,
       "speaker": "B",
-      "raw_start": 29.701687,
-      "raw_source_end": 34.35775,
-      "canonical_start": 29.701687,
-      "start_adjusted": false,
-      "canonical_end": 34.35775
+      "raw_start": 25.471064,
+      "raw_source_end": 34.362621,
+      "canonical_start": 29.336876,
+      "start_adjusted": true,
+      "adjustment_reason": "raw_start preceded previous phrase source end",
+      "canonical_end": 34.362621
     },
     {
       "phrase_id": "P10",
       "plan_index": 9,
       "speaker": "B",
-      "raw_start": 34.35775,
-      "raw_source_end": 38.104748,
-      "canonical_start": 34.35775,
+      "raw_start": 34.362621,
+      "raw_source_end": 38.102684,
+      "canonical_start": 34.362621,
       "start_adjusted": false,
       "canonical_end": 40.322876
     },

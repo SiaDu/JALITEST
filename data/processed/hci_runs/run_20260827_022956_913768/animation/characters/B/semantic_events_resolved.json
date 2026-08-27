@@ -16,7 +16,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": "Will mirrors her courtesy while concealing his interest."
     },
@@ -36,7 +36,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": "He meets her eyes because he wants the interaction to continue."
     },
@@ -56,7 +56,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": "His lowered head reflects uncertainty about the proper social approach."
     },
@@ -76,7 +76,7 @@
       },
       "resolved_time": {
         "start": 0.0,
-        "end": 3.692
+        "end": 3.570437
       },
       "reason": null
     },
@@ -95,7 +95,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": "Will is polite but already unsettled by her presence."
@@ -115,7 +115,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": "He attempts direct eye contact despite his uncertainty."
@@ -135,7 +135,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": "The lowered head makes his reply modest and hesitant."
@@ -155,7 +155,7 @@
         "char_end": 44
       },
       "resolved_time": {
-        "start": 3.692,
+        "start": 3.570437,
         "end": 5.648625
       },
       "reason": null
@@ -456,7 +456,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "Will is confused by how directly she has challenged his motive."
     },
@@ -476,7 +476,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "Surprise registers beneath his uncertainty."
     },
@@ -496,7 +496,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "He looks back, searching for a convincing answer."
     },
@@ -516,7 +516,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": "His low head shows hesitation rather than defiance."
     },
@@ -536,7 +536,7 @@
       },
       "resolved_time": {
         "start": 13.261625,
-        "end": 24.810438
+        "end": 24.461063
       },
       "reason": null
     },
@@ -555,7 +555,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "Will becomes visibly nervous while searching for an acceptable explanation."
@@ -575,7 +575,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "A mild fear of social embarrassment colors the pause."
@@ -595,7 +595,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "He averts his eyes from Agnes while he gathers himself."
@@ -615,7 +615,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": "His lowered head reinforces the stalled response."
@@ -635,7 +635,7 @@
         "char_end": 210
       },
       "resolved_time": {
-        "start": 24.810438,
+        "start": 24.461063,
         "end": 27.416878
       },
       "reason": null
@@ -656,7 +656,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": "Will remains nervous but is given permission to continue."
     },
@@ -676,7 +676,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": "He returns his attention to her."
     },
@@ -696,7 +696,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": "His low head shows relief mixed with continued uncertainty."
     },
@@ -716,7 +716,7 @@
       },
       "resolved_time": {
         "start": 27.416878,
-        "end": 29.701687
+        "end": 29.336876
       },
       "reason": null
     },
@@ -735,8 +735,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": "Thinking captures Will's effort to assemble words and conceal his real impulse."
     },
@@ -755,8 +755,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": "He avoids sustained eye contact while confessing that he noticed her."
     },
@@ -775,8 +775,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": "The low head keeps the admission tentative."
     },
@@ -795,8 +795,8 @@
         "char_end": 312
       },
       "resolved_time": {
-        "start": 29.701687,
-        "end": 34.35775
+        "start": 29.336876,
+        "end": 34.362621
       },
       "reason": null
     },
@@ -815,7 +815,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "Will relaxes into a friendlier tone once he can speak about the bird."
@@ -835,7 +835,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "A small happiness reflects relief at finding common ground."
@@ -855,7 +855,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "He looks to Agnes for confirmation that the subject is welcome."
@@ -875,7 +875,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": "His modest head position preserves the tentative quality of the connection."
@@ -895,7 +895,7 @@
         "char_end": 348
       },
       "resolved_time": {
-        "start": 34.35775,
+        "start": 34.362621,
         "end": 40.322876
       },
       "reason": null
