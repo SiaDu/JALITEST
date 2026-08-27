@@ -1,0 +1,313 @@
+{
+  "schema_version": "dual_performance_plan_v1",
+  "sequence_id": "run_20260827_080414_660595",
+  "characters": [
+    "CHAYTON",
+    "JOAN"
+  ],
+  "acting_interpretation": "CHAYTON begins with controlled courtesy, then grows increasingly watchful as JOAN gives a terse denial and calls for BERT instead of answering directly. His warning remains urgent but nonthreatening. JOAN maintains guarded composure, using brevity and redirection to conceal the stranger and preserve control of the doorway. Her attention stays fixed on CHAYTON, with restrained tension rising when he identifies the danger.",
+  "phrases": [
+    {
+      "phrase_id": "P01",
+      "source_proposal_id": "S01",
+      "speaker": "CHAYTON",
+      "span": {
+        "text": "Evening, ma'am.",
+        "turn_id": "T01",
+        "char_start": 9,
+        "char_end": 24
+      },
+      "intent": "CONTROLLED_INITIAL_APPROACH",
+      "states": {
+        "CHAYTON": {
+          "affect": "Polite-40",
+          "gaze": "GAZE-JOAN",
+          "head": "LOW",
+          "lid": 0,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "JOAN": {
+          "affect": "Watchful-60",
+          "gaze": "GAZE-CHAYTON",
+          "head": "LOW",
+          "lid": -1,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "Establishes CHAYTON as controlled and respectful while JOAN immediately assesses the visitors as a threat.",
+        "CHAYTON": {
+          "affect": "polite restraint with contained vigilance.",
+          "gaze": "seeks JOAN's cooperation and establishes authority without aggression."
+        },
+        "JOAN": {
+          "affect": "guarded alertness beneath outward composure.",
+          "gaze": "monitors CHAYTON to prevent him from gaining control of the encounter."
+        }
+      },
+      "locks": {
+        "intent": false
+      }
+    },
+    {
+      "phrase_id": "P02",
+      "source_proposal_id": "S02",
+      "speaker": "CHAYTON",
+      "span": {
+        "text": "We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently?",
+        "turn_id": "T02",
+        "char_start": 34,
+        "char_end": 145
+      },
+      "intent": "CAUTIOUS_WARNING_AND_INFORMATION_GATHERING",
+      "states": {
+        "CHAYTON": {
+          "affect": "Watchful-80",
+          "gaze": "GAZE-JOAN",
+          "head": "MEDIUM",
+          "lid": -2,
+          "blink": "NONE",
+          "blink_suppression": "NONE"
+        },
+        "JOAN": {
+          "affect": "Thinking-60",
+          "gaze": "GAZE-CHAYTON",
+          "head": "LOW",
+          "lid": -2,
+          "blink": "SLOW_BLINK",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "CHAYTON's warning becomes more serious as he explains the danger; JOAN listens while concealing what she knows.",
+        "CHAYTON": {
+          "affect": "focused concern and growing suspicion.",
+          "gaze": "watches for a reaction that might reveal the stranger's presence."
+        },
+        "JOAN": {
+          "affect": "deliberate mental control and guarded calculation.",
+          "gaze": "maintains a direct, defensive presence."
+        }
+      },
+      "locks": {
+        "intent": false
+      }
+    },
+    {
+      "phrase_id": "P03",
+      "source_proposal_id": "S03",
+      "speaker": "JOAN",
+      "span": {
+        "text": "No.",
+        "turn_id": "T03",
+        "char_start": 152,
+        "char_end": 155
+      },
+      "intent": "DEFLECTIVE_DENIAL",
+      "states": {
+        "CHAYTON": {
+          "affect": "Watchful-100",
+          "gaze": "GAZE-JOAN",
+          "head": "MEDIUM",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        },
+        "JOAN": {
+          "affect": "Nervous-80",
+          "gaze": "GAZE-CHAYTON",
+          "head": "LOW",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        }
+      },
+      "rationale": {
+        "intent": "JOAN's one-word denial attempts to close the subject, but its abruptness heightens CHAYTON's curiosity.",
+        "CHAYTON": {
+          "affect": "restrained suspicion.",
+          "gaze": "holds on JOAN to test whether her denial remains stable."
+        },
+        "JOAN": {
+          "affect": "controlled nervousness hidden behind brevity.",
+          "gaze": "refuses to yield visual ground."
+        }
+      },
+      "locks": {
+        "intent": false
+      }
+    },
+    {
+      "phrase_id": "P04",
+      "source_proposal_id": "S04",
+      "speaker": "JOAN",
+      "span": {
+        "text": "Bert!",
+        "turn_id": "T04",
+        "char_start": 162,
+        "char_end": 167
+      },
+      "intent": "REDIRECTION_TO_BERT",
+      "states": {
+        "CHAYTON": {
+          "affect": "Thinking-100",
+          "gaze": "GAZE-JOAN",
+          "head": "MEDIUM",
+          "lid": -2,
+          "blink": "DOUBLE_BLINK",
+          "blink_suppression": "NONE"
+        },
+        "JOAN": {
+          "affect": "Scheming-80",
+          "gaze": "AVERT-JOAN",
+          "head": "LOW",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        }
+      },
+      "rationale": {
+        "intent": "Calling for BERT redirects responsibility and buys JOAN time without admitting the stranger is inside.",
+        "CHAYTON": {
+          "affect": "recognizes the evasion but remains measured.",
+          "gaze": "studies JOAN rather than following the distraction."
+        },
+        "JOAN": {
+          "affect": "calculated deflection.",
+          "gaze": "briefly breaks contact to make the redirection appear practical rather than deceptive."
+        }
+      },
+      "locks": {
+        "intent": false
+      }
+    },
+    {
+      "phrase_id": "P05",
+      "source_proposal_id": "S05",
+      "speaker": "CHAYTON",
+      "span": {
+        "text": "Is he in there with you, ma'am?",
+        "turn_id": "T05",
+        "char_start": 177,
+        "char_end": 208
+      },
+      "intent": "TESTING_JOAN_FOR_WITHHELD_INFORMATION",
+      "states": {
+        "CHAYTON": {
+          "affect": "Watchful-100",
+          "gaze": "GAZE-JOAN",
+          "head": "MEDIUM",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        },
+        "JOAN": {
+          "affect": "Nervous-80",
+          "gaze": "GAZE-CHAYTON",
+          "head": "LOW",
+          "lid": -2,
+          "blink": "SLOW_BLINK",
+          "blink_suppression": "NONE"
+        }
+      },
+      "rationale": {
+        "intent": "CHAYTON directly probes whether the person inside is with JOAN, while JOAN tries to preserve her protective lie.",
+        "CHAYTON": {
+          "affect": "concentrated curiosity approaching certainty.",
+          "gaze": "presses for an involuntary admission."
+        },
+        "JOAN": {
+          "affect": "rising concealed alarm.",
+          "gaze": "returns to CHAYTON to resist his pressure."
+        }
+      },
+      "locks": {
+        "intent": false
+      }
+    },
+    {
+      "phrase_id": "P06",
+      "source_proposal_id": "S06",
+      "speaker": "CHAYTON",
+      "span": {
+        "text": "He's not what he seems. God forbid you let him into your home. And if so, we need to act.",
+        "turn_id": "T06",
+        "char_start": 218,
+        "char_end": 307
+      },
+      "intent": "URGENT_WARNING_WITHOUT_OPEN_THREAT",
+      "states": {
+        "CHAYTON": {
+          "affect": "Intimidating-100",
+          "gaze": "GAZE-JOAN",
+          "head": "HIGH",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        },
+        "JOAN": {
+          "affect": "Dislike-80",
+          "gaze": "GAZE-CHAYTON",
+          "head": "MEDIUM",
+          "lid": -3,
+          "blink": "NONE",
+          "blink_suppression": "SUPPRESS"
+        }
+      },
+      "rationale": {
+        "intent": "CHAYTON delivers the strongest warning, urging immediate action while avoiding an overt threat; JOAN hardens against surrendering the household.",
+        "CHAYTON": {
+          "affect": "forceful urgency moderated by restraint.",
+          "gaze": "makes the danger personal and unmistakable."
+        },
+        "JOAN": {
+          "affect": "defensive dislike and resolve.",
+          "gaze": "confronts CHAYTON as a boundary he must not cross."
+        }
+      },
+      "locks": {
+        "intent": false
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": [
+      "S01: missing rationale for CHAYTON.head",
+      "S01: missing rationale for JOAN.head",
+      "S02: missing rationale for CHAYTON.head",
+      "S02: missing rationale for JOAN.head",
+      "S02: missing rationale for JOAN.blink",
+      "S03: missing rationale for CHAYTON.head",
+      "S03: missing rationale for CHAYTON.blink_suppression",
+      "S03: missing rationale for JOAN.head",
+      "S03: missing rationale for JOAN.blink_suppression",
+      "S04: missing rationale for CHAYTON.head",
+      "S04: missing rationale for CHAYTON.blink",
+      "S04: missing rationale for JOAN.head",
+      "S04: missing rationale for JOAN.blink_suppression",
+      "S05: missing rationale for CHAYTON.head",
+      "S05: missing rationale for CHAYTON.blink_suppression",
+      "S05: missing rationale for JOAN.head",
+      "S05: missing rationale for JOAN.blink",
+      "S06: missing rationale for CHAYTON.head",
+      "S06: missing rationale for CHAYTON.blink_suppression",
+      "S06: missing rationale for JOAN.head",
+      "S06: missing rationale for JOAN.blink_suppression"
+    ]
+  },
+  "proposal_provenance": {
+    "format": "dual_anchor_semantic_v1",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_080414_660595\\performance_proposal.txt",
+    "phrase_ids": [
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06"
+    ]
+  }
+}

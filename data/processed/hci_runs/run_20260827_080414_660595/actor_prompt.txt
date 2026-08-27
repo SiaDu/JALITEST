@@ -1,0 +1,90 @@
+# Shared Dual-Character Mask Performance Proposal
+
+Characters: CHAYTON, JOAN
+Context: Scene:
+At sunset, Chayton and a Choctaw search party arrive at Joan and Bert's farmhouse looking for a dangerous man.
+
+Story:
+Only moments earlier, Joan and Bert admitted an injured stranger into their house. The stranger claimed that a Choctaw group had attacked him and his wife, and he offered Bert gold in exchange for protection. Joan and Bert therefore know that the man Chayton is searching for is currently inside their home.
+
+Character:
+JOAN is armed, wary, and protective of her household. She does not trust the visitors and has already committed to sheltering the injured stranger.
+CHAYTON is the leader of the search party. He believes the stranger poses an immediate danger and is trying to persuade Joan to take the warning seriously.
+
+Performance Context:
+Joan is deliberately concealing information while trying not to surrender control of the encounter. Chayton becomes increasingly convinced that she is withholding something, but his goal is to warn rather than openly threaten her. The exchange carries suspicion and urgency beneath outwardly controlled language.
+
+[IMMUTABLE SCRIPT]
+CHAYTON: Evening, ma'am.
+CHAYTON: We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently?
+JOAN: No.
+JOAN: Bert!
+CHAYTON: Is he in there with you, ma'am?
+CHAYTON: He's not what he seems. God forbid you let him into your home. And if so, we need to act.
+
+[ANCHORED SCRIPT]
+T01 CHAYTON:
+[w0001 Evening,] [w0002 ma'am.]
+
+T02 CHAYTON:
+[w0003 We're] [w0004 in] [w0005 pursuit] [w0006 of] [w0007 someone] [w0008 very] [w0009 dangerous.] [w0010 He] [w0011 might've] [w0012 come] [w0013 onto] [w0014 your] [w0015 property.] [w0016 Have] [w0017 you] [w0018 seen] [w0019 anyone] [w0020 recently?]
+
+T03 JOAN:
+[w0021 No.]
+
+T04 JOAN:
+[w0022 Bert!]
+
+T05 CHAYTON:
+[w0023 Is] [w0024 he] [w0025 in] [w0026 there] [w0027 with] [w0028 you,] [w0029 ma'am?]
+
+T06 CHAYTON:
+[w0030 He's] [w0031 not] [w0032 what] [w0033 he] [w0034 seems.] [w0035 God] [w0036 forbid] [w0037 you] [w0038 let] [w0039 him] [w0040 into] [w0041 your] [w0042 home.] [w0043 And] [w0044 if] [w0045 so,] [w0046 we] [w0047 need] [w0048 to] [w0049 act.]
+
+[SEMANTIC VOCABULARY]
+VISIBLE AFFECT — CLOSED VOCABULARY: Neutral | Polite | Friendly | Sassy | Smug | Cocky | Nervous | Panicky | Thinking | Scheming | Devious | Devilish | Provoked | Angered | Dislike | Disgust | Singing_Serene | Watchful | Intimidating | Confused | Lost | Angry | Sad | Disgusted | Afraid | Contempt | Surprised | Happy | NONE
+Any other value is invalid in this executable field.
+ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.
+Head values: NONE, LOW, MEDIUM, HIGH, FULL
+Lid values: -9, -7, -5, -3, -2, -1, 0, 1, 2, 3, 4
+Blink values: BLINK_CLUSTER, DOUBLE_BLINK, EYE_CLOSE_HOLD, NONE, SLOW_BLINK
+Blink suppression: NONE, SUPPRESS
+Direction targets: DOWN, DOWN_LEFT, DOWN_RIGHT, LEFT, RIGHT, UP, UP_LEFT, UP_RIGHT
+
+IDENTITY CONTRACT
+CHAYTON and JOAN are immutable script identities.
+Never reinterpret, swap, or infer identity from dialogue order, personality, speaker order, examples, or narrative role.
+
+Return exactly `[ANALYZE]`, `[PERFORMANCE]`, and `[REASONS]`, in that order. Use the supplied names exactly; never swap or infer identity from dialogue order, personality, speaker order, examples, or narrative role. Do not output `Nothing`; use `NONE` for inactive channels.
+
+Affect intensity is a JALI Mask percentage. Prefer native JALI 2025 presets: Trace=5, Slight=10, Wooden=20, Stoic=40, Restrained=60, Measured=80, Expressive=100, Forceful=120, Theatrical=140, Excessive=160, Extreme=180, Ludicrous=200. Output numeric percentage only, e.g. `CHAYTON.affect: Nervous-60`.
+
+`affect` must use only `[SEMANTIC VOCABULARY]` Mask states. Character gaze uses names, e.g. `GAZE-JOAN` and `AVERT-JOAN`; objects and directions remain semantic targets.
+
+```text
+[ANALYZE]
+CHAYTON becomes increasingly curious about JOAN.
+
+[PERFORMANCE]
+S01
+start: w0001
+intent: GROWING_CURIOSITY
+CHAYTON.affect: Watchful-80
+CHAYTON.gaze: GAZE-JOAN
+CHAYTON.head: MEDIUM
+CHAYTON.lid: -1
+CHAYTON.blink: NONE
+CHAYTON.blink_suppression: NONE
+JOAN.affect: Thinking-60
+JOAN.gaze: GAZE-CHAYTON
+JOAN.head: LOW
+JOAN.lid: NONE
+JOAN.blink: NONE
+JOAN.blink_suppression: NONE
+
+[REASONS]
+S01
+intent: Curiosity becomes a shared conversational beat.
+CHAYTON.affect: attentive contained observation.
+CHAYTON.gaze: studies JOAN directly.
+```
