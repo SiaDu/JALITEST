@@ -21,17 +21,22 @@ def _resolve_gaze(
     if value == "AVERT":
         return "AVERT-UNRESOLVED"
     mode, target = value.split("-", 1)
-    if target in model.aliases or target in DIRECTION_TARGETS or target.startswith("OBJECT_"):
+    if target in model.aliases or target in DIRECTION_TARGETS:
         return value
-    character = target[len("CHARACTER_"):] if target.startswith("CHARACTER_") else target
+    if target.startswith(("OBJECT_", "PROP_", "PERSON_")):
+        return value
+    explicit_character = target.startswith("CHARACTER_")
+    character = target[len("CHARACTER_"):] if explicit_character else target
     alias = next(
         (key for key, name in model.aliases.items() if speaker_key(name) == speaker_key(character)),
         None,
     )
-    if alias is None:
+    if alias is None and explicit_character:
         raise ProposalValidationError(
             f'{phrase_id}: Unknown character gaze target "{character}"'
         )
+    if alias is None:
+        return value
     return f"{mode}-{alias}"
 
 

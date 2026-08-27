@@ -229,17 +229,28 @@ def test_dual_plan_schema_preserves_states_rationale_and_has_no_timing_fields():
     assert not any(key in json.dumps(plan).lower() for key in ('"time"', '"frame"', '"duration"'))
 
 
-def test_dual_known_character_gaze_normalizes_and_unknown_character_fails():
+def test_dual_known_character_gaze_normalizes_and_only_explicit_unknown_character_fails():
     plan = build_plan()
     assert plan["phrases"][0]["states"]["A"]["gaze"] == "GAZE-B"
     assert plan["phrases"][3]["states"]["B"]["gaze"] == "GAZE-A"
     model = build_conversation_anchor_model(SCRIPT, character_a="AGNES", character_b="WILL")
     parsed = parse_dual_performance_proposal(
-        dual_proposal().replace("A.gaze: GAZE-WILL", "A.gaze: GAZE-RANDOM_PERSON", 1),
+        dual_proposal().replace("A.gaze: GAZE-WILL", "A.gaze: GAZE-CHARACTER_RANDOM_PERSON", 1),
         vocabulary=VOCAB,
     )
     with pytest.raises(ProposalValidationError, match='Unknown character gaze target "RANDOM_PERSON"'):
         build_dual_performance_plan_from_proposal(parsed, anchor_model=model, sequence_id="bad")
+
+
+@pytest.mark.parametrize(("value", "expected"), [
+    ("GAZE-WILL", "GAZE-B"), ("GAZE-B", "GAZE-B"),
+    ("GAZE-HAWK", "GAZE-HAWK"), ("GAZE-OBJECT_HAWK", "GAZE-OBJECT_HAWK"),
+    ("GAZE-CHARACTER_WILL", "GAZE-B"), ("AVERT-DOWN", "AVERT-DOWN"),
+])
+def test_dual_gaze_targets_remain_semantic_until_animation(value, expected):
+    model = build_conversation_anchor_model(SCRIPT, character_a="AGNES", character_b="WILL")
+    proposal = parse_dual_performance_proposal(dual_proposal().replace("A.gaze: GAZE-WILL", f"A.gaze: {value}", 1), vocabulary=VOCAB)
+    assert resolve_dual_phrase_boundaries(proposal, model)[0]["states"]["A"]["gaze"] == expected
 
 
 def test_dual_bare_avert_remains_unresolved_until_the_author_edits_it():
