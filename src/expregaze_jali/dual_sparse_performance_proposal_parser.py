@@ -12,14 +12,14 @@ from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, spea
 PERSISTENT_CHANNELS = ("affect", "gaze", "head")
 BLINK_VALUES = {"BLINK", "SLOW_BLINK", "DOUBLE_BLINK", "EYE_CLOSE_HOLD"}
 HEAD_VALUES = {f"HEAD-{direction}-{strength}" for direction in ("UP", "DOWN", "TILT_LEFT", "TILT_RIGHT") for strength in ("SUBTLE", "MEDIUM", "STRONG")} | {"HEAD-NONE"}
-DIRECTIONAL_AVERT_TARGETS = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
+DIRECTION_TARGETS = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
 REMOVED_CHANNELS = {"heart", "lid", "blink_suppression"}
 _SECTION = re.compile(r"^\[(ANALYZE|CHANGES)\]\s*$", re.IGNORECASE)
 _EVENT_ID = re.compile(r"^E\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _ANCHOR = re.compile(r"^w\d{4,}$", re.IGNORECASE)
 _AFFECT = re.compile(r"^(.+)-(\d+)$")
-_GAZE = re.compile(r"^(GAZE|GLANCE|AVERT)-(.+)$")
+_GAZE = re.compile(r"^(GAZE|GLANCE)-(.+)$")
 
 
 def _normalize_affect(value: str, *, event_id: str, vocabulary: SemanticVocabulary) -> str:
@@ -47,10 +47,8 @@ def _normalize_gaze(value: str, *, event_id: str, characters: tuple[str, str]) -
     if not match:
         raise ProposalValidationError(f'{event_id}: Invalid gaze value "{value}"')
     mode, target = match.group(1).upper(), match.group(2)
-    if target.upper() in DIRECTIONAL_AVERT_TARGETS:
-        if mode != "AVERT":
-            raise ProposalValidationError(f"{event_id}: Directional targets are valid only with AVERT")
-        return f"AVERT-{target.upper()}"
+    if target.upper() in DIRECTION_TARGETS:
+        return f"{mode}-{target.upper()}"
     actor = next((name for name in characters if speaker_key(name) == speaker_key(target)), None)
     if actor is not None:
         return f"{mode}-{actor}"

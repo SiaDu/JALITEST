@@ -69,6 +69,7 @@ from animation_apply_runner import (  # noqa: E402
     prepare_dual_v2_gaze_only_artifacts,
     prepare_dual_v2_head_blink_overlays,
     apply_dual_v2_head_blink_overlays,
+    diagnose_v2_blink_ownership,
     restore_dual_jali_base,
 )
 from authoring_requirements import (  # noqa: E402
@@ -821,6 +822,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
                     gaze_result = apply_dual_gaze_only_artifacts(prepared_context=gaze_context)
                     overlay_result = apply_dual_v2_head_blink_overlays(prepared_context=overlay_context) if overlay_context else {}
+                    blink_diagnostic = diagnose_v2_blink_ownership(prepared_context=overlay_context) if overlay_context else None
                     for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks={item['calculate_blinks']}; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
                     for actor in self.plan.get("characters", []):
                         item = listener_result[actor]
@@ -828,6 +830,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     gaze_events = sum(gaze_result[actor]['gaze_events'] for actor in self.plan.get("characters", []))
                     overlay_summary = f"; additive head/blink overlays ({sum(row['head_key_count'] + row['blink_key_count'] for row in overlay_result.values())} keys)" if overlay_result else ""
                     self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events){overlay_summary}\njSync preserved: yes")
+                    if blink_diagnostic:
+                        self._append_backend_output("Blink ownership diagnostic: JALI calculate_blinks=False; no vendor blink curves; only JALITEST blink-layer curves on User blink controls.")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),

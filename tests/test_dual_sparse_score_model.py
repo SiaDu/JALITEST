@@ -16,7 +16,7 @@ PLAN = {
             {"event_id": "E003", "anchor_id": "w0004", "changes": {"affect": "Watchful-100"}, "reason": "The denial increases suspicion."},
         ],
         "BOB": [
-            {"event_id": "E002", "anchor_id": "w0003", "changes": {"affect": "Nervous-60", "gaze": "AVERT-ALICE"}, "reason": "The threat lands."},
+            {"event_id": "E002", "anchor_id": "w0003", "changes": {"affect": "Nervous-60", "gaze": "GAZE-DOWN"}, "reason": "The threat lands."},
         ],
     },
 }
@@ -34,7 +34,7 @@ def test_two_actor_scores_render_role_aware_sparse_tags():
     model = DualSparseScoreModel(PLAN, ANCHORS)
     assert model.score_texts["ALICE"].startswith("<Watchful-80>We're")
     assert "No.<Watchful-100>" in model.score_texts["ALICE"]
-    assert "dangerous.<Nervous-60><AVERT-ALICE>" in model.score_texts["BOB"]
+    assert "dangerous.<Nervous-60><GAZE-DOWN>" in model.score_texts["BOB"]
     assert "<Watchful" not in model.score_texts["BOB"]
     assert all(model.validate_actor(actor, text).valid for actor, text in model.score_texts.items())
 

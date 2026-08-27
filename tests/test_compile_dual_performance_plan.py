@@ -2,7 +2,7 @@ from __future__ import annotations
 import json, wave
 from pathlib import Path
 import pytest
-from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan
+from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan, _validate_v2_plan
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
 SCRIPT="AGNES: one\nWILL: two\nAGNES: three"
@@ -172,7 +172,7 @@ def test_v2_resolves_independent_role_aware_events_and_persistent_affect(tmp_pat
         "tracks": {
             "AGNES": [
                 {"event_id": "E001", "anchor_id": "w0001", "changes": {"affect": "Watchful-80", "gaze": "GAZE-WILL"}, "reason": "Starts watchful."},
-                {"event_id": "E003", "anchor_id": "w0002", "changes": {"gaze": "AVERT-RIGHT"}, "reason": "Looks away while listening."},
+                {"event_id": "E003", "anchor_id": "w0002", "changes": {"gaze": "GAZE-RIGHT"}, "reason": "Looks away while listening."},
             ],
             "WILL": [
                 {"event_id": "E002", "anchor_id": "w0001", "changes": {"affect": "Thinking-60"}, "reason": "Reacts to one."},
@@ -212,3 +212,10 @@ def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
     rows = [json.loads(Path(result["artifacts"]["characters"][name]["resolved_sparse_events"]).read_text())["events"][0] for name in ("AGNES", "WILL")]
     assert rows[0]["resolved_start"] == 0.0
     assert rows[1]["resolved_start"] == pytest.approx(.2 + 4 / 24)
+
+
+def test_v2_compiler_rejects_manual_avert_bypass():
+    model = build_conversation_anchor_model("AGNES: one\nWILL: two", character_a="AGNES", character_b="WILL")
+    plan = {"characters": ["AGNES", "WILL"], "tracks": {"AGNES": [{"event_id": "E1", "anchor_id": "w0001", "changes": {"gaze": "AVERT-RIGHT"}}], "WILL": []}}
+    with pytest.raises(ValueError, match="invalid v2 executable gaze"):
+        _validate_v2_plan(plan, model)

@@ -50,6 +50,9 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
             changes = event.get("changes")
             if not isinstance(changes, dict) or not changes or not set(changes) <= {"affect", "gaze", "head", "blink"}:
                 raise ValueError(f"{event['event_id']}: invalid or empty v2 changes.")
+            gaze = changes.get("gaze")
+            if gaze is not None and gaze != "GAZE-NONE" and not re.fullmatch(r"(?:GAZE|GLANCE)-[A-Za-z][A-Za-z0-9_'-]*", str(gaze)):
+                raise ValueError(f"{event['event_id']}: invalid v2 executable gaze {gaze!r}; use GAZE/GLANCE or GAZE-NONE.")
 
 
 def _compile_v2(

@@ -11,7 +11,7 @@ from typing import Any, Callable, Iterable
 from expregaze_jali.actor_prompt_builder import load_prompt_template
 from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
 from expregaze_jali.dual_sparse_performance_proposal_parser import (
-    BLINK_VALUES, DIRECTIONAL_AVERT_TARGETS, HEAD_VALUES,
+    BLINK_VALUES, DIRECTION_TARGETS, HEAD_VALUES,
     parse_dual_sparse_performance_proposal,
 )
 from expregaze_jali.generate_performance_plan import (
@@ -43,7 +43,7 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
         "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.",
         "Head values: " + ", ".join(sorted(HEAD_VALUES)),
         "Blink values: " + ", ".join(sorted(BLINK_VALUES)),
-        "Directional AVERT targets: " + ", ".join(sorted(DIRECTIONAL_AVERT_TARGETS)),
+        "Directional gaze targets: " + ", ".join(sorted(DIRECTION_TARGETS)),
     ))
 def _render_dual_prompt(
     *, anchor_model: ConversationAnchorModel, context: str | None,

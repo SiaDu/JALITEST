@@ -23,7 +23,7 @@ _ATTRS = ("calculate_paralinguals", "paralingual_bearing", "paralingual_intensit
 class _Cmds:
     def __init__(self, source_dir: Path):
         self.calls: list[tuple[str, tuple, dict]] = []; self.selection = ["|camera"]
-        self.nodes = {"|A:ROOT", "|B:ROOT", "|A:ROOT|jSyncA", "|B:ROOT|jSyncB", "JALITEST_listenerMask_A", "JALITEST_listenerMask_B", "JALITEST_gaze_A", "JALITEST_gaze_B", "animator_layer"}
+        self.nodes = {"|A:ROOT", "|B:ROOT", "|A:ROOT|jSyncA", "|B:ROOT|jSyncB", "JALITEST_listenerMask_A", "JALITEST_listenerMask_B", "JALITEST_gaze_A", "JALITEST_gaze_B", "JALITEST_head_A", "JALITEST_head_B", "JALITEST_blink_A", "JALITEST_blink_B", "animator_layer"}
         self.values: dict[str, object] = {}
         for alias, jsync, sound, source, facs in (("A", "|A:ROOT|jSyncA", "SA", source_dir / "SA.txt", "A:FACSMaster"), ("B", "|B:ROOT|jSyncB", "SB", source_dir / "SB.txt", "B:FACSMaster")):
             self.values.update({f"{jsync}.sound_file": sound, f"{jsync}.text_input_path": str(source_dir), f"{jsync}.sound_input_path": f"{alias}/sound", f"{jsync}.output_path": f"{alias}/output", f"{jsync}.transcript": f"original {alias}", f"{facs}.FACS_animationSource": 1})
@@ -76,6 +76,7 @@ def test_restore_removes_only_owned_layers_and_restores_live_jali_state(tmp_path
         jsync = baseline["actors"][alias]["jsync"]
         cmds.values[f"{jsync}.transcript"] = "staged"
         cmds.values[f"{jsync}.calculate_paralinguals"] = 999
+        cmds.values[f"{jsync}.calculate_blinks"] = False
         cmds.values[f"{('A' if alias == 'A' else 'B')}:FACSMaster.FACS_animationSource"] = 2
     result = restore_dual_jali_base(baseline=baseline, character_mappings=_mappings(), cmds_module=cmds, mel_module=mel)
     assert result["jsync_preserved"] is True
@@ -83,6 +84,8 @@ def test_restore_removes_only_owned_layers_and_restores_live_jali_state(tmp_path
     assert not any(layer in cmds.nodes for layer in result["removed_layers"])
     assert cmds.values["|A:ROOT|jSyncA.transcript"] == "original A"
     assert cmds.values["|B:ROOT|jSyncB.calculate_paralinguals"] == 100
+    assert cmds.values["|A:ROOT|jSyncA.calculate_blinks"] == 7
+    assert cmds.values["|B:ROOT|jSyncB.calculate_blinks"] == 107
     assert cmds.values["A:FACSMaster.FACS_animationSource"] == 1
     assert [call for call in mel.calls if call.startswith("realign_node ")] == ['realign_node "jSyncA"', 'realign_node "jSyncB"']
     assert not any("resurrect" in call for call in mel.calls)
@@ -93,8 +96,10 @@ def test_generate_restore_generate_can_repeat_without_replacing_baseline(tmp_pat
     cmds, baseline = _baseline(tmp_path); mel = _Mel()
     for _ in range(2):
         cmds.values["|A:ROOT|jSyncA.transcript"] = "tagged"
+        cmds.values["|A:ROOT|jSyncA.calculate_blinks"] = False
         restore_dual_jali_base(baseline=baseline, character_mappings=_mappings(), cmds_module=cmds, mel_module=mel)
         assert cmds.values["|A:ROOT|jSyncA.transcript"] == "original A"
+        assert cmds.values["|A:ROOT|jSyncA.calculate_blinks"] == 7
     assert len([call for call in mel.calls if call.startswith("realign_node ")]) == 4
 
 

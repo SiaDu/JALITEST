@@ -6,6 +6,7 @@ from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_
 from expregaze_jali.dual_sparse_performance_proposal_parser import parse_dual_sparse_performance_proposal
 from expregaze_jali.performance_proposal_parser import ProposalValidationError, load_semantic_vocabulary
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
+from expregaze_jali.generate_dual_performance_plan import build_dual_generation_prompt
 
 
 MODEL = build_conversation_anchor_model("ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
@@ -29,6 +30,7 @@ E002
 actor: BOB
 anchor: w0002
 affect: Happy-120
+gaze: GLANCE-UP_LEFT
 head: HEAD-TILT_LEFT-SUBTLE
 blink: DOUBLE_BLINK
 reason: Reacts.
@@ -49,7 +51,7 @@ reason: Releases the response.""")
 
 @pytest.mark.parametrize("line", [
     "heart: Happy-80", "lid: 2", "blink_suppression: NONE",
-    "head: HEAD-LOW", "gaze: RIGHT", "affect: Happy-0",
+    "head: HEAD-LOW", "gaze: RIGHT", "gaze: AVERT-RIGHT", "affect: Happy-0",
 ])
 def test_v2_rejects_removed_or_invalid_semantics(line):
     with pytest.raises(ProposalValidationError):
@@ -64,3 +66,12 @@ def test_v2_rejects_unknown_actor_anchor_and_empty_event():
     ):
         with pytest.raises(ProposalValidationError):
             parse(body)
+
+
+def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
+    prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
+    assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
+    assert "AVERT is never an executable gaze mode" in prompt
+    assert "gaze: GAZE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
+    assert "Do not map an emotion or motivation to a fixed direction" in prompt
+    assert not __import__("re").search(r"gaze:\s*AVERT-", prompt)

@@ -119,6 +119,8 @@ maya_performative_blink_overlay:
   left_attribute: LidDown_L
   right_control_suffix: usr_blink_R
   right_attribute: LidDown_R
+  vendor_output_control_suffix: LIDS_jSync_plusMinus
+  vendor_output_attribute: Down_upLids_jSync
   open_value: 0
   closed_value: 1
   presets:

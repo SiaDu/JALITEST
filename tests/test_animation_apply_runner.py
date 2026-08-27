@@ -44,6 +44,8 @@ from animation_apply_runner import (  # noqa: E402
     build_blink_overlay_key_schedule,
     apply_dual_v2_head_blink_overlays,
     prepare_dual_v2_head_blink_overlays,
+    plan_v2_blinks,
+    diagnose_v2_blink_ownership,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 
@@ -104,6 +106,48 @@ def test_dual_emotion_realigns_from_separate_staging_and_restores_paths(monkeypa
     assert all(Path(result[a]["staging_txt"]).read_text().startswith("<mask=") for a in ("A","B"))
     assert Path(result["A"]["staging_wav"]).read_bytes() == b"A" and Path(result["B"]["staging_wav"]).read_bytes() == b"B"
     assert all(result[a]["paths_restored"] for a in ("A","B")) and sum(call.startswith('realign_node ') for call in mel_calls) == 2
+
+
+def test_v2_generate_disables_jali_blink_before_each_realign(monkeypatch, tmp_path):
+    import animation_apply_runner as runner
+    artifacts = {"characters": {}}
+    wavs = {}
+    runtime = {}
+    for actor, stem in (("ALICE", "SA"), ("BOB", "SB")):
+        events = tmp_path / f"{actor}_events.json"; events.write_text('{"events": []}')
+        text = tmp_path / f"{actor}.txt"; text.write_text(actor)
+        diagnostic = tmp_path / f"{actor}_diag.json"; diagnostic.write_text(json.dumps({"actor": actor, "script_name": actor, "mask_tag_count": 0}))
+        artifacts["characters"][actor] = {"resolved_sparse_events": str(events), "jali_speaker_annotated": str(text), "jali_speaker_annotation": str(diagnostic)}
+        wav = tmp_path / f"{stem}.wav"; wav.write_bytes(b"wav")
+        wavs[actor] = {"path": str(wav)}
+        runtime[actor] = {"script_name": actor, "sound_file": stem}
+    timing = tmp_path / "timing.json"; timing.write_text("{}")
+    artifacts["conversation_anchor_timing"] = str(timing)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"schema_version": "dual_animation_manifest_v2", "characters": ["ALICE", "BOB"], "fps": 24, "character_runtime_mapping": runtime, "wav_durations": wavs, "artifacts": artifacts}))
+    log = []
+    class Cmds:
+        def __init__(self): self.values = {}
+        def objExists(self, _plug): return True
+        def getAttr(self, plug):
+            if plug.endswith(".sound_file"): return "SA" if "ALICE" in plug else "SB"
+            if plug.endswith(".calculate_blinks"): return self.values.get(plug, True)
+            return self.values.get(plug, "original/")
+        def setAttr(self, plug, value, **_kwargs): self.values[plug] = value; log.append(("set", plug, value))
+        def ls(self, **_kwargs): return []
+        def select(self, *_args, **_kwargs): pass
+    cmds = Cmds()
+    def mel_eval(value):
+        log.append(("mel", value))
+        return 1 if "exists" in value else None
+    monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda rig, *_a, **_k: rig + "|" + ("ALICE_jSync" if "ALICE" in rig else "BOB_jSync"))
+    result = apply_dual_speaker_emotion_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=cmds, mel_module=SimpleNamespace(eval=mel_eval))
+    for actor in ("ALICE", "BOB"):
+        plug = f"|{actor}:ROOT|{actor}_jSync.calculate_blinks"
+        disable_index = log.index(("set", plug, False))
+        realign_index = next(index for index, row in enumerate(log) if row[0] == "mel" and "realign_node" in row[1] and actor in row[1])
+        assert disable_index < realign_index
+        assert result[actor]["calculate_blinks"] is False
 
 
 def test_confused_25_scales_factory_coefficients_and_filters_eyelids():
@@ -213,6 +257,41 @@ def test_v2_blink_schedule_contains_only_explicit_performative_events():
     assert len(keys) == 8 and keys[0]["frame"] == 24 and keys[-1]["value"] == 0
 
 
+def _resolved(event_id, time, actor="ALICE", **changes):
+    return {"event_id": event_id, "actor": actor, "resolved_start": time, "changes": changes}
+
+
+def test_v2_regulatory_blink_planner_priority_and_transition_rules():
+    events = [
+        _resolved("E1", 0, gaze="GAZE-BOB", affect="Watchful-80"),
+        _resolved("E2", 1, affect="Watchful-100"),
+        _resolved("E3", 2, affect="Nervous-60"),
+        _resolved("E4", 3, gaze="GLANCE-DOWN", affect="Happy-60"),
+        _resolved("E5", 4, gaze="GAZE-BOB", blink="SLOW_BLINK"),
+        _resolved("E6", 5, head="HEAD-UP-SUBTLE", lid=2),
+        _resolved("E7", 6, gaze="GAZE-BOB"),
+    ]
+    planned = plan_v2_blinks(events)
+    assert [(row["resolved_start"], row["changes"]["blink"], row["blink_source"]) for row in planned] == [
+        (2.0, "BLINK", "affect_regulatory"),
+        (3.0, "BLINK", "gaze_regulatory"),
+        (4.0, "SLOW_BLINK", "explicit"),
+    ]
+    assert all(row["resolved_start"] != 1 for row in planned)  # intensity only
+    assert sum(row["resolved_start"] == 3 for row in planned) == 1  # gaze beats affect
+    assert sum(row["resolved_start"] == 4 for row in planned) == 1  # explicit suppresses regulatory
+    assert all(row["resolved_start"] != 6 for row in planned)  # unchanged gaze
+
+
+def test_v2_regulatory_blink_planner_is_actor_independent_and_first_state_is_initialization():
+    alice = plan_v2_blinks([_resolved("A1", 0, gaze="GAZE-BOB"), _resolved("A2", 1, gaze="GAZE-DOWN")])
+    bob = plan_v2_blinks([_resolved("B1", 0, actor="BOB", affect="Nervous-60")])
+    assert len(alice) == 1 and alice[0]["actor"] == "ALICE"
+    assert bob == []
+    glance = plan_v2_blinks([_resolved("G1", 0, gaze="GAZE-BOB"), _resolved("G2", 1, gaze="GLANCE-DOWN"), _resolved("G3", 2, gaze="GAZE-BOB")])
+    assert [(row["resolved_start"], row["blink_source"]) for row in glance] == [(1.0, "gaze_regulatory")]
+
+
 def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
     cmds = _ListenerCmds()
     context = {"schema_version": "dual_v2_head_blink_prepared_v1", "actors": {
@@ -235,7 +314,28 @@ def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
     assert layer_calls and not any(call[2].get("override") is True for call in layer_calls)
     keyed = [call for call in cmds.calls if call[0] == "setKeyframe"]
     assert all("jNeck_ctl" in call[1][0] or "usr_blink" in call[1][0] for call in keyed)
-    assert result["ALICE"]["calculate_blinks_unchanged"] is True
+    assert result["ALICE"]["jali_calculate_blinks_disabled"] is True
+
+
+def test_v2_blink_ownership_diagnostic_checks_vendor_and_owned_curves():
+    context = {"schema_version": "dual_v2_head_blink_prepared_v1", "actors": {"ALICE": {
+        "jsync": "ALICE:jSync", "blink_layer": "JALITEST_blink_ALICE",
+        "vendor_blink_plug": "ALICE:LIDS_jSync_plusMinus.Down_upLids_jSync",
+        "blink_plugs": ["ALICE:usr_blink.LidDown"],
+    }}}
+    class Cmds:
+        def __init__(self, bad=False): self.bad = bad
+        def getAttr(self, _plug): return self.bad
+        def objExists(self, _node): return True
+        def animLayer(self, _layer, **_kwargs): return ["jalitestBlinkCurve"]
+        def listConnections(self, plug, **_kwargs):
+            if "LIDS_jSync" in plug: return ["vendorBlinkCurve"] if self.bad else []
+            return ["foreignCurve"] if self.bad else ["jalitestBlinkCurve"]
+    assert diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds())["passed"] is True
+    report = diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds(True), strict=False)
+    assert report["passed"] is False and report["actors"]["ALICE"]["vendor_anim_curves"] == ["vendorBlinkCurve"]
+    with pytest.raises(RuntimeError, match="calculate_blinks is not False.*vendor blink output"):
+        diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds(True))
 
 
 def test_v2_actor_two_blink_preflight_fails_before_any_maya_mutation(monkeypatch, tmp_path):

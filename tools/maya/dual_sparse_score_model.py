@@ -14,7 +14,7 @@ from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, spea
 CHANNEL_ORDER = ("affect", "gaze", "head", "blink")
 _TAG = re.compile(r"<([^<>\r\n]+)>")
 _AFFECT = re.compile(r"^(.+)-(\d+)$")
-_GAZE = re.compile(r"^(GAZE|GLANCE|AVERT)-(.+)$")
+_GAZE = re.compile(r"^(GAZE|GLANCE)-(.+)$")
 
 
 @dataclass(frozen=True)
@@ -140,8 +140,6 @@ class DualSparseScoreModel:
         if gaze:
             mode, target = gaze.group(1).upper(), gaze.group(2)
             directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
-            if target.upper() in directions and mode != "AVERT":
-                return "Directional gaze targets require AVERT"
             if re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target):
                 named = next((name for name in self.characters if speaker_key(name) == speaker_key(target)), target)
                 return "gaze", f"{mode}-{named if target.upper() not in directions else target.upper()}"

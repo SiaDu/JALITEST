@@ -608,9 +608,7 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
             jsync=item["jsync"]; prefix=item["prefix"]; mask=item["mask"]
             item["stage"].mkdir(parents=True,exist_ok=True); staged_txt=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.txt"; staged_wav=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.wav"
             shutil.copy2(item["artifact"],staged_txt); shutil.copy2(item["wav"],staged_wav)
-            settings = [("calculate_paralinguals", mask), ("override_annotation", False)]
-            if manifest.get("schema_version") != "dual_animation_manifest_v2":
-                settings.append(("calculate_blinks", False))
+            settings = [("calculate_paralinguals", mask), ("override_annotation", False), ("calculate_blinks", False)]
             for attr, value in settings:
                 cmds_module.setAttr(f"{jsync}.{attr}", value)
             if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
@@ -769,6 +767,71 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
     return keys
 
 
+def _affect_identity(value: object) -> str:
+    text = str(value or "NONE")
+    if text in {"NONE", "MASK-NONE"}:
+        return "NONE"
+    state, separator, intensity = text.rpartition("-")
+    return state if separator and intensity.isdigit() else text
+
+
+def plan_v2_blinks(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Plan explicit and deterministic regulatory blinks for one actor.
+
+    Boundaries are coalesced before applying explicit > gaze > affect priority.
+    Automatic GLANCE returns are absent from the authored event stream and thus
+    cannot generate a second blink.
+    """
+    ordered = sorted(enumerate(events), key=lambda row: (float(row[1]["resolved_start"]), row[0]))
+    groups: list[tuple[float, list[dict[str, Any]]]] = []
+    for _index, event in ordered:
+        time = float(event["resolved_start"])
+        if groups and abs(groups[-1][0] - time) <= 1e-9:
+            groups[-1][1].append(event)
+        else:
+            groups.append((time, [event]))
+    gaze_initialized = False
+    affect_initialized = False
+    gaze_state = "GAZE-NONE"
+    affect_state = "NONE"
+    planned: list[dict[str, Any]] = []
+    for time, boundary in groups:
+        explicit = next((event for event in boundary if (event.get("changes") or {}).get("blink")), None)
+        gaze_values = [(event.get("changes") or {}).get("gaze") for event in boundary if "gaze" in (event.get("changes") or {})]
+        affect_values = [(event.get("changes") or {}).get("affect") for event in boundary if "affect" in (event.get("changes") or {})]
+        authored_gaze = str(gaze_values[-1]) if gaze_values else gaze_state
+        final_affect = _affect_identity(affect_values[-1]) if affect_values else affect_state
+        gaze_candidate = bool(gaze_values and gaze_initialized and authored_gaze != gaze_state)
+        affect_candidate = bool(affect_values and affect_initialized and final_affect != affect_state)
+        source_event = explicit or (boundary[-1] if gaze_candidate or affect_candidate else None)
+        if explicit is not None:
+            blink = str(explicit["changes"]["blink"])
+            source = "explicit"
+        elif gaze_candidate:
+            blink = "BLINK"
+            source = "gaze_regulatory"
+        elif affect_candidate:
+            blink = "BLINK"
+            source = "affect_regulatory"
+        else:
+            blink = ""
+            source = ""
+        if blink and source_event is not None:
+            planned.append({
+                "event_id": source_event.get("event_id"), "actor": source_event.get("actor"),
+                "resolved_start": time, "changes": {"blink": blink},
+                "blink_source": source,
+                "source_event_ids": [event.get("event_id") for event in boundary],
+            })
+        if gaze_values:
+            if not authored_gaze.startswith("GLANCE-"):
+                gaze_state = authored_gaze
+            gaze_initialized = True
+        if affect_values:
+            affect_state, affect_initialized = final_affect, True
+    return planned
+
+
 def _resolve_user_blink_plugs(rig: str, config: dict[str, Any], cmds_module: Any) -> list[str]:
     central = f"{qualify_rig_control(rig, str(config['central_control_suffix']))}.{config['central_attribute']}"
     if cmds_module.objExists(central):
@@ -814,21 +877,26 @@ def prepare_dual_v2_head_blink_overlays(
                 raise FileNotFoundError(f"{actor}: required v2 artifact {required} is missing.")
         events = json.loads(Path(artifact_row["resolved_sparse_events"]).read_text(encoding="utf-8")).get("events", [])
         head_events = [event for event in events if "head" in (event.get("changes") or {})]
-        blink_events = [event for event in events if "blink" in (event.get("changes") or {})]
+        blink_events = plan_v2_blinks(events)
         neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
         head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
         if head_events and any(not cmds_module.objExists(plug) for plug in head_plugs):
             raise RuntimeError(f"{actor}: head event requires {neck}.rotateX/Y/Z.")
         blink_plugs = _resolve_user_blink_plugs(rig, config["blink"], cmds_module) if blink_events else []
+        vendor_blink_plug = f"{qualify_rig_control(rig, str(config['blink']['vendor_output_control_suffix']))}.{config['blink']['vendor_output_attribute']}"
+        if not cmds_module.objExists(vendor_blink_plug):
+            raise RuntimeError(f"{actor}: cannot verify JALI blink ownership; missing vendor output {vendor_blink_plug}.")
         facs = qualify_rig_control(rig, "FACSMaster")
         facs_plug = f"{facs}.FACS_animationSource"
         if blink_events and not cmds_module.objExists(facs_plug):
             raise RuntimeError(f"{actor}: performative blink requires {facs_plug}.")
         prepared["actors"][actor] = {
-            "jsync": jsync, "head_layer": head_layer_name(actor), "blink_layer": blink_layer_name(actor),
+            "rig": rig, "jsync": jsync, "head_layer": head_layer_name(actor), "blink_layer": blink_layer_name(actor),
             "head_plugs": head_plugs, "blink_plugs": blink_plugs, "facs_plug": facs_plug,
+            "vendor_blink_plug": vendor_blink_plug,
             "facs_add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module) if blink_events else None,
             "head_keys": build_head_overlay_key_schedule(head_events, fps=float(manifest["fps"]), config=config["head"]),
+            "blink_plan": blink_events,
             "blink_keys": build_blink_overlay_key_schedule(blink_events, fps=float(manifest["fps"]), config=config["blink"]),
             "baseline": baseline_preflight[actor],
         }
@@ -856,7 +924,7 @@ def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_
                 for plug in item["blink_plugs"]:
                     node, attr = plug.rsplit(".", 1)
                     cmds_module.setKeyframe(node, attribute=attr, time=key["frame"], value=key["value"], animLayer=item["blink_layer"])
-        result[actor] = {"head_layer": item["head_layer"], "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "calculate_blinks_unchanged": True}
+        result[actor] = {"head_layer": item["head_layer"], "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "blink_plan": item.get("blink_plan", []), "jali_calculate_blinks_disabled": True}
     return result
 
 
@@ -941,8 +1009,9 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
                 mode, target = "RESET", "__BASE__"
             else:
                 mode, target = value.split("-", 1)
-            social = mode == "AVERT" and target in manifest["characters"]
-            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": "__BASE__" if social else target, "social_avert": social, "resolved_time": {"start": float(event["resolved_start"]), "end": end}})
+                if mode not in {"GAZE", "GLANCE"}:
+                    raise ValueError(f"{actor}: v2 executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
+            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "social_avert": False, "resolved_time": {"start": float(event["resolved_start"]), "end": end}})
         reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
         positions: dict[str, list[float]] = {}
         for event in raw:
@@ -976,6 +1045,48 @@ def diagnose_head_local_axes(character_node: str, *, degrees: float = 5.0, cmds_
     finally:
         for plug, value in zip(plugs, original):
             cmds_module.setAttr(plug, value)
+
+
+def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module: Any | None = None, strict: bool = True) -> dict[str, Any]:
+    """Post-Generate Maya probe for exclusive JALITEST v2 blink ownership.
+
+    The configured vendor output is the repository's known JALI blink/lid path.
+    If a production rig uses another output, preflight fails and the config must
+    be corrected from a real Maya observation rather than inferred in Python.
+    """
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if prepared_context.get("schema_version") != "dual_v2_head_blink_prepared_v1":
+        raise ValueError("Invalid prepared v2 overlay context.")
+    report: dict[str, Any] = {"schema_version": "dual_v2_blink_ownership_diagnostic_v1", "actors": {}, "passed": True}
+    problems: list[str] = []
+    for actor, item in prepared_context["actors"].items():
+        calculate_blinks = bool(cmds_module.getAttr(f"{item['jsync']}.calculate_blinks"))
+        owned_curves = set(cmds_module.animLayer(item["blink_layer"], query=True, animCurves=True) or []) if cmds_module.objExists(item["blink_layer"]) else set()
+        vendor_curves = set(cmds_module.listConnections(item["vendor_blink_plug"], source=True, destination=False, type="animCurve") or [])
+        user_curves = {
+            curve for plug in item["blink_plugs"]
+            for curve in (cmds_module.listConnections(plug, source=True, destination=False, type="animCurve") or [])
+        }
+        foreign_user_curves = sorted(user_curves - owned_curves)
+        actor_passed = not calculate_blinks and not vendor_curves and not foreign_user_curves
+        report["actors"][actor] = {
+            "jsync": item["jsync"], "calculate_blinks": calculate_blinks,
+            "vendor_output_plug": item["vendor_blink_plug"],
+            "vendor_anim_curves": sorted(vendor_curves),
+            "jalitest_layer": item["blink_layer"], "jalitest_anim_curves": sorted(owned_curves),
+            "foreign_user_blink_curves": foreign_user_curves, "passed": actor_passed,
+        }
+        if calculate_blinks:
+            problems.append(f"{actor}: jSync.calculate_blinks is not False")
+        if vendor_curves:
+            problems.append(f"{actor}: vendor blink output still has animCurve contribution(s): {sorted(vendor_curves)}")
+        if foreign_user_curves:
+            problems.append(f"{actor}: User blink controls have curves outside {item['blink_layer']}: {foreign_user_curves}")
+    report["passed"] = not problems
+    if problems and strict:
+        raise RuntimeError("V2 blink ownership diagnostic failed after Generate: " + "; ".join(problems))
+    return report
 
 
 def resolve_character_look_at_target(alias: str, character_mappings: dict[str, dict[str, Any]], *, configured_suffix: str | None = None) -> str:
@@ -1074,8 +1185,13 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
         if mode == "RESET":
             state.update({"eye_stare": list(neutral_position), "eyes": list(neutral_eyes)})
         elif mode in {"GAZE","GLANCE"}:
-            if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
-            state.update({"eye_stare":list(target_positions[target]),"eyes":list(neutral_eyes)})
+            directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
+            if target in directions:
+                x, y = directional_eye_offset(target, magnitude=magnitude, limit=limit)
+                state.update({"eye_stare": list(neutral_position), "eyes": [neutral_eyes[0] + x, neutral_eyes[1] + y]})
+            else:
+                if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
+                state.update({"eye_stare":list(target_positions[target]),"eyes":list(neutral_eyes)})
             if mode=="GLANCE": state["return_state"]=dict(previous)
         else:
             x,y=directional_eye_offset(target,magnitude=magnitude,limit=limit,social=bool(event.get("social_avert")))
