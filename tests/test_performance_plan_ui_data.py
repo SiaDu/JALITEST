@@ -6,6 +6,8 @@ from pathlib import Path
 import re
 import sys
 
+import pytest
+
 
 MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 if str(MAYA_TOOLS) not in sys.path:
@@ -118,6 +120,27 @@ def test_load_preserves_events_and_default_save_does_not_overwrite_source(tmp_pa
     save_performance_plan(loaded, edited)
     assert json.loads(source.read_text(encoding="utf-8")) == original
     assert edited.exists()
+
+
+def test_load_accepts_dual_v0_and_v1_phrase_plans_but_rejects_malformed_v1(tmp_path: Path):
+    phrase = {"phrase_id": "P01", "states": {"ALICE": {}, "BOB": {}}}
+    v0 = tmp_path / "dual_v0.json"
+    v0.write_text(json.dumps({"schema_version": "dual_performance_plan_v0", "characters": {"A": "ALICE", "B": "BOB"}, "phrases": [phrase]}), encoding="utf-8")
+    assert load_performance_plan(v0)["phrases"] == [phrase]
+
+    v1 = tmp_path / "dual_v1.json"
+    v1.write_text(json.dumps({"schema_version": "dual_performance_plan_v1", "characters": ["ALICE", "BOB"], "phrases": [phrase]}), encoding="utf-8")
+    assert load_performance_plan(v1)["characters"] == ["ALICE", "BOB"]
+
+    missing_phrases = tmp_path / "missing_phrases.json"
+    missing_phrases.write_text(json.dumps({"schema_version": "dual_performance_plan_v1", "characters": ["ALICE", "BOB"]}), encoding="utf-8")
+    with pytest.raises(ValueError, match="phrases list"):
+        load_performance_plan(missing_phrases)
+
+    invalid_characters = tmp_path / "invalid_characters.json"
+    invalid_characters.write_text(json.dumps({"schema_version": "dual_performance_plan_v1", "characters": ["ALICE"], "phrases": [phrase]}), encoding="utf-8")
+    with pytest.raises(ValueError, match="exactly two named characters"):
+        load_performance_plan(invalid_characters)
 
 
 def test_edit_helpers_update_only_editable_semantics_and_keep_raw_values_coherent():

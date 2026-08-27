@@ -518,8 +518,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _generation_succeeded(self, plan_path: object) -> None:
         self.generate_plan_button.setEnabled(True)
         path = Path(str(plan_path))
-        self.load_plan(path, preserve_authoring_text=True)
-        if self.source_path == path:
+        if self.load_plan(path, preserve_authoring_text=True):
             try:
                 if self.mode_combo.currentIndex() == 1:
                     names = [self.character_rows[index][0].text().strip() for index in (0, 1)]
@@ -549,7 +548,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self.generation_status.setText("Performance plan generated — animation setup incomplete.")
                 self.generation_status.setStyleSheet("color: #166534;")
         else:
-            self._generation_failed("The backend completed, but the generated plan could not be loaded.")
+            self._generation_failed("The backend completed, but the generated plan could not be loaded. See Backend Generation Log for the load error.")
 
     def _generation_failed(self, message: str) -> None:
         self.generate_plan_button.setEnabled(True)
@@ -1063,12 +1062,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if path:
             self.load_plan(Path(path))
 
-    def load_plan(self, path: Path, *, preserve_authoring_text: bool = False) -> None:
+    def load_plan(self, path: Path, *, preserve_authoring_text: bool = False) -> bool:
         try:
             loaded_plan = load_performance_plan(path)
         except Exception as exc:
+            self._append_backend_output(f"Could Not Load Plan: {exc}")
             QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
-            return
+            return False
 
         self.authoring_session = None
         try:
@@ -1105,8 +1105,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.plan = self.score_model.plan
             self.hidden_affect.parentWidget().setVisible(loaded_plan.get("schema_version") != "dual_performance_plan_v1")
         except Exception as exc:
+            self._append_backend_output(f"Could Not Load Plan: {exc}")
             QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
-            return
+            return False
 
         self.source_path = path
         self.current_event_index = None
@@ -1158,6 +1159,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.event_list.setCurrentRow(0)
         else:
             self._clear_event_panel()
+        return True
 
     def _refresh_phrase_reason(self) -> None:
         if self.score_model is None:
