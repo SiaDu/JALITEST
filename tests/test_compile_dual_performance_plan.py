@@ -82,7 +82,7 @@ def test_canonical_phrase_timeline_keeps_same_turn_splits_on_their_own_anchors()
 
 def test_shared_timing_preserves_listener_states_and_resumes_speaker_alignment(tmp_path):
     plan,audio=_fixture(tmp_path); result=compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,script_source="script.txt",audio_folder=audio,fps=24,runtime_mapping=MAPPING,output_dir=tmp_path/"out")
-    a=json.loads(Path(result["artifacts"]["A"]).read_text())["events"]; b=json.loads(Path(result["artifacts"]["B"]).read_text())["events"]
+    a=json.loads(Path(result["artifacts"]["characters"]["AGNES"]["semantic_events"]).read_text())["events"]; b=json.loads(Path(result["artifacts"]["characters"]["WILL"]["semantic_events"]).read_text())["events"]
     assert [(x["phrase_id"],x["resolved_time"]["start"]) for x in a if x["channel"]=="affect"]==[("P01",0.),("P02",.5),("P03",1.)]
     assert [(x["phrase_id"],x["resolved_time"]["start"]) for x in b if x["channel"]=="affect"]==[("P01",0.),("P02",.5),("P03",1.)]
     assert [x["resolved_time"] for x in a] == [x["resolved_time"] for x in b]
@@ -90,8 +90,8 @@ def test_shared_timing_preserves_listener_states_and_resumes_speaker_alignment(t
     assert [row["phrase_id"] for row in phrase_timing] == ["P01", "P02", "P03"]
     assert all(row["canonical_end"] == phrase_timing[index + 1]["canonical_start"] for index, row in enumerate(phrase_timing[:-1]))
     assert result["full_script_source"]=="script.txt" and result["performance_plan_source"]==str(plan)
-    assert "<mask=Friendly-50> one </mask=Friendly-50>" in Path(result["artifacts"]["A_jali_speaker_annotated"]).read_text()
-    assert "Thinking-40" in Path(result["artifacts"]["B_jali_speaker_annotated"]).read_text()
+    assert "<mask=Friendly-50> one </mask=Friendly-50>" in Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
+    assert "Thinking-40" in Path(result["artifacts"]["characters"]["WILL"]["jali_speaker_annotated"]).read_text()
 
 
 def test_all_channels_and_actors_receive_one_canonical_phrase_interval(tmp_path):
@@ -102,9 +102,9 @@ def test_all_channels_and_actors_receive_one_canonical_phrase_interval(tmp_path)
             phrase["states"][alias].update({"affect": "Friendly-50", "heart": "Happy-10", "gaze": f"GAZE-{'B' if alias == 'A' else 'A'}", "head": "LOW", "lid": -1, "blink": "DOUBLE_BLINK", "blink_suppression": "SUPPRESS"})
     plan.write_text(json.dumps(payload))
     result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping=MAPPING, output_dir=tmp_path / "out")
-    actor_events = {alias: json.loads(Path(result["artifacts"][alias]).read_text())["events"] for alias in ("A", "B")}
+    actor_events = {name: json.loads(Path(result["artifacts"]["characters"][name]["semantic_events"]).read_text())["events"] for name in ("AGNES", "WILL")}
     for phrase_id in ("P01", "P02", "P03"):
-        times = [[event["resolved_time"] for event in actor_events[alias] if event["phrase_id"] == phrase_id] for alias in ("A", "B")]
+        times = [[event["resolved_time"] for event in actor_events[name] if event["phrase_id"] == phrase_id] for name in ("AGNES", "WILL")]
         assert all(time == times[0][0] for rows in times for time in rows)
 
 @pytest.mark.parametrize("kind",["missing","extra","mismatch"])
@@ -137,4 +137,26 @@ def test_compiler_prefers_explicit_original_transcript_and_never_modifies_it(tmp
     first=compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,audio_folder=audio,fps=24,runtime_mapping=mapping,output_dir=tmp_path/"out1")
     second=compile_dual_performance_plan(performance_plan_path=plan,script=SCRIPT,audio_folder=audio,fps=24,runtime_mapping=mapping,output_dir=tmp_path/"out2")
     assert source.read_text(encoding="utf-8") == "one three"
-    assert Path(first["artifacts"]["A_jali_speaker_annotated"]).read_text() == Path(second["artifacts"]["A_jali_speaker_annotated"]).read_text()
+    assert Path(first["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text() == Path(second["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
+
+
+def test_v1_compiler_uses_actual_names_and_mask_only_artifacts(tmp_path):
+    plan, audio = _fixture(tmp_path)
+    from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0
+    payload = adapt_dual_performance_plan_v0(json.loads(plan.read_text()))
+    for phrase in payload["phrases"]:
+        for name in payload["characters"]:
+            phrase["states"][name].pop("heart", None)
+    plan.write_text(json.dumps(payload))
+    mapping = {"AGNES": MAPPING["A"], "WILL": MAPPING["B"]}
+    result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping=mapping, output_dir=tmp_path / "out")
+    assert result["schema_version"] == "dual_animation_manifest_v1"
+    assert result["characters"] == ["AGNES", "WILL"]
+    assert set(result["character_runtime_mapping"]) == {"AGNES", "WILL"}
+    timing = json.loads(Path(result["artifacts"]["conversation_phrase_timing"]).read_text())["phrases"]
+    assert {row["speaker"] for row in timing} == {"AGNES", "WILL"}
+    events = json.loads(Path(result["artifacts"]["characters"]["AGNES"]["semantic_events"]).read_text())["events"]
+    assert all(event["actor"] == "AGNES" and event["channel"] != "heart" for event in events)
+    annotation = Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
+    diagnostic = json.loads(Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotation"]).read_text())
+    assert "<heart=" not in annotation and "heart_tag_count" not in diagnostic

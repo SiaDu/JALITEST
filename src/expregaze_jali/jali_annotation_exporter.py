@@ -92,7 +92,7 @@ def export_jali_annotation(parsed: dict[str, Any], events: dict[str, Any]) -> st
     return _space_jali_tags("".join(parts))
 
 
-def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str, Any]], *, alias: str, script_name: str) -> tuple[str, dict[str, Any]]:
+def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str, Any]], *, alias: str, script_name: str, mask_only: bool = False) -> tuple[str, dict[str, Any]]:
     """Tag only this actor's spoken phrases, preserving its original transcript."""
     tokens = iter_word_tokens(source_text); cursor = 0; events: list[dict[str, Any]] = []
     included: list[str] = []; skipped: list[str] = []; order = 0
@@ -108,7 +108,8 @@ def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str,
         start, end = tokens[cursor]["start"], tokens[cursor + len(wanted) - 1]["end"]
         cursor += len(wanted); included.append(phrase_id)
         state = ((phrase.get("states") or {}).get(alias) or {})
-        for channel, kind in (("affect", "mask"), ("heart", "heart")):
+        channels = (("affect", "mask"),) if mask_only else (("affect", "mask"), ("heart", "heart"))
+        for channel, kind in channels:
             value = state.get(channel)
             if value not in (None, "", "NONE"):
                 events.append({"type": kind, "value": str(value), "span": {"start": start, "end": end}, "order": order, "phrase_id": phrase_id}); order += 1
@@ -116,4 +117,7 @@ def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str,
         remaining = [item["text"] for item in tokens[cursor:cursor + 5]]
         raise ValueError(f"{alias}: isolated transcript has unconsumed word(s): {remaining}.")
     text = export_jali_annotation({"clean_transcript": source_text}, {"events": events})
-    return text, {"alias": alias, "script_name": script_name, "included_phrase_ids": included, "skipped_listener_phrase_ids": skipped, "mask_tag_count": sum(e["type"] == "mask" for e in events), "heart_tag_count": sum(e["type"] == "heart" for e in events), "events": events}
+    diagnostic = {"actor": alias, "script_name": script_name, "included_phrase_ids": included, "skipped_listener_phrase_ids": skipped, "mask_tag_count": sum(e["type"] == "mask" for e in events), "events": events}
+    if not mask_only:
+        diagnostic["heart_tag_count"] = sum(e["type"] == "heart" for e in events)
+    return text, diagnostic

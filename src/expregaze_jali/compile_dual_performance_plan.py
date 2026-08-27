@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 import wave
+import re
 
 from expregaze_jali.compile_performance_plan import TimingAlignment, _validate_words
 from expregaze_jali.performance_event_resolver import load_words_jsonl
@@ -13,6 +14,7 @@ from expregaze_jali.text_utils import normalize_word
 from expregaze_jali.textgrid_parser import parse_textgrid_words
 from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
+from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0
 
 
 def discover_character_timing(audio_folder: str | Path, sound_file: str) -> TimingAlignment:
@@ -35,14 +37,15 @@ def _wav_duration(folder: str | Path, sound_file: str) -> tuple[Path, float]:
 
 
 def _validate_plan(plan: dict[str, Any], model: Any) -> list[dict[str, Any]]:
-    if plan.get("schema_version") != "dual_performance_plan_v0": raise ValueError("Expected dual_performance_plan_v0.")
-    if not isinstance(plan.get("characters"), dict) or set(plan["characters"]) < {"A", "B"}: raise ValueError("Dual plan requires characters A and B.")
+    if plan.get("schema_version") != "dual_performance_plan_v1": raise ValueError("Expected dual_performance_plan_v1.")
+    if not isinstance(plan.get("characters"), list) or len(plan["characters"]) != 2: raise ValueError("Dual plan requires two ordered character names.")
+    characters = plan["characters"]
     phrases = plan.get("phrases")
     if not isinstance(phrases, list): raise ValueError("Dual plan requires a phrases list.")
     turns={turn.turn_id for turn in model.turns}
     for index, phrase in enumerate(phrases, 1):
-        if not isinstance(phrase,dict) or not phrase.get("phrase_id") or not isinstance(phrase.get("span"),dict) or phrase["span"].get("turn_id") not in turns or not isinstance(phrase.get("states"),dict) or not all(isinstance(phrase["states"].get(a),dict) for a in ("A","B")):
-            raise ValueError(f"Dual plan phrase {index} requires phrase_id, known span turn_id, and A/B states.")
+        if not isinstance(phrase,dict) or not phrase.get("phrase_id") or not isinstance(phrase.get("span"),dict) or phrase["span"].get("turn_id") not in turns or not isinstance(phrase.get("states"),dict) or not all(isinstance(phrase["states"].get(name),dict) for name in characters) or phrase.get("speaker") not in characters:
+            raise ValueError(f"Dual plan phrase {index} requires phrase_id, known span turn_id, named states, and a named speaker.")
     return phrases
 
 
@@ -113,59 +116,72 @@ def build_canonical_phrase_timeline(
 
 
 def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: str, audio_folder: str | Path, fps: float, runtime_mapping: dict[str, Any], output_dir: str | Path, script_source: str | Path | None = None) -> dict[str, Any]:
-    plan = json.loads(Path(performance_plan_path).read_text(encoding="utf-8"))
-    mapping = {alias: runtime_mapping.get(alias) for alias in ("A", "B")}
-    if not all(isinstance(row, dict) and row.get("script_name") and row.get("sound_file") for row in mapping.values()): raise ValueError("Runtime mapping requires A/B script_name and sound_file.")
-    for alias in ("A","B"):
-        if speaker_key(str(plan.get("characters",{}).get(alias,""))) != speaker_key(str(mapping[alias]["script_name"])): raise ValueError(f"Runtime mapping {alias} script_name does not match dual plan character.")
-    model = build_conversation_anchor_model(script, character_a=str(mapping["A"]["script_name"]), character_b=str(mapping["B"]["script_name"]))
+    raw_plan = json.loads(Path(performance_plan_path).read_text(encoding="utf-8"))
+    plan = adapt_dual_performance_plan_v0(raw_plan)
+    characters = plan.get("characters")
+    if not isinstance(characters, list) or len(characters) != 2:
+        raise ValueError("Dual plan requires two ordered character names.")
+    if raw_plan.get("schema_version") == "dual_performance_plan_v0":
+        aliases = raw_plan.get("characters", {})
+        runtime_mapping = {
+            aliases[alias]: value for alias, value in runtime_mapping.items()
+            if alias in aliases
+        }
+    mapping = {name: runtime_mapping.get(name) for name in characters}
+    if not all(isinstance(row, dict) and row.get("script_name") and row.get("sound_file") for row in mapping.values()):
+        raise ValueError("Runtime mapping requires one named script_name and sound_file entry per plan character.")
+    for name in characters:
+        if speaker_key(name) != speaker_key(str(mapping[name]["script_name"])):
+            raise ValueError(f"Runtime mapping {name} script_name does not match dual plan character.")
+    model = build_conversation_anchor_model(script, character_a=characters[0], character_b=characters[1])
     phrases = _validate_plan(plan, model)
-    timings = {alias: discover_character_timing(audio_folder, str(row["sound_file"])) for alias, row in mapping.items()}
-    wavs = {alias: _wav_duration(audio_folder, str(row["sound_file"])) for alias,row in mapping.items()}
-    shared_duration = min(wavs["A"][1], wavs["B"][1])
+    timings = {name: discover_character_timing(audio_folder, str(row["sound_file"])) for name, row in mapping.items()}
+    wavs = {name: _wav_duration(audio_folder, str(row["sound_file"])) for name,row in mapping.items()}
+    shared_duration = min(wavs[name][1] for name in characters)
     duration_warning = (
-        f"Runtime WAV durations differ (A={wavs['A'][1]:.3f}s, B={wavs['B'][1]:.3f}s); "
+        f"Runtime WAV durations differ ({characters[0]}={wavs[characters[0]][1]:.3f}s, {characters[1]}={wavs[characters[1]][1]:.3f}s); "
         f"using the shortest shared duration {shared_duration:.3f}s."
-        if abs(wavs["A"][1] - wavs["B"][1]) > 0.02 else ""
+        if abs(wavs[characters[0]][1] - wavs[characters[1]][1]) > 0.02 else ""
     )
-    cursors = {"A": 0, "B": 0}; anchor_times: dict[str, dict[str, Any]] = {}
+    cursors = {name: 0 for name in characters}; anchor_times: dict[str, dict[str, Any]] = {}
     for turn in model.turns:
-        alias = next(key for key, name in model.aliases.items() if name == turn.speaker)
-        timing = timings[alias]
+        actor = next(name for name in characters if speaker_key(name) == speaker_key(turn.speaker))
+        timing = timings[actor]
         for anchor in turn.anchors:
-            index = cursors[alias]
-            if index >= len(timing.words): raise ValueError(f"{alias} {turn.turn_id}: missing timing word for {anchor.text!r} in {timing.path}")
+            index = cursors[actor]
+            if index >= len(timing.words): raise ValueError(f"{actor} {turn.turn_id}: missing timing word for {anchor.text!r} in {timing.path}")
             word = timing.words[index]; actual = str(word.get("norm") or word.get("word") or "")
-            if normalize_word(anchor.text) != normalize_word(actual): raise ValueError(f"{alias} {turn.turn_id}: expected word {anchor.text!r}, timing word {actual!r}, source {timing.path}")
+            if normalize_word(anchor.text) != normalize_word(actual): raise ValueError(f"{actor} {turn.turn_id}: expected word {anchor.text!r}, timing word {actual!r}, source {timing.path}")
             anchor_times[anchor.anchor_id] = {"speaker": turn.speaker, "text": anchor.text, "start": float(word["start"]), "end": float(word["end"]), "timing_source": str(timing.path)}
-            cursors[alias] += 1
-    for alias, timing in timings.items():
-        if cursors[alias] != len(timing.words):
-            remaining=timing.words[cursors[alias]:]
-            raise ValueError(f"{alias}: {len(remaining)} unexpected remaining timing word(s) in {timing.path}: {remaining[:3]}")
+            cursors[actor] += 1
+    for actor, timing in timings.items():
+        if cursors[actor] != len(timing.words):
+            remaining=timing.words[cursors[actor]:]
+            raise ValueError(f"{actor}: {len(remaining)} unexpected remaining timing word(s) in {timing.path}: {remaining[:3]}")
     out = Path(output_dir); out.mkdir(parents=True, exist_ok=True)
     timing_path = out / "conversation_anchor_timing.json"; timing_path.write_text(json.dumps(anchor_times, indent=2)+"\n", encoding="utf-8")
-    artifacts: dict[str, str] = {"conversation_anchor_timing": str(timing_path)}
+    artifacts: dict[str, Any] = {"conversation_anchor_timing": str(timing_path), "characters": {}}
     canonical_timeline = build_canonical_phrase_timeline(phrases, model, anchor_times)
     phrase_timing_path = out / "conversation_phrase_timing.json"
     phrase_timing_path.write_text(json.dumps({"phrases": [{key: value for key, value in item.items() if key != "phrase"} for item in canonical_timeline]}, indent=2) + "\n", encoding="utf-8")
     artifacts["conversation_phrase_timing"] = str(phrase_timing_path)
-    for alias in ("A", "B"):
+    for actor in characters:
         events=[]
         for timing in canonical_timeline:
             phrase = timing["phrase"]
-            for channel, value in phrase["states"][alias].items():
+            for channel, value in phrase["states"][actor].items():
                 if value not in (None, "NONE"):
-                    events.append({"phrase_id": phrase["phrase_id"], "source_proposal_id": phrase.get("source_proposal_id"), "speaker": phrase.get("speaker"), "actor": alias, "intent": phrase.get("intent"), "channel": channel, "value": value, "source_char_span": phrase.get("span"), "resolved_time": {"start": timing["canonical_start"], "end": timing["canonical_end"]}, "reason": ((phrase.get("rationale") or {}).get(alias, {}) or {}).get(channel)})
-        path=out/"characters"/alias/"semantic_events_resolved.json"; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({"events":events},indent=2)+"\n",encoding="utf-8"); artifacts[alias]=str(path)
-        source = Path(mapping[alias].get("transcript_path") or (Path(audio_folder) / f"{mapping[alias]['sound_file']}.txt"))
-        if not source.is_file(): raise FileNotFoundError(f"{alias} / {mapping[alias]['script_name']}: JALI source transcript not found: {source}")
-        annotated, diagnostic = build_dual_speaker_jali_annotation(source.read_text(encoding="utf-8"), phrases, alias=alias, script_name=str(mapping[alias]["script_name"]))
-        target = out / "characters" / alias / "jali_speaker_annotated.txt"; target.write_text(annotated, encoding="utf-8")
-        diagnostic.update({"sound_file": mapping[alias]["sound_file"], "source_transcript_path": str(source), "annotated_transcript_path": str(target)})
+                    events.append({"phrase_id": phrase["phrase_id"], "source_proposal_id": phrase.get("source_proposal_id"), "speaker": phrase.get("speaker"), "actor": actor, "intent": phrase.get("intent"), "channel": channel, "value": value, "source_char_span": phrase.get("span"), "resolved_time": {"start": timing["canonical_start"], "end": timing["canonical_end"]}, "reason": ((phrase.get("rationale") or {}).get(actor, {}) or {}).get(channel)})
+        token = re.sub(r"[^A-Za-z0-9_.-]+", "_", actor).strip("_") or "character"
+        path=out/"characters"/token/"semantic_events_resolved.json"; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(json.dumps({"events":events},indent=2)+"\n",encoding="utf-8")
+        source = Path(mapping[actor].get("transcript_path") or (Path(audio_folder) / f"{mapping[actor]['sound_file']}.txt"))
+        if not source.is_file(): raise FileNotFoundError(f"{actor}: JALI source transcript not found: {source}")
+        annotated, diagnostic = build_dual_speaker_jali_annotation(source.read_text(encoding="utf-8"), phrases, alias=actor, script_name=str(mapping[actor]["script_name"]), mask_only=True)
+        target = out / "characters" / token / "jali_speaker_annotated.txt"; target.write_text(annotated, encoding="utf-8")
+        diagnostic.update({"sound_file": mapping[actor]["sound_file"], "source_transcript_path": str(source), "annotated_transcript_path": str(target)})
         diagnostic_path = target.with_name("jali_speaker_annotation.json"); diagnostic_path.write_text(json.dumps(diagnostic, indent=2)+"\n", encoding="utf-8")
-        artifacts[f"{alias}_jali_speaker_annotated"] = str(target); artifacts[f"{alias}_jali_speaker_annotation"] = str(diagnostic_path)
-    manifest={"schema_version":"dual_animation_manifest_v0","performance_plan_source":str(performance_plan_path),"full_script_source":str(script_source or "<provided script text>"),"fps":float(fps),"character_runtime_mapping":runtime_mapping,"wav_durations":{a:{"path":str(wavs[a][0]),"seconds":wavs[a][1]} for a in wavs},"shared_duration_seconds":shared_duration,"artifacts":artifacts,"warnings":[duration_warning] if duration_warning else []}
+        artifacts["characters"][actor] = {"semantic_events": str(path), "jali_speaker_annotated": str(target), "jali_speaker_annotation": str(diagnostic_path)}
+    manifest={"schema_version":"dual_animation_manifest_v1","characters":characters,"performance_plan_source":str(performance_plan_path),"full_script_source":str(script_source or "<provided script text>"),"fps":float(fps),"character_runtime_mapping":mapping,"wav_durations":{name:{"path":str(wavs[name][0]),"seconds":wavs[name][1]} for name in characters},"shared_duration_seconds":shared_duration,"artifacts":artifacts,"warnings":[duration_warning] if duration_warning else []}
     path=out/"dual_animation_manifest.json"; path.write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8"); manifest["manifest_path"]=str(path); return manifest
 
 
