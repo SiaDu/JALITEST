@@ -416,11 +416,11 @@ def build_listener_mask_key_schedule(
 
 
 def build_v2_listener_mask_key_schedule(
-    intervals: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 4
+    intervals: Iterable[dict[str, Any]], *, fps: float
 ) -> list[dict[str, Any]]:
-    """Emit causal v2 User Mask keys without changing legacy v0/v1 behavior."""
-    if fps <= 0 or transition_frames < 1:
-        raise ValueError("V2 Listener Mask timing requires positive fps and transition_frames.")
+    """Emit exact semantic-boundary v2 User Mask keys; legacy schedules stay unchanged."""
+    if fps <= 0:
+        raise ValueError("V2 Listener Mask timing requires positive fps.")
     keys: list[dict[str, Any]] = []
     previous: dict[str, float] | None = None
     for interval in intervals:
@@ -428,16 +428,7 @@ def build_v2_listener_mask_key_schedule(
         boundary = float(interval["start"]) * fps
         if previous == pose:
             continue
-        kind = str(interval.get("boundary_kind") or "INITIAL_STATE")
-        role = str(interval.get("timing_role") or "")
-        if previous is None or kind == "INITIAL_STATE":
-            keys.append({"frame": 0.0, "pose": pose, "phrase_id": interval["phrase_id"]})
-        elif kind == "turn_start" or (kind == "affect" and role == "SPEAK_ONSET"):
-            keys.append({"frame": max(0.0, boundary - transition_frames), "pose": previous, "phrase_id": interval["phrase_id"]})
-            keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
-        else:  # own turn release and LISTEN_REACTION are strictly causal.
-            keys.append({"frame": boundary, "pose": previous, "phrase_id": interval["phrase_id"]})
-            keys.append({"frame": boundary + transition_frames, "pose": pose, "phrase_id": interval["phrase_id"]})
+        keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
         previous = pose
     return keys
 
@@ -756,8 +747,6 @@ def _head_target(value: str, config: dict[str, Any]) -> dict[str, float]:
 
 
 def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
-    transition = int(config.get("transition_frames", 4))
-    previous = {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
     keys: list[dict[str, Any]] = []
     for event in events:
         value = (event.get("changes") or {}).get("head")
@@ -765,16 +754,7 @@ def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: fl
             continue
         frame = float(event["resolved_start"]) * float(fps)
         target = _head_target(str(value), config)
-        role = str(event.get("timing_role") or "SPEAK_ONSET")
-        if role == "INITIAL_STATE":
-            keys.append({"frame": 0.0, "values": target, "event_id": event.get("event_id")})
-        elif role == "LISTEN_REACTION":
-            keys.append({"frame": frame, "values": dict(previous), "event_id": event.get("event_id")})
-            keys.append({"frame": frame + transition, "values": target, "event_id": event.get("event_id")})
-        else:
-            keys.append({"frame": max(0.0, frame - transition), "values": dict(previous), "event_id": event.get("event_id")})
-            keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
-        previous = target
+        keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
     return keys
 
 

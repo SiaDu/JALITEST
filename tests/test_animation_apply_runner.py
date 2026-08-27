@@ -313,21 +313,21 @@ def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
         {"event_id": "E2", "resolved_start": 2.0, "changes": {"head": "HEAD-NONE"}},
     ]
     keys = build_head_overlay_key_schedule(events, fps=24, config=config)
-    assert keys[1] == {"frame": 24.0, "values": {"rotateX": -10.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "E1"}
+    assert keys[0] == {"frame": 24.0, "values": {"rotateX": -10.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "E1"}
     assert keys[-1]["values"] == {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
 
 
-def test_v2_head_transitions_follow_timing_roles_without_early_listener_reaction():
+def test_v2_head_states_land_exactly_on_every_semantic_timing_role():
     config = {"transition_frames": 4, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
     initial = build_head_overlay_key_schedule([{"event_id": "I", "timing_role": "INITIAL_STATE", "resolved_start": 0, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     listener = build_head_overlay_key_schedule([{"event_id": "L", "timing_role": "LISTEN_REACTION", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     speaker = build_head_overlay_key_schedule([{"event_id": "S", "timing_role": "SPEAK_ONSET", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     assert initial == [{"frame": 0.0, "values": {"rotateX": -3.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "I"}]
-    assert [key["frame"] for key in listener] == [48.0, 52.0]
-    assert [key["frame"] for key in speaker] == [44.0, 48.0]
+    assert [key["frame"] for key in listener] == [48.0]
+    assert [key["frame"] for key in speaker] == [48.0]
 
 
-def test_v2_user_mask_schedule_is_causal_for_listener_and_own_turn_boundaries():
+def test_v2_user_mask_schedule_lands_exactly_on_listener_and_own_turn_boundaries():
     watchful = {"value": 1.0}; nervous = {"value": 2.0}; none = {"value": 0.0}
     listener = build_v2_listener_mask_key_schedule([
         {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
@@ -338,8 +338,8 @@ def test_v2_user_mask_schedule_is_causal_for_listener_and_own_turn_boundaries():
         {"phrase_id": "start", "start": 2, "pose": none, "boundary_kind": "turn_start"},
         {"phrase_id": "end", "start": 4, "pose": watchful, "boundary_kind": "turn_end"},
     ], fps=24)
-    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, watchful), (52.0, nervous)]
-    assert [(key["frame"], key["pose"]) for key in own_turn] == [(0.0, watchful), (44.0, watchful), (48.0, none), (96.0, none), (100.0, watchful)]
+    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, nervous)]
+    assert [(key["frame"], key["pose"]) for key in own_turn] == [(0.0, watchful), (48.0, none), (96.0, watchful)]
 
 
 def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path):
