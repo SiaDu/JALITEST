@@ -840,6 +840,58 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
     return keys
 
 
+def build_blink_brow_companion_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build additive BrowDown delta keys synchronized with V2 blink keys."""
+    companion = config.get("brow_companion") or {}
+    delta = float(companion["delta"])
+    presets = config.get("presets") or {}
+    keys: list[dict[str, Any]] = []
+    hold_active = False
+    for event in events:
+        value = (event.get("changes") or {}).get("blink")
+        if not value:
+            continue
+        cursor = float(event.get("visual_start_frame", float(event["resolved_start"]) * float(fps)))
+        if value == "EYE_CLOSE_HOLD":
+            if hold_active:
+                raise ValueError("EYE_CLOSE_HOLD requires EYE_OPEN before another hold.")
+            preset = presets.get(value) or {}
+            keys.extend((
+                {"frame": cursor, "value": 0.0, "event_id": event.get("event_id")},
+                {"frame": cursor + int(preset.get("close_frames", 4)), "value": delta, "event_id": event.get("event_id")},
+            ))
+            hold_active = True
+            continue
+        if value == "EYE_OPEN":
+            if not hold_active:
+                raise ValueError("EYE_OPEN requires an active EYE_CLOSE_HOLD.")
+            hold_preset = presets.get("EYE_CLOSE_HOLD") or {}
+            release = int(hold_preset.get("release_frames", hold_preset.get("open_frames", 4)))
+            keys.extend((
+                {"frame": cursor, "value": delta, "event_id": event.get("event_id")},
+                {"frame": cursor + release, "value": 0.0, "event_id": event.get("event_id")},
+            ))
+            hold_active = False
+            continue
+        if hold_active:
+            raise ValueError("EYE_CLOSE_HOLD permits only EYE_OPEN until released.")
+        preset = presets.get(value)
+        if not isinstance(preset, dict):
+            raise ValueError(f"Missing performative blink preset {value}")
+        for _index in range(int(preset["count"])):
+            close = int(preset["close_frames"])
+            hold = int(preset["hold_frames"])
+            opening = int(preset["open_frames"])
+            keys.extend((
+                {"frame": cursor, "value": 0.0, "event_id": event.get("event_id")},
+                {"frame": cursor + close, "value": delta, "event_id": event.get("event_id")},
+                {"frame": cursor + close + hold, "value": delta, "event_id": event.get("event_id")},
+                {"frame": cursor + close + hold + opening, "value": 0.0, "event_id": event.get("event_id")},
+            ))
+            cursor += close + hold + opening + int(preset["gap_frames"])
+    return keys
+
+
 def _affect_identity(value: object) -> str:
     text = str(value or "NONE")
     if text in {"NONE", "MASK-NONE"}:
@@ -946,6 +998,22 @@ def _resolve_user_blink_plugs(rig: str, config: dict[str, Any], cmds_module: Any
     )
 
 
+def _resolve_user_blink_brow_plugs(rig: str, config: dict[str, Any], cmds_module: Any) -> list[str]:
+    companion = config.get("brow_companion")
+    if not isinstance(companion, dict):
+        raise ValueError("Maya blink config requires brow_companion.")
+    central = f"{qualify_rig_control(rig, str(companion['central_control_suffix']))}.{companion['central_attribute']}"
+    if cmds_module.objExists(central):
+        return [central]
+    left = f"{qualify_rig_control(rig, str(companion['left_control_suffix']))}.{companion['left_attribute']}"
+    right = f"{qualify_rig_control(rig, str(companion['right_control_suffix']))}.{companion['right_attribute']}"
+    if cmds_module.objExists(left) and cmds_module.objExists(right):
+        return [left, right]
+    raise RuntimeError(
+        f"Mapped rig {rig} has no usable User BrowDown control; expected {central} or both {left}, {right}."
+    )
+
+
 def prepare_dual_v2_head_blink_overlays(
     *, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]],
     baseline: dict[str, Any], cmds_module: Any | None = None, mel_module: Any | None = None,
@@ -994,6 +1062,7 @@ def prepare_dual_v2_head_blink_overlays(
         if head_events and any(not cmds_module.objExists(plug) for plug in head_plugs):
             raise RuntimeError(f"{actor}: head event requires {neck}.rotateX/Y/Z.")
         blink_plugs = _resolve_user_blink_plugs(rig, config["blink"], cmds_module) if blink_events else []
+        blink_brow_plugs = _resolve_user_blink_brow_plugs(rig, config["blink"], cmds_module) if blink_events else []
         vendor_blink_plug = f"{qualify_rig_control(rig, str(config['blink']['vendor_output_control_suffix']))}.{config['blink']['vendor_output_attribute']}"
         if not cmds_module.objExists(vendor_blink_plug):
             raise RuntimeError(f"{actor}: cannot verify JALI blink ownership; missing vendor output {vendor_blink_plug}.")
@@ -1003,12 +1072,13 @@ def prepare_dual_v2_head_blink_overlays(
             raise RuntimeError(f"{actor}: performative blink requires {facs_plug}.")
         prepared["actors"][actor] = {
             "rig": rig, "jsync": jsync, "head_layer": head_layer_name(actor), "blink_layer": blink_layer_name(actor),
-            "head_plugs": head_plugs, "blink_plugs": blink_plugs, "facs_plug": facs_plug,
+            "head_plugs": head_plugs, "blink_plugs": blink_plugs, "blink_brow_plugs": blink_brow_plugs, "facs_plug": facs_plug,
             "vendor_blink_plug": vendor_blink_plug,
             "facs_add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module) if blink_events else None,
             "head_keys": build_head_overlay_key_schedule(head_events, fps=float(manifest["fps"]), config=config["head"]),
             "blink_plan": blink_events,
             "blink_keys": build_blink_overlay_key_schedule(blink_events, fps=float(manifest["fps"]), config=config["blink"]),
+            "blink_brow_keys": build_blink_brow_companion_key_schedule(blink_events, fps=float(manifest["fps"]), config=config["blink"]),
             "baseline": baseline_preflight[actor],
         }
     return prepared
@@ -1029,13 +1099,17 @@ def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_
                     attr = plug.rsplit(".", 1)[1]
                     cmds_module.setKeyframe(plug.rsplit(".", 1)[0], attribute=attr, time=key["frame"], value=key["values"][attr], animLayer=item["head_layer"])
         if item["blink_keys"]:
-            _clear_listener_layer_keys(item["blink_layer"], item["blink_plugs"], scene_range=None, cmds_module=cmds_module, override=False)
+            _clear_listener_layer_keys(item["blink_layer"], [*item["blink_plugs"], *item.get("blink_brow_plugs", [])], scene_range=None, cmds_module=cmds_module, override=False)
             cmds_module.setAttr(item["facs_plug"], item["facs_add_index"])
             for key in item["blink_keys"]:
                 for plug in item["blink_plugs"]:
                     node, attr = plug.rsplit(".", 1)
                     cmds_module.setKeyframe(node, attribute=attr, time=key["frame"], value=key["value"], animLayer=item["blink_layer"])
-        result[actor] = {"head_layer": item["head_layer"], "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "blink_plan": item.get("blink_plan", []), "jali_calculate_blinks_disabled": True}
+            for key in item.get("blink_brow_keys", []):
+                for plug in item.get("blink_brow_plugs", []):
+                    node, attr = plug.rsplit(".", 1)
+                    cmds_module.setKeyframe(node, attribute=attr, time=key["frame"], value=key["value"], animLayer=item["blink_layer"])
+        result[actor] = {"head_layer": item["head_layer"], "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "blink_brow_key_count": len(item.get("blink_brow_keys", [])), "blink_plan": item.get("blink_plan", []), "jali_calculate_blinks_disabled": True}
     return result
 
 

@@ -8,7 +8,7 @@ total_clip_time = 0.993125.
 total_clip_time = 1.08312. 
 total_clip_time = 1.25312. 
 total_clip_time = 1.32313. 
-total_clip_time = 3.16375. 
+total_clip_time = 3.17375. 
 total_clip_time = 3.28375. 
 Skipped 'w' in sonorant stats
 Skipped 'w' in consonants stats

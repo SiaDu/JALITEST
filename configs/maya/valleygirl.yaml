@@ -125,6 +125,14 @@ maya_performative_blink_overlay:
   vendor_output_control_suffix: LIDS_jSync_plusMinus
   vendor_output_attribute: Down_upLids_jSync
   open_value: 0
+  brow_companion:
+    delta: 2
+    central_control_suffix: usr_BrowInDown
+    central_attribute: BrowDown
+    left_control_suffix: usr_BrowInDown_L
+    left_attribute: BrowDown_L
+    right_control_suffix: usr_BrowInDown_R
+    right_attribute: BrowDown_R
   presets:
     BLINK: {closure: 7, close_frames: 2, hold_frames: 1, open_frames: 2, count: 1, gap_frames: 0}
     SLOW_BLINK: {closure: 8, close_frames: 5, hold_frames: 4, open_frames: 6, count: 1, gap_frames: 0}

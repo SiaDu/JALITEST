@@ -43,12 +43,14 @@ from animation_apply_runner import (  # noqa: E402
     blink_layer_name,
     build_head_overlay_key_schedule,
     build_blink_overlay_key_schedule,
+    build_blink_brow_companion_key_schedule,
     apply_dual_v2_head_blink_overlays,
     prepare_dual_v2_head_blink_overlays,
     plan_v2_blinks,
     diagnose_v2_blink_ownership,
     prepare_dual_v2_listener_mask_artifacts,
     _v2_overlay_config,
+    _resolve_user_blink_brow_plugs,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 from diagnose_eyelid_user_mappings import diagnose_eyelid_user_mappings  # noqa: E402
@@ -68,6 +70,10 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     assert config["head"]["control_suffix"] == "jNeck_ctl"
     assert config["affect"]["transition_frames"] == 12
     assert config["blink"]["presets"]["BLINK"]["closure"] == 7
+    assert config["blink"]["brow_companion"]["delta"] == 2
+    assert config["blink"]["brow_companion"]["central_control_suffix"] == "usr_BrowInDown"
+    assert config["blink"]["brow_companion"]["central_attribute"] == "BrowDown"
+    assert (config["blink"]["brow_companion"]["left_attribute"], config["blink"]["brow_companion"]["right_attribute"]) == ("BrowDown_L", "BrowDown_R")
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -439,6 +445,47 @@ def test_v2_blink_schedule_contains_only_explicit_performative_events():
     assert len(keys) == 8 and keys[0]["frame"] == 24 and keys[1]["value"] == 7 and keys[-1]["value"] == 0
 
 
+def test_v2_blink_brow_companion_uses_additive_delta_and_visual_start_frame():
+    config = _v2_overlay_config()["blink"]
+    normal = [{"event_id": "B", "resolved_start": 1, "blink_source": "gaze_regulatory", "changes": {"blink": "BLINK"}}]
+    visual = [{"event_id": "V", "resolved_start": 1, "blink_source": "affect_regulatory", "visual_start_frame": 50, "changes": {"blink": "BLINK"}}]
+    assert [(key["frame"], key["value"]) for key in build_blink_brow_companion_key_schedule(normal, fps=24, config=config)] == [(24.0, 0.0), (26.0, 2.0), (27.0, 2.0), (29.0, 0.0)]
+    assert [key["frame"] for key in build_blink_brow_companion_key_schedule(visual, fps=24, config=config)] == [50.0, 52.0, 53.0, 55.0]
+
+
+def test_v2_blink_brow_companion_covers_slow_double_and_hold_release():
+    config = _v2_overlay_config()["blink"]
+    slow = build_blink_brow_companion_key_schedule([{"event_id": "S", "resolved_start": 1, "changes": {"blink": "SLOW_BLINK"}}], fps=24, config=config)
+    assert [(key["frame"], key["value"]) for key in slow] == [(24.0, 0.0), (29.0, 2.0), (33.0, 2.0), (39.0, 0.0)]
+    double = build_blink_brow_companion_key_schedule([{"event_id": "D", "resolved_start": 1, "changes": {"blink": "DOUBLE_BLINK"}}], fps=24, config=config)
+    assert [(key["frame"], key["value"]) for key in double] == [(24.0, 0.0), (26.0, 2.0), (27.0, 2.0), (29.0, 0.0), (33.0, 0.0), (35.0, 2.0), (36.0, 2.0), (38.0, 0.0)]
+    hold = build_blink_brow_companion_key_schedule([
+        {"event_id": "H", "resolved_start": 1, "changes": {"blink": "EYE_CLOSE_HOLD"}},
+        {"event_id": "O", "resolved_start": 3, "changes": {"blink": "EYE_OPEN"}},
+    ], fps=24, config=config)
+    assert [(key["frame"], key["value"]) for key in hold] == [(24.0, 0.0), (28.0, 2.0), (72.0, 2.0), (76.0, 0.0)]
+
+
+def test_v2_blink_brow_companion_is_independent_of_semantic_affect_value():
+    config = _v2_overlay_config()["blink"]
+    keys = build_blink_brow_companion_key_schedule([{"event_id": "B", "resolved_start": 1, "changes": {"blink": "BLINK"}}], fps=24, config=config)
+    assert [key["value"] for key in keys] == [0.0, 2.0, 2.0, 0.0]
+
+
+def test_v2_blink_brow_resolver_prefers_central_then_requires_both_sides():
+    config = _v2_overlay_config()["blink"]
+    class Cmds:
+        def __init__(self, existing): self.existing = set(existing)
+        def objExists(self, plug): return plug in self.existing
+    central = "ALICE:usr_BrowInDown.BrowDown"
+    left = "ALICE:usr_BrowInDown_L.BrowDown_L"
+    right = "ALICE:usr_BrowInDown_R.BrowDown_R"
+    assert _resolve_user_blink_brow_plugs("|ALICE:ROOT", config, Cmds([central])) == [central]
+    assert _resolve_user_blink_brow_plugs("|ALICE:ROOT", config, Cmds([left, right])) == [left, right]
+    with pytest.raises(RuntimeError, match="BrowDown control"):
+        _resolve_user_blink_brow_plugs("|ALICE:ROOT", config, Cmds([left]))
+
+
 def test_v2_eye_close_hold_persists_until_explicit_eye_open_and_suppresses_regulatory_blinks():
     config = {"open_value": 0, "presets": {"EYE_CLOSE_HOLD": {"closure": 9, "close_frames": 4}}}
     events = [
@@ -586,9 +633,10 @@ def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
         "ALICE": {
             "head_layer": head_layer_name("ALICE"), "blink_layer": blink_layer_name("ALICE"),
             "head_plugs": ["ALICE:jNeck_ctl.rotateX", "ALICE:jNeck_ctl.rotateY", "ALICE:jNeck_ctl.rotateZ"],
-            "blink_plugs": ["ALICE:usr_blink.LidDown"], "facs_plug": "ALICE:FACSMaster.FACS_animationSource", "facs_add_index": 2,
+            "blink_plugs": ["ALICE:usr_blink.LidDown"], "blink_brow_plugs": ["ALICE:usr_BrowInDown.BrowDown"], "facs_plug": "ALICE:FACSMaster.FACS_animationSource", "facs_add_index": 2,
             "head_keys": [{"frame": 10, "values": {"rotateX": 3, "rotateY": 0, "rotateZ": 0}}],
             "blink_keys": [{"frame": 12, "value": 1}],
+            "blink_brow_keys": [{"frame": 12, "value": 0}, {"frame": 14, "value": 2}, {"frame": 16, "value": 0}],
         },
         "BOB": {
             "head_layer": head_layer_name("BOB"), "blink_layer": blink_layer_name("BOB"),
@@ -600,8 +648,12 @@ def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
     result = apply_dual_v2_head_blink_overlays(prepared_context=context, cmds_module=cmds)
     layer_calls = [call for call in cmds.calls if call[0] == "animLayer"]
     assert layer_calls and not any(call[2].get("override") is True for call in layer_calls)
+    assert any(call[2].get("attribute") == "ALICE:usr_BrowInDown.BrowDown" for call in layer_calls)
     keyed = [call for call in cmds.calls if call[0] == "setKeyframe"]
-    assert all("jNeck_ctl" in call[1][0] or "usr_blink" in call[1][0] for call in keyed)
+    assert all("jNeck_ctl" in call[1][0] or "usr_blink" in call[1][0] or "usr_BrowInDown" in call[1][0] for call in keyed)
+    brow_keys = [call for call in keyed if "usr_BrowInDown" in call[1][0]]
+    assert [call[2]["value"] for call in brow_keys] == [0, 2, 0]
+    assert all(call[2]["attribute"] == "BrowDown" for call in brow_keys)
     assert result["ALICE"]["jali_calculate_blinks_disabled"] is True
 
 
