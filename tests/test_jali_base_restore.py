@@ -96,3 +96,46 @@ def test_generate_restore_generate_can_repeat_without_replacing_baseline(tmp_pat
         restore_dual_jali_base(baseline=baseline, character_mappings=_mappings(), cmds_module=cmds, mel_module=mel)
         assert cmds.values["|A:ROOT|jSyncA.transcript"] == "original A"
     assert len([call for call in mel.calls if call.startswith("realign_node ")]) == 4
+
+
+def test_named_restore_reasserts_gaze_neutral_after_realign(tmp_path, monkeypatch):
+    import animation_apply_runner as runner
+
+    class NamedCmds(_Cmds):
+        def __init__(self, source_dir):
+            super().__init__(source_dir)
+            self.nodes = {"|ALICE:ROOT", "|BOB:ROOT", "|ALICE:ROOT|jSyncA", "|BOB:ROOT|jSyncB", "JALITEST_listenerMask_ALICE", "JALITEST_listenerMask_BOB", "JALITEST_gaze_ALICE", "JALITEST_gaze_BOB"}
+            for actor, z, x, y in (("ALICE", 9.0, 1.0, 2.0), ("BOB", 11.0, 3.0, 4.0)):
+                self.values.update({f"{actor}:eyeStare_world.translateZ": z, f"{actor}:CNT_BOTH_EYES.translateX": x, f"{actor}:CNT_BOTH_EYES.translateY": y})
+        def objExists(self, item):
+            return item in self.nodes or item in self.values or item.rsplit(".", 1)[0] in {"ALICE:eyeStare_world", "BOB:eyeStare_world", "ALICE:CNT_BOTH_EYES", "BOB:CNT_BOTH_EYES"}
+
+    (tmp_path / "SA.txt").write_text("A"); (tmp_path / "SB.txt").write_text("B")
+    cmds = NamedCmds(tmp_path); mel = _Mel()
+    mappings = {"ALICE": {"script_name": "ALICE", "maya_node": "|ALICE:ROOT"}, "BOB": {"script_name": "BOB", "maya_node": "|BOB:ROOT"}}
+    monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda rig, **_kwargs: "|ALICE:ROOT|jSyncA" if rig == "|ALICE:ROOT" else "|BOB:ROOT|jSyncB")
+    # Re-key the fixture's original jSync/FACS data to the named rigs.
+    for old, new, facs in (("|A:ROOT|jSyncA", "|ALICE:ROOT|jSyncA", "ALICE:FACSMaster"), ("|B:ROOT|jSyncB", "|BOB:ROOT|jSyncB", "BOB:FACSMaster")):
+        for plug, value in list(cmds.values.items()):
+            if plug.startswith(old): cmds.values[new + plug[len(old):]] = value
+        cmds.values[f"{facs}.FACS_animationSource"] = 1
+    baseline = capture_dual_jali_base(character_mappings=mappings, cmds_module=cmds)
+    # Simulate realign changing the neutral; restore must overwrite it afterwards.
+    original_eval = mel.eval
+    def realign(command):
+        value = original_eval(command)
+        if command.startswith("realign_node"):
+            actor = "ALICE" if "jSyncA" in command else "BOB"
+            cmds.values[f"{actor}:eyeStare_world.translateX"] = 99.0
+            cmds.values[f"{actor}:eyeStare_world.translateY"] = 99.0
+        return value
+    mel.eval = realign
+    result = restore_dual_jali_base(baseline=baseline, character_mappings=mappings, cmds_module=cmds, mel_module=mel)
+    assert set(result["restored"]) == {"ALICE", "BOB"}
+    assert set(result["removed_layers"]) == {"JALITEST_listenerMask_ALICE", "JALITEST_listenerMask_BOB", "JALITEST_gaze_ALICE", "JALITEST_gaze_BOB"}
+    assert cmds.values["|ALICE:ROOT|jSyncA.transcript"] == "original A"
+    assert cmds.values["|BOB:ROOT|jSyncB.transcript"] == "original B"
+    assert cmds.values["ALICE:eyeStare_world.translateX"] == 0.0
+    assert cmds.values["BOB:eyeStare_world.translateY"] == 0.0
+    assert cmds.values["ALICE:eyeStare_world.translateZ"] == 9.0
+    assert cmds.values["BOB:CNT_BOTH_EYES.translateX"] == 3.0

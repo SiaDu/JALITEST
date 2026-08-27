@@ -3,7 +3,7 @@ import sys
 
 MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 sys.path.insert(0, str(MAYA_TOOLS))
-from dual_gaze_calibration import capture_target_pose_and_restore, calibration_key, display_target, required_calibration_pairs  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, calibration_key, display_target, dual_actor_row_index, required_calibration_pairs  # noqa: E402
 
 
 def test_calibration_pairs_are_actor_specific_and_display_real_names():
@@ -22,6 +22,17 @@ def test_object_targets_are_independent_calibration_pairs():
         {"states": {"A": {"gaze": "GAZE-OBJECT_HAWK"}, "B": {"gaze": "NONE"}}},
     ]}
     assert required_calibration_pairs(plan) == [("A", "OBJECT_HAWK")]
+
+
+def test_v1_names_stay_name_keyed_for_calibration_display_and_rows():
+    plan = {"characters": ["ALICE", "BOB"], "phrases": [
+        {"states": {"ALICE": {"gaze": "GAZE-BOB"}, "BOB": {"gaze": "GAZE-OBJECT_HAWK"}}},
+    ]}
+    assert required_calibration_pairs(plan) == [("ALICE", "BOB"), ("BOB", "OBJECT_HAWK")]
+    assert display_target("ALICE", plan["characters"]) == "ALICE"
+    assert display_target("OBJECT_HAWK", plan["characters"]) == "HAWK"
+    assert dual_actor_row_index(plan, "ALICE") == 0
+    assert dual_actor_row_index(plan, "BOB") == 1
 
 
 def test_capture_look_at_keeps_local_pose_as_data_and_restores_forward_neutral():

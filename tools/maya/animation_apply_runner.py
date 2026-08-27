@@ -299,15 +299,19 @@ def restore_dual_jali_base(
             item, saved = prepared[alias], prepared[alias]["baseline"]
             jsync = str(saved["jsync"])
             reference = item["gaze_reference"]
-            if reference:
-                for axis, value in zip("XYZ", reference["eye_stare_translate"]): cmds_module.setAttr(f"{reference['eye_stare_node']}.translate{axis}", value)
-                cmds_module.setAttr(f"{reference['both_eyes_node']}.translateX", reference["both_eyes_translate"][0]); cmds_module.setAttr(f"{reference['both_eyes_node']}.translateY", reference["both_eyes_translate"][1])
             for attr, value in saved["jsync_attrs"].items():
                 _set_jali_attr(cmds_module, f"{jsync}.{attr}", value)
             for attr in ("transcript", "text_input_path", "sound_input_path", "output_path"):
                 _set_jali_attr(cmds_module, f"{jsync}.{attr}", saved[attr])
             mel_module.eval(f'realign_node "{jsync.rsplit("|", 1)[-1]}"')
             _set_jali_attr(cmds_module, item["facs_plug"], saved["facs_animation_source"])
+            # realign_node may recompute these controls.  The captured base neutral
+            # is therefore the final operation on the gaze controls.
+            if reference:
+                for axis, value in zip("XYZ", reference["eye_stare_translate"]):
+                    cmds_module.setAttr(f"{reference['eye_stare_node']}.translate{axis}", value)
+                cmds_module.setAttr(f"{reference['both_eyes_node']}.translateX", reference["both_eyes_translate"][0])
+                cmds_module.setAttr(f"{reference['both_eyes_node']}.translateY", reference["both_eyes_translate"][1])
     finally:
         if selection:
             cmds_module.select(selection, replace=True)
@@ -324,6 +328,16 @@ def restore_dual_jali_base(
             raise RuntimeError(f"{alias}: JALI Base jSync attributes were not restored.")
         if cmds_module.getAttr(item["facs_plug"]) != saved["facs_animation_source"]:
             raise RuntimeError(f"{alias}: FACSMaster.FACS_animationSource was not restored.")
+        reference = item["gaze_reference"]
+        if reference:
+            expected = [*reference["eye_stare_translate"], *reference["both_eyes_translate"]]
+            actual = [
+                *(cmds_module.getAttr(f"{reference['eye_stare_node']}.translate{axis}") for axis in "XYZ"),
+                cmds_module.getAttr(f"{reference['both_eyes_node']}.translateX"),
+                cmds_module.getAttr(f"{reference['both_eyes_node']}.translateY"),
+            ]
+            if any(abs(float(current) - float(wanted)) > 1e-5 for current, wanted in zip(actual, expected)):
+                raise RuntimeError(f"{alias}: JALI Base final gaze neutral validation failed.")
         if any(cmds_module.objExists(layer) for layer in item["layers"]):
             raise RuntimeError(f"{alias}: JALITEST overlay layers remain after restore.")
     return {"restored": {alias: str(prepared[alias]["baseline"]["script_name"]) for alias in prepared}, "removed_layers": removed, "jsync_preserved": True}
@@ -539,8 +553,12 @@ def apply_dual_gaze_only_artifacts(*, prepared_context: dict[str, Any], cmds_mod
         from maya import cmds as cmds_module  # type: ignore
     if prepared_context.get("schema_version") != "dual_gaze_only_prepared_v1": raise ValueError("Invalid prepared gaze-only context.")
     result: dict[str, Any] = {}
-    for alias in ("A", "B"):
-        item = prepared_context[alias]; reference = item["reference"]
+    actor_contexts = (
+        (actor, item) for actor, item in prepared_context.items()
+        if isinstance(item, dict) and "reference" in item and "layer" in item
+    )
+    for alias, item in actor_contexts:
+        reference = item["reference"]
         _clear_listener_layer_keys(item["layer"], item["managed_gaze_plugs"], scene_range=None, cmds_module=cmds_module, override=True)
         for state in item["keys"]:
             for axis, value in zip("XYZ", state["eye_stare"]): cmds_module.setKeyframe(reference["eye_stare_node"], attribute=f"translate{axis}", time=state["frame"], value=value, animLayer=item["layer"])

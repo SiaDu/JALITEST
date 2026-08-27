@@ -204,6 +204,22 @@ def test_gaze_only_uses_dedicated_layers_and_never_clears_base_controls():
     assert {call[1][0] for call in override_calls} == {"JALITEST_gaze_A", "JALITEST_gaze_B"}
 
 
+def test_named_gaze_apply_uses_prepared_actor_contexts_not_legacy_aliases():
+    cmds = _ListenerCmds()
+    context = {"schema_version": "dual_gaze_only_prepared_v1", "fps": 24, "jsync_nodes": {"ALICE": "aliceSync", "BOB": "bobSync"}}
+    for actor in ("ALICE", "BOB"):
+        context[actor] = {
+            "layer": gaze_layer_name(actor),
+            "managed_gaze_plugs": [f"{actor}:eye.translateX", f"{actor}:eye.translateY", f"{actor}:eye.translateZ", f"{actor}:eyes.translateX", f"{actor}:eyes.translateY"],
+            "reference": {"eye_stare_node": f"{actor}:eye", "both_eyes_node": f"{actor}:eyes"},
+            "keys": [{"frame": 1.0, "eye_stare": [1, 2, 3], "eyes": [4, 5]}],
+            "gaze_events": 1,
+        }
+    result = apply_dual_gaze_only_artifacts(prepared_context=context, cmds_module=cmds)
+    assert set(result) == {"ALICE", "BOB"}
+    assert {call[1][0] for call in cmds.calls if call[0] == "animLayer" and call[2].get("override") is True} == {"JALITEST_gaze_ALICE", "JALITEST_gaze_BOB"}
+
+
 def test_dual_gaze_neutral_is_automatic_local_xy_zero_and_preserves_z_baseline():
     cmds = _DualCmds()
     reference = capture_character_gaze_reference("|A:ROOT", cmds_module=cmds)

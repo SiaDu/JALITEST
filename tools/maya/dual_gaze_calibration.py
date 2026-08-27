@@ -3,9 +3,32 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 
-def display_target(target: str, characters: dict[str, str]) -> str:
+def display_target(target: str, characters: dict[str, str] | list[str]) -> str:
     raw = str(target).strip()
-    return str(characters.get(raw.upper()) or raw.removeprefix("OBJECT_").removeprefix("PROP_").removeprefix("CHARACTER_")).strip()
+    if isinstance(characters, dict):
+        return str(characters.get(raw.upper()) or raw.removeprefix("OBJECT_").removeprefix("PROP_").removeprefix("CHARACTER_")).strip()
+    return raw.removeprefix("OBJECT_").removeprefix("PROP_").removeprefix("CHARACTER_").strip()
+
+
+def dual_actor_row_index(plan: dict[str, Any], actor_name: str) -> int:
+    """Return the explicit Maya character-row index for a dual-plan actor."""
+    characters = plan.get("characters")
+    actor = str(actor_name).strip()
+    if isinstance(characters, list):
+        try:
+            return characters.index(actor)
+        except ValueError as exc:
+            raise ValueError(f"Unknown v1 dual-plan actor {actor!r}.") from exc
+    if isinstance(characters, dict):
+        # v0 aliases are explicit plan keys, never inferred from dialogue order.
+        alias = actor.upper()
+        if alias not in characters:
+            raise ValueError(f"Unknown v0 dual-plan actor {actor!r}.")
+        try:
+            return ("A", "B").index(alias)
+        except ValueError as exc:
+            raise ValueError(f"Unsupported v0 dual-plan actor {actor!r}.") from exc
+    raise ValueError("Dual plan has no explicit characters mapping.")
 
 
 def required_calibration_pairs(plan: dict[str, Any]) -> list[tuple[str, str]]:

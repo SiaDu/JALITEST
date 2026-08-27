@@ -67,7 +67,7 @@ from authoring_requirements import (  # noqa: E402
     required_look_at_targets,
 )
 from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
-from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, dual_actor_row_index  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -764,10 +764,25 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if not self.jali_base_baseline:
             QtWidgets.QMessageBox.warning(self, "Restore JALI Base", "No pre-JALITEST dual baseline has been captured yet.")
             return
-        mappings = {
-            alias: {"script_name": self.character_rows[index][0].text().strip(), "maya_node": self.character_rows[index][1].text().strip()}
-            for alias, index in (("A", 0), ("B", 1))
-        }
+        plan_characters = (self.plan or {}).get("characters")
+        if isinstance(plan_characters, list):
+            actors = plan_characters
+        elif isinstance(plan_characters, dict):
+            actors = list(plan_characters)
+        else:
+            QtWidgets.QMessageBox.warning(self, "Restore JALI Base", "The loaded plan has no valid dual character mapping.")
+            return
+        try:
+            mappings = {
+                actor: {
+                    "script_name": self.character_rows[dual_actor_row_index(self.plan or {}, actor)][0].text().strip(),
+                    "maya_node": self.character_rows[dual_actor_row_index(self.plan or {}, actor)][1].text().strip(),
+                }
+                for actor in actors
+            }
+        except ValueError as exc:
+            QtWidgets.QMessageBox.warning(self, "Restore JALI Base", str(exc))
+            return
         self.generate_animation_button.setEnabled(False); self.restore_jali_base_button.setEnabled(False)
         self.animation_status.setText("Restoring JALI Base..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
         stream = io.StringIO()
@@ -782,7 +797,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         self._append_backend_output(stream.getvalue())
         self._append_backend_output("Restored JALI Base")
-        for alias, name in result["restored"].items(): self._append_backend_output(f"{alias} / {name}: yes")
+        for actor in result["restored"]: self._append_backend_output(f"{actor}: restored")
         self._append_backend_output("Removed JALITEST listener/gaze overlays")
         self._append_backend_output("jSync preserved: yes")
         self.generate_animation_button.setEnabled(True); self.restore_jali_base_button.setEnabled(True)
@@ -801,7 +816,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _refresh_required_look_at_targets(self) -> None:
         if self.plan is None:
             return
-        if self.plan.get("schema_version") == "dual_performance_plan_v0":
+        if self.plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
             self._clear_look_at_targets()
             self.legacy_look_at_label.hide()
             while self.gaze_calibration_layout.count():
@@ -810,7 +825,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             names = self.plan.get("characters") or {}
             # Snapshot automatic baselines while the calibration UI is built;
             # artists only author semantic target poses.
-            for actor in ("A", "B"):
+            actors = names if isinstance(names, list) else list(names)
+            for actor in actors:
                 self._capture_dual_baseline(actor)
             for actor, target in required_calibration_pairs(self.plan):
                 row=QtWidgets.QWidget(); layout=QtWidgets.QHBoxLayout(row); layout.setContentsMargins(0,0,0,0)
@@ -829,7 +845,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.look_at_rows[-1][1].setText(mapping["maya_node"])
 
     def _capture_dual_look_at(self, actor: str, target: str) -> None:
-        node=self.character_rows[0 if actor == "A" else 1][1].text().strip()
+        try:
+            row_index = dual_actor_row_index(self.plan or {}, actor)
+        except ValueError as exc:
+            QtWidgets.QMessageBox.warning(self, "Look-at Capture", str(exc)); return
+        node=self.character_rows[row_index][1].text().strip()
         eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
         if not node or not cmds.objExists(eye) or not cmds.objExists(both):
             QtWidgets.QMessageBox.warning(self, "Look-at Capture", f"{actor} needs a mapped rig with eyeStare_world and CNT_BOTH_EYES."); return
@@ -843,7 +863,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         names=(self.plan or {}).get("characters") or {}; self._append_backend_output(f"Captured look-at: {display_target(actor,names)} -> {display_target(target,names)}")
 
     def _capture_dual_baseline(self, actor: str) -> dict[str, object] | None:
-        node=self.character_rows[0 if actor == "A" else 1][1].text().strip(); eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
+        try:
+            row_index = dual_actor_row_index(self.plan or {}, actor)
+        except ValueError:
+            return None
+        node=self.character_rows[row_index][1].text().strip(); eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
         if not node or not cmds.objExists(eye) or not cmds.objExists(both):
             return None
         result: dict[str, object] = {"baseline_translateZ": float(cmds.getAttr(eye + ".translateZ")), "both_eyes_translate": [float(cmds.getAttr(both + ".translateX")), float(cmds.getAttr(both + ".translateY"))]}
@@ -1150,7 +1174,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         characters = self.plan.get("characters")
         character_label = (
-            f"characters: {characters}" if isinstance(characters, dict)
+            f"characters: {characters}" if isinstance(characters, (dict, list))
             else f"target_character: {self.plan.get('target_character', '')}"
         )
         self.metadata_label.setText(
