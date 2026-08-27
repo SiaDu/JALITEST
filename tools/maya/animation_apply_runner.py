@@ -476,7 +476,7 @@ def prepare_dual_listener_mask_artifacts(
             if event.get("channel") == "affect":
                 parse_mask_state(event.get("value"))
     timeline = build_listener_mask_timeline(phrases, events_by_actor=events_by_actor)
-    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS), "unmapped_expressive_eyelid_aus": list(unmapped_expressive_eyelid_aus())}
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "expressive_eyelid_mapping_requirement": sorted(EYELID_AUS), "unmapped_expressive_eyelid_aus": list(unmapped_expressive_eyelid_aus())}
     for alias in actors:
         row = character_mappings.get(alias) or {}
         rig = str(row.get("maya_node") or "").strip()
@@ -516,7 +516,7 @@ def _clear_listener_layer_keys(layer: str, plugs: Iterable[str], *, scene_range:
 
 
 def apply_dual_listener_mask_artifacts(*, prepared_context: dict[str, Any], cmds_module: Any | None = None) -> dict[str, Any]:
-    """Apply the already-preflighted eyelid-filtered User Mask timeline."""
+    """Apply the already-preflighted expressive User Mask timeline."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     if prepared_context.get("schema_version") != "dual_listener_mask_prepared_v1":
@@ -533,7 +533,7 @@ def apply_dual_listener_mask_artifacts(*, prepared_context: dict[str, Any], cmds
             for raw_plug, value in key["pose"].items():
                 plug = qualify_rig_control(item["rig"], raw_plug)
                 cmds_module.setKeyframe(plug, time=key["frame"], value=value, animLayer=item["layer"])
-        result[alias] = {"listener_mask_events": item["listener_mask_events"], "managed_user_plugs": list(item["managed_user_plugs"]), "eyelid_channels_filtered": True, "FACS_animationSource": "Add", "layer": item["layer"], "key_count": len(item["key_schedule"])}
+        result[alias] = {"listener_mask_events": item["listener_mask_events"], "managed_user_plugs": list(item["managed_user_plugs"]), "expressive_eyelids_mapped": not bool(prepared_context.get("unmapped_expressive_eyelid_aus")), "FACS_animationSource": "Add", "layer": item["layer"], "key_count": len(item["key_schedule"])}
     return result
 
 
@@ -1137,7 +1137,11 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
         plugs = [*(f"{reference['eye_stare_node']}.translate{axis}" for axis in "XYZ"), f"{reference['both_eyes_node']}.translateX", f"{reference['both_eyes_node']}.translateY"]
         if any(not cmds_module.objExists(plug) for plug in plugs):
             raise RuntimeError(f"{actor}: required gaze controls do not exist.")
-        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)), allow_shortened_glance=True), "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs}
+        try:
+            keys = build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)))
+        except ValueError as exc:
+            raise ValueError(f"{actor}: v2 gaze event cannot be scheduled: {exc}") from exc
+        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": keys, "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs}
     return prepared
 
 
@@ -1336,18 +1340,22 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
             keys.append({"frame": start, "eye_stare": list(state["eye_stare"]), "eyes": list(state["eyes"])})
             continue
         arrival=min(start+transition_frames,end)
-        keys.append({"frame":start,"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
+        if event["mode"] != "GLANCE" or event.get("timing_role") != "SPEAK_ONSET":
+            keys.append({"frame":start,"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
         if event["mode"]=="GLANCE":
             transition = max(1, int(glance_transition_frames if glance_transition_frames is not None else transition_frames))
             hold_seconds = glance_hold_seconds if glance_hold_seconds is not None else (glance_min_hold_seconds if glance_min_hold_seconds is not None else 0.5)
             minimum_hold = 1 if allow_shortened_glance else max(1, int(math.ceil(float(hold_seconds) * float(fps))))
-            out = start + transition
+            speaker_glance = event.get("timing_role") == "SPEAK_ONSET"
+            out = start if speaker_glance else start + transition
             back = end - transition
             if back - out < minimum_hold:
                 raise ValueError(
-                    "GLANCE interval is too short for configured transition and minimum hold."
+                    f"GLANCE interval is too short: available {max(0.0, end - start):.3f} frames; required {transition + minimum_hold + transition if not speaker_glance else minimum_hold + transition} frames."
                 )
             returned=state["return_state"]; keys.extend(({"frame":out,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":back,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":end,"eye_stare":list(returned["eye_stare"]),"eyes":list(returned["eyes"])}))
+            if speaker_glance:
+                keys.append({"frame":max(0.0, start-transition),"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
         else: keys.append({"frame":arrival,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])})
     # Never allow an older semantic state to key after a newer start.
     return sorted(keys,key=lambda key:key["frame"])

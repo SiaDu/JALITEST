@@ -65,8 +65,23 @@ def next_edited_snapshot_path(path: str | Path) -> Path:
     return source.with_name(f"{base}_edited_{max(existing, default=0) + 1:02d}{source.suffix}")
 
 
+def is_v2_plan_edited(plan: dict[str, Any]) -> bool:
+    """Whether a v2 plan contains animator edits requiring a new snapshot."""
+    if plan.get("schema_version") != "dual_performance_plan_v2":
+        return True
+    rows = [event for track in plan.get("tracks", {}).values() for event in track]
+    rows.extend(row for row in (plan.get("initial_provenance") or {}).values() if isinstance(row, dict))
+    return any(row.get("edited_by_user") or row.get("reason_status") in {"user_edited", "user_confirmed", "needs_confirmation"} for row in rows)
+
+
+def _is_canonical_v2_snapshot(path: Path) -> bool:
+    return bool(re.fullmatch(r"performance_plan(?:_edited_\d+)?\.json", path.name))
+
+
 def save_performance_plan(plan: dict[str, Any], path: str | Path) -> Path:
     output = Path(path)
+    if plan.get("schema_version") == "dual_performance_plan_v2" and output.exists() and _is_canonical_v2_snapshot(output):
+        raise ValueError(f"Immutable v2 performance-plan snapshot already exists: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return output
@@ -88,6 +103,9 @@ def save_animation_runtime_plan(
         )
         if unresolved:
             raise ValueError("Edited v2 performance decisions require reason confirmation: " + ", ".join(unresolved))
+        output = Path(path)
+        if output.exists() and output.name == "performance_plan.json" and not is_v2_plan_edited(plan):
+            return plan
     save_performance_plan(plan, path)
     return plan
 

@@ -72,7 +72,7 @@ def test_v2_rejects_unknown_actor_anchor_and_empty_event():
 def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
     assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
-    assert "GAZE-NONE and AVERT are never executable authored gaze modes" in prompt
+    assert "GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes" in prompt
     assert "gaze: GAZE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
     assert "Do not map an emotion or motivation to a fixed direction" in prompt
     assert not __import__("re").search(r"gaze:\s*AVERT-", prompt)
@@ -95,6 +95,8 @@ def test_authored_gaze_none_and_missing_initial_gaze_are_rejected():
     source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-80\ngaze: GAZE-NONE\nreason: x\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: x\n[CHANGES]\n"
     with pytest.raises(ProposalValidationError, match="GAZE-NONE"):
         parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    with pytest.raises(ProposalValidationError, match="GLANCE-NONE"):
+        parse_dual_sparse_performance_proposal(source.replace("GAZE-NONE", "GLANCE-NONE"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     source = source.replace("gaze: GAZE-NONE\n", "", 1)
     with pytest.raises(ProposalValidationError, match="gaze is required"):
         parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)

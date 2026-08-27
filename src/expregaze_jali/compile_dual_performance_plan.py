@@ -39,9 +39,9 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
         return bool(separator and name.casefold() in affect_states and re.fullmatch(r"[1-9]\d*", amount))
     def valid_gaze(value: object, *, initial: bool) -> bool:
         text = str(value or "")
-        if text == "GAZE-NONE": return False
+        if text.upper() in {"GAZE-NONE", "GLANCE-NONE"}: return False
         mode, separator, target = text.partition("-")
-        return bool(separator and target and re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target) and mode in ({"GAZE"} if initial else {"GAZE", "GLANCE"}))
+        return bool(separator and target.upper() != "NONE" and re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target) and mode in ({"GAZE"} if initial else {"GAZE", "GLANCE"}))
     for actor in characters:
         state = initial_states[actor]
         if not isinstance(state, dict) or not set(state) <= {"affect", "gaze", "head"}:
@@ -62,7 +62,11 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
     for actor in characters:
         if not isinstance(tracks[actor], list):
             raise ValueError(f"Dual v2 track {actor} must be a list.")
-        for event in tracks[actor]:
+        anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(model.anchors)}
+        assigned_channels: set[tuple[str, str]] = set()
+        blink_hold_active = False
+        ordered_events = sorted(enumerate(tracks[actor]), key=lambda row: (anchor_order.get(row[1].get("anchor_id"), len(anchor_order)), row[0]))
+        for _source_index, event in ordered_events:
             if not isinstance(event, dict) or not event.get("event_id") or event.get("actor") != actor or event.get("anchor_id") not in anchors:
                 raise ValueError(f"{actor}: v2 event requires event_id, matching actor, and known anchor_id.")
             if event["event_id"] in event_ids:
@@ -71,6 +75,11 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
             changes = event.get("changes")
             if not isinstance(changes, dict) or not changes or not set(changes) <= {"affect", "gaze", "head", "blink"}:
                 raise ValueError(f"{event['event_id']}: invalid or empty v2 changes.")
+            for channel in changes:
+                key = (event["anchor_id"], channel)
+                if key in assigned_channels:
+                    raise ValueError(f"{actor}: duplicate v2 {channel} change at anchor {event['anchor_id']}.")
+                assigned_channels.add(key)
             if not str(event.get("reason") or "").strip():
                 raise ValueError(f"{event['event_id']}: v2 event reason is required.")
             if "affect" in changes and not valid_affect(changes["affect"], initial=False):
@@ -81,6 +90,17 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
                 raise ValueError(f"{event['event_id']}: invalid v2 head {changes['head']!r}.")
             if "blink" in changes and changes["blink"] not in BLINK_VALUES:
                 raise ValueError(f"{event['event_id']}: invalid authored v2 blink {changes['blink']!r}.")
+            blink = changes.get("blink")
+            if blink == "EYE_CLOSE_HOLD":
+                if blink_hold_active:
+                    raise ValueError(f"{actor}: {event['event_id']} cannot close eyes while an authored hold is active.")
+                blink_hold_active = True
+            elif blink == "EYE_OPEN":
+                if not blink_hold_active:
+                    raise ValueError(f"{actor}: {event['event_id']} EYE_OPEN requires an active authored EYE_CLOSE_HOLD.")
+                blink_hold_active = False
+            elif blink in {"SLOW_BLINK", "DOUBLE_BLINK"} and blink_hold_active:
+                raise ValueError(f"{actor}: {event['event_id']} {blink} is invalid while an authored eye hold is active.")
 
 
 def _compile_v2(

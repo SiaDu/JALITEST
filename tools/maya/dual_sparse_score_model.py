@@ -167,6 +167,8 @@ class DualSparseScoreModel:
         gaze = _GAZE.fullmatch(value)
         if gaze:
             mode, target = gaze.group(1).upper(), gaze.group(2)
+            if target.upper() == "NONE":
+                return f'Unknown or invalid v2 tag <{value}>'
             directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
             if re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target):
                 named = next((name for name in self.characters if speaker_key(name) == speaker_key(target)), target)
@@ -374,13 +376,13 @@ class DualSparseScoreModel:
         if event.get("initial"):
             original = event.get("original_reason")
             if event.get("reason_status") in {"needs_confirmation", "user_confirmed", "user_edited"}:
-                return f'{actor} INITIAL\n{event["changes"]}\n\nOriginal LLM reason:\n{original or "(none)"}\n\nFinal / Animator reason ({event.get("reason_status")}):\n{event.get("reason") or "(needs confirmation)"}'
+                return f'{actor} INITIAL\n{event["changes"]}\n\nOriginal LLM reason:\n{original or "(none)"}\n\nCurrent / Animator reason ({event.get("reason_status")}):\n{event.get("reason") or "(needs confirmation)"}'
             return f'{actor} INITIAL\n{event["changes"]}\n\nReason:\n{event.get("reason") or "(none)"}'
         anchor = self.projection.anchor_map[event["anchor_id"]]
         changes = "\n".join(f"{channel} -> {value}" for channel, value in event["changes"].items())
         original = event.get("original_reason")
         if event.get("reason_status") in {"needs_confirmation", "user_confirmed", "user_edited"}:
-            return f'{actor} @ "{anchor.text}"\n{changes}\n\nOriginal LLM reason:\n{original or "(none)"}\n\nFinal / Animator reason ({event.get("reason_status")}):\n{event.get("reason") or "(needs confirmation)"}'
+            return f'{actor} @ "{anchor.text}"\n{changes}\n\nOriginal LLM reason:\n{original or "(none)"}\n\nCurrent / Animator reason ({event.get("reason_status")}):\n{event.get("reason") or "(needs confirmation)"}'
         return f'{actor} @ "{anchor.text}"\n{changes}\n\nReason:\n{event["reason"]}'
 
     def reason_entries(self) -> list[tuple[str, dict[str, Any]]]:

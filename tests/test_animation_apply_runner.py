@@ -226,7 +226,7 @@ def test_listener_preflight_and_apply_only_write_user_mask_controls(monkeypatch,
     assert all(plug.startswith(("A:usr_", "B:usr_", "A:FACSMaster.", "B:FACSMaster.")) for plug in set_attrs)
     keyed = [call[1][0] for call in cmds.calls if call[0] == "setKeyframe"]
     assert keyed and all(plug.startswith(("A:usr_", "B:usr_")) for plug in keyed)
-    assert result["B"]["eyelid_channels_filtered"] is True and result["A"]["FACS_animationSource"] == "Add"
+    assert result["B"]["expressive_eyelids_mapped"] is True and result["A"]["FACS_animationSource"] == "Add"
     assert not any(call[0] == "animLayer" and call[2].get("override") is True for call in cmds.calls)
 
 
@@ -830,6 +830,15 @@ def test_v2_gaze_role_aware_key_realization_keeps_semantic_boundary_exact():
     listener = [{"event": {"mode": "GAZE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [0, 0, 9], "eyes": [0, 0]}, "eye_stare": [1, 2, 3], "eyes": [0, 0]}]
     assert [key["frame"] for key in build_dual_gaze_key_schedule(speaker, fps=24, transition_frames=4)] == [44.0, 48.0]
     assert [key["frame"] for key in build_dual_gaze_key_schedule(listener, fps=24, transition_frames=4)] == [48.0, 52.0]
+
+
+def test_v2_glance_role_aware_key_realization_uses_causal_listener_and_speaker_onset():
+    state = {"eye_stare": [1, 2, 3], "eyes": [0, 0]}
+    previous = {"eye_stare": [0, 0, 9], "eyes": [0, 0]}
+    speaker = [{"event": {"mode": "GLANCE", "timing_role": "SPEAK_ONSET"}, "start": 2.0, "end": 3.0, "previous_state": previous, **state, "return_state": previous}]
+    listener = [{"event": {"mode": "GLANCE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 3.0, "previous_state": previous, **state, "return_state": previous}]
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(speaker, fps=24, glance_transition_frames=3, glance_hold_seconds=.5)] == [45.0, 48.0, 69.0, 72.0]
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(listener, fps=24, glance_transition_frames=3, glance_hold_seconds=.5)] == [48.0, 51.0, 69.0, 72.0]
 
 
 def test_later_persistent_state_still_uses_explicit_transition_frames():

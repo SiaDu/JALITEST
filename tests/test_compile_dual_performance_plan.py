@@ -225,6 +225,22 @@ def test_v2_compiler_rejects_manual_avert_bypass():
         _validate_v2_plan(plan, model)
 
 
+def test_v2_compiler_rejects_none_duplicate_channels_and_invalid_blink_hold_order():
+    model = build_conversation_anchor_model("AGNES: one two\nWILL: three", character_a="AGNES", character_b="WILL")
+    base = {"characters": ["AGNES", "WILL"], "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}}, "initial_reasons": {"AGNES": "Ready.", "WILL": "Ready."}, "tracks": {"AGNES": [], "WILL": []}}
+    none = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "GLANCE-NONE"}, "reason": "Bad."}], "WILL": []}}
+    with pytest.raises(ValueError, match="invalid v2 executable gaze"):
+        _validate_v2_plan(none, model)
+    duplicate = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "One."}, {"event_id": "E2", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}, "reason": "Two."}], "WILL": [{"event_id": "E3", "actor": "WILL", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "Independent actor."}]}}
+    with pytest.raises(ValueError, match="duplicate v2 head"):
+        _validate_v2_plan(duplicate, model)
+    invalid_hold = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"blink": "EYE_OPEN"}, "reason": "Bad open."}], "WILL": []}}
+    with pytest.raises(ValueError, match="requires an active"):
+        _validate_v2_plan(invalid_hold, model)
+    valid_hold = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"blink": "EYE_CLOSE_HOLD"}, "reason": "Close."}, {"event_id": "E2", "actor": "AGNES", "anchor_id": "w0002", "changes": {"blink": "EYE_OPEN"}, "reason": "Open."}], "WILL": []}}
+    _validate_v2_plan(valid_hold, model)
+
+
 def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_path):
     script = (
         "ALICE: Evening, ma'am. We're in pursuit of someone very dangerous.\n"

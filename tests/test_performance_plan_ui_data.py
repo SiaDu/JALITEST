@@ -15,6 +15,7 @@ if str(MAYA_TOOLS) not in sys.path:
 
 from performance_plan_ui_data import (  # noqa: E402
     default_edited_path,
+    is_v2_plan_edited,
     load_performance_plan,
     save_animation_runtime_plan,
     save_performance_plan,
@@ -408,3 +409,23 @@ def test_v2_runtime_plan_rejects_unconfirmed_reason(tmp_path: Path):
     model.set_reason("BOB", "E1", "She covers the refusal with warmth.")
     saved = save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_edited_01.json")
     assert saved["tracks"]["BOB"][0]["reason_status"] == "user_edited"
+
+
+def test_v2_canonical_snapshots_are_immutable_and_unedited_runtime_reuses_original(tmp_path: Path):
+    plan = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "tracks": {"ALICE": [], "BOB": []}}
+    original = tmp_path / "performance_plan.json"
+    save_performance_plan(plan, original)
+    with pytest.raises(ValueError, match="Immutable v2"):
+        save_performance_plan(plan, original)
+    edited = tmp_path / "performance_plan_edited_01.json"
+    save_performance_plan(plan, edited)
+    with pytest.raises(ValueError, match="Immutable v2"):
+        save_performance_plan(plan, edited)
+    assert default_edited_path(original).name == "performance_plan_edited_02.json"
+
+
+def test_v2_edit_detection_only_snapshots_actual_animator_edits():
+    plan = {"schema_version": "dual_performance_plan_v2", "tracks": {"ALICE": [], "BOB": []}, "initial_provenance": {}}
+    assert is_v2_plan_edited(plan) is False
+    plan["tracks"]["ALICE"].append({"edited_by_user": True})
+    assert is_v2_plan_edited(plan) is True

@@ -25,6 +25,7 @@ if str(TOOLS_DIR) not in sys.path:
 
 from performance_plan_ui_data import (  # noqa: E402
     default_edited_path,
+    is_v2_plan_edited,
     load_performance_plan,
     save_animation_runtime_plan,
     save_performance_plan,
@@ -795,7 +796,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 mappings[actor]={"script_name":name,"maya_node":node}; runtime[actor]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
                 self._append_backend_output(f"{actor}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
             if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
-            animation_dir=self.source_path.parent/"animation"; runtime_plan=default_edited_path(self.source_path); self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
+            animation_dir=self.source_path.parent/"animation"
+            candidate_plan = self.score_model.apply(self._score_payload())
+            runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan) else self.source_path
+            self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
             if self.jali_base_baseline is None:
                 self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
                 self._save_authoring_session_for_path(self.source_path)
@@ -1372,7 +1376,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         existing = self.score_model._provenance_row(*selected).get("reason") or ""
         reason, accepted = QtWidgets.QInputDialog.getMultiLineText(
-            self, "Animator Reason", "Final / Animator reason:", str(existing)
+            self, "Animator Reason", "Current / Animator reason:", str(existing)
         )
         if not accepted:
             return

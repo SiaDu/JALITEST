@@ -41,12 +41,14 @@ def _normalize_affect(value: str, *, event_id: str, vocabulary: SemanticVocabula
 
 def _normalize_gaze(value: str, *, event_id: str, characters: tuple[str, str]) -> str:
     text = value.strip()
-    if text.upper() == "GAZE-NONE":
-        raise ProposalValidationError(f'{event_id}: GAZE-NONE is an internal runtime reset, not an authored gaze value')
+    if text.upper() in {"GAZE-NONE", "GLANCE-NONE"}:
+        raise ProposalValidationError(f'{event_id}: {text.upper()} is an internal runtime reset, not an authored gaze value')
     match = _GAZE.fullmatch(text)
     if not match:
         raise ProposalValidationError(f'{event_id}: Invalid gaze value "{value}"')
     mode, target = match.group(1).upper(), match.group(2)
+    if target.upper() == "NONE":
+        raise ProposalValidationError(f'{event_id}: {mode}-NONE is an internal runtime reset, not an authored gaze value')
     if target.upper() in DIRECTION_TARGETS:
         return f"{mode}-{target.upper()}"
     actor = next((name for name in characters if speaker_key(name) == speaker_key(target)), None)

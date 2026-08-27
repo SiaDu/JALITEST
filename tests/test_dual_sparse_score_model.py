@@ -48,6 +48,7 @@ def test_score_rejects_dialogue_edits_and_wrong_side_or_whitespace_tags():
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("dangerous", "safe")).valid
     assert not model.validate_actor("BOB", model.score_texts["BOB"].replace("dangerous.<Nervous-60>", "<Nervous-60>dangerous.")).valid
     assert model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<GAZE-BOB>We're", "<GAZE-BOB>\n  We're")).valid
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<GAZE-BOB>", "<GLANCE-NONE>", 1)).valid
 
 
 def test_editing_tags_updates_only_sparse_track_and_reason_view():
