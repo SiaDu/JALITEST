@@ -685,17 +685,20 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(self,"Animation Setup Incomplete","Input Script and Input Audio Folder are required."); return
         mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}; self.backend_log.clear()
         try:
-            for alias, index in (("A",0),("B",1)):
+            plan_characters = self.plan.get("characters", [])
+            if not isinstance(plan_characters, list) or len(plan_characters) != 2:
+                raise RuntimeError("Dual Performance Plan requires two named characters.")
+            for actor, index in zip(plan_characters, (0, 1)):
                 name=self.character_rows[index][0].text().strip(); node=self.character_rows[index][1].text().strip()
-                if not name or not node or not cmds.objExists(node): raise RuntimeError(f"{alias}: valid script character and Maya rig mapping are required.")
+                if not name or not node or not cmds.objExists(node): raise RuntimeError(f"{actor}: valid script character and Maya rig mapping are required.")
                 jsync=resolve_jsync_for_character(node)
                 sound=str(cmds.getAttr(f"{jsync}.sound_file") or "").strip()
-                if not sound: raise RuntimeError(f"{alias}: resolved jSync has no sound_file.")
+                if not sound: raise RuntimeError(f"{actor}: resolved jSync has no sound_file.")
                 text_input_path=str(cmds.getAttr(f"{jsync}.text_input_path") or "").strip()
                 transcript=resolve_jali_source_transcript_path(text_input_path, sound)
-                mappings[alias]={"script_name":name,"maya_node":node}; runtime[alias]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
-                self._append_backend_output(f"{alias} / {name}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
-            if any(str(self.plan.get("characters",{}).get(a,"")).upper()!=runtime[a]["script_name"].upper() for a in ("A","B")): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
+                mappings[actor]={"script_name":name,"maya_node":node}; runtime[actor]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
+                self._append_backend_output(f"{actor}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
+            if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
             animation_dir=self.source_path.parent/"animation"; runtime_plan=animation_dir/"performance_plan_runtime.json"; self.plan=save_animation_runtime_plan(self.score_model,self.score_editor.toPlainText(),runtime_plan); fps=current_scene_fps()
             if self.jali_base_baseline is None:
                 self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
@@ -717,11 +720,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
                     gaze_result = apply_dual_gaze_only_artifacts(prepared_context=gaze_context)
-                    for alias, item in result.items(): self._append_backend_output(f"{alias} / {item['script_name']}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; heart_tags={item['heart_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_expression={item['calculate_expression']}; calculate_blinks=false; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}; heart_binding={'applied' if item['heart_binding'] else 'skipped'}")
-                    for alias in ("A", "B"):
-                        item = listener_result[alias]
-                        self._append_backend_output(f"{alias}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; eyelid_channels_filtered=yes; FACS_animationSource=Add")
-                    self._append_backend_output(f"Applied: native speaker Mask/Heart; listener User Mask reactions; calibrated gaze ({gaze_result['A']['gaze_events'] + gaze_result['B']['gaze_events']} events)\nNot applied: listener Heart; blink/lid; head\njSync preserved: yes")
+                    for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks=false; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
+                    for actor in self.plan.get("characters", []):
+                        item = listener_result[actor]
+                        self._append_backend_output(f"{actor}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; eyelid_channels_filtered=yes; FACS_animationSource=Add")
+                    gaze_events = sum(gaze_result[actor]['gaze_events'] for actor in self.plan.get("characters", []))
+                    self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events)\nNot applied: blink/lid; head\njSync preserved: yes")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),

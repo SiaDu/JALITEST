@@ -175,7 +175,7 @@ def _enum_index(node: str, attr: str, label: str, cmds_module: Any) -> int:
 
 LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
 GAZE_LAYER_PREFIX = "JALITEST_gaze_"
-JALI_BASELINE_SCHEMA = "dual_jali_base_v1"
+JALI_BASELINE_SCHEMA = "dual_jali_base_v2"
 _JSYNC_BASELINE_ATTRS = (
     "calculate_paralinguals", "paralingual_bearing", "paralingual_intensity",
     "calculate_expression", "expression_source", "expression_strength",
@@ -197,8 +197,7 @@ def capture_dual_jali_base(
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     baseline: dict[str, Any] = {"schema_version": JALI_BASELINE_SCHEMA, "actors": {}}
-    for alias in ("A", "B"):
-        row = character_mappings.get(alias) or {}
+    for alias, row in character_mappings.items():
         rig = str(row.get("maya_node") or "").strip()
         script_name = str(row.get("script_name") or "").strip()
         if not rig or not script_name or not cmds_module.objExists(rig):
@@ -215,12 +214,19 @@ def capture_dual_jali_base(
         if not cmds_module.objExists(facs_plug):
             raise RuntimeError(f"{alias}: missing {facs_plug}.")
         values = {attr: cmds_module.getAttr(f"{jsync}.{attr}") for attr in required}
+        try:
+            gaze_reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
+        except RuntimeError:
+            if alias not in {"A", "B"}:
+                raise
+            gaze_reference = None
         baseline["actors"][alias] = {
             "script_name": script_name, "maya_node": rig, "jsync": jsync,
             "sound_file": values.pop("sound_file"), "text_input_path": values.pop("text_input_path"),
             "sound_input_path": values.pop("sound_input_path"), "output_path": values.pop("output_path"),
             "transcript": values.pop("transcript"), "jsync_attrs": values,
             "facs_animation_source": cmds_module.getAttr(facs_plug),
+            "gaze_reference": gaze_reference,
         }
     return baseline
 
@@ -242,9 +248,8 @@ def _validate_dual_jali_base(
     if not mel_module.eval('exists "realign_node"'):
         raise RuntimeError("Installed JALI realign_node procedure is unavailable.")
     prepared: dict[str, dict[str, Any]] = {}
-    for alias in ("A", "B"):
+    for alias, row in character_mappings.items():
         item = baseline["actors"].get(alias)
-        row = character_mappings.get(alias) or {}
         if not isinstance(item, dict):
             raise ValueError(f"{alias}: JALI Base baseline is missing.")
         rig, jsync = str(item.get("maya_node") or ""), str(item.get("jsync") or "")
@@ -265,7 +270,12 @@ def _validate_dual_jali_base(
         facs_plug = f"{qualify_rig_control(rig, 'FACSMaster')}.FACS_animationSource"
         if not cmds_module.objExists(facs_plug):
             raise RuntimeError(f"{alias}: missing {facs_plug}.")
-        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}"]}
+        reference = item.get("gaze_reference")
+        if reference is None and alias in {"A", "B"}:
+            reference = {}
+        if not isinstance(reference, dict):
+            raise ValueError(f"{alias}: JALI Base baseline lacks named gaze reference.")
+        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}"]}
     return prepared
 
 
@@ -281,25 +291,29 @@ def restore_dual_jali_base(
     selection = cmds_module.ls(selection=True, long=True) or []
     removed: list[str] = []
     try:
-        for alias in ("A", "B"):
+        for alias in prepared:
             for layer in prepared[alias]["layers"]:
                 if cmds_module.objExists(layer):
                     cmds_module.delete(layer); removed.append(layer)
-        for alias in ("A", "B"):
+        for alias in prepared:
             item, saved = prepared[alias], prepared[alias]["baseline"]
             jsync = str(saved["jsync"])
+            reference = item["gaze_reference"]
+            if reference:
+                for axis, value in zip("XYZ", reference["eye_stare_translate"]): cmds_module.setAttr(f"{reference['eye_stare_node']}.translate{axis}", value)
+                cmds_module.setAttr(f"{reference['both_eyes_node']}.translateX", reference["both_eyes_translate"][0]); cmds_module.setAttr(f"{reference['both_eyes_node']}.translateY", reference["both_eyes_translate"][1])
             for attr, value in saved["jsync_attrs"].items():
                 _set_jali_attr(cmds_module, f"{jsync}.{attr}", value)
             for attr in ("transcript", "text_input_path", "sound_input_path", "output_path"):
                 _set_jali_attr(cmds_module, f"{jsync}.{attr}", saved[attr])
-            _set_jali_attr(cmds_module, item["facs_plug"], saved["facs_animation_source"])
             mel_module.eval(f'realign_node "{jsync.rsplit("|", 1)[-1]}"')
+            _set_jali_attr(cmds_module, item["facs_plug"], saved["facs_animation_source"])
     finally:
         if selection:
             cmds_module.select(selection, replace=True)
         else:
             cmds_module.select(clear=True)
-    for alias in ("A", "B"):
+    for alias in prepared:
         saved, item = prepared[alias]["baseline"], prepared[alias]
         jsync = str(saved["jsync"])
         if not cmds_module.objExists(jsync) or cmds_module.getAttr(f"{jsync}.sound_file") != saved["sound_file"]:
@@ -312,7 +326,7 @@ def restore_dual_jali_base(
             raise RuntimeError(f"{alias}: FACSMaster.FACS_animationSource was not restored.")
         if any(cmds_module.objExists(layer) for layer in item["layers"]):
             raise RuntimeError(f"{alias}: JALITEST overlay layers remain after restore.")
-    return {"restored": {alias: str(prepared[alias]["baseline"]["script_name"]) for alias in ("A", "B")}, "removed_layers": removed, "jsync_preserved": True}
+    return {"restored": {alias: str(prepared[alias]["baseline"]["script_name"]) for alias in prepared}, "removed_layers": removed, "jsync_preserved": True}
 
 
 def _listener_affect_by_phrase(events: Iterable[dict[str, Any]]) -> dict[str, object]:
@@ -334,19 +348,20 @@ def build_listener_mask_timeline(
     phrase_timing: Iterable[dict[str, Any]], *, events_by_actor: dict[str, Iterable[dict[str, Any]]]
 ) -> dict[str, list[dict[str, Any]]]:
     """Resolve complete states to listener-only, canonical-time Mask targets."""
-    affects = {alias: _listener_affect_by_phrase(events_by_actor.get(alias, ())) for alias in ("A", "B")}
-    result: dict[str, list[dict[str, Any]]] = {"A": [], "B": []}
+    actors = list(events_by_actor)
+    affects = {alias: _listener_affect_by_phrase(events_by_actor.get(alias, ())) for alias in actors}
+    result: dict[str, list[dict[str, Any]]] = {alias: [] for alias in actors}
     for phrase in phrase_timing:
         phrase_id, speaker = str(phrase.get("phrase_id") or ""), str(phrase.get("speaker") or "")
-        if not phrase_id or speaker not in {"A", "B"}:
-            raise ValueError("Canonical phrase timing requires phrase_id and speaker A/B.")
+        if not phrase_id or speaker not in result:
+            raise ValueError("Canonical phrase timing requires phrase_id and a known speaker.")
         try:
             start, end = float(phrase["canonical_start"]), float(phrase["canonical_end"])
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"Canonical phrase {phrase_id} has invalid timing.") from exc
         if end < start:
             raise ValueError(f"Canonical phrase {phrase_id} ends before it starts.")
-        for alias in ("A", "B"):
+        for alias in actors:
             raw_state: object = None if alias == speaker else affects[alias].get(phrase_id)
             # Validate all semantic Mask states even when the actor is speaking;
             # that keeps preflight deterministic across future role changes.
@@ -406,8 +421,10 @@ def prepare_dual_listener_mask_artifacts(
     if not isinstance(phrases, list):
         raise ValueError("conversation_phrase_timing.json requires a phrases list.")
     events_by_actor: dict[str, list[dict[str, Any]]] = {}
-    for alias in ("A", "B"):
-        path = Path(str(manifest["artifacts"].get(alias) or ""))
+    character_artifacts = manifest["artifacts"].get("characters", {})
+    actors = list(manifest.get("characters", ["A", "B"]))
+    for alias in actors:
+        path = Path(str((character_artifacts.get(alias) or {}).get("semantic_events") or manifest["artifacts"].get(alias) or ""))
         payload = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(payload.get("events"), list):
             raise ValueError(f"Dual semantic artifact for {alias} requires an events list.")
@@ -417,7 +434,7 @@ def prepare_dual_listener_mask_artifacts(
                 parse_mask_state(event.get("value"))
     timeline = build_listener_mask_timeline(phrases, events_by_actor=events_by_actor)
     prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS)}
-    for alias in ("A", "B"):
+    for alias in actors:
         row = character_mappings.get(alias) or {}
         rig = str(row.get("maya_node") or "").strip()
         if not rig or not cmds_module.objExists(rig):
@@ -462,7 +479,7 @@ def apply_dual_listener_mask_artifacts(*, prepared_context: dict[str, Any], cmds
     if prepared_context.get("schema_version") != "dual_listener_mask_prepared_v1":
         raise ValueError("Invalid prepared listener Mask context.")
     result: dict[str, Any] = {"provenance": prepared_context["provenance"]}
-    for alias in ("A", "B"):
+    for alias in (name for name in prepared_context if isinstance(prepared_context.get(name), dict) and "facs_source_plug" in prepared_context[name]):
         item = prepared_context.get(alias)
         if not isinstance(item, dict):
             raise ValueError(f"Prepared listener Mask context is missing {alias}.")
@@ -483,13 +500,14 @@ def prepare_dual_gaze_only_artifacts(*, manifest_path: str | Path, character_map
         from maya import cmds as cmds_module  # type: ignore
     manifest = load_dual_animation_manifest(manifest_path)
     prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}}
-    for alias in ("A", "B"):
+    for alias in manifest.get("characters", ["A", "B"]):
         row, runtime = character_mappings.get(alias) or {}, manifest["character_runtime_mapping"][alias]
         rig = str(row.get("maya_node") or "")
         if not rig or not cmds_module.objExists(rig): raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
         jsync = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
-        events = json.loads(Path(manifest["artifacts"][alias]).read_text(encoding="utf-8")).get("events", [])
-        gaze = adapt_dual_gaze_events(events)
+        events_path = (manifest["artifacts"].get("characters", {}).get(alias, {}) or {}).get("semantic_events") or manifest["artifacts"].get(alias)
+        events = json.loads(Path(events_path).read_text(encoding="utf-8")).get("events", [])
+        gaze = adapt_dual_gaze_events(events, character_names=manifest.get("characters", ()))
         # Neutral is a rig convention, not an artist-authored calibration.
         # Deliberately ignore legacy gaze_reference/dual_gaze_neutrals data.
         reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
@@ -512,7 +530,7 @@ def prepare_dual_gaze_only_artifacts(*, manifest_path: str | Path, character_map
 def freeze_dual_jsync_nodes(prepared_context: dict[str, Any], *, cmds_module: Any | None = None) -> None:
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
-    for alias in ("A", "B"):
+    for alias in (name for name in prepared_context if isinstance(prepared_context.get(name), dict) and "reference" in prepared_context[name]):
         cmds_module.delete(prepared_context["jsync_nodes"][alias])
 
 
@@ -533,24 +551,27 @@ def apply_dual_gaze_only_artifacts(*, prepared_context: dict[str, Any], cmds_mod
 
 
 def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None, mel_module: Any | None = None) -> dict[str, Any]:
-    """Apply native JALI speaker mask/heart only; no overlay channels."""
+    """Apply native JALI speaker Mask only; no Heart or overlay channels."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     if mel_module is None:
         from maya import mel as mel_module  # type: ignore
     manifest_file = Path(manifest_path); manifest = load_dual_animation_manifest(manifest_file); prepared: dict[str, Any] = {}
-    for alias in ("A", "B"):
+    for alias in manifest.get("characters", ["A", "B"]):
         row=character_mappings.get(alias) or {}; rig=str(row.get("maya_node") or ""); runtime=manifest["character_runtime_mapping"][alias]
         if not rig or not cmds_module.objExists(rig): raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
         jsync=resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
         if cmds_module.getAttr(f"{jsync}.sound_file") != runtime["sound_file"]: raise RuntimeError(f"{alias}: jSync sound_file mismatch before mutation.")
         prefix=_rig_namespace(rig) + ":" if _rig_namespace(rig) else ""
         if not cmds_module.objExists(prefix+"altFACSMaster"): raise RuntimeError(f"{alias}: missing rig control {prefix}altFACSMaster.")
-        artifact=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotated") or "")
-        diagnostic=Path(manifest["artifacts"].get(f"{alias}_jali_speaker_annotation") or "")
+        character_artifacts = manifest["artifacts"].get("characters", {})
+        artifact=Path((character_artifacts.get(alias) or {}).get("jali_speaker_annotated") or manifest["artifacts"].get(f"{alias}_jali_speaker_annotated") or "")
+        diagnostic=Path((character_artifacts.get(alias) or {}).get("jali_speaker_annotation") or manifest["artifacts"].get(f"{alias}_jali_speaker_annotation") or "")
         if not artifact.is_file() or not diagnostic.is_file(): raise FileNotFoundError(f"{alias}: dual speaker emotion artifacts are missing.")
-        info=json.loads(diagnostic.read_text(encoding="utf-8")); mask=bool(info.get("mask_tag_count")); heart=bool(info.get("heart_tag_count"))
-        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","calculate_expression","expression_source","expression_strength","override_annotation","calculate_blinks","transcript","text_input_path","sound_input_path","output_path")
+        info=json.loads(diagnostic.read_text(encoding="utf-8")); mask=bool(info.get("mask_tag_count"))
+        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","override_annotation","calculate_blinks","transcript","text_input_path","sound_input_path","output_path")
+        if manifest.get("schema_version") == "dual_animation_manifest_v0":
+            attrs += ("calculate_expression", "expression_source", "expression_strength")
         missing=[attr for attr in attrs if not cmds_module.objExists(f"{jsync}.{attr}")]
         if missing: raise RuntimeError(f"{alias}: jSync is missing required attributes: {', '.join(missing)}")
         wav=Path(str((manifest.get("wav_durations",{}).get(alias,{}) or {}).get("path") or ""))
@@ -558,26 +579,23 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         if not mel_module.eval('exists "realign_node"'): raise RuntimeError("Installed JALI realign_node procedure is unavailable.")
         stage=manifest_file.parent/"jali_runtime"/alias
         original={attr: cmds_module.getAttr(f"{jsync}.{attr}") for attr in ("text_input_path","sound_input_path","output_path")}
-        prepared[alias]={"rig":rig,"jsync":jsync,"leaf":jsync.rsplit("|",1)[-1],"prefix":prefix,"artifact":artifact,"wav":wav,"stage":stage,"original_paths":original,"info":info,"mask":mask,"heart":heart,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None,"heart_source":_enum_index(jsync,"expression_source","from Annotation",cmds_module) if heart else None,"heart_strength":_enum_index(jsync,"expression_strength","From Transcript Tags",cmds_module) if heart else None}
+        prepared[alias]={"rig":rig,"jsync":jsync,"leaf":jsync.rsplit("|",1)[-1],"prefix":prefix,"artifact":artifact,"wav":wav,"stage":stage,"original_paths":original,"info":info,"mask":mask,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None}
     selection=cmds_module.ls(selection=True, long=True) or []
     result: dict[str, Any] = {}
     changed: list[dict[str, Any]] = []
     try:
-     for alias, item in prepared.items():
-        jsync=item["jsync"]; prefix=item["prefix"]; mask=item["mask"]; heart=item["heart"]
-        item["stage"].mkdir(parents=True,exist_ok=True); staged_txt=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.txt"; staged_wav=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.wav"
-        shutil.copy2(item["artifact"],staged_txt); shutil.copy2(item["wav"],staged_wav)
-        for attr, value in (("calculate_paralinguals", mask),("override_annotation",False),("calculate_blinks",False)):
-            cmds_module.setAttr(f"{jsync}.{attr}", value)
-        if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
-        cmds_module.setAttr(f"{jsync}.calculate_expression",heart)
-        if heart: cmds_module.setAttr(f"{jsync}.expression_source",item["heart_source"]); cmds_module.setAttr(f"{jsync}.expression_strength",item["heart_strength"])
-        cmds_module.setAttr(f"{jsync}.transcript",item["artifact"].read_text(encoding="utf-8"),type="string")
-        for attr in item["original_paths"]: cmds_module.setAttr(f"{jsync}.{attr}",str(item["stage"])+os.sep,type="string")
-        changed.append(item); mel_module.eval(f'realign_node "{item["leaf"]}";')
-        if mask: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
-        if heart: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 1;')
-        result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_expression":heart,"calculate_blinks":False,"mask_binding":mask,"heart_binding":heart,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
+        for alias, item in prepared.items():
+            jsync=item["jsync"]; prefix=item["prefix"]; mask=item["mask"]
+            item["stage"].mkdir(parents=True,exist_ok=True); staged_txt=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.txt"; staged_wav=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.wav"
+            shutil.copy2(item["artifact"],staged_txt); shutil.copy2(item["wav"],staged_wav)
+            for attr, value in (("calculate_paralinguals", mask),("override_annotation",False),("calculate_blinks",False)):
+                cmds_module.setAttr(f"{jsync}.{attr}", value)
+            if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
+            cmds_module.setAttr(f"{jsync}.transcript",item["artifact"].read_text(encoding="utf-8"),type="string")
+            for attr in item["original_paths"]: cmds_module.setAttr(f"{jsync}.{attr}",str(item["stage"])+os.sep,type="string")
+            changed.append(item); mel_module.eval(f'realign_node "{item["leaf"]}";')
+            if mask: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
+            result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_blinks":False,"mask_binding":mask,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
     finally:
      for item in changed:
         for attr,value in item["original_paths"].items(): cmds_module.setAttr(f"{item['jsync']}.{attr}",value,type="string")
@@ -613,20 +631,36 @@ def load_animation_manifest(path: str | Path) -> dict[str, Any]:
 
 def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8"))
-    if not isinstance(value, dict) or value.get("schema_version") != "dual_animation_manifest_v0":
+    if isinstance(value, dict) and value.get("schema_version") == "dual_animation_manifest_v0":
+        mapping, artifacts = value.get("character_runtime_mapping"), value.get("artifacts")
+        if not isinstance(mapping, dict) or not isinstance(artifacts, dict):
+            raise ValueError("Dual animation manifest requires character_runtime_mapping and artifacts.")
+        for alias in ("A", "B"):
+            if not isinstance(mapping.get(alias), dict) or not str(mapping[alias].get("sound_file") or ""):
+                raise ValueError(f"Dual animation manifest requires {alias} runtime mapping.")
+            artifact_path = Path(str(artifacts.get(alias) or ""))
+            if not artifact_path.is_absolute(): artifact_path = REPO_ROOT / artifact_path
+            if not artifact_path.is_file(): raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing: {artifact_path}")
+            artifacts[alias] = str(artifact_path)
+        return value
+    if not isinstance(value, dict) or value.get("schema_version") != "dual_animation_manifest_v1":
         raise ValueError(f"Invalid dual animation manifest: {path}")
     mapping, artifacts = value.get("character_runtime_mapping"), value.get("artifacts")
-    if not isinstance(mapping, dict) or not isinstance(artifacts, dict):
+    characters = value.get("characters")
+    if not isinstance(mapping, dict) or not isinstance(artifacts, dict) or not isinstance(characters, list):
         raise ValueError("Dual animation manifest requires character_runtime_mapping and artifacts.")
-    for alias in ("A", "B"):
-        if not isinstance(mapping.get(alias), dict) or not str(mapping[alias].get("sound_file") or ""):
-            raise ValueError(f"Dual animation manifest requires {alias} runtime mapping.")
-        artifact_path = Path(str(artifacts.get(alias) or ""))
+    character_artifacts = artifacts.get("characters")
+    if not isinstance(character_artifacts, dict):
+        raise ValueError("Dual animation manifest requires name-keyed character artifacts.")
+    for alias in characters:
+        if not isinstance(mapping.get(alias), dict) or str(mapping[alias].get("script_name") or "") != alias or not str(mapping[alias].get("sound_file") or ""):
+            raise ValueError(f"Dual animation manifest requires named runtime mapping for {alias}.")
+        artifact_path = Path(str((character_artifacts.get(alias) or {}).get("semantic_events") or ""))
         if not artifact_path.is_absolute():
             artifact_path = REPO_ROOT / artifact_path
         if not artifact_path.is_file():
             raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing: {artifact_path}")
-        artifacts[alias] = str(artifact_path)
+        character_artifacts[alias]["semantic_events"] = str(artifact_path)
     timing_path = Path(str(artifacts.get("conversation_anchor_timing") or ""))
     if timing_path and not timing_path.is_absolute():
         artifacts["conversation_anchor_timing"] = str(REPO_ROOT / timing_path)
@@ -644,7 +678,7 @@ def resolve_character_look_at_target(alias: str, character_mappings: dict[str, d
     raise ValueError(f"Character {alias} requires an explicit look_at_node (JALI_GRP is not a gaze target).")
 
 
-def adapt_dual_gaze_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+def adapt_dual_gaze_events(events: Iterable[dict[str, Any]], *, character_names: Iterable[str] = ()) -> list[dict[str, Any]]:
     """Convert generic dual gaze rows to Maya gaze rows in chronological order."""
     adapted=[]
     for event in events:
@@ -653,8 +687,10 @@ def adapt_dual_gaze_events(events: Iterable[dict[str, Any]]) -> list[dict[str, A
         if not target: continue
         # Social AVERT deliberately returns to base rather than looking at the
         # other character. Explicit AVERT-DOWN/etc retain direction targets.
-        resolved_target = "__BASE__" if mode == "AVERT" and target in {"A", "B"} else target
-        adapted.append({"id": event.get("id") or event.get("phrase_id"), "phrase_id": event.get("phrase_id"), "source_proposal_id": event.get("source_proposal_id"), "reason": event.get("reason"), "type":"gaze", "mode":mode, "target":resolved_target, "social_avert": mode == "AVERT" and target in {"A","B"}, "resolved_time":dict(event["resolved_time"])})
+        names = set(character_names) or {"A", "B"}
+        social_avert = mode == "AVERT" and target in names
+        resolved_target = "__BASE__" if social_avert else target
+        adapted.append({"id": event.get("id") or event.get("phrase_id"), "phrase_id": event.get("phrase_id"), "source_proposal_id": event.get("source_proposal_id"), "reason": event.get("reason"), "type":"gaze", "mode":mode, "target":resolved_target, "social_avert": social_avert, "resolved_time":dict(event["resolved_time"])})
     return sorted(adapted, key=lambda e:(float(e["resolved_time"]["start"]),float(e["resolved_time"]["end"])))
 
 
