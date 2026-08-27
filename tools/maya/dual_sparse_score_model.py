@@ -20,6 +20,17 @@ _AFFECT = re.compile(r"^(.+)-(\d+)$")
 _GAZE = re.compile(r"^(GAZE|GLANCE)-(.+)$")
 
 
+def _authored_content_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
+    """Preserve the original LLM-authored fields across numbered snapshots."""
+    characters = list(plan.get("characters") or [])
+    return {
+        "characters": characters,
+        "initial_states": deepcopy(plan.get("initial_states") or {}),
+        "initial_reasons": deepcopy(plan.get("initial_reasons") or {}),
+        "tracks": {actor: deepcopy((plan.get("tracks") or {}).get(actor) or []) for actor in characters},
+    }
+
+
 @dataclass(frozen=True)
 class DisplayAnchor:
     anchor_id: str
@@ -126,6 +137,9 @@ class DualSparseScoreModel:
             raise ValueError("DualSparseScoreModel requires dual_performance_plan_v2")
         self.plan = deepcopy(plan)
         self.original_plan = deepcopy(plan)
+        provenance = self.plan.setdefault("provenance", {})
+        provenance.setdefault("original_authored_content", _authored_content_snapshot(plan))
+        self.original_plan.setdefault("provenance", {})["original_authored_content"] = deepcopy(provenance["original_authored_content"])
         self.characters = list(self.plan.get("characters", []))
         if len(self.characters) != 2 or set(self.plan.get("tracks", {})) != set(self.characters):
             raise ValueError("v2 requires two named characters and name-keyed tracks")
@@ -256,6 +270,19 @@ class DualSparseScoreModel:
             errors.append(ScoreIssue(actor, "Initial performance requires a meaningful reason"))
         if initial_changes:
             events = ({"actor": actor, "initial": True, "changes": initial_changes}, *events)
+        hold_active = False
+        for event in events:
+            blink = event["changes"].get("blink")
+            if blink == "EYE_CLOSE_HOLD":
+                if hold_active:
+                    errors.append(ScoreIssue(actor, "EYE_CLOSE_HOLD cannot occur while an authored eye hold is active"))
+                hold_active = True
+            elif blink == "EYE_OPEN":
+                if not hold_active:
+                    errors.append(ScoreIssue(actor, "EYE_OPEN requires an active authored EYE_CLOSE_HOLD"))
+                hold_active = False
+            elif blink in {"SLOW_BLINK", "DOUBLE_BLINK"} and hold_active:
+                errors.append(ScoreIssue(actor, f"{blink} is invalid while an authored eye hold is active"))
         return ScoreValidation(events, tuple(errors))
 
     def validate(self, value: str | dict[str, str]) -> ScoreValidation:

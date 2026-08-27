@@ -323,7 +323,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.acting_interpretation.setPlaceholderText(
             "Scene:\n\nAffective state:\n\nNarrative intent:"
         )
-        _configure_multiline_editor(self.acting_interpretation, height=240)
+        _configure_multiline_editor(self.acting_interpretation, height=240, read_only=True)
         layout.addWidget(self.acting_interpretation)
         self.regenerate_button = QtWidgets.QPushButton("Regenerate Plan")
         self.regenerate_button.clicked.connect(lambda: self._show_phase_one_placeholder("Regenerate Plan"))
@@ -798,7 +798,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
             animation_dir=self.source_path.parent/"animation"
             candidate_plan = self.score_model.apply(self._score_payload())
-            runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan) else self.source_path
+            runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
             self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
             if self.jali_base_baseline is None:
                 self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
@@ -1620,7 +1620,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _save_to(self, path: Path) -> None:
         try:
-            if self.plan is not None:
+            if self.plan is not None and not isinstance(self.score_model, DualSparseScoreModel):
                 self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
             save_performance_plan(self.plan or {}, path)
             session_path = self._save_authoring_session_for_path(path)

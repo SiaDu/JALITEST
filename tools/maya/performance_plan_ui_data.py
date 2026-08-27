@@ -65,13 +65,35 @@ def next_edited_snapshot_path(path: str | Path) -> Path:
     return source.with_name(f"{base}_edited_{max(existing, default=0) + 1:02d}{source.suffix}")
 
 
-def is_v2_plan_edited(plan: dict[str, Any]) -> bool:
-    """Whether a v2 plan contains animator edits requiring a new snapshot."""
+def canonical_v2_authored_content(plan: dict[str, Any]) -> dict[str, Any]:
+    """Return only v2 animator-authorable semantics in deterministic form."""
+    characters = [str(actor) for actor in plan.get("characters", [])]
+    tracks: list[dict[str, Any]] = []
+    for actor in characters:
+        for event in (plan.get("tracks", {}).get(actor) or []):
+            tracks.append({
+                "actor": actor,
+                "anchor_id": event.get("anchor_id"),
+                "changes": dict(event.get("changes") or {}),
+                "reason": event.get("reason"),
+            })
+    tracks.sort(key=lambda row: (row["actor"], str(row["anchor_id"]), json.dumps(row["changes"], sort_keys=True), str(row["reason"])))
+    return {
+        "characters": characters,
+        "initial_states": {actor: dict((plan.get("initial_states") or {}).get(actor) or {}) for actor in characters},
+        "initial_reasons": {actor: (plan.get("initial_reasons") or {}).get(actor) for actor in characters},
+        "tracks": tracks,
+    }
+
+
+def is_v2_plan_edited(plan: dict[str, Any], original_plan: dict[str, Any] | None = None) -> bool:
+    """Compare current v2 semantics with the immutable LLM-authored baseline."""
     if plan.get("schema_version") != "dual_performance_plan_v2":
         return True
-    rows = [event for track in plan.get("tracks", {}).values() for event in track]
-    rows.extend(row for row in (plan.get("initial_provenance") or {}).values() if isinstance(row, dict))
-    return any(row.get("edited_by_user") or row.get("reason_status") in {"user_edited", "user_confirmed", "needs_confirmation"} for row in rows)
+    baseline = ((original_plan or plan).get("provenance") or {}).get("original_authored_content")
+    if not isinstance(baseline, dict):
+        baseline = canonical_v2_authored_content(original_plan or plan)
+    return canonical_v2_authored_content(plan) != baseline
 
 
 def _is_canonical_v2_snapshot(path: Path) -> bool:

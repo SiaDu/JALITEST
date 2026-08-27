@@ -65,6 +65,15 @@ def test_editing_tags_updates_only_sparse_track_and_reason_view():
     assert "ALICE @ \"No.\"" in reason and "affect -> Watchful-100" in reason
 
 
+def test_deleting_only_original_event_is_preserved_as_a_semantic_edit_baseline():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    texts = dict(model.score_texts)
+    texts["BOB"] = texts["BOB"].replace("<Nervous-60><GAZE-DOWN>", "")
+    applied = model.apply(texts)
+    assert applied["tracks"]["BOB"] == []
+    assert applied["provenance"]["original_authored_content"]["tracks"]["BOB"][0]["event_id"] == "E002"
+
+
 def test_edited_reason_requires_explicit_confirmation_or_animator_replacement():
     model = DualSparseScoreModel(PLAN, ANCHORS)
     texts = dict(model.score_texts)
@@ -102,6 +111,16 @@ def test_score_requires_visible_initial_affect_and_initial_reason():
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<Watchful-80>", "<MASK-NONE>", 1)).valid
     model.plan["initial_reasons"]["ALICE"] = ""
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"]).valid
+
+
+def test_score_validation_rejects_invalid_authored_blink_hold_sequences_early():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    score = model.score_texts["BOB"]
+    assert not model.validate_actor("BOB", score.replace("No.", "<EYE_OPEN>No.")).valid
+    held = score.replace("<Nervous-60><GAZE-DOWN>", "<Nervous-60><GAZE-DOWN><EYE_CLOSE_HOLD>")
+    assert not model.validate_actor("BOB", held.replace("No.", "<SLOW_BLINK>No.")).valid
+    valid = held.replace("No.", "<EYE_OPEN>No.")
+    assert model.validate_actor("BOB", valid).valid
 
 
 def test_real_listener_initial_state_and_token_adjacent_changes():

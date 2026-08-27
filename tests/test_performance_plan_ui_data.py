@@ -14,6 +14,7 @@ if str(MAYA_TOOLS) not in sys.path:
     sys.path.insert(0, str(MAYA_TOOLS))
 
 from performance_plan_ui_data import (  # noqa: E402
+    canonical_v2_authored_content,
     default_edited_path,
     is_v2_plan_edited,
     load_performance_plan,
@@ -391,6 +392,14 @@ def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path
     ]
 
 
+def test_dual_ui_keeps_acting_interpretation_read_only_and_regenerate_placeholder():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert "_configure_multiline_editor(self.acting_interpretation, height=240, read_only=True)" in source
+    assert 'self._show_phase_one_placeholder("Regenerate Plan")' in source
+    save_section = source.split("    def _save_to", 1)[1].split("    def ", 1)[0]
+    assert "not isinstance(self.score_model, DualSparseScoreModel)" in save_section
+
+
 def test_v2_runtime_plan_rejects_unconfirmed_reason(tmp_path: Path):
     from tools.maya.dual_sparse_score_model import DualSparseScoreModel
     from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
@@ -425,7 +434,46 @@ def test_v2_canonical_snapshots_are_immutable_and_unedited_runtime_reuses_origin
 
 
 def test_v2_edit_detection_only_snapshots_actual_animator_edits():
-    plan = {"schema_version": "dual_performance_plan_v2", "tracks": {"ALICE": [], "BOB": []}, "initial_provenance": {}}
-    assert is_v2_plan_edited(plan) is False
-    plan["tracks"]["ALICE"].append({"edited_by_user": True})
-    assert is_v2_plan_edited(plan) is True
+    original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"affect": "Watchful-60"}, "BOB": {"affect": "Neutral-60"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0001", "changes": {"gaze": "GAZE-BOB"}, "reason": "Looks."}], "BOB": []}}
+    current = copy.deepcopy(original)
+    current["provenance"] = {"original_authored_content": canonical_v2_authored_content(original)}
+    assert is_v2_plan_edited(current, original) is False
+    current["tracks"]["ALICE"] = []
+    assert is_v2_plan_edited(current, original) is True
+    assert is_v2_plan_edited({**current, "acting_interpretation": "Different display text."}, original) is True
+
+
+def test_v2_canonical_comparison_detects_every_authored_change_but_ignores_display_metadata():
+    original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"affect": "Watchful-60"}, "BOB": {"affect": "Neutral-60"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0001", "changes": {"gaze": "GAZE-BOB", "head": "HEAD-NONE"}, "reason": "Looks."}], "BOB": []}}
+    baseline = canonical_v2_authored_content(original)
+    unchanged = {**copy.deepcopy(original), "acting_interpretation": "Read-only context.", "provenance": {"original_authored_content": baseline}}
+    assert not is_v2_plan_edited(unchanged, original)
+    variants = []
+    added = copy.deepcopy(unchanged); added["tracks"]["BOB"].append({"actor": "BOB", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "Adds."}); variants.append(added)
+    removed_channel = copy.deepcopy(unchanged); removed_channel["tracks"]["ALICE"][0]["changes"].pop("head"); variants.append(removed_channel)
+    changed = copy.deepcopy(unchanged); changed["tracks"]["ALICE"][0]["changes"]["gaze"] = "GAZE-DOWN"; variants.append(changed)
+    moved = copy.deepcopy(unchanged); moved["tracks"]["ALICE"][0]["anchor_id"] = "w0002"; variants.append(moved)
+    changed_reason = copy.deepcopy(unchanged); changed_reason["tracks"]["ALICE"][0]["reason"] = "Changed."; variants.append(changed_reason)
+    changed_initial = copy.deepcopy(unchanged); changed_initial["initial_states"]["ALICE"]["affect"] = "Happy-60"; variants.append(changed_initial)
+    changed_initial_reason = copy.deepcopy(unchanged); changed_initial_reason["initial_reasons"]["ALICE"] = "Changed."; variants.append(changed_initial_reason)
+    assert all(is_v2_plan_edited(plan, original) for plan in variants)
+
+
+def test_v2_delete_only_edit_saves_numbered_snapshot_without_resurrecting_event(tmp_path: Path):
+    from tools.maya.dual_sparse_score_model import DualSparseScoreModel
+    from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
+
+    anchors = build_conversation_anchor_model("ALICE: Hello.\nBOB: No.", character_a="ALICE", character_b="BOB")
+    original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"affect": "Watchful-60", "gaze": "GAZE-BOB"}, "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "Ready.", "BOB": "Ready."}, "tracks": {"ALICE": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0001", "changes": {"gaze": "GAZE-DOWN"}, "reason": "Looks down."}], "BOB": []}}
+    original_path = tmp_path / "performance_plan.json"
+    save_performance_plan(original, original_path)
+    model = DualSparseScoreModel(original, anchors)
+    texts = dict(model.score_texts)
+    texts["ALICE"] = texts["ALICE"].replace("<GAZE-DOWN>", "")
+    current = model.apply(texts)
+    assert current["tracks"]["ALICE"] == []
+    assert is_v2_plan_edited(current, model.original_plan)
+    snapshot = default_edited_path(original_path)
+    save_animation_runtime_plan(model, texts, snapshot)
+    assert json.loads(original_path.read_text(encoding="utf-8"))["tracks"]["ALICE"][0]["event_id"] == "E1"
+    assert json.loads(snapshot.read_text(encoding="utf-8"))["tracks"]["ALICE"] == []

@@ -835,10 +835,26 @@ def test_v2_gaze_role_aware_key_realization_keeps_semantic_boundary_exact():
 def test_v2_glance_role_aware_key_realization_uses_causal_listener_and_speaker_onset():
     state = {"eye_stare": [1, 2, 3], "eyes": [0, 0]}
     previous = {"eye_stare": [0, 0, 9], "eyes": [0, 0]}
-    speaker = [{"event": {"mode": "GLANCE", "timing_role": "SPEAK_ONSET"}, "start": 2.0, "end": 3.0, "previous_state": previous, **state, "return_state": previous}]
-    listener = [{"event": {"mode": "GLANCE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 3.0, "previous_state": previous, **state, "return_state": previous}]
-    assert [key["frame"] for key in build_dual_gaze_key_schedule(speaker, fps=24, glance_transition_frames=3, glance_hold_seconds=.5)] == [45.0, 48.0, 69.0, 72.0]
-    assert [key["frame"] for key in build_dual_gaze_key_schedule(listener, fps=24, glance_transition_frames=3, glance_hold_seconds=.5)] == [48.0, 51.0, 69.0, 72.0]
+    speaker = [{"event": {"mode": "GLANCE", "timing_role": "SPEAK_ONSET"}, "start": 2.0, "end": 2.625, "previous_state": previous, **state, "return_state": previous}]
+    listener = [{"event": {"mode": "GLANCE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 2.75, "previous_state": previous, **state, "return_state": previous}]
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(speaker, fps=24, glance_transition_frames=3, glance_hold_seconds=.5)] == [45.0, 48.0, 60.0, 63.0]
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(listener, fps=24, glance_transition_frames=3, glance_hold_seconds=.5)] == [48.0, 51.0, 63.0, 66.0]
+
+
+def test_glance_is_clamped_by_following_speaker_visual_lead_in_without_key_conflict():
+    events = [
+        {"id": "G1", "mode": "GLANCE", "target": "B", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": 2.0, "end": 3.0}},
+        {"id": "G2", "mode": "GAZE", "target": "A", "timing_role": "SPEAK_ONSET", "visual_onset": 2.875, "resolved_time": {"start": 3.0, "end": 4.0}},
+    ]
+    schedule = build_dual_gaze_schedule(events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0], target_positions={"A": [1, 1, 1], "B": [2, 2, 2]})
+    assert schedule[0]["end"] == 2.875
+    keys = build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_transition_frames=3, glance_hold_seconds=.5)
+    keyed = {(key["frame"], tuple(key["eye_stare"]), tuple(key["eyes"])) for key in keys}
+    assert any(key[0] == 69.0 for key in keyed)
+    by_frame = {}
+    for key in keys:
+        by_frame.setdefault(key["frame"], set()).add((tuple(key["eye_stare"]), tuple(key["eyes"])))
+    assert all(len(states) == 1 for states in by_frame.values())
 
 
 def test_later_persistent_state_still_uses_explicit_transition_frames():

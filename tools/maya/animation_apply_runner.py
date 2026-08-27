@@ -1123,10 +1123,19 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
                 raise ValueError(f"{actor}: v2 executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
             if mode == "GLANCE":
                 transition = float(gaze_config.get("glance_transition_frames", 3)) / float(manifest["fps"])
-                end = start + transition + float(gaze_config.get("glance_hold_seconds", 0.5)) + transition
+                end = start + float(gaze_config.get("glance_hold_seconds", 0.5)) + transition
+                if event.get("timing_role") != "SPEAK_ONSET":
+                    end += transition
             else:
                 end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])
             raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "timing_role": event.get("timing_role"), "social_avert": False, "resolved_time": {"start": start, "end": end}})
+        for event in raw:
+            start_frame = float(event["resolved_time"]["start"]) * float(manifest["fps"])
+            if event.get("timing_role") == "SPEAK_ONSET":
+                transition = int(gaze_config.get("glance_transition_frames" if event["mode"] == "GLANCE" else "gaze_transition_frames", 3))
+                event["visual_onset"] = max(0.0, start_frame - transition) / float(manifest["fps"])
+            else:
+                event["visual_onset"] = max(0.0, start_frame) / float(manifest["fps"])
         reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
         positions: dict[str, list[float]] = {}
         for event in raw:
@@ -1298,7 +1307,8 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
     for index,event in enumerate(ordered):
         mode,target=event["mode"],event["target"]; next_start=float(ordered[index+1]["resolved_time"]["start"]) if index+1<len(ordered) else None
         raw_end=float(event["resolved_time"]["end"])
-        end=min(raw_end,next_start) if mode=="GLANCE" and next_start is not None else (next_start if next_start is not None else raw_end)
+        next_visual_onset=float(ordered[index+1].get("visual_onset", next_start)) if index+1<len(ordered) else None
+        end=min(raw_end,next_visual_onset) if mode=="GLANCE" and next_visual_onset is not None else (next_start if next_start is not None else raw_end)
         state={"event":event,"start":float(event["resolved_time"]["start"]),"end":end}
         state["previous_state"]=dict(previous)
         if mode == "RESET":
@@ -1351,14 +1361,21 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
             back = end - transition
             if back - out < minimum_hold:
                 raise ValueError(
-                    f"GLANCE interval is too short: available {max(0.0, end - start):.3f} frames; required {transition + minimum_hold + transition if not speaker_glance else minimum_hold + transition} frames."
+                    f"GLANCE interval is too short for {event.get('id') or event.get('phrase_id') or '<unknown>'} at semantic frame {start:.3f}: available {max(0.0, end - start):.3f} frames; required {transition + minimum_hold + transition if not speaker_glance else minimum_hold + transition} frames."
                 )
             returned=state["return_state"]; keys.extend(({"frame":out,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":back,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":end,"eye_stare":list(returned["eye_stare"]),"eyes":list(returned["eyes"])}))
             if speaker_glance:
                 keys.append({"frame":max(0.0, start-transition),"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
         else: keys.append({"frame":arrival,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])})
     # Never allow an older semantic state to key after a newer start.
-    return sorted(keys,key=lambda key:key["frame"])
+    ordered_keys = sorted(keys, key=lambda key:key["frame"])
+    seen: dict[float, tuple[list[float], list[float]]] = {}
+    for key in ordered_keys:
+        state = (key["eye_stare"], key["eyes"])
+        prior = seen.setdefault(float(key["frame"]), state)
+        if prior != state:
+            raise ValueError(f"Conflicting gaze keys at frame {key['frame']}.")
+    return ordered_keys
 
 
 def _dual_eye_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
