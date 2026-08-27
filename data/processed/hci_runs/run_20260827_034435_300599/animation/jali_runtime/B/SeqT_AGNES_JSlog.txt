@@ -51,7 +51,7 @@ total_clip_time = 10.4331.
 Skipped 'UW' in sonorant stats
 Skipped 'UW' in vowel stats
 total_clip_time = 10.5531. 
-total_clip_time = 10.7231. 
+total_clip_time = 10.7131. 
 total_clip_time = 11.9453. 
 total_clip_time = 12.0053. 
 total_clip_time = 12.0653. 
@@ -72,7 +72,7 @@ total_clip_time = 13.3216.
 total_clip_time = 13.3516. 
 total_clip_time = 13.7. 
 total_clip_time = 19.74. 
-total_clip_time = 20.3113. 
+total_clip_time = 20.3213. 
 total_clip_time = 20.4313. 
 total_clip_time = 20.4713. 
 total_clip_time = 20.5513. 
@@ -111,7 +111,7 @@ Skipped 'w' in consonants stats
 total_clip_time = 28.1269. 
 total_clip_time = 28.2669. 
 total_clip_time = 28.3069. 
-total_clip_time = 28.3969. 
+total_clip_time = 28.3869. 
 total_clip_time = 28.5669. 
 total_clip_time = 28.5969. 
 total_clip_time = 28.6469. 

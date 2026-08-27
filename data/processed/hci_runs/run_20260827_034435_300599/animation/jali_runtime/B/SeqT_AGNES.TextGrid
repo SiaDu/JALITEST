@@ -82,10 +82,10 @@ item[]
 				text = "latin"
 			intervals [18]:
 				xmin = 10.173126
-				xmax = 10.723125
+				xmax = 10.713125
 				text = "tutor"
 			intervals [19]:
-				xmin = 10.723125
+				xmin = 10.713125
 				xmax = 11.945251
 				text = "XXNONVERBALXX"
 			intervals [20]:
@@ -122,30 +122,30 @@ item[]
 				text = "<eps>"
 			intervals [28]:
 				xmin = 19.740000
-				xmax = 20.311314
+				xmax = 20.321312
 				text = "XXNONVERBALXX"
 			intervals [29]:
-				xmin = 20.311314
-				xmax = 20.611315
+				xmin = 20.321312
+				xmax = 20.611311
 				text = "brought"
 			intervals [30]:
-				xmin = 20.611315
-				xmax = 20.701313
+				xmin = 20.611311
+				xmax = 20.701311
 				text = "you"
 			intervals [31]:
-				xmin = 20.701313
-				xmax = 20.891314
+				xmin = 20.701311
+				xmax = 20.891312
 				text = "into"
 			intervals [32]:
-				xmin = 20.891314
-				xmax = 20.971313
+				xmin = 20.891312
+				xmax = 20.971312
 				text = "the"
 			intervals [33]:
-				xmin = 20.971313
-				xmax = 21.501314
+				xmin = 20.971312
+				xmax = 21.501312
 				text = "garden"
 			intervals [34]:
-				xmin = 21.501314
+				xmin = 21.501312
 				xmax = 21.789999
 				text = "XXNONVERBALXX"
 			intervals [35]:
@@ -162,38 +162,38 @@ item[]
 				text = "<eps>"
 			intervals [38]:
 				xmin = 26.019999
-				xmax = 27.416880
+				xmax = 27.416878
 				text = "XXNONVERBALXX"
 			intervals [39]:
-				xmin = 27.416880
-				xmax = 27.596880
+				xmin = 27.416878
+				xmax = 27.596878
 				text = "it's"
 			intervals [40]:
-				xmin = 27.596880
-				xmax = 27.836878
+				xmin = 27.596878
+				xmax = 27.836876
 				text = "just"
 			intervals [41]:
-				xmin = 27.836878
-				xmax = 27.896879
+				xmin = 27.836876
+				xmax = 27.896877
 				text = "a"
 			intervals [42]:
-				xmin = 27.896879
-				xmax = 28.566877
+				xmin = 27.896877
+				xmax = 28.566875
 				text = "question"
 			intervals [43]:
-				xmin = 28.566877
-				xmax = 28.596876
+				xmin = 28.566875
+				xmax = 28.596874
 				text = "<eps>"
 			intervals [44]:
-				xmin = 28.596876
-				xmax = 28.926878
+				xmin = 28.596874
+				xmax = 28.926876
 				text = "master"
 			intervals [45]:
-				xmin = 28.926878
-				xmax = 29.336878
+				xmin = 28.926876
+				xmax = 29.336876
 				text = "tutor"
 			intervals [46]:
-				xmin = 29.336878
+				xmin = 29.336876
 				xmax = 29.539999
 				text = "XXNONVERBALXX"
 			intervals [47]:
@@ -400,10 +400,10 @@ item[]
 				text = "t"
 			intervals [45]:
 				xmin = 10.553125
-				xmax = 10.723125
+				xmax = 10.713125
 				text = "3`"
 			intervals [46]:
-				xmin = 10.723125
+				xmin = 10.713125
 				xmax = 11.945251
 				text = "spn"
 			intervals [47]:
@@ -468,82 +468,82 @@ item[]
 				text = "sil"
 			intervals [62]:
 				xmin = 19.740000
-				xmax = 20.311314
+				xmax = 20.321312
 				text = "spn"
 			intervals [63]:
-				xmin = 20.311314
-				xmax = 20.431314
+				xmin = 20.321312
+				xmax = 20.431311
 				text = "b"
 			intervals [64]:
-				xmin = 20.431314
-				xmax = 20.471313
+				xmin = 20.431311
+				xmax = 20.471312
 				text = "r\"
 			intervals [65]:
-				xmin = 20.471313
-				xmax = 20.551313
+				xmin = 20.471312
+				xmax = 20.551311
 				text = "''O"
 			intervals [66]:
-				xmin = 20.551313
-				xmax = 20.611315
+				xmin = 20.551311
+				xmax = 20.611313
 				text = "t"
 			intervals [67]:
-				xmin = 20.611315
-				xmax = 20.671314
+				xmin = 20.611313
+				xmax = 20.671312
 				text = "j"
 			intervals [68]:
-				xmin = 20.671314
-				xmax = 20.701313
+				xmin = 20.671312
+				xmax = 20.701311
 				text = "''U"
 			intervals [69]:
-				xmin = 20.701313
-				xmax = 20.761314
+				xmin = 20.701311
+				xmax = 20.761312
 				text = "I"
 			intervals [70]:
-				xmin = 20.761314
-				xmax = 20.811314
+				xmin = 20.761312
+				xmax = 20.811312
 				text = "n"
 			intervals [71]:
-				xmin = 20.811314
-				xmax = 20.861315
+				xmin = 20.811312
+				xmax = 20.861313
 				text = "t"
 			intervals [72]:
-				xmin = 20.861315
-				xmax = 20.891314
+				xmin = 20.861313
+				xmax = 20.891312
 				text = "V"
 			intervals [73]:
-				xmin = 20.891314
-				xmax = 20.921314
+				xmin = 20.891312
+				xmax = 20.921312
 				text = "D"
 			intervals [74]:
-				xmin = 20.921314
-				xmax = 20.971313
+				xmin = 20.921312
+				xmax = 20.971312
 				text = "V"
 			intervals [75]:
-				xmin = 20.971313
-				xmax = 21.041313
+				xmin = 20.971312
+				xmax = 21.041311
 				text = "g"
 			intervals [76]:
-				xmin = 21.041313
-				xmax = 21.191313
+				xmin = 21.041311
+				xmax = 21.191311
 				text = "''A"
 			intervals [77]:
-				xmin = 21.191313
-				xmax = 21.231314
+				xmin = 21.191311
+				xmax = 21.231312
 				text = "r\"
 			intervals [78]:
-				xmin = 21.231314
-				xmax = 21.261314
+				xmin = 21.231312
+				xmax = 21.261312
 				text = "d"
 			intervals [79]:
-				xmin = 21.261314
-				xmax = 21.361315
+				xmin = 21.261312
+				xmax = 21.361313
 				text = "V"
 			intervals [80]:
-				xmin = 21.361315
-				xmax = 21.501314
+				xmin = 21.361313
+				xmax = 21.501312
 				text = "n"
 			intervals [81]:
-				xmin = 21.501314
+				xmin = 21.501312
 				xmax = 21.789999
 				text = "spn"
 			intervals [82]:
@@ -560,110 +560,110 @@ item[]
 				text = "sil"
 			intervals [85]:
 				xmin = 26.019999
-				xmax = 27.416880
+				xmax = 27.416878
 				text = "spn"
 			intervals [86]:
-				xmin = 27.416880
-				xmax = 27.446878
+				xmin = 27.416878
+				xmax = 27.446877
 				text = "I"
 			intervals [87]:
-				xmin = 27.446878
-				xmax = 27.496878
+				xmin = 27.446877
+				xmax = 27.496876
 				text = "t"
 			intervals [88]:
-				xmin = 27.496878
-				xmax = 27.596880
+				xmin = 27.496876
+				xmax = 27.596878
 				text = "z"
 			intervals [89]:
-				xmin = 27.596880
-				xmax = 27.646879
+				xmin = 27.596878
+				xmax = 27.646877
 				text = "dZ"
 			intervals [90]:
-				xmin = 27.646879
-				xmax = 27.706877
+				xmin = 27.646877
+				xmax = 27.706875
 				text = "''V"
 			intervals [91]:
-				xmin = 27.706877
-				xmax = 27.776876
+				xmin = 27.706875
+				xmax = 27.776875
 				text = "s"
 			intervals [92]:
-				xmin = 27.776876
-				xmax = 27.836878
+				xmin = 27.776875
+				xmax = 27.836876
 				text = "t"
 			intervals [93]:
-				xmin = 27.836878
-				xmax = 27.896879
+				xmin = 27.836876
+				xmax = 27.896877
 				text = "V"
 			intervals [94]:
-				xmin = 27.896879
-				xmax = 27.976877
+				xmin = 27.896877
+				xmax = 27.976875
 				text = "k"
 			intervals [95]:
-				xmin = 27.976877
-				xmax = 28.016878
+				xmin = 27.976875
+				xmax = 28.016876
 				text = "w"
 			intervals [96]:
-				xmin = 28.016878
-				xmax = 28.126879
+				xmin = 28.016876
+				xmax = 28.126877
 				text = "''E"
 			intervals [97]:
-				xmin = 28.126879
-				xmax = 28.266878
+				xmin = 28.126877
+				xmax = 28.266876
 				text = "s"
 			intervals [98]:
-				xmin = 28.266878
-				xmax = 28.306879
+				xmin = 28.266876
+				xmax = 28.306877
 				text = "tS"
 			intervals [99]:
-				xmin = 28.306879
-				xmax = 28.396879
+				xmin = 28.306877
+				xmax = 28.386875
 				text = "V"
 			intervals [100]:
-				xmin = 28.396879
-				xmax = 28.566877
+				xmin = 28.386875
+				xmax = 28.566875
 				text = "n"
 			intervals [101]:
-				xmin = 28.566877
-				xmax = 28.596876
+				xmin = 28.566875
+				xmax = 28.596874
 				text = "sil"
 			intervals [102]:
-				xmin = 28.596876
-				xmax = 28.646879
+				xmin = 28.596874
+				xmax = 28.646877
 				text = "m"
 			intervals [103]:
-				xmin = 28.646879
-				xmax = 28.766878
+				xmin = 28.646877
+				xmax = 28.766876
 				text = "''{"
 			intervals [104]:
-				xmin = 28.766878
-				xmax = 28.836878
+				xmin = 28.766876
+				xmax = 28.836876
 				text = "s"
 			intervals [105]:
-				xmin = 28.836878
-				xmax = 28.886877
+				xmin = 28.836876
+				xmax = 28.886875
 				text = "t"
 			intervals [106]:
-				xmin = 28.886877
-				xmax = 28.926878
+				xmin = 28.886875
+				xmax = 28.926876
 				text = "3`"
 			intervals [107]:
-				xmin = 28.926878
-				xmax = 29.056879
+				xmin = 28.926876
+				xmax = 29.056877
 				text = "t"
 			intervals [108]:
-				xmin = 29.056879
-				xmax = 29.176878
+				xmin = 29.056877
+				xmax = 29.176876
 				text = "''u"
 			intervals [109]:
-				xmin = 29.176878
-				xmax = 29.286879
+				xmin = 29.176876
+				xmax = 29.286877
 				text = "t"
 			intervals [110]:
-				xmin = 29.286879
-				xmax = 29.336878
+				xmin = 29.286877
+				xmax = 29.336876
 				text = "E"
 			intervals [111]:
-				xmin = 29.336878
+				xmin = 29.336876
 				xmax = 29.539999
 				text = "spn"
 			intervals [112]:

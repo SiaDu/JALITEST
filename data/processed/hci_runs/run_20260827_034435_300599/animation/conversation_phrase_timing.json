@@ -8,15 +8,15 @@
       "raw_source_end": 2.25,
       "canonical_start": 0.0,
       "start_adjusted": false,
-      "canonical_end": 3.580437
+      "canonical_end": 3.570437
     },
     {
       "phrase_id": "P02",
       "plan_index": 1,
       "speaker": "A",
-      "raw_start": 3.580437,
+      "raw_start": 3.570437,
       "raw_source_end": 4.140437,
-      "canonical_start": 3.580437,
+      "canonical_start": 3.570437,
       "start_adjusted": false,
       "canonical_end": 5.648625
     },
