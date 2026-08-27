@@ -174,6 +174,7 @@ def _enum_index(node: str, attr: str, label: str, cmds_module: Any) -> int:
 
 
 LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
+GAZE_LAYER_PREFIX = "JALITEST_gaze_"
 
 
 def _listener_affect_by_phrase(events: Iterable[dict[str, Any]]) -> dict[str, object]:
@@ -247,6 +248,10 @@ def build_listener_mask_key_schedule(
 
 def _listener_layer_name(alias: str) -> str:
     return f"{LISTENER_MASK_LAYER_PREFIX}{alias}"
+
+
+def gaze_layer_name(alias: str) -> str:
+    return f"{GAZE_LAYER_PREFIX}{alias}"
 
 
 def prepare_dual_listener_mask_artifacts(
@@ -361,7 +366,9 @@ def prepare_dual_gaze_only_artifacts(*, manifest_path: str | Path, character_map
             positions[target] = [float(item) for item in value]
         schedule = build_dual_gaze_schedule(gaze, neutral_position=reference["eye_stare_world_position"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions)
         prepared["jsync_nodes"][alias] = jsync
-        prepared[alias] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=4), "gaze_events": len(gaze)}
+        plugs = [f"{reference['eye_stare_node']}.translate{axis}" for axis in "XYZ"] + [f"{reference['both_eyes_node']}.translateX", f"{reference['both_eyes_node']}.translateY"]
+        if any(not cmds_module.objExists(plug) for plug in plugs): raise RuntimeError(f"{alias}: required gaze controls do not exist.")
+        prepared[alias] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=4), "gaze_events": len(gaze), "layer": gaze_layer_name(alias), "managed_gaze_plugs": plugs}
     return prepared
 
 
@@ -379,13 +386,12 @@ def apply_dual_gaze_only_artifacts(*, prepared_context: dict[str, Any], cmds_mod
     result: dict[str, Any] = {}
     for alias in ("A", "B"):
         item = prepared_context[alias]; reference = item["reference"]
-        clear_character_gaze_animation(reference, cmds_module=cmds_module)
+        _clear_listener_layer_keys(item["layer"], item["managed_gaze_plugs"], scene_range=None, cmds_module=cmds_module)
         for state in item["keys"]:
-            cmds_module.xform(reference["eye_stare_node"], worldSpace=True, translation=state["eye_stare"])
-            cmds_module.setKeyframe(reference["eye_stare_node"], attribute="translate", time=state["frame"])
-            cmds_module.setAttr(f"{reference['both_eyes_node']}.translateX", state["eyes"][0]); cmds_module.setAttr(f"{reference['both_eyes_node']}.translateY", state["eyes"][1])
-            cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateX", time=state["frame"]); cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateY", time=state["frame"])
-        result[alias] = {"gaze_events": item["gaze_events"], "key_count": len(item["keys"])}
+            for axis, value in zip("XYZ", state["eye_stare"]): cmds_module.setKeyframe(reference["eye_stare_node"], attribute=f"translate{axis}", time=state["frame"], value=value, animLayer=item["layer"])
+            cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateX", time=state["frame"], value=state["eyes"][0], animLayer=item["layer"])
+            cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateY", time=state["frame"], value=state["eyes"][1], animLayer=item["layer"])
+        result[alias] = {"gaze_events": item["gaze_events"], "key_count": len(item["keys"]), "layer": item["layer"], "managed_gaze_plugs": item["managed_gaze_plugs"]}
     return result
 
 

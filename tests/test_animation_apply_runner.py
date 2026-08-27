@@ -34,6 +34,8 @@ from animation_apply_runner import (  # noqa: E402
     resolve_jali_source_transcript_path,
     scene_fps_from_unit,
     validate_gaze_target_mappings,
+    apply_dual_gaze_only_artifacts,
+    gaze_layer_name,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 
@@ -183,6 +185,18 @@ def test_listener_missing_b_control_fails_before_either_actor_mutates(tmp_path):
     with pytest.raises(RuntimeError, match="B: missing User FACS controls"):
         prepare_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path), character_mappings=_listener_mappings(), cmds_module=cmds)
     assert cmds.calls == []
+
+
+def test_gaze_only_uses_dedicated_layers_and_never_clears_base_controls():
+    cmds = _ListenerCmds()
+    context = {"schema_version": "dual_gaze_only_prepared_v1", "fps": 24, "jsync_nodes": {"A": "a", "B": "b"}}
+    for alias in ("A", "B"):
+        context[alias] = {"layer": gaze_layer_name(alias), "managed_gaze_plugs": [f"{alias}:eye.translateX", f"{alias}:eye.translateY", f"{alias}:eye.translateZ", f"{alias}:eyes.translateX", f"{alias}:eyes.translateY"], "reference": {"eye_stare_node": f"{alias}:eye", "both_eyes_node": f"{alias}:eyes"}, "keys": [{"frame": 1.0, "eye_stare": [1,2,3], "eyes": [4,5]}], "gaze_events": 1}
+    result = apply_dual_gaze_only_artifacts(prepared_context=context, cmds_module=cmds)
+    assert result["A"]["layer"] == "JALITEST_gaze_A"
+    assert all(call[0] != "xform" for call in cmds.calls)
+    keyed = [call for call in cmds.calls if call[0] == "setKeyframe"]
+    assert keyed and all(call[2]["animLayer"].startswith("JALITEST_gaze_") for call in keyed)
 
 
 def _dual_manifest(tmp_path: Path) -> Path:
