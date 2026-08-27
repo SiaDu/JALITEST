@@ -12,7 +12,10 @@ from expregaze_jali.performance_proposal_parser import load_semantic_vocabulary
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 
 CHANNEL_ORDER = ("affect", "gaze", "head", "blink")
+PERSISTENT_CHANNELS = ("affect", "gaze", "head")
+INITIAL_DEFAULTS = {"affect": "MASK-NONE", "gaze": "GAZE-NONE", "head": "HEAD-NONE"}
 _TAG = re.compile(r"<([^<>\r\n]+)>")
+_TAG_CLUSTER = re.compile(r"(?:<[^<>\r\n]+>)+")
 _AFFECT = re.compile(r"^(.+)-(\d+)$")
 _GAZE = re.compile(r"^(GAZE|GLANCE)-(.+)$")
 
@@ -106,7 +109,13 @@ def render_actor_score(plan: dict[str, Any], projection: DialogueProjection, act
     text = projection.display_text
     for offset in sorted(insertions, reverse=True):
         text = text[:offset] + "".join(insertions[offset]) + text[offset:]
-    return text
+    initial = {**INITIAL_DEFAULTS, **((plan.get("initial_states") or {}).get(actor) or {})}
+    initial_tags = "".join(
+        _format_tag(channel, initial[channel])
+        for channel in PERSISTENT_CHANNELS
+        if initial[channel] not in {"NONE", INITIAL_DEFAULTS[channel]}
+    )
+    return initial_tags + text
 
 
 class DualSparseScoreModel:
@@ -119,6 +128,14 @@ class DualSparseScoreModel:
         self.characters = list(self.plan.get("characters", []))
         if len(self.characters) != 2 or set(self.plan.get("tracks", {})) != set(self.characters):
             raise ValueError("v2 requires two named characters and name-keyed tracks")
+        self.plan["initial_states"] = {
+            actor: {**INITIAL_DEFAULTS, **((self.plan.get("initial_states") or {}).get(actor) or {})}
+            for actor in self.characters
+        }
+        self.plan["initial_reasons"] = {
+            actor: (self.plan.get("initial_reasons") or {}).get(actor)
+            for actor in self.characters
+        }
         self.projection = build_dialogue_projection(anchor_model)
         self.score_texts = {actor: render_actor_score(self.plan, self.projection, actor) for actor in self.characters}
         self.score_text = self.score_texts[self.characters[0]]
@@ -153,36 +170,71 @@ class DualSparseScoreModel:
         if actor not in self.characters:
             return ScoreValidation((), (ScoreIssue(actor, "Unknown actor editor"),))
         errors: list[ScoreIssue] = []
-        placements: list[tuple[int, str, str]] = []
+        placements: list[tuple[re.Match[str], int, dict[str, str]]] = []
         stripped: list[str] = []
         cursor = 0
-        for match in _TAG.finditer(text):
+        clean_length = 0
+        for match in _TAG_CLUSTER.finditer(text):
             plain = text[cursor:match.start()]
             stripped.append(plain)
-            offset = sum(len(part) for part in stripped)
-            parsed = self._tag(actor, match.group(1).strip())
-            if isinstance(parsed, str):
-                errors.append(ScoreIssue(actor, parsed))
-            else:
-                placements.append((offset, parsed[0], parsed[1]))
+            clean_length += len(plain)
+            changes: dict[str, str] = {}
+            for tag in _TAG.finditer(match.group(0)):
+                parsed = self._tag(actor, tag.group(1).strip())
+                if isinstance(parsed, str):
+                    errors.append(ScoreIssue(actor, parsed))
+                    continue
+                channel, value = parsed
+                if channel in changes:
+                    errors.append(ScoreIssue(actor, f"Duplicate {channel} change in one tag cluster"))
+                changes[channel] = value
+            if changes:
+                placements.append((match, clean_length, changes))
             cursor = match.end()
         stripped.append(text[cursor:])
         clean = "".join(stripped)
-        if clean != self.projection.display_text:
-            errors.append(ScoreIssue(actor, "Dialogue text is immutable; stripping valid tags must reproduce canonical display_text exactly"))
-        by_start = {a.start: a for a in self.projection.anchors if speaker_key(a.speaker) == speaker_key(actor)}
-        by_end = {a.end: a for a in self.projection.anchors if speaker_key(a.speaker) != speaker_key(actor)}
+        edited_tokens = list(re.finditer(r"\S+", clean))
+        canonical_tokens = list(self.projection.anchors)
+        if [match.group(0) for match in edited_tokens] != [anchor.text for anchor in canonical_tokens]:
+            errors.append(ScoreIssue(actor, "Dialogue tokens and punctuation are immutable and must preserve the canonical anchor sequence"))
         grouped: dict[str, dict[str, str]] = {}
-        for offset, channel, value in placements:
-            anchor = by_start.get(offset) or by_end.get(offset)
-            if anchor is None:
-                errors.append(ScoreIssue(actor, f"Tag at display offset {offset} is not role-appropriately before a spoken word or after a heard word"))
+        initial_changes: dict[str, str] = {}
+        for cluster, offset, changes in placements:
+            prior_indices = [index for index, token in enumerate(edited_tokens) if token.end() == offset]
+            next_indices = [index for index, token in enumerate(edited_tokens) if token.start() == offset]
+            embedded = any(token.start() < offset < token.end() for token in edited_tokens)
+            before_first_token = not edited_tokens or clean[:offset].strip() == ""
+            direct_previous = cluster.start() > 0 and not text[cluster.start() - 1].isspace()
+            direct_next = cluster.end() < len(text) and not text[cluster.end()].isspace()
+            placement_key: str | None = None
+            if before_first_token:
+                if "blink" in changes:
+                    errors.append(ScoreIssue(actor, "Initial state tag cluster cannot contain blink"))
+                    changes = {key: value for key, value in changes.items() if key != "blink"}
+                if str(changes.get("gaze", "")).startswith("GLANCE-"):
+                    errors.append(ScoreIssue(actor, "Initial gaze must be persistent GAZE or GAZE-NONE, not GLANCE"))
+                    changes = {key: value for key, value in changes.items() if key != "gaze"}
+                placement_key = "__INITIAL__"
+            elif embedded:
+                errors.append(ScoreIssue(actor, "Tag cluster cannot split a dialogue token"))
+            elif direct_next and next_indices and next_indices[0] < len(canonical_tokens) and speaker_key(canonical_tokens[next_indices[0]].speaker) == speaker_key(actor):
+                placement_key = canonical_tokens[next_indices[0]].anchor_id
+            elif direct_previous and prior_indices and prior_indices[-1] < len(canonical_tokens) and speaker_key(canonical_tokens[prior_indices[-1]].speaker) != speaker_key(actor):
+                placement_key = canonical_tokens[prior_indices[-1]].anchor_id
+            elif not direct_previous and not direct_next:
+                errors.append(ScoreIssue(actor, "Tag cluster placement is ambiguous; attach it directly before an own spoken token or after a heard token"))
+            else:
+                errors.append(ScoreIssue(actor, "Tag cluster is not role-appropriately before an own spoken token or after a heard token"))
+            if placement_key is None or not changes:
                 continue
-            changes = grouped.setdefault(anchor.anchor_id, {})
-            if channel in changes:
-                errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {anchor.anchor_id}"))
-            changes[channel] = value
+            destination = initial_changes if placement_key == "__INITIAL__" else grouped.setdefault(placement_key, {})
+            for channel, value in changes.items():
+                if channel in destination:
+                    errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {'initial state' if placement_key == '__INITIAL__' else placement_key}"))
+                destination[channel] = value
         events = tuple({"actor": actor, "anchor_id": anchor_id, "changes": changes} for anchor_id, changes in grouped.items())
+        if initial_changes:
+            events = ({"actor": actor, "initial": True, "changes": initial_changes}, *events)
         return ScoreValidation(events, tuple(errors))
 
     def validate(self, value: str | dict[str, str]) -> ScoreValidation:
@@ -198,13 +250,18 @@ class DualSparseScoreModel:
         old = {(actor, event["anchor_id"]): event for actor in self.characters for event in self.plan["tracks"][actor]}
         next_id = max([int(event["event_id"][1:]) for event in old.values() if re.fullmatch(r"E\d+", event.get("event_id", ""))] or [0]) + 1
         tracks = {actor: [] for actor in self.characters}
+        initial_states = {actor: dict(INITIAL_DEFAULTS) for actor in self.characters}
         for row in result.events:
+            if row.get("initial"):
+                initial_states[row["actor"]].update(deepcopy(row["changes"]))
+                continue
             prior = old.get((row["actor"], row["anchor_id"]))
             event_id = prior.get("event_id") if prior else f"E{next_id:03d}"
             if prior is None:
                 next_id += 1
             tracks[row["actor"]].append({"event_id": event_id, "anchor_id": row["anchor_id"], "changes": deepcopy(row["changes"]), "reason": prior.get("reason") if prior else None})
         self.plan["tracks"] = tracks
+        self.plan["initial_states"] = initial_states
         self.score_texts = dict(texts)
         self.score_text = self.score_texts[self.characters[0]]
         self.phrases = [event for actor in self.characters for event in tracks[actor]]

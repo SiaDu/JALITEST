@@ -14,7 +14,7 @@ BLINK_VALUES = {"BLINK", "SLOW_BLINK", "DOUBLE_BLINK", "EYE_CLOSE_HOLD"}
 HEAD_VALUES = {f"HEAD-{direction}-{strength}" for direction in ("UP", "DOWN", "TILT_LEFT", "TILT_RIGHT") for strength in ("SUBTLE", "MEDIUM", "STRONG")} | {"HEAD-NONE"}
 DIRECTION_TARGETS = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
 REMOVED_CHANNELS = {"heart", "lid", "blink_suppression"}
-_SECTION = re.compile(r"^\[(ANALYZE|CHANGES)\]\s*$", re.IGNORECASE)
+_SECTION = re.compile(r"^\[(ANALYZE|INITIAL|CHANGES)\]\s*$", re.IGNORECASE)
 _EVENT_ID = re.compile(r"^E\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _ANCHOR = re.compile(r"^w\d{4,}$", re.IGNORECASE)
@@ -60,7 +60,7 @@ def _normalize_gaze(value: str, *, event_id: str, characters: tuple[str, str]) -
 def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: SemanticVocabulary, anchor_model: ConversationAnchorModel) -> dict[str, Any]:
     """Parse v2 sparse changes without repairing invalid semantic values."""
     text = Path(source).read_text(encoding="utf-8") if isinstance(source, Path) else str(source)
-    sections: dict[str, list[str]] = {"ANALYZE": [], "CHANGES": []}
+    sections: dict[str, list[str]] = {"ANALYZE": [], "INITIAL": [], "CHANGES": []}
     current: str | None = None
     seen: list[str] = []
     for line in text.splitlines():
@@ -74,8 +74,49 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
             sections[current].append(line)
         elif line.strip():
             raise ProposalValidationError("Text before [ANALYZE] is not allowed")
-    if seen != ["ANALYZE", "CHANGES"]:
-        raise ProposalValidationError("Sections must be ordered [ANALYZE], [CHANGES]")
+    if seen != ["ANALYZE", "INITIAL", "CHANGES"]:
+        raise ProposalValidationError("Sections must be ordered [ANALYZE], [INITIAL], [CHANGES]")
+    characters = tuple(anchor_model.aliases.values())
+    raw_initial: dict[str, dict[str, str]] = {}
+    current_actor: str | None = None
+    for line in sections["INITIAL"]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        actor = next((name for name in characters if speaker_key(name) == speaker_key(stripped)), None)
+        if actor is not None:
+            if actor in raw_initial:
+                raise ProposalValidationError(f"Duplicate [INITIAL] actor {actor}")
+            raw_initial[actor] = {}
+            current_actor = actor
+            continue
+        match = _FIELD.fullmatch(stripped)
+        if current_actor is None or match is None:
+            raise ProposalValidationError(f"Malformed [INITIAL] line: {stripped}")
+        field, value = match.group(1).lower(), match.group(2)
+        if field in REMOVED_CHANNELS or field == "blink":
+            raise ProposalValidationError(f"{current_actor}: v2 initial channel {field} is not allowed")
+        if field not in {*PERSISTENT_CHANNELS, "reason"}:
+            raise ProposalValidationError(f"{current_actor}: Unknown initial field {field}")
+        if field in raw_initial[current_actor]:
+            raise ProposalValidationError(f"{current_actor}: Duplicate initial field {field}")
+        raw_initial[current_actor][field] = value
+    missing_initial = [actor for actor in characters if actor not in raw_initial]
+    if missing_initial:
+        raise ProposalValidationError("[INITIAL] requires one explicit actor block for: " + ", ".join(missing_initial))
+    initial_states: dict[str, dict[str, str]] = {}
+    initial_reasons: dict[str, str | None] = {}
+    for actor in characters:
+        raw = raw_initial[actor]
+        affect = _normalize_affect(raw.get("affect", "MASK-NONE"), event_id=f"{actor} initial", vocabulary=vocabulary)
+        gaze = _normalize_gaze(raw.get("gaze", "GAZE-NONE"), event_id=f"{actor} initial", characters=characters)
+        if gaze.startswith("GLANCE-"):
+            raise ProposalValidationError(f"{actor} initial: GLANCE is instantaneous; initial gaze must be persistent GAZE or GAZE-NONE")
+        head = raw.get("head", "HEAD-NONE").strip().upper()
+        if head not in HEAD_VALUES:
+            raise ProposalValidationError(f'{actor} initial: Invalid v2 head value "{raw.get("head")}"')
+        initial_states[actor] = {"affect": affect, "gaze": gaze, "head": head}
+        initial_reasons[actor] = raw.get("reason", "").strip() or None
     raw_events: list[dict[str, str]] = []
     event: dict[str, str] | None = None
     for line in sections["CHANGES"]:
@@ -102,7 +143,6 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     if len(ids) != len(set(ids)):
         raise ProposalValidationError("Event IDs must be unique")
     anchor_ids = {anchor.anchor_id for anchor in anchor_model.anchors}
-    characters = tuple(anchor_model.aliases.values())
     events: list[dict[str, Any]] = []
     for raw in raw_events:
         event_id = raw["event_id"]
@@ -133,4 +173,4 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
         if not changes:
             raise ProposalValidationError(f"{event_id}: At least one semantic change is required")
         events.append({"event_id": event_id, "actor": actor, "anchor_id": anchor_id, "changes": changes, "reason": raw.get("reason", "").strip() or None})
-    return {"analyze": "\n".join(sections["ANALYZE"]).strip(), "events": events, "diagnostics": {"errors": [], "warnings": []}}
+    return {"analyze": "\n".join(sections["ANALYZE"]).strip(), "initial_states": initial_states, "initial_reasons": initial_reasons, "events": events, "diagnostics": {"errors": [], "warnings": []}}

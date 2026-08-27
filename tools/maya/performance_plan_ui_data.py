@@ -34,6 +34,9 @@ def load_performance_plan(path: str | Path) -> dict[str, Any]:
                 raise ValueError("Dual v2 Performance Plan JSON must contain name-keyed tracks.")
             if not all(isinstance(tracks[name], list) for name in characters):
                 raise ValueError("Every dual v2 character track must be a list.")
+            initial_states = value.get("initial_states", {})
+            if not isinstance(initial_states, dict) or not set(initial_states) <= set(characters):
+                raise ValueError("Dual v2 initial_states must be name-keyed by plan characters.")
             return value
         if not isinstance(value.get("phrases"), list):
             raise ValueError("Dual Performance Plan JSON must contain a phrases list.")

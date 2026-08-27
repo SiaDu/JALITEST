@@ -14,9 +14,13 @@ Context: {{context}}
 
 {{identity_contract}}
 
-Return exactly `[ANALYZE]` then `[CHANGES]`. Use the supplied names exactly. Choose sparse change points by acting meaning: threat-relevant keyword, realization, suspicion increase, hesitation, disclosure, accusation, direct question, eye-contact decision, affect transition, deliberate head pose, or meaningful performative blink. Do not create an event merely because punctuation occurred, a dialogue turn began, or N words elapsed.
+Return exactly `[ANALYZE]`, `[INITIAL]`, then `[CHANGES]`. Use the supplied names exactly. `[INITIAL]` must contain one block for each actor and describes how that actor enters the scene before the first spoken word. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. It may contain affect, persistent GAZE (not GLANCE), head, and one optional actor-level reason; blink is not allowed. Omitted persistent channels default to MASK-NONE, GAZE-NONE, or HEAD-NONE.
 
-Each event has a unique E-number, one actor, an existing word anchor, at least one changed semantic channel, and one concise event-level reason. Emit only changed channels. There is no fixed event count, no event is required at each turn, and one actor changing never implies an event for the other actor.
+For each actor independently, analyze both speaking behavior and listening behavior. Listeners may react during another actor's utterance: anchor a meaningful listener change to the earliest semantically sufficient heard cue word. Do not automatically wait for sentence completion, dialogue-turn completion, or the listener's next spoken line. Phrase and clause comprehension matter more than punctuation. Do not over-segment; create a listener event only when heard information meaningfully changes the acting state.
+
+Choose later sparse change points by acting meaning: threat-relevant keyword, realization, suspicion increase, hesitation, disclosure, accusation, direct question, eye-contact decision, affect transition, deliberate head pose, or meaningful performative blink. Do not create an event merely because punctuation occurred, a dialogue turn began, or N words elapsed.
+
+Each event has a unique E-number, one actor, an existing word anchor, at least one changed semantic channel, and one concise event-level reason. A listener reason should identify the meaningful heard stimulus rather than restating the visible action. Do not create per-channel boilerplate reasons. Emit only changed channels. There is no fixed event count, no event is required at each turn, and one actor changing never implies an event for the other actor.
 
 Allowed channels are affect, gaze, head, and blink. Never output Heart, Lid, blink_suppression, timing, seconds, frames, latency, duration, SPEAK/LISTEN mode, or speaker. The backend derives timing from actor and anchor speaker.
 
@@ -30,17 +34,21 @@ Head is HEAD-UP/DOWN/TILT_LEFT/TILT_RIGHT with SUBTLE/MEDIUM/STRONG, or HEAD-NON
 [ANALYZE]
 {{character_a}} becomes increasingly curious about {{character_b}}.
 
-[CHANGES]
-E001
-actor: {{character_a}}
-anchor: w0001
+[INITIAL]
+{{character_a}}
 affect: Watchful-80
 gaze: GAZE-{{character_b}}
-reason: Establishes controlled scrutiny.
+reason: Enters ready to assess the encounter.
 
-E002
+{{character_b}}
+affect: Nervous-60
+gaze: GAZE-{{character_a}}
+reason: Enters guarded while concealing relevant knowledge.
+
+[CHANGES]
+E001
 actor: {{character_b}}
 anchor: w0002
-blink: SLOW_BLINK
-reason: Marks deliberate consideration.
+gaze: GAZE-DOWN
+reason: The heard cue increases discomfort and breaks eye contact.
 ```

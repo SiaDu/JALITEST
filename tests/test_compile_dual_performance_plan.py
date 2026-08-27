@@ -2,7 +2,7 @@ from __future__ import annotations
 import json, wave
 from pathlib import Path
 import pytest
-from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan, _validate_v2_plan
+from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan, _validate_v2_plan, _compile_v2
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
 SCRIPT="AGNES: one\nWILL: two\nAGNES: three"
@@ -219,3 +219,54 @@ def test_v2_compiler_rejects_manual_avert_bypass():
     plan = {"characters": ["AGNES", "WILL"], "tracks": {"AGNES": [{"event_id": "E1", "anchor_id": "w0001", "changes": {"gaze": "AVERT-RIGHT"}}], "WILL": []}}
     with pytest.raises(ValueError, match="invalid v2 executable gaze"):
         _validate_v2_plan(plan, model)
+
+
+def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_path):
+    script = (
+        "ALICE: Evening, ma'am. We're in pursuit of someone very dangerous.\n"
+        "ALICE: He might have come onto your property.\n"
+        "ALICE: Have you seen anyone recently?\n"
+        "BOB: No.\nBOB: Bert!"
+    )
+    model = build_conversation_anchor_model(script, character_a="ALICE", character_b="BOB")
+    anchor_times = {}
+    for index, anchor in enumerate(model.anchors):
+        anchor_times[anchor.anchor_id] = {"speaker": anchor.speaker, "text": anchor.text, "start": index * .2, "end": index * .2 + .1, "timing_source": "fixture"}
+    by_text = {anchor.text: anchor.anchor_id for anchor in model.anchors}
+    plan = {
+        "schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"],
+        "initial_states": {
+            "ALICE": {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"},
+            "BOB": {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"},
+        },
+        "tracks": {"ALICE": [], "BOB": [
+            {"event_id": "E1", "anchor_id": by_text["dangerous."], "changes": {"gaze": "GAZE-DOWN"}, "reason": "The threat cue changes her listening behavior."},
+            {"event_id": "E2", "anchor_id": by_text["No."], "changes": {"head": "HEAD-DOWN-SUBTLE"}, "reason": "Contains the denial."},
+            {"event_id": "E3", "anchor_id": by_text["Bert!"], "changes": {"gaze": "GAZE-RIGHT", "head": "HEAD-UP-MEDIUM"}, "reason": "Redirects attention."},
+        ]},
+    }
+    audio = tmp_path / "audio"; audio.mkdir()
+    mapping = {}
+    wavs = {}
+    for actor in ("ALICE", "BOB"):
+        source = audio / f"{actor}.txt"
+        source.write_text(" ".join(anchor.text for anchor in model.anchors if anchor.speaker == actor), encoding="utf-8")
+        wav = audio / f"{actor}.wav"; wav.write_bytes(b"fixture")
+        mapping[actor] = {"script_name": actor, "sound_file": actor, "transcript_path": str(source)}
+        wavs[actor] = (wav, 10.0)
+    out = tmp_path / "out"; out.mkdir()
+    result = _compile_v2(plan=plan, model=model, anchor_times=anchor_times, mapping=mapping, audio_folder=audio, fps=24, out=out, performance_plan_path=tmp_path / "plan.json", script_source="script.txt", wavs=wavs, shared_duration=10.0, duration_warning="")
+    bob_artifacts = result["artifacts"]["characters"]["BOB"]
+    payload = json.loads(Path(bob_artifacts["resolved_sparse_events"]).read_text())
+    initial = payload["initial_state"]
+    assert initial["timing_role"] == "INITIAL_STATE" and initial["resolved_start"] == 0.0
+    assert initial["state"] == {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}
+    dangerous = payload["events"][0]
+    assert dangerous["anchor_id"] == by_text["dangerous."] and dangerous["timing_role"] == "LISTEN_REACTION"
+    assert dangerous["resolved_start"] == pytest.approx(anchor_times[by_text["dangerous."]]["end"] + 4 / 24)
+    assert dangerous["state_after"]["affect"] == "Watchful-85"
+    assert payload["events"][1]["timing_role"] == "SPEAK_ONSET" and payload["events"][1]["raw_anchor_start"] == anchor_times[by_text["No."]]["start"]
+    assert payload["events"][2]["timing_role"] == "SPEAK_ONSET"
+    timeline = json.loads(Path(bob_artifacts["state_timeline"]).read_text())
+    assert timeline["initial_state"]["affect"] == "Watchful-85" and timeline["initial_timing"] == {"timing_role": "INITIAL_STATE", "resolved_start": 0.0}
+    assert "<mask=Watchful-85> No. Bert </mask=Watchful-85>" in Path(bob_artifacts["jali_speaker_annotated"]).read_text()

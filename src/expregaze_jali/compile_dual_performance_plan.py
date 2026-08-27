@@ -36,6 +36,21 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
         raise ValueError("Dual v2 plan requires two ordered character names.")
     if not isinstance(tracks, dict) or set(tracks) != set(characters):
         raise ValueError("Dual v2 plan requires name-keyed character tracks.")
+    initial_states = plan.get("initial_states", {})
+    if not isinstance(initial_states, dict) or not set(initial_states) <= set(characters):
+        raise ValueError("Dual v2 initial_states must be name-keyed by plan characters.")
+    for actor, state in initial_states.items():
+        if not isinstance(state, dict) or not set(state) <= {"affect", "gaze", "head"}:
+            raise ValueError(f"{actor}: v2 initial state may contain only affect, gaze, and head.")
+        gaze = state.get("gaze")
+        if gaze is not None and gaze != "GAZE-NONE" and not re.fullmatch(r"GAZE-[A-Za-z][A-Za-z0-9_'-]*", str(gaze)):
+            raise ValueError(f"{actor}: invalid v2 initial gaze {gaze!r}.")
+        head = state.get("head")
+        if head is not None and head != "HEAD-NONE" and not re.fullmatch(r"HEAD-(?:UP|DOWN|TILT_LEFT|TILT_RIGHT)-(?:SUBTLE|MEDIUM|STRONG)", str(head)):
+            raise ValueError(f"{actor}: invalid v2 initial head {head!r}.")
+        affect = state.get("affect")
+        if affect is not None and affect != "MASK-NONE" and not re.fullmatch(r".+-[1-9]\d*", str(affect)):
+            raise ValueError(f"{actor}: invalid v2 initial affect {affect!r}.")
     anchors = {anchor.anchor_id for anchor in model.anchors}
     event_ids: set[str] = set()
     for actor in characters:
@@ -70,6 +85,10 @@ def _compile_v2(
     timing_path.write_text(json.dumps(anchor_times, indent=2) + "\n", encoding="utf-8")
     artifacts["conversation_anchor_timing"] = str(timing_path)
     for actor in characters:
+        initial_state = {
+            "affect": "MASK-NONE", "gaze": "GAZE-NONE", "head": "HEAD-NONE",
+            **((plan.get("initial_states") or {}).get(actor) or {}),
+        }
         resolved: list[dict[str, Any]] = []
         for plan_index, event in enumerate(plan["tracks"][actor]):
             anchor = anchor_times[event["anchor_id"]]
@@ -86,13 +105,13 @@ def _compile_v2(
                 "_plan_index": plan_index,
             })
         resolved.sort(key=lambda row: (row["resolved_start"], anchor_order[row["anchor_id"]], row["_plan_index"]))
-        state = {"affect": "NONE", "gaze": "NONE", "head": "NONE"}
+        state = dict(initial_state)
         timeline: list[dict[str, Any]] = []
         for event in resolved:
             for channel in ("affect", "gaze", "head"):
                 if channel in event["changes"]:
                     value = event["changes"][channel]
-                    state[channel] = "NONE" if value in {"MASK-NONE", "GAZE-NONE", "HEAD-NONE"} else value
+                    state[channel] = value
             event["state_after"] = dict(state)
             timeline.append({"event_id": event["event_id"], "resolved_start": event["resolved_start"], "state": dict(state)})
             event.pop("_plan_index")
@@ -101,10 +120,11 @@ def _compile_v2(
         actor_dir.mkdir(parents=True, exist_ok=True)
         resolved_path = actor_dir / "resolved_sparse_events.json"
         state_path = actor_dir / "state_timeline.json"
-        resolved_path.write_text(json.dumps({"events": resolved}, indent=2) + "\n", encoding="utf-8")
-        state_path.write_text(json.dumps({"initial_state": {"affect": "NONE", "gaze": "NONE", "head": "NONE"}, "timeline": timeline}, indent=2) + "\n", encoding="utf-8")
+        initial_runtime = {"actor": actor, "timing_role": "INITIAL_STATE", "resolved_start": 0.0, "state": initial_state, "reason": (plan.get("initial_reasons") or {}).get(actor)}
+        resolved_path.write_text(json.dumps({"initial_state": initial_runtime, "events": resolved}, indent=2) + "\n", encoding="utf-8")
+        state_path.write_text(json.dumps({"initial_state": initial_state, "initial_timing": {"timing_role": "INITIAL_STATE", "resolved_start": 0.0}, "timeline": timeline}, indent=2) + "\n", encoding="utf-8")
         spoken: list[dict[str, Any]] = []
-        active_affect = "NONE"
+        active_affect = initial_state["affect"]
         affect_events = [row for row in resolved if "affect" in row["changes"]]
         cursor = 0
         for anchor in model.anchors:

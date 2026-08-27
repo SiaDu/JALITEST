@@ -14,7 +14,7 @@ MODEL = build_conversation_anchor_model("ALICE: Hello there.\nBOB: No.", charact
 
 def parse(body: str):
     return parse_dual_sparse_performance_proposal(
-        "[ANALYZE]\ntest\n[CHANGES]\n" + body,
+        "[ANALYZE]\ntest\n[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\n[CHANGES]\n" + body,
         vocabulary=load_semantic_vocabulary(), anchor_model=MODEL,
     )
 
@@ -44,6 +44,7 @@ head: HEAD-NONE
 reason: Releases the response.""")
     plan = build_dual_performance_plan_v2(proposal, anchor_model=MODEL, sequence_id="test")
     assert plan["schema_version"] == "dual_performance_plan_v2"
+    assert plan["initial_states"]["ALICE"] == {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"}
     assert len(plan["tracks"]["ALICE"]) == 1 and len(plan["tracks"]["BOB"]) == 2
     assert plan["tracks"]["ALICE"][0]["changes"] == {"gaze": "GAZE-BOB"}
     assert plan["tracks"]["BOB"][1]["changes"]["affect"] == "MASK-NONE"
@@ -75,3 +76,22 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     assert "gaze: GAZE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
     assert "Do not map an emotion or motivation to a fixed direction" in prompt
     assert not __import__("re").search(r"gaze:\s*AVERT-", prompt)
+    assert "Listeners may react during another actor's utterance" in prompt
+    assert "earliest semantically sufficient heard cue word" in prompt
+    assert "Do not automatically wait for sentence completion, dialogue-turn completion" in prompt
+    assert "one block for each actor" in prompt and "before the first spoken word" in prompt
+    assert "There is no fixed event count" in prompt
+
+
+def test_initial_state_defaults_persistent_channels_and_rejects_blink():
+    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-120\nreason: Enters openly.\n\nBOB\ngaze: GAZE-ALICE\n[CHANGES]\n"
+    proposal = parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    assert proposal["initial_states"]["ALICE"] == {"affect": "Happy-120", "gaze": "GAZE-NONE", "head": "HEAD-NONE"}
+    assert proposal["initial_states"]["BOB"] == {"affect": "MASK-NONE", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}
+    assert proposal["initial_reasons"]["ALICE"] == "Enters openly."
+    with pytest.raises(ProposalValidationError, match="initial channel blink is not allowed"):
+        parse_dual_sparse_performance_proposal(source.replace("affect: Happy-120", "blink: BLINK"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    with pytest.raises(ProposalValidationError, match="initial gaze must be persistent"):
+        parse_dual_sparse_performance_proposal(source.replace("gaze: GAZE-ALICE", "gaze: GLANCE-DOWN"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    with pytest.raises(ProposalValidationError, match="requires one explicit actor block"):
+        parse_dual_sparse_performance_proposal(source.replace("\nBOB\ngaze: GAZE-ALICE", ""), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)

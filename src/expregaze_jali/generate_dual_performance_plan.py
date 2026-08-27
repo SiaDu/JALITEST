@@ -129,7 +129,7 @@ def generate_dual_performance_plan(
     proposal_text, _meta = runner(
         prompt=prompt, llm_config_path=llm_config_path, prompt_path=paths.prompt,
         output_text=paths.proposal, output_meta=paths.response_meta,
-        required_sections=("[ANALYZE]", "[CHANGES]"),
+        required_sections=("[ANALYZE]", "[INITIAL]", "[CHANGES]"),
         artifact_name="proposal", overwrite=overwrite,
     )
     vocabulary = load_semantic_vocabulary(extras[0])

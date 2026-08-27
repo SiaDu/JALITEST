@@ -775,7 +775,7 @@ def _affect_identity(value: object) -> str:
     return state if separator and intensity.isdigit() else text
 
 
-def plan_v2_blinks(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     """Plan explicit and deterministic regulatory blinks for one actor.
 
     Boundaries are coalesced before applying explicit > gaze > affect priority.
@@ -790,10 +790,10 @@ def plan_v2_blinks(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
             groups[-1][1].append(event)
         else:
             groups.append((time, [event]))
-    gaze_initialized = False
-    affect_initialized = False
-    gaze_state = "GAZE-NONE"
-    affect_state = "NONE"
+    gaze_initialized = initial_state is not None
+    affect_initialized = initial_state is not None
+    gaze_state = str((initial_state or {}).get("gaze", "GAZE-NONE"))
+    affect_state = _affect_identity((initial_state or {}).get("affect", "NONE"))
     planned: list[dict[str, Any]] = []
     for time, boundary in groups:
         explicit = next((event for event in boundary if (event.get("changes") or {}).get("blink")), None)
@@ -875,9 +875,13 @@ def prepare_dual_v2_head_blink_overlays(
         for required in ("resolved_sparse_events", "jali_speaker_annotated", "jali_speaker_annotation"):
             if not Path(str(artifact_row.get(required) or "")).is_file():
                 raise FileNotFoundError(f"{actor}: required v2 artifact {required} is missing.")
-        events = json.loads(Path(artifact_row["resolved_sparse_events"]).read_text(encoding="utf-8")).get("events", [])
+        payload = json.loads(Path(artifact_row["resolved_sparse_events"]).read_text(encoding="utf-8"))
+        events = payload.get("events", [])
+        initial_state = ((payload.get("initial_state") or {}).get("state") or {})
         head_events = [event for event in events if "head" in (event.get("changes") or {})]
-        blink_events = plan_v2_blinks(events)
+        if initial_state.get("head") not in (None, "NONE", "HEAD-NONE"):
+            head_events = [{"event_id": "INITIAL_STATE", "actor": actor, "resolved_start": 0.0, "changes": {"head": initial_state["head"]}}] + head_events
+        blink_events = plan_v2_blinks(events, initial_state=initial_state)
         neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
         head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
         if head_events and any(not cmds_module.objExists(plug) for plug in head_plugs):
@@ -936,6 +940,12 @@ def _load_v2_actor_events(manifest: dict[str, Any], actor: str) -> list[dict[str
     return value["events"]
 
 
+def _load_v2_actor_initial_state(manifest: dict[str, Any], actor: str) -> dict[str, Any]:
+    path = Path(manifest["artifacts"]["characters"][actor]["resolved_sparse_events"])
+    value = json.loads(path.read_text(encoding="utf-8"))
+    return dict(((value.get("initial_state") or {}).get("state") or {}))
+
+
 def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
     """Build persistent v2 listener Mask handoff schedules without shared phrases."""
     if cmds_module is None:
@@ -948,15 +958,19 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
     prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS)}
     for actor in actors:
         events = _load_v2_actor_events(manifest, actor)
+        initial_state = _load_v2_actor_initial_state(manifest, actor)
         points: list[tuple[float, int, str, Any]] = []
         for anchor_id, anchor in anchor_times.items():
             points.append((float(anchor["start"]), 1, "role", str(anchor["speaker"])))
         for event in events:
             if "affect" in (event.get("changes") or {}):
                 points.append((float(event["resolved_start"]), 0, "affect", event["changes"]["affect"]))
-        affect = "NONE"
-        speaker: str | None = None
-        intervals: list[dict[str, Any]] = []
+        initial_affect = initial_state.get("affect", "MASK-NONE")
+        name, intensity = parse_mask_state("NONE" if initial_affect == "MASK-NONE" else initial_affect)
+        affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
+        speaker: str | None = str(next(iter(anchor_times.values()))["speaker"]) if anchor_times else None
+        initial_listener_state = "NONE" if speaker == actor else affect
+        intervals: list[dict[str, Any]] = [{"phrase_id": "INITIAL_STATE", "speaker": speaker, "start": 0.0, "end": float(manifest["shared_duration_seconds"]), "state": initial_listener_state, "pose": user_pose_for_mask(initial_listener_state)}]
         for time, _priority, kind, value in sorted(points):
             if kind == "affect":
                 name, intensity = parse_mask_state("NONE" if value == "MASK-NONE" else value)
@@ -1002,6 +1016,9 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
         prepared["jsync_nodes"][actor] = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
         raw = []
         gaze_rows = [event for event in _load_v2_actor_events(manifest, actor) if "gaze" in (event.get("changes") or {})]
+        initial_gaze = _load_v2_actor_initial_state(manifest, actor).get("gaze", "GAZE-NONE")
+        if initial_gaze != "GAZE-NONE":
+            gaze_rows = [{"event_id": "INITIAL_STATE", "resolved_start": 0.0, "changes": {"gaze": initial_gaze}, "reason": None}] + gaze_rows
         for index, event in enumerate(gaze_rows):
             value = str(event["changes"]["gaze"])
             end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])

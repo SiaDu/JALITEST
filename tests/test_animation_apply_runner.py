@@ -46,6 +46,7 @@ from animation_apply_runner import (  # noqa: E402
     prepare_dual_v2_head_blink_overlays,
     plan_v2_blinks,
     diagnose_v2_blink_ownership,
+    prepare_dual_v2_listener_mask_artifacts,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 
@@ -240,6 +241,38 @@ def test_listener_missing_b_control_fails_before_either_actor_mutates(tmp_path):
     assert cmds.calls == []
 
 
+def test_v2_initial_affect_is_active_for_listener_from_scene_start(tmp_path):
+    artifacts = {"characters": {}}
+    for actor, state in (
+        ("ALICE", {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"}),
+        ("BOB", {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}),
+    ):
+        path = tmp_path / f"{actor}.json"
+        path.write_text(json.dumps({"initial_state": {"actor": actor, "timing_role": "INITIAL_STATE", "resolved_start": 0.0, "state": state}, "events": []}))
+        artifacts["characters"][actor] = {"resolved_sparse_events": str(path)}
+    timing = tmp_path / "anchor_timing.json"
+    timing.write_text(json.dumps({
+        "w0001": {"speaker": "ALICE", "text": "Hello", "start": .5, "end": .7},
+        "w0002": {"speaker": "BOB", "text": "No.", "start": 2.0, "end": 2.2},
+    }))
+    artifacts["conversation_anchor_timing"] = str(timing)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({
+        "schema_version": "dual_animation_manifest_v2", "characters": ["ALICE", "BOB"], "fps": 24,
+        "shared_duration_seconds": 3.0,
+        "character_runtime_mapping": {"ALICE": {"script_name": "ALICE", "sound_file": "A"}, "BOB": {"script_name": "BOB", "sound_file": "B"}},
+        "artifacts": artifacts,
+    }))
+    prepared = prepare_dual_v2_listener_mask_artifacts(
+        manifest_path=manifest,
+        character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}},
+        cmds_module=_ListenerCmds(),
+    )
+    assert prepared["BOB"]["timeline"][0]["start"] == 0.0
+    assert prepared["BOB"]["timeline"][0]["state"] == "Watchful-85"
+    assert any(row["start"] == 2.0 and row["state"] == "NONE" for row in prepared["BOB"]["timeline"])
+
+
 def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
     config = {"transition_frames": 4, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
     events = [
@@ -290,6 +323,11 @@ def test_v2_regulatory_blink_planner_is_actor_independent_and_first_state_is_ini
     assert bob == []
     glance = plan_v2_blinks([_resolved("G1", 0, gaze="GAZE-BOB"), _resolved("G2", 1, gaze="GLANCE-DOWN"), _resolved("G3", 2, gaze="GAZE-BOB")])
     assert [(row["resolved_start"], row["blink_source"]) for row in glance] == [(1.0, "gaze_regulatory")]
+    from_initial = plan_v2_blinks(
+        [_resolved("I1", 1, gaze="GAZE-DOWN", affect="Watchful-100")],
+        initial_state={"gaze": "GAZE-BOB", "affect": "Watchful-85", "head": "HEAD-NONE"},
+    )
+    assert len(from_initial) == 1 and from_initial[0]["blink_source"] == "gaze_regulatory"
 
 
 def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
