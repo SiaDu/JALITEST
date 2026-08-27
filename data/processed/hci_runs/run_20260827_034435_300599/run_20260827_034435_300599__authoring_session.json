@@ -1,30 +1,27 @@
 {
-  "gaze_calibrations": {},
-  "gaze_neutrals": {
-    "A": {
-      "eye_stare_node": "Angela_jRigMaya:eyeStare_world",
-      "eye_stare_world_position": [
-        -104.47952202666643,
-        163.3388214111328,
-        13.720030122480571
+  "gaze_calibrations": {
+    "A->B": {
+      "eye_stare_translate": [
+        -14.409877876715022,
+        1.0729397513682681e-13,
+        27.354377350464887
       ],
-      "both_eyes_node": "Angela_jRigMaya:CNT_BOTH_EYES",
-      "both_eyes_translate": [
-        -0.38113415241241455,
-        0.1700482964515686
+      "eye_stare_world_position": [
+        -4.930438533489191,
+        163.33882141113293,
+        8.373683331938047
       ]
     },
-    "B": {
-      "eye_stare_node": "ValleyGirl_jRigMaya:eyeStare_world",
-      "eye_stare_world_position": [
-        -0.00027341817622072995,
-        165.33004760742188,
-        99.44947946071625
+    "B->A": {
+      "eye_stare_translate": [
+        13.438912696612896,
+        0.0,
+        30.938589263498372
       ],
-      "both_eyes_node": "ValleyGirl_jRigMaya:CNT_BOTH_EYES",
-      "both_eyes_translate": [
-        0.3789929151535034,
-        -0.10894989967346191
+      "eye_stare_world_position": [
+        13.438639278436675,
+        165.33004760742188,
+        30.38806872421462
       ]
     }
   },
@@ -46,5 +43,52 @@
       "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP"
     }
   ],
-  "look_at_targets": []
+  "look_at_targets": [],
+  "jali_base_baseline": {
+    "schema_version": "dual_jali_base_v1",
+    "actors": {
+      "A": {
+        "script_name": "WILL",
+        "maya_node": "|Angela_jRigMaya:JALI_GRP",
+        "jsync": "|Angela_jRigMaya:JALI_GRP|Angela_jRigMaya:jRig_GRP|Angela_jRigMaya:masterGRP|Angela_jRigMaya:speechMaster|jSync2_parent|jSync2",
+        "sound_file": "SeqT_WILL",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT_temp2/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT_temp2/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT_temp2/",
+        "transcript": "Good day to you.I'm tutoring the boys here.Uh...Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1
+      },
+      "B": {
+        "script_name": "AGNES",
+        "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP",
+        "jsync": "|ValleyGirl_jRigMaya:JALI_GRP|ValleyGirl_jRigMaya:jRig_GRP|ValleyGirl_jRigMaya:masterGRP|ValleyGirl_jRigMaya:speechMaster|jSync1_parent|jSync1",
+        "sound_file": "SeqT_AGNES",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT_temp2/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT_temp2/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT_temp2/",
+        "transcript": "Good day, sir.What brings you to Hewlands?The Latin tutor. I've heard of you.What brought you into the garden?It's just a question, master tutor.It's a hawk.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1
+      }
+    }
+  }
 }
