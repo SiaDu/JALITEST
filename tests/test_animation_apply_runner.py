@@ -38,6 +38,12 @@ from animation_apply_runner import (  # noqa: E402
     apply_dual_gaze_only_artifacts,
     prepare_dual_gaze_only_artifacts,
     gaze_layer_name,
+    head_layer_name,
+    blink_layer_name,
+    build_head_overlay_key_schedule,
+    build_blink_overlay_key_schedule,
+    apply_dual_v2_head_blink_overlays,
+    prepare_dual_v2_head_blink_overlays,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 
@@ -187,6 +193,75 @@ def test_listener_missing_b_control_fails_before_either_actor_mutates(tmp_path):
     cmds = _ListenerCmds(missing="B:usr_Squint_R.Squint_R")
     with pytest.raises(RuntimeError, match="B: missing User FACS controls"):
         prepare_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path), character_mappings=_listener_mappings(), cmds_module=cmds)
+    assert cmds.calls == []
+
+
+def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
+    config = {"transition_frames": 4, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
+    events = [
+        {"event_id": "E1", "resolved_start": 1.0, "changes": {"head": "HEAD-UP-STRONG"}},
+        {"event_id": "E2", "resolved_start": 2.0, "changes": {"head": "HEAD-NONE"}},
+    ]
+    keys = build_head_overlay_key_schedule(events, fps=24, config=config)
+    assert keys[1] == {"frame": 24.0, "values": {"rotateX": -10.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "E1"}
+    assert keys[-1]["values"] == {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
+
+
+def test_v2_blink_schedule_contains_only_explicit_performative_events():
+    config = {"open_value": 0, "closed_value": 1, "presets": {"DOUBLE_BLINK": {"close_frames": 2, "hold_frames": 1, "open_frames": 2, "count": 2, "gap_frames": 4}}}
+    keys = build_blink_overlay_key_schedule([{"event_id": "E1", "resolved_start": 1.0, "changes": {"blink": "DOUBLE_BLINK"}}], fps=24, config=config)
+    assert len(keys) == 8 and keys[0]["frame"] == 24 and keys[-1]["value"] == 0
+
+
+def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
+    cmds = _ListenerCmds()
+    context = {"schema_version": "dual_v2_head_blink_prepared_v1", "actors": {
+        "ALICE": {
+            "head_layer": head_layer_name("ALICE"), "blink_layer": blink_layer_name("ALICE"),
+            "head_plugs": ["ALICE:jNeck_ctl.rotateX", "ALICE:jNeck_ctl.rotateY", "ALICE:jNeck_ctl.rotateZ"],
+            "blink_plugs": ["ALICE:usr_blink.LidDown"], "facs_plug": "ALICE:FACSMaster.FACS_animationSource", "facs_add_index": 2,
+            "head_keys": [{"frame": 10, "values": {"rotateX": 3, "rotateY": 0, "rotateZ": 0}}],
+            "blink_keys": [{"frame": 12, "value": 1}],
+        },
+        "BOB": {
+            "head_layer": head_layer_name("BOB"), "blink_layer": blink_layer_name("BOB"),
+            "head_plugs": ["BOB:jNeck_ctl.rotateX", "BOB:jNeck_ctl.rotateY", "BOB:jNeck_ctl.rotateZ"],
+            "blink_plugs": [], "facs_plug": "BOB:FACSMaster.FACS_animationSource", "facs_add_index": None,
+            "head_keys": [], "blink_keys": [],
+        },
+    }}
+    result = apply_dual_v2_head_blink_overlays(prepared_context=context, cmds_module=cmds)
+    layer_calls = [call for call in cmds.calls if call[0] == "animLayer"]
+    assert layer_calls and not any(call[2].get("override") is True for call in layer_calls)
+    keyed = [call for call in cmds.calls if call[0] == "setKeyframe"]
+    assert all("jNeck_ctl" in call[1][0] or "usr_blink" in call[1][0] for call in keyed)
+    assert result["ALICE"]["calculate_blinks_unchanged"] is True
+
+
+def test_v2_actor_two_blink_preflight_fails_before_any_maya_mutation(monkeypatch, tmp_path):
+    import animation_apply_runner as runner
+    artifacts = {"characters": {}}
+    for actor in ("ALICE", "BOB"):
+        events = tmp_path / f"{actor}_events.json"
+        events.write_text(json.dumps({"events": [{"event_id": f"E_{actor}", "resolved_start": 1, "changes": {"blink": "BLINK"}}]}))
+        annotated = tmp_path / f"{actor}.txt"; annotated.write_text("hello")
+        diagnostic = tmp_path / f"{actor}_annotation.json"; diagnostic.write_text("{}")
+        artifacts["characters"][actor] = {"resolved_sparse_events": str(events), "jali_speaker_annotated": str(annotated), "jali_speaker_annotation": str(diagnostic)}
+    timing = tmp_path / "timing.json"; timing.write_text("{}")
+    artifacts["conversation_anchor_timing"] = str(timing)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"schema_version": "dual_animation_manifest_v2", "characters": ["ALICE", "BOB"], "fps": 24, "shared_duration_seconds": 2, "character_runtime_mapping": {"ALICE": {"script_name": "ALICE", "sound_file": "A"}, "BOB": {"script_name": "BOB", "sound_file": "B"}}, "artifacts": artifacts}))
+    mappings = {"ALICE": {"script_name": "ALICE", "maya_node": "|ALICE:ROOT"}, "BOB": {"script_name": "BOB", "maya_node": "|BOB:ROOT"}}
+    class Cmds(_ListenerCmds):
+        def objExists(self, plug):
+            if "BOB:usr_blink" in plug:
+                return False
+            return True
+    cmds = Cmds()
+    monkeypatch.setattr(runner, "_validate_dual_jali_base", lambda *_a, **_k: {actor: {} for actor in mappings})
+    monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda rig, *_a, **_k: rig + "|jSync1")
+    with pytest.raises(RuntimeError, match="BOB.*no usable User blink control"):
+        prepare_dual_v2_head_blink_overlays(manifest_path=manifest, character_mappings=mappings, baseline={}, cmds_module=cmds, mel_module=SimpleNamespace())
     assert cmds.calls == []
 
 

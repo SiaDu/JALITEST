@@ -156,8 +156,8 @@ def test_prompts_explain_open_acting_language_and_closed_executable_vocabularies
     assert "Curious, Warm, Interested" in single
     assert "Curious -> Watchful" not in single
     assert "fixed Curious-to-Watchful mapping" in single
-    assert "Mask percentage" in dual
+    assert "positive integer percentage" in dual
     assert "only a visible affect listed in `[SEMANTIC VOCABULARY]`" in single
     assert "only a listed heart state" in single
-    assert "Heart" not in dual and ".heart" not in dual
-    assert "Affect intensity is a JALI Mask percentage" in dual
+    assert "Never output Heart" in dual and ".heart" not in dual
+    assert "MASK-NONE" in dual and "Neutral is not NONE" in dual

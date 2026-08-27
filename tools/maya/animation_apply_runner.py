@@ -175,6 +175,8 @@ def _enum_index(node: str, attr: str, label: str, cmds_module: Any) -> int:
 
 LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
 GAZE_LAYER_PREFIX = "JALITEST_gaze_"
+HEAD_LAYER_PREFIX = "JALITEST_head_"
+BLINK_LAYER_PREFIX = "JALITEST_blink_"
 JALI_BASELINE_SCHEMA = "dual_jali_base_v2"
 _JSYNC_BASELINE_ATTRS = (
     "calculate_paralinguals", "paralingual_bearing", "paralingual_intensity",
@@ -275,7 +277,7 @@ def _validate_dual_jali_base(
             reference = {}
         if not isinstance(reference, dict):
             raise ValueError(f"{alias}: JALI Base baseline lacks named gaze reference.")
-        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}"]}
+        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}", f"{HEAD_LAYER_PREFIX}{alias}", f"{BLINK_LAYER_PREFIX}{alias}"]}
     return prepared
 
 
@@ -606,14 +608,17 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
             jsync=item["jsync"]; prefix=item["prefix"]; mask=item["mask"]
             item["stage"].mkdir(parents=True,exist_ok=True); staged_txt=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.txt"; staged_wav=item["stage"] / f"{Path(str(manifest['character_runtime_mapping'][alias]['sound_file'])).name}.wav"
             shutil.copy2(item["artifact"],staged_txt); shutil.copy2(item["wav"],staged_wav)
-            for attr, value in (("calculate_paralinguals", mask),("override_annotation",False),("calculate_blinks",False)):
+            settings = [("calculate_paralinguals", mask), ("override_annotation", False)]
+            if manifest.get("schema_version") != "dual_animation_manifest_v2":
+                settings.append(("calculate_blinks", False))
+            for attr, value in settings:
                 cmds_module.setAttr(f"{jsync}.{attr}", value)
             if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
             cmds_module.setAttr(f"{jsync}.transcript",item["artifact"].read_text(encoding="utf-8"),type="string")
             for attr in item["original_paths"]: cmds_module.setAttr(f"{jsync}.{attr}",str(item["stage"])+os.sep,type="string")
             changed.append(item); mel_module.eval(f'realign_node "{item["leaf"]}";')
             if mask: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
-            result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_blinks":False,"mask_binding":mask,"warnings":["Existing pre-recompute blink curves were not explicitly cleared."]}
+            result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_blinks":cmds_module.getAttr(f"{jsync}.calculate_blinks"),"mask_binding":mask,"warnings":[]}
     finally:
      for item in changed:
         for attr,value in item["original_paths"].items(): cmds_module.setAttr(f"{item['jsync']}.{attr}",value,type="string")
@@ -661,7 +666,7 @@ def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
             if not artifact_path.is_file(): raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing: {artifact_path}")
             artifacts[alias] = str(artifact_path)
         return value
-    if not isinstance(value, dict) or value.get("schema_version") != "dual_animation_manifest_v1":
+    if not isinstance(value, dict) or value.get("schema_version") not in {"dual_animation_manifest_v1", "dual_animation_manifest_v2"}:
         raise ValueError(f"Invalid dual animation manifest: {path}")
     mapping, artifacts = value.get("character_runtime_mapping"), value.get("artifacts")
     characters = value.get("characters")
@@ -673,16 +678,304 @@ def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
     for alias in characters:
         if not isinstance(mapping.get(alias), dict) or str(mapping[alias].get("script_name") or "") != alias or not str(mapping[alias].get("sound_file") or ""):
             raise ValueError(f"Dual animation manifest requires named runtime mapping for {alias}.")
-        artifact_path = Path(str((character_artifacts.get(alias) or {}).get("semantic_events") or ""))
+        artifact_key = "resolved_sparse_events" if value.get("schema_version") == "dual_animation_manifest_v2" else "semantic_events"
+        artifact_path = Path(str((character_artifacts.get(alias) or {}).get(artifact_key) or ""))
         if not artifact_path.is_absolute():
             artifact_path = REPO_ROOT / artifact_path
         if not artifact_path.is_file():
             raise FileNotFoundError(f"Dual semantic artifact for {alias} is missing: {artifact_path}")
-        character_artifacts[alias]["semantic_events"] = str(artifact_path)
+        character_artifacts[alias][artifact_key] = str(artifact_path)
     timing_path = Path(str(artifacts.get("conversation_anchor_timing") or ""))
     if timing_path and not timing_path.is_absolute():
         artifacts["conversation_anchor_timing"] = str(REPO_ROOT / timing_path)
     return value
+
+
+def _v2_overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]:
+    import yaml
+    value = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
+    head = value.get("maya_head_overlay")
+    blink = value.get("maya_performative_blink_overlay")
+    if not isinstance(head, dict) or not isinstance(blink, dict):
+        raise ValueError("Maya config requires maya_head_overlay and maya_performative_blink_overlay.")
+    return {"head": head, "blink": blink}
+
+
+def head_layer_name(actor: str) -> str:
+    return f"{HEAD_LAYER_PREFIX}{actor}"
+
+
+def blink_layer_name(actor: str) -> str:
+    return f"{BLINK_LAYER_PREFIX}{actor}"
+
+
+def _head_target(value: str, config: dict[str, Any]) -> dict[str, float]:
+    target = {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
+    if value == "HEAD-NONE":
+        return target
+    match = re.fullmatch(r"HEAD-(UP|DOWN|TILT_LEFT|TILT_RIGHT)-(SUBTLE|MEDIUM|STRONG)", value)
+    if not match:
+        raise ValueError(f"Unsupported v2 head pose: {value}")
+    direction, strength = match.groups()
+    degrees = float((config.get("strength_degrees") or {})[strength])
+    if direction in {"UP", "DOWN"}:
+        axis = str(config["pitch_axis"])
+        sign = float(config["pitch_up_sign"]) * (1.0 if direction == "UP" else -1.0)
+    else:
+        axis = str(config["roll_axis"])
+        sign = float(config["tilt_left_sign"]) * (1.0 if direction == "TILT_LEFT" else -1.0)
+    if axis not in target:
+        raise ValueError(f"Configured head axis must be rotateX/Y/Z, got {axis!r}")
+    target[axis] = sign * degrees
+    return target
+
+
+def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
+    transition = int(config.get("transition_frames", 4))
+    previous = {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
+    keys: list[dict[str, Any]] = []
+    for event in events:
+        value = (event.get("changes") or {}).get("head")
+        if not value:
+            continue
+        frame = float(event["resolved_start"]) * float(fps)
+        target = _head_target(str(value), config)
+        keys.append({"frame": max(0.0, frame - transition), "values": dict(previous), "event_id": event.get("event_id")})
+        keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
+        previous = target
+    return keys
+
+
+def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
+    opened, closed = float(config.get("open_value", 0)), float(config.get("closed_value", 1))
+    presets = config.get("presets") or {}
+    keys: list[dict[str, Any]] = []
+    for event in events:
+        value = (event.get("changes") or {}).get("blink")
+        if not value:
+            continue
+        preset = presets.get(value)
+        if not isinstance(preset, dict):
+            raise ValueError(f"Missing performative blink preset {value}")
+        cursor = float(event["resolved_start"]) * float(fps)
+        for _index in range(int(preset["count"])):
+            keys.extend([
+                {"frame": cursor, "value": opened, "event_id": event.get("event_id")},
+                {"frame": cursor + int(preset["close_frames"]), "value": closed, "event_id": event.get("event_id")},
+                {"frame": cursor + int(preset["close_frames"]) + int(preset["hold_frames"]), "value": closed, "event_id": event.get("event_id")},
+                {"frame": cursor + int(preset["close_frames"]) + int(preset["hold_frames"]) + int(preset["open_frames"]), "value": opened, "event_id": event.get("event_id")},
+            ])
+            cursor += int(preset["close_frames"]) + int(preset["hold_frames"]) + int(preset["open_frames"]) + int(preset["gap_frames"])
+    return keys
+
+
+def _resolve_user_blink_plugs(rig: str, config: dict[str, Any], cmds_module: Any) -> list[str]:
+    central = f"{qualify_rig_control(rig, str(config['central_control_suffix']))}.{config['central_attribute']}"
+    if cmds_module.objExists(central):
+        return [central]
+    left = f"{qualify_rig_control(rig, str(config['left_control_suffix']))}.{config['left_attribute']}"
+    right = f"{qualify_rig_control(rig, str(config['right_control_suffix']))}.{config['right_attribute']}"
+    if cmds_module.objExists(left) and cmds_module.objExists(right):
+        return [left, right]
+    raise RuntimeError(
+        f"Mapped rig {rig} has no usable User blink control; expected {central} or both {left}, {right}."
+    )
+
+
+def prepare_dual_v2_head_blink_overlays(
+    *, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]],
+    baseline: dict[str, Any], cmds_module: Any | None = None, mel_module: Any | None = None,
+    config_path: str | Path = DEFAULT_MAYA_CONFIG,
+) -> dict[str, Any]:
+    """Read-only, both-character preflight for v2 head/blink overlay mutation."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if mel_module is None:
+        from maya import mel as mel_module  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path)
+    if manifest.get("schema_version") != "dual_animation_manifest_v2":
+        raise ValueError("Expected dual_animation_manifest_v2.")
+    config = _v2_overlay_config(config_path)
+    characters = manifest["characters"]
+    if set(character_mappings) != set(characters):
+        raise ValueError("V2 Maya mapping must be name-keyed for exactly both manifest characters.")
+    baseline_preflight = _validate_dual_jali_base(baseline, character_mappings, cmds_module=cmds_module, mel_module=mel_module)
+    prepared: dict[str, Any] = {"schema_version": "dual_v2_head_blink_prepared_v1", "fps": float(manifest["fps"]), "actors": {}}
+    for actor in characters:
+        row = character_mappings[actor]
+        runtime = manifest["character_runtime_mapping"][actor]
+        if str(row.get("script_name") or "") != actor:
+            raise ValueError(f"{actor}: mapping script_name must match manifest identity.")
+        rig = str(row.get("maya_node") or "")
+        jsync = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
+        artifact_row = manifest["artifacts"]["characters"][actor]
+        for required in ("resolved_sparse_events", "jali_speaker_annotated", "jali_speaker_annotation"):
+            if not Path(str(artifact_row.get(required) or "")).is_file():
+                raise FileNotFoundError(f"{actor}: required v2 artifact {required} is missing.")
+        events = json.loads(Path(artifact_row["resolved_sparse_events"]).read_text(encoding="utf-8")).get("events", [])
+        head_events = [event for event in events if "head" in (event.get("changes") or {})]
+        blink_events = [event for event in events if "blink" in (event.get("changes") or {})]
+        neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
+        head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
+        if head_events and any(not cmds_module.objExists(plug) for plug in head_plugs):
+            raise RuntimeError(f"{actor}: head event requires {neck}.rotateX/Y/Z.")
+        blink_plugs = _resolve_user_blink_plugs(rig, config["blink"], cmds_module) if blink_events else []
+        facs = qualify_rig_control(rig, "FACSMaster")
+        facs_plug = f"{facs}.FACS_animationSource"
+        if blink_events and not cmds_module.objExists(facs_plug):
+            raise RuntimeError(f"{actor}: performative blink requires {facs_plug}.")
+        prepared["actors"][actor] = {
+            "jsync": jsync, "head_layer": head_layer_name(actor), "blink_layer": blink_layer_name(actor),
+            "head_plugs": head_plugs, "blink_plugs": blink_plugs, "facs_plug": facs_plug,
+            "facs_add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module) if blink_events else None,
+            "head_keys": build_head_overlay_key_schedule(head_events, fps=float(manifest["fps"]), config=config["head"]),
+            "blink_keys": build_blink_overlay_key_schedule(blink_events, fps=float(manifest["fps"]), config=config["blink"]),
+            "baseline": baseline_preflight[actor],
+        }
+    return prepared
+
+
+def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Apply only JALITEST-owned additive head and performative blink layers."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if prepared_context.get("schema_version") != "dual_v2_head_blink_prepared_v1":
+        raise ValueError("Invalid prepared v2 overlay context.")
+    result: dict[str, Any] = {}
+    for actor, item in prepared_context["actors"].items():
+        if item["head_keys"]:
+            _clear_listener_layer_keys(item["head_layer"], item["head_plugs"], scene_range=None, cmds_module=cmds_module, override=False)
+            for key in item["head_keys"]:
+                for plug in item["head_plugs"]:
+                    attr = plug.rsplit(".", 1)[1]
+                    cmds_module.setKeyframe(plug.rsplit(".", 1)[0], attribute=attr, time=key["frame"], value=key["values"][attr], animLayer=item["head_layer"])
+        if item["blink_keys"]:
+            _clear_listener_layer_keys(item["blink_layer"], item["blink_plugs"], scene_range=None, cmds_module=cmds_module, override=False)
+            cmds_module.setAttr(item["facs_plug"], item["facs_add_index"])
+            for key in item["blink_keys"]:
+                for plug in item["blink_plugs"]:
+                    node, attr = plug.rsplit(".", 1)
+                    cmds_module.setKeyframe(node, attribute=attr, time=key["frame"], value=key["value"], animLayer=item["blink_layer"])
+        result[actor] = {"head_layer": item["head_layer"], "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "calculate_blinks_unchanged": True}
+    return result
+
+
+def _load_v2_actor_events(manifest: dict[str, Any], actor: str) -> list[dict[str, Any]]:
+    path = Path(manifest["artifacts"]["characters"][actor]["resolved_sparse_events"])
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value.get("events"), list):
+        raise ValueError(f"{actor}: resolved_sparse_events requires an events list.")
+    return value["events"]
+
+
+def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Build persistent v2 listener Mask handoff schedules without shared phrases."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path)
+    if manifest.get("schema_version") != "dual_animation_manifest_v2":
+        raise ValueError("Expected dual_animation_manifest_v2.")
+    anchor_times = json.loads(Path(manifest["artifacts"]["conversation_anchor_timing"]).read_text(encoding="utf-8"))
+    actors = manifest["characters"]
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS)}
+    for actor in actors:
+        events = _load_v2_actor_events(manifest, actor)
+        points: list[tuple[float, int, str, Any]] = []
+        for anchor_id, anchor in anchor_times.items():
+            points.append((float(anchor["start"]), 1, "role", str(anchor["speaker"])))
+        for event in events:
+            if "affect" in (event.get("changes") or {}):
+                points.append((float(event["resolved_start"]), 0, "affect", event["changes"]["affect"]))
+        affect = "NONE"
+        speaker: str | None = None
+        intervals: list[dict[str, Any]] = []
+        for time, _priority, kind, value in sorted(points):
+            if kind == "affect":
+                name, intensity = parse_mask_state("NONE" if value == "MASK-NONE" else value)
+                affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
+            else:
+                speaker = value
+            state = "NONE" if speaker == actor else affect
+            if intervals and intervals[-1]["start"] == time:
+                intervals[-1].update({"state": state, "pose": user_pose_for_mask(state)})
+            elif not intervals or intervals[-1]["state"] != state:
+                intervals.append({"phrase_id": f"v2@{time:g}", "speaker": speaker, "start": time, "end": float(manifest["shared_duration_seconds"]), "state": state, "pose": user_pose_for_mask(state)})
+        for index, interval in enumerate(intervals[:-1]):
+            interval["end"] = intervals[index + 1]["start"]
+        row = character_mappings.get(actor) or {}
+        rig = str(row.get("maya_node") or "")
+        if not rig or not cmds_module.objExists(rig):
+            raise RuntimeError(f"{actor}: mapped Maya rig does not exist: {rig}")
+        facs = qualify_rig_control(rig, "FACSMaster")
+        source_plug = f"{facs}.FACS_animationSource"
+        if not cmds_module.objExists(source_plug):
+            raise RuntimeError(f"{actor}: missing {source_plug}.")
+        plugs = [qualify_rig_control(rig, plug) for plug in AU_TO_USER_CONTROL.values()]
+        missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
+        if missing:
+            raise RuntimeError(f"{actor}: missing User FACS controls: {', '.join(missing)}")
+        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_listener_mask_key_schedule(intervals, fps=float(manifest["fps"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
+    return prepared
+
+
+def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Preflight calibrated persistent v2 gaze for both named actors."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path)
+    if manifest.get("schema_version") != "dual_animation_manifest_v2":
+        raise ValueError("Expected dual_animation_manifest_v2.")
+    prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}}
+    directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
+    for actor in manifest["characters"]:
+        row = character_mappings.get(actor) or {}
+        rig = str(row.get("maya_node") or "")
+        runtime = manifest["character_runtime_mapping"][actor]
+        prepared["jsync_nodes"][actor] = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
+        raw = []
+        gaze_rows = [event for event in _load_v2_actor_events(manifest, actor) if "gaze" in (event.get("changes") or {})]
+        for index, event in enumerate(gaze_rows):
+            value = str(event["changes"]["gaze"])
+            end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])
+            if value == "GAZE-NONE":
+                mode, target = "RESET", "__BASE__"
+            else:
+                mode, target = value.split("-", 1)
+            social = mode == "AVERT" and target in manifest["characters"]
+            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": "__BASE__" if social else target, "social_avert": social, "resolved_time": {"start": float(event["resolved_start"]), "end": end}})
+        reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
+        positions: dict[str, list[float]] = {}
+        for event in raw:
+            target = event["target"]
+            if event["mode"] in {"GAZE", "GLANCE"} and target not in directions:
+                positions[target] = resolve_actor_target_position(actor, target, character_mappings)
+        schedule = build_dual_gaze_schedule(raw, neutral_position=reference["eye_stare_translate"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions)
+        plugs = [*(f"{reference['eye_stare_node']}.translate{axis}" for axis in "XYZ"), f"{reference['both_eyes_node']}.translateX", f"{reference['both_eyes_node']}.translateY"]
+        if any(not cmds_module.objExists(plug) for plug in plugs):
+            raise RuntimeError(f"{actor}: required gaze controls do not exist.")
+        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=4), "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs}
+    return prepared
+
+
+def diagnose_head_local_axes(character_node: str, *, degrees: float = 5.0, cmds_module: Any | None = None, config_path: str | Path = DEFAULT_MAYA_CONFIG) -> None:
+    """Interactive Maya probe: print local jNeck rotations at +/- degrees, then restore."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    config = _v2_overlay_config(config_path)["head"]
+    neck = qualify_rig_control(character_node, str(config["control_suffix"]))
+    plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
+    if any(not cmds_module.objExists(plug) for plug in plugs):
+        raise RuntimeError(f"Missing diagnostic neck control: {neck}.rotateX/Y/Z")
+    original = [cmds_module.getAttr(plug) for plug in plugs]
+    try:
+        for axis, plug in zip("XYZ", plugs):
+            for sign in (-1.0, 1.0):
+                cmds_module.setAttr(plug, original["XYZ".index(axis)] + sign * float(degrees))
+                print(f"{neck} local rotate{axis} {sign * float(degrees):+g}: {[cmds_module.getAttr(item) for item in plugs]}")
+            cmds_module.setAttr(plug, original["XYZ".index(axis)])
+    finally:
+        for plug, value in zip(plugs, original):
+            cmds_module.setAttr(plug, value)
 
 
 def resolve_character_look_at_target(alias: str, character_mappings: dict[str, dict[str, Any]], *, configured_suffix: str | None = None) -> str:
@@ -778,7 +1071,9 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
         end=min(raw_end,next_start) if mode=="GLANCE" and next_start is not None else (next_start if next_start is not None else raw_end)
         state={"event":event,"start":float(event["resolved_time"]["start"]),"end":end}
         state["previous_state"]=dict(previous)
-        if mode in {"GAZE","GLANCE"}:
+        if mode == "RESET":
+            state.update({"eye_stare": list(neutral_position), "eyes": list(neutral_eyes)})
+        elif mode in {"GAZE","GLANCE"}:
             if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
             state.update({"eye_stare":list(target_positions[target]),"eyes":list(neutral_eyes)})
             if mode=="GLANCE": state["return_state"]=dict(previous)

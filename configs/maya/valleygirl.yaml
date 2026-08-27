@@ -100,6 +100,33 @@ maya_eye_performance:
       count: 1
       gap_frames: 0
 
+maya_head_overlay:
+  control_suffix: jNeck_ctl
+  transition_frames: 4
+  strength_degrees:
+    SUBTLE: 3
+    MEDIUM: 6
+    STRONG: 10
+  pitch_axis: rotateX
+  roll_axis: rotateZ
+  pitch_up_sign: -1
+  tilt_left_sign: 1
+
+maya_performative_blink_overlay:
+  central_control_suffix: usr_blink
+  central_attribute: LidDown
+  left_control_suffix: usr_blink_L
+  left_attribute: LidDown_L
+  right_control_suffix: usr_blink_R
+  right_attribute: LidDown_R
+  open_value: 0
+  closed_value: 1
+  presets:
+    BLINK: {close_frames: 2, hold_frames: 1, open_frames: 2, count: 1, gap_frames: 0}
+    SLOW_BLINK: {close_frames: 5, hold_frames: 4, open_frames: 6, count: 1, gap_frames: 0}
+    DOUBLE_BLINK: {close_frames: 2, hold_frames: 1, open_frames: 2, count: 2, gap_frames: 4}
+    EYE_CLOSE_HOLD: {close_frames: 4, hold_frames: 16, open_frames: 6, count: 1, gap_frames: 0}
+
 maya_jali_annotation:
   jsync_node: jSync1
   backup_original_transcript: true

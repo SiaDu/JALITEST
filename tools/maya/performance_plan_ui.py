@@ -65,6 +65,10 @@ from animation_apply_runner import (  # noqa: E402
     resolve_jsync_for_character,
     prepare_dual_listener_mask_artifacts,
     prepare_dual_gaze_only_artifacts,
+    prepare_dual_v2_listener_mask_artifacts,
+    prepare_dual_v2_gaze_only_artifacts,
+    prepare_dual_v2_head_blink_overlays,
+    apply_dual_v2_head_blink_overlays,
     restore_dual_jali_base,
 )
 from authoring_requirements import (  # noqa: E402
@@ -801,19 +805,29 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         try:
             with redirect_stdout(stream), redirect_stderr(stream):
                 if self._pending_animation_mode == "dual_emotion_only":
-                    # Validate both User lanes before speaker realignment changes either rig.
-                    listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     gaze_mappings = {alias: {**row, "gaze_targets": {key.split("->", 1)[1]: value for key, value in self.dual_gaze_calibrations.items() if key.startswith(alias + "->")}} for alias, row in self._pending_dual_mappings.items()}
-                    gaze_context = prepare_dual_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
+                    is_v2 = (self.plan or {}).get("schema_version") == "dual_performance_plan_v2"
+                    if is_v2:
+                        # Every v2 prepare call is read-only. Complete both-character
+                        # preflight before speaker realignment mutates either rig.
+                        listener_context = prepare_dual_v2_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                        gaze_context = prepare_dual_v2_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
+                        overlay_context = prepare_dual_v2_head_blink_overlays(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings, baseline=self.jali_base_baseline or {})
+                    else:
+                        listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                        gaze_context = prepare_dual_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
+                        overlay_context = None
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
                     gaze_result = apply_dual_gaze_only_artifacts(prepared_context=gaze_context)
-                    for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks=false; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
+                    overlay_result = apply_dual_v2_head_blink_overlays(prepared_context=overlay_context) if overlay_context else {}
+                    for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks={item['calculate_blinks']}; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
                     for actor in self.plan.get("characters", []):
                         item = listener_result[actor]
                         self._append_backend_output(f"{actor}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; eyelid_channels_filtered=yes; FACS_animationSource=Add")
                     gaze_events = sum(gaze_result[actor]['gaze_events'] for actor in self.plan.get("characters", []))
-                    self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events)\nNot applied: blink/lid; head\njSync preserved: yes")
+                    overlay_summary = f"; additive head/blink overlays ({sum(row['head_key_count'] + row['blink_key_count'] for row in overlay_result.values())} keys)" if overlay_result else ""
+                    self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events){overlay_summary}\njSync preserved: yes")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),
