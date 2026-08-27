@@ -1,0 +1,53 @@
+[ANALYZE]
+JOAN gives a guarded denial while concealing the stranger, then calls for Bert to reinforce control of the encounter. CHAYTON remains outwardly controlled but sharpens his scrutiny as he warns her and directly tests whether the dangerous man is inside.
+
+[CHANGES]
+E001
+actor: CHAYTON
+anchor: w0001
+affect: Watchful-80
+gaze: GAZE-JOAN
+reason: Establishes polite but focused scrutiny.
+
+E002
+actor: JOAN
+anchor: w0021
+affect: Watchful-85
+gaze: GAZE-DOWN
+head: HEAD-DOWN-SUBTLE
+reason: Delivers a guarded denial while avoiding revealing eye contact.
+
+E003
+actor: JOAN
+anchor: w0022
+gaze: GAZE-RIGHT
+head: HEAD-UP-MEDIUM
+reason: Calls toward the house to assert control and summon Bert.
+
+E004
+actor: CHAYTON
+anchor: w0009
+affect: Intimidating-72
+gaze: GAZE-JOAN
+reason: Makes the danger concrete without issuing an overt threat.
+
+E005
+actor: CHAYTON
+anchor: w0023
+affect: Watchful-90
+head: HEAD-TILT_RIGHT-SUBTLE
+reason: Directly tests whether Joan is withholding the man's presence.
+
+E006
+actor: CHAYTON
+anchor: w0034
+affect: Intimidating-78
+gaze: GAZE-JOAN
+reason: Reinforces that appearances are deceptive and heightens suspicion.
+
+E007
+actor: CHAYTON
+anchor: w0047
+affect: Provoked-68
+head: HEAD-UP-MEDIUM
+reason: Signals urgent resolve while keeping the warning controlled.

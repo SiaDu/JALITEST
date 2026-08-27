@@ -1,0 +1,96 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260827_112238_445975",
+  "characters": [
+    "CHAYTON",
+    "JOAN"
+  ],
+  "acting_interpretation": "JOAN gives a guarded denial while concealing the stranger, then calls for Bert to reinforce control of the encounter. CHAYTON remains outwardly controlled but sharpens his scrutiny as he warns her and directly tests whether the dangerous man is inside.",
+  "tracks": {
+    "CHAYTON": [
+      {
+        "event_id": "E001",
+        "anchor_id": "w0001",
+        "changes": {
+          "affect": "Watchful-80",
+          "gaze": "GAZE-JOAN"
+        },
+        "reason": "Establishes polite but focused scrutiny."
+      },
+      {
+        "event_id": "E004",
+        "anchor_id": "w0009",
+        "changes": {
+          "affect": "Intimidating-72",
+          "gaze": "GAZE-JOAN"
+        },
+        "reason": "Makes the danger concrete without issuing an overt threat."
+      },
+      {
+        "event_id": "E005",
+        "anchor_id": "w0023",
+        "changes": {
+          "affect": "Watchful-90",
+          "head": "HEAD-TILT_RIGHT-SUBTLE"
+        },
+        "reason": "Directly tests whether Joan is withholding the man's presence."
+      },
+      {
+        "event_id": "E006",
+        "anchor_id": "w0034",
+        "changes": {
+          "affect": "Intimidating-78",
+          "gaze": "GAZE-JOAN"
+        },
+        "reason": "Reinforces that appearances are deceptive and heightens suspicion."
+      },
+      {
+        "event_id": "E007",
+        "anchor_id": "w0047",
+        "changes": {
+          "affect": "Provoked-68",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "Signals urgent resolve while keeping the warning controlled."
+      }
+    ],
+    "JOAN": [
+      {
+        "event_id": "E002",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Watchful-85",
+          "gaze": "GAZE-DOWN",
+          "head": "HEAD-DOWN-SUBTLE"
+        },
+        "reason": "Delivers a guarded denial while avoiding revealing eye contact."
+      },
+      {
+        "event_id": "E003",
+        "anchor_id": "w0022",
+        "changes": {
+          "gaze": "GAZE-RIGHT",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "Calls toward the house to assert control and summon Bert."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_112238_445975\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007"
+    ]
+  }
+}

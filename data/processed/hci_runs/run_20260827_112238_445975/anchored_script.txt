@@ -1,0 +1,11 @@
+T01 CHAYTON:
+[w0001 Evening,] [w0002 ma'am.] [w0003 We're] [w0004 in] [w0005 pursuit] [w0006 of] [w0007 someone] [w0008 very] [w0009 dangerous.] [w0010 He] [w0011 might've] [w0012 come] [w0013 onto] [w0014 your] [w0015 property.] [w0016 Have] [w0017 you] [w0018 seen] [w0019 anyone] [w0020 recently?]
+
+T02 JOAN:
+[w0021 No.]
+
+T03 JOAN:
+[w0022 Bert!]
+
+T04 CHAYTON:
+[w0023 Is] [w0024 he] [w0025 in] [w0026 there] [w0027 with] [w0028 you,] [w0029 ma'am?] [w0030 He's] [w0031 not] [w0032 what] [w0033 he] [w0034 seems.] [w0035 God] [w0036 forbid] [w0037 you] [w0038 let] [w0039 him] [w0040 into] [w0041 your] [w0042 home.] [w0043 And] [w0044 if] [w0045 so,] [w0046 we] [w0047 need] [w0048 to] [w0049 act.]
