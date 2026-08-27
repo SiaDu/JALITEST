@@ -16,19 +16,6 @@ from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_anno
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
 from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-PERFORMANCE_RULES_PATH = REPO_ROOT / "configs" / "performance_rules.yaml"
-
-
-def _listener_reaction_delay_frames(path: str | Path = PERFORMANCE_RULES_PATH) -> int:
-    import yaml
-    data = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
-    value = (data.get("performance_rules") or {}).get("listener_reaction_delay_frames")
-    if not isinstance(value, int) or value < 0:
-        raise ValueError("performance_rules.listener_reaction_delay_frames must be a non-negative integer")
-    return value
-
-
 def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
     characters = plan.get("characters")
     tracks = plan.get("tracks")
@@ -79,7 +66,6 @@ def _compile_v2(
     _validate_v2_plan(plan, model)
     characters = plan["characters"]
     anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(model.anchors)}
-    delay_frames = _listener_reaction_delay_frames()
     artifacts: dict[str, Any] = {"characters": {}}
     timing_path = out / "conversation_anchor_timing.json"
     timing_path.write_text(json.dumps(anchor_times, indent=2) + "\n", encoding="utf-8")
@@ -94,13 +80,12 @@ def _compile_v2(
             anchor = anchor_times[event["anchor_id"]]
             speaking = speaker_key(anchor["speaker"]) == speaker_key(actor)
             role = "SPEAK_ONSET" if speaking else "LISTEN_REACTION"
-            reaction_frames = 0 if speaking else delay_frames
-            start = float(anchor["start"]) if speaking else float(anchor["end"]) + delay_frames / float(fps)
+            start = float(anchor["start"]) if speaking else float(anchor["end"])
             resolved.append({
                 "event_id": event["event_id"], "actor": actor, "anchor_id": event["anchor_id"],
                 "anchor_text": anchor["text"], "anchor_speaker": anchor["speaker"],
                 "timing_role": role, "raw_anchor_start": float(anchor["start"]),
-                "raw_anchor_end": float(anchor["end"]), "reaction_delay_frames": reaction_frames,
+                "raw_anchor_end": float(anchor["end"]),
                 "resolved_start": start, "changes": event["changes"], "reason": event.get("reason"),
                 "_plan_index": plan_index,
             })
@@ -145,7 +130,7 @@ def _compile_v2(
         diagnostic.update({"sound_file": mapping[actor]["sound_file"], "source_transcript_path": str(source), "annotated_transcript_path": str(annotated_path)})
         diagnostic_path.write_text(json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8")
         artifacts["characters"][actor] = {"resolved_sparse_events": str(resolved_path), "state_timeline": str(state_path), "jali_speaker_annotated": str(annotated_path), "jali_speaker_annotation": str(diagnostic_path)}
-    manifest = {"schema_version": "dual_animation_manifest_v2", "characters": characters, "performance_plan_source": str(performance_plan_path), "full_script_source": str(script_source or "<provided script text>"), "fps": float(fps), "listener_reaction_delay_frames": delay_frames, "character_runtime_mapping": mapping, "wav_durations": {name: {"path": str(wavs[name][0]), "seconds": wavs[name][1]} for name in characters}, "shared_duration_seconds": shared_duration, "artifacts": artifacts, "warnings": [duration_warning] if duration_warning else []}
+    manifest = {"schema_version": "dual_animation_manifest_v2", "characters": characters, "performance_plan_source": str(performance_plan_path), "full_script_source": str(script_source or "<provided script text>"), "fps": float(fps), "character_runtime_mapping": mapping, "wav_durations": {name: {"path": str(wavs[name][0]), "seconds": wavs[name][1]} for name in characters}, "shared_duration_seconds": shared_duration, "artifacts": artifacts, "warnings": [duration_warning] if duration_warning else []}
     path = out / "dual_animation_manifest.json"
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     manifest["manifest_path"] = str(path)

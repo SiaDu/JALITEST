@@ -1,6 +1,5 @@
 performance_rules:
   schema_version: performance_rules_v3
-  listener_reaction_delay_frames: 4
 
   performance_annotation:
     General rules:

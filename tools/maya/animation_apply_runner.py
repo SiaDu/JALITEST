@@ -968,9 +968,10 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         initial_affect = initial_state.get("affect", "MASK-NONE")
         name, intensity = parse_mask_state("NONE" if initial_affect == "MASK-NONE" else initial_affect)
         affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
-        speaker: str | None = str(next(iter(anchor_times.values()))["speaker"]) if anchor_times else None
-        initial_listener_state = "NONE" if speaker == actor else affect
-        intervals: list[dict[str, Any]] = [{"phrase_id": "INITIAL_STATE", "speaker": speaker, "start": 0.0, "end": float(manifest["shared_duration_seconds"]), "state": initial_listener_state, "pose": user_pose_for_mask(initial_listener_state)}]
+        # Both actors establish their initial affect on the User Mask lane at scene start.
+        # The current speaker hands off to native JALI Mask at its own anchor start.
+        speaker: str | None = None
+        intervals: list[dict[str, Any]] = [{"phrase_id": "INITIAL_STATE", "speaker": speaker, "start": 0.0, "end": float(manifest["shared_duration_seconds"]), "state": affect, "pose": user_pose_for_mask(affect)}]
         for time, _priority, kind, value in sorted(points):
             if kind == "affect":
                 name, intensity = parse_mask_state("NONE" if value == "MASK-NONE" else value)

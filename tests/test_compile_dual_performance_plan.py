@@ -191,8 +191,8 @@ def test_v2_resolves_independent_role_aware_events_and_persistent_affect(tmp_pat
     assert agnes[0]["timing_role"] == "SPEAK_ONSET" and agnes[0]["resolved_start"] == 0.0
     assert will[0]["timing_role"] == "LISTEN_REACTION"
     assert will[0]["raw_anchor_end"] == .2
-    assert will[0]["reaction_delay_frames"] == 4
-    assert will[0]["resolved_start"] == pytest.approx(.2 + 4 / 24)
+    assert "reaction_delay_frames" not in will[0]
+    assert will[0]["resolved_start"] == .2
     assert agnes[1]["timing_role"] == "LISTEN_REACTION" and agnes[1]["anchor_speaker"] == "WILL"
     assert "<mask=Watchful-80> one three </mask=Watchful-80>" in Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
     assert "<mask=Thinking-60> two </mask=Thinking-60>" in Path(result["artifacts"]["characters"]["WILL"]["jali_speaker_annotated"]).read_text()
@@ -211,7 +211,7 @@ def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
     result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping={"AGNES": MAPPING["A"], "WILL": MAPPING["B"]}, output_dir=tmp_path / "out")
     rows = [json.loads(Path(result["artifacts"]["characters"][name]["resolved_sparse_events"]).read_text())["events"][0] for name in ("AGNES", "WILL")]
     assert rows[0]["resolved_start"] == 0.0
-    assert rows[1]["resolved_start"] == pytest.approx(.2 + 4 / 24)
+    assert rows[1]["resolved_start"] == .2
 
 
 def test_v2_compiler_rejects_manual_avert_bypass():
@@ -263,7 +263,8 @@ def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_pat
     assert initial["state"] == {"affect": "Watchful-85", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}
     dangerous = payload["events"][0]
     assert dangerous["anchor_id"] == by_text["dangerous."] and dangerous["timing_role"] == "LISTEN_REACTION"
-    assert dangerous["resolved_start"] == pytest.approx(anchor_times[by_text["dangerous."]]["end"] + 4 / 24)
+    assert "reaction_delay_frames" not in dangerous
+    assert dangerous["resolved_start"] == anchor_times[by_text["dangerous."]]["end"]
     assert dangerous["state_after"]["affect"] == "Watchful-85"
     assert payload["events"][1]["timing_role"] == "SPEAK_ONSET" and payload["events"][1]["raw_anchor_start"] == anchor_times[by_text["No."]]["start"]
     assert payload["events"][2]["timing_role"] == "SPEAK_ONSET"

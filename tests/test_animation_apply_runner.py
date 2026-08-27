@@ -241,7 +241,7 @@ def test_listener_missing_b_control_fails_before_either_actor_mutates(tmp_path):
     assert cmds.calls == []
 
 
-def test_v2_initial_affect_is_active_for_listener_from_scene_start(tmp_path):
+def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
     artifacts = {"characters": {}}
     for actor, state in (
         ("ALICE", {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"}),
@@ -268,6 +268,9 @@ def test_v2_initial_affect_is_active_for_listener_from_scene_start(tmp_path):
         character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}},
         cmds_module=_ListenerCmds(),
     )
+    assert prepared["ALICE"]["timeline"][0]["start"] == 0.0
+    assert prepared["ALICE"]["timeline"][0]["state"] == "Watchful-80"
+    assert any(row["start"] == .5 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
     assert prepared["BOB"]["timeline"][0]["start"] == 0.0
     assert prepared["BOB"]["timeline"][0]["state"] == "Watchful-85"
     assert any(row["start"] == 2.0 and row["state"] == "NONE" for row in prepared["BOB"]["timeline"])
