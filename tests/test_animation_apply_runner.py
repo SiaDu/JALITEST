@@ -50,6 +50,7 @@ from animation_apply_runner import (  # noqa: E402
     prepare_dual_v2_listener_mask_artifacts,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
+from diagnose_eyelid_user_mappings import diagnose_eyelid_user_mappings  # noqa: E402
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -270,6 +271,7 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
         character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}},
         cmds_module=_ListenerCmds(),
     )
+    assert prepared["unmapped_expressive_eyelid_aus"]
     assert prepared["ALICE"]["timeline"][0]["start"] == 0.0
     assert prepared["ALICE"]["timeline"][0]["state"] == "Watchful-80"
     assert any(row["start"] == .5 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
@@ -361,6 +363,16 @@ def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path)
     bob = [(row["start"], row["state"]) for row in prepared["BOB"]["timeline"]]
     assert alice == [(0.0, "Watchful-80"), (1.0, "NONE"), (3.0, "Watchful-80")]
     assert bob == [(0.0, "Nervous-60"), (2.8, "NONE"), (4.0, "Nervous-60")]
+
+
+def test_eyelid_mapping_probe_is_read_only_and_reports_exact_plug_edges():
+    class Cmds:
+        def objExists(self, plug): return plug == "Angela:L_LidJoint_Up.rotateX"
+        def listConnections(self, plug, **_kwargs):
+            return ["Angela:usr_Squint_L.OuterSquint_L", plug] if plug == "Angela:L_LidJoint_Up.rotateX" else []
+    report = diagnose_eyelid_user_mappings("|Angela:ROOT", cmds_module=Cmds())
+    assert report["Angela:L_LidJoint_Up.rotateX"] == [("Angela:usr_Squint_L.OuterSquint_L", "Angela:L_LidJoint_Up.rotateX")]
+    assert report["Angela:R_LidJoint_Up.rotateX"] == []
 
 
 def test_v2_blink_schedule_contains_only_explicit_performative_events():

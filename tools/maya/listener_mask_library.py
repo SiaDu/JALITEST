@@ -24,8 +24,9 @@ _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 FACTORY_EXPORT_PATH: Final = _REPOSITORY_ROOT / "data" / "debug" / "jali_factory_paralingual_array_JALI2025.json"
 COMBINED_EXPORT_PATH: Final = _REPOSITORY_ROOT / "data" / "debug" / "FACS_paralingual_array_JALI2025.json"
 
-# JALITEST owns blinking/lid realization.  These are explicitly excluded from
-# listener Mask keys even when the factory pose contains them.
+# These exported expressive eyelid AUs have no evidenced User FACSMaster
+# conversion in the checked-in JALI 2025 control data. They remain a Maya-smoke
+# mapping requirement; do not invent plugs for them.
 EYELID_AU_PREFIXES: Final = ("au05_", "au07_", "au41_")
 EYELID_AUS: Final = frozenset(EYELID_AU_PREFIXES)
 
@@ -41,6 +42,14 @@ VISIBLE_AFFECT_STATES: Final = frozenset({
 
 def is_eyelid_au(au: str) -> bool:
     return au.casefold().startswith(EYELID_AU_PREFIXES)
+
+
+def unmapped_expressive_eyelid_aus() -> tuple[str, ...]:
+    """Report exported Mask eyelid AUs lacking a checked-in User-control mapping."""
+    return tuple(sorted({
+        au for pose in FACTORY_MASK_AUS.values() for au in pose
+        if is_eyelid_au(au) and au not in AU_TO_USER_CONTROL
+    }))
 
 
 def _load_csv_rows(path: Path, *, header: list[str] | None = None) -> list[dict[str, str]]:

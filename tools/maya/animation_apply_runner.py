@@ -11,7 +11,7 @@ import shutil
 import sys
 from typing import Any, Iterable
 
-from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, parse_mask_state, user_pose_for_mask
+from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, parse_mask_state, unmapped_expressive_eyelid_aus, user_pose_for_mask
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -476,7 +476,7 @@ def prepare_dual_listener_mask_artifacts(
             if event.get("channel") == "affect":
                 parse_mask_state(event.get("value"))
     timeline = build_listener_mask_timeline(phrases, events_by_actor=events_by_actor)
-    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS)}
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS), "unmapped_expressive_eyelid_aus": list(unmapped_expressive_eyelid_aus())}
     for alias in actors:
         row = character_mappings.get(alias) or {}
         rig = str(row.get("maya_node") or "").strip()
@@ -1018,7 +1018,7 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         raise ValueError("Expected dual_animation_manifest_v2.")
     anchor_times = json.loads(Path(manifest["artifacts"]["conversation_anchor_timing"]).read_text(encoding="utf-8"))
     actors = manifest["characters"]
-    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS)}
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS), "unmapped_expressive_eyelid_aus": list(unmapped_expressive_eyelid_aus())}
     for actor in actors:
         events = _load_v2_actor_events(manifest, actor)
         initial_state = _load_v2_actor_initial_state(manifest, actor)
