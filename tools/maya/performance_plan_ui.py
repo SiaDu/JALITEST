@@ -49,10 +49,12 @@ from authoring_session_data import (  # noqa: E402
 )
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
+    apply_dual_listener_mask_artifacts,
     apply_dual_speaker_emotion_artifacts,
     current_scene_fps,
     resolve_jali_source_transcript_path,
     resolve_jsync_for_character,
+    prepare_dual_listener_mask_artifacts,
 )
 from authoring_requirements import (  # noqa: E402
     animation_setup_issues,
@@ -659,9 +661,15 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         try:
             with redirect_stdout(stream), redirect_stderr(stream):
                 if self._pending_animation_mode == "dual_emotion_only":
+                    # Validate both User lanes before speaker realignment changes either rig.
+                    listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                    listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
                     for alias, item in result.items(): self._append_backend_output(f"{alias} / {item['script_name']}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; heart_tags={item['heart_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_expression={item['calculate_expression']}; calculate_blinks=false; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}; heart_binding={'applied' if item['heart_binding'] else 'skipped'}")
-                    self._append_backend_output("Applied: native speaker Mask/Heart with JALI realignment\nNot applied: listener affect; gaze; JALITEST blink/lid/head\njSync preserved: yes")
+                    for alias in ("A", "B"):
+                        item = listener_result[alias]
+                        self._append_backend_output(f"{alias}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; eyelid_channels_filtered=yes; FACS_animationSource=Add")
+                    self._append_backend_output("Applied: native speaker Mask/Heart; listener User Mask reactions\nNot applied: listener Heart; gaze; blink/lid; head\njSync preserved: yes")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),

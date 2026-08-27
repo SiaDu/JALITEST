@@ -11,6 +11,8 @@ import shutil
 import sys
 from typing import Any, Iterable
 
+from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, parse_mask_state, user_pose_for_mask
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAYA_CONFIG = REPO_ROOT / "configs" / "maya" / "valleygirl.yaml"
@@ -169,6 +171,164 @@ def _enum_index(node: str, attr: str, label: str, cmds_module: Any) -> int:
     for index, value in enumerate(values):
         if value.strip().casefold() == label.casefold(): return index
     raise RuntimeError(f"{node}.{attr} has no enum label {label!r}: {values}")
+
+
+LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
+
+
+def _listener_affect_by_phrase(events: Iterable[dict[str, Any]]) -> dict[str, object]:
+    """Read the complete-state affect event for each canonical phrase."""
+    values: dict[str, object] = {}
+    for event in events:
+        if event.get("channel") != "affect":
+            continue
+        phrase_id = str(event.get("phrase_id") or "").strip()
+        if not phrase_id:
+            raise ValueError("Listener affect event is missing phrase_id.")
+        if phrase_id in values:
+            raise ValueError(f"More than one listener affect event exists for {phrase_id}.")
+        values[phrase_id] = event.get("value")
+    return values
+
+
+def build_listener_mask_timeline(
+    phrase_timing: Iterable[dict[str, Any]], *, events_by_actor: dict[str, Iterable[dict[str, Any]]]
+) -> dict[str, list[dict[str, Any]]]:
+    """Resolve complete states to listener-only, canonical-time Mask targets."""
+    affects = {alias: _listener_affect_by_phrase(events_by_actor.get(alias, ())) for alias in ("A", "B")}
+    result: dict[str, list[dict[str, Any]]] = {"A": [], "B": []}
+    for phrase in phrase_timing:
+        phrase_id, speaker = str(phrase.get("phrase_id") or ""), str(phrase.get("speaker") or "")
+        if not phrase_id or speaker not in {"A", "B"}:
+            raise ValueError("Canonical phrase timing requires phrase_id and speaker A/B.")
+        try:
+            start, end = float(phrase["canonical_start"]), float(phrase["canonical_end"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"Canonical phrase {phrase_id} has invalid timing.") from exc
+        if end < start:
+            raise ValueError(f"Canonical phrase {phrase_id} ends before it starts.")
+        for alias in ("A", "B"):
+            raw_state: object = None if alias == speaker else affects[alias].get(phrase_id)
+            # Validate all semantic Mask states even when the actor is speaking;
+            # that keeps preflight deterministic across future role changes.
+            if alias != speaker:
+                name, intensity = parse_mask_state(raw_state)
+                state = "NEUTRAL" if name == "NEUTRAL" else f"{name}-{intensity:g}"
+            else:
+                state = "NEUTRAL"
+            result[alias].append({"phrase_id": phrase_id, "speaker": speaker, "start": start, "end": end, "state": state, "pose": user_pose_for_mask(state)})
+    return result
+
+
+def build_listener_mask_key_schedule(
+    intervals: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 4
+) -> list[dict[str, Any]]:
+    """Emit only complete-state changes, using the frozen +/- half transition."""
+    if fps <= 0 or transition_frames < 1:
+        raise ValueError("Listener Mask timing requires positive fps and transition_frames.")
+    half = transition_frames / 2.0
+    keys: list[dict[str, Any]] = []
+    previous: dict[str, float] | None = None
+    for interval in intervals:
+        pose = dict(interval["pose"])
+        boundary = float(interval["start"]) * fps
+        if previous == pose:
+            continue
+        if previous is None:
+            # Initial state is established at the canonical start, not before
+            # scene time zero.
+            keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
+        else:
+            keys.append({"frame": max(0.0, boundary - half), "pose": previous, "phrase_id": interval["phrase_id"]})
+            keys.append({"frame": boundary + half, "pose": pose, "phrase_id": interval["phrase_id"]})
+        previous = pose
+    return keys
+
+
+def _listener_layer_name(alias: str) -> str:
+    return f"{LISTENER_MASK_LAYER_PREFIX}{alias}"
+
+
+def prepare_dual_listener_mask_artifacts(
+    *, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None
+) -> dict[str, Any]:
+    """Preflight both User FACS lanes before either actor is changed."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    manifest = load_dual_animation_manifest(manifest_path)
+    timing_path = Path(str(manifest["artifacts"].get("conversation_phrase_timing") or ""))
+    if not timing_path.is_file():
+        raise FileNotFoundError("Dual listener Mask requires conversation_phrase_timing.json.")
+    phrases = json.loads(timing_path.read_text(encoding="utf-8")).get("phrases")
+    if not isinstance(phrases, list):
+        raise ValueError("conversation_phrase_timing.json requires a phrases list.")
+    events_by_actor: dict[str, list[dict[str, Any]]] = {}
+    for alias in ("A", "B"):
+        path = Path(str(manifest["artifacts"].get(alias) or ""))
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload.get("events"), list):
+            raise ValueError(f"Dual semantic artifact for {alias} requires an events list.")
+        events_by_actor[alias] = payload["events"]
+        for event in events_by_actor[alias]:
+            if event.get("channel") == "affect":
+                parse_mask_state(event.get("value"))
+    timeline = build_listener_mask_timeline(phrases, events_by_actor=events_by_actor)
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "eyelid_channels_filtered": sorted(EYELID_AUS)}
+    for alias in ("A", "B"):
+        row = character_mappings.get(alias) or {}
+        rig = str(row.get("maya_node") or "").strip()
+        if not rig or not cmds_module.objExists(rig):
+            raise RuntimeError(f"{alias}: mapped Maya rig does not exist: {rig}")
+        facs = qualify_rig_control(rig, "FACSMaster")
+        source_plug = f"{facs}.FACS_animationSource"
+        if not cmds_module.objExists(source_plug):
+            raise RuntimeError(f"{alias}: missing {source_plug}.")
+        add_index = _enum_index(facs, "FACS_animationSource", "Add", cmds_module)
+        plugs = [qualify_rig_control(rig, plug) for plug in AU_TO_USER_CONTROL.values()]
+        missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
+        if missing:
+            raise RuntimeError(f"{alias}: missing User FACS controls: {', '.join(missing)}")
+        events = [item for item in timeline[alias] if item["state"] != "NEUTRAL"]
+        scene_range = None
+        if hasattr(cmds_module, "playbackOptions"):
+            scene_range = (float(cmds_module.playbackOptions(query=True, minTime=True)), float(cmds_module.playbackOptions(query=True, maxTime=True)))
+        prepared[alias] = {"rig": rig, "facs_source_plug": source_plug, "add_index": add_index, "managed_user_plugs": plugs, "timeline": timeline[alias], "key_schedule": build_listener_mask_key_schedule(timeline[alias], fps=float(manifest["fps"])), "listener_mask_events": len(events), "layer": _listener_layer_name(alias), "scene_range": scene_range}
+    return prepared
+
+
+def _clear_listener_layer_keys(layer: str, plugs: Iterable[str], *, scene_range: tuple[float, float] | None, cmds_module: Any) -> None:
+    """Clear only curves belonging to JALITEST's dedicated listener layer."""
+    if not cmds_module.objExists(layer):
+        cmds_module.animLayer(layer)
+    for plug in plugs:
+        cmds_module.animLayer(layer, edit=True, attribute=plug)
+    for curve in cmds_module.animLayer(layer, query=True, animCurves=True) or []:
+        kwargs: dict[str, Any] = {"clear": True}
+        if scene_range is not None:
+            kwargs["time"] = scene_range
+        cmds_module.cutKey(curve, **kwargs)
+
+
+def apply_dual_listener_mask_artifacts(*, prepared_context: dict[str, Any], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Apply the already-preflighted eyelid-filtered User Mask timeline."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if prepared_context.get("schema_version") != "dual_listener_mask_prepared_v1":
+        raise ValueError("Invalid prepared listener Mask context.")
+    result: dict[str, Any] = {"provenance": prepared_context["provenance"]}
+    for alias in ("A", "B"):
+        item = prepared_context.get(alias)
+        if not isinstance(item, dict):
+            raise ValueError(f"Prepared listener Mask context is missing {alias}.")
+        # Both actors were completely validated before this first mutation.
+        cmds_module.setAttr(item["facs_source_plug"], item["add_index"])
+        _clear_listener_layer_keys(item["layer"], item["managed_user_plugs"], scene_range=item["scene_range"], cmds_module=cmds_module)
+        for key in item["key_schedule"]:
+            for raw_plug, value in key["pose"].items():
+                plug = qualify_rig_control(item["rig"], raw_plug)
+                cmds_module.setKeyframe(plug, time=key["frame"], value=value, animLayer=item["layer"])
+        result[alias] = {"listener_mask_events": item["listener_mask_events"], "managed_user_plugs": list(item["managed_user_plugs"]), "eyelid_channels_filtered": True, "FACS_animationSource": "Add", "layer": item["layer"], "key_count": len(item["key_schedule"])}
+    return result
 
 
 def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None, mel_module: Any | None = None) -> dict[str, Any]:

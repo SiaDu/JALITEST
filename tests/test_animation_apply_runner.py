@@ -24,13 +24,18 @@ from animation_apply_runner import (  # noqa: E402
     prepare_dual_animation_overlay,
     apply_dual_animation_artifacts,
     apply_dual_speaker_emotion_artifacts,
+    apply_dual_listener_mask_artifacts,
+    build_listener_mask_key_schedule,
+    build_listener_mask_timeline,
     capture_eyelid_animation_reference,
+    prepare_dual_listener_mask_artifacts,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     resolve_jali_source_transcript_path,
     scene_fps_from_unit,
     validate_gaze_target_mappings,
 )
+from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -89,6 +94,95 @@ def test_dual_emotion_realigns_from_separate_staging_and_restores_paths(monkeypa
     assert all(Path(result[a]["staging_txt"]).read_text().startswith("<mask=") for a in ("A","B"))
     assert Path(result["A"]["staging_wav"]).read_bytes() == b"A" and Path(result["B"]["staging_wav"]).read_bytes() == b"B"
     assert all(result[a]["paths_restored"] for a in ("A","B")) and sum(call.startswith('realign_node ') for call in mel_calls) == 2
+
+
+def test_confused_25_scales_factory_coefficients_and_filters_eyelids():
+    pose = user_pose_for_mask("Confused-25")
+    assert pose["usr_InnerBrowRaise_L.InnerBrowRaise_L"] == 1.25
+    assert pose["usr_OuterBrowRaise_R.OuterBrowRaise_R"] == 1.5
+    assert pose["usr_BrowInDown_L.BrowIn_L"] == 1.875
+    assert pose["usr_Wince_R.Wince_R"] == 0.5
+    assert pose["usr_Pucker_L.Pucker_L"] == 0.5
+    assert pose["usr_Squint_R.Squint_R"] == 0.5
+    assert "au05_uLidUpL" in FACTORY_MASK_AUS["Confused"]
+    assert all("blink" not in plug.casefold() and "lid" not in plug.casefold() for plug in pose)
+
+
+def test_listener_timeline_assigns_affect_only_to_non_speaker_and_updates_intensity():
+    phrases = [
+        {"phrase_id": "P01", "speaker": "A", "canonical_start": 0, "canonical_end": 1},
+        {"phrase_id": "P02", "speaker": "A", "canonical_start": 1, "canonical_end": 2},
+        {"phrase_id": "P03", "speaker": "B", "canonical_start": 2, "canonical_end": 3},
+    ]
+    timeline = build_listener_mask_timeline(phrases, events_by_actor={
+        "A": [{"phrase_id": "P03", "channel": "affect", "value": "Smug-20"}],
+        "B": [{"phrase_id": "P01", "channel": "affect", "value": "Watchful-25"}, {"phrase_id": "P02", "channel": "affect", "value": "Watchful-35"}],
+    })
+    assert [item["state"] for item in timeline["A"]] == ["NEUTRAL", "NEUTRAL", "Smug-20"]
+    assert [item["state"] for item in timeline["B"]] == ["Watchful-25", "Watchful-35", "NEUTRAL"]
+    keys = build_listener_mask_key_schedule(timeline["B"], fps=24)
+    assert [key["frame"] for key in keys] == [0.0, 22.0, 26.0, 46.0, 50.0]
+    assert keys[2]["pose"]["usr_OuterBrowRaise_L.OuterBrowRaise_L"] == 1.75
+
+
+class _ListenerCmds:
+    def __init__(self, *, missing: str = ""):
+        self.calls = []; self.layers = set(); self.missing = missing
+    def objExists(self, plug): return plug != self.missing
+    def attributeQuery(self, *_args, **_kwargs): return ["User:Jali:Add"]
+    def playbackOptions(self, **kwargs): return 0.0 if kwargs.get("minTime") else 240.0
+    def animLayer(self, layer, **kwargs):
+        self.calls.append(("animLayer", (layer,), kwargs))
+        if not kwargs: self.layers.add(layer)
+        return [] if kwargs.get("query") else layer
+    def cutKey(self, *args, **kwargs): self.calls.append(("cutKey", args, kwargs))
+    def setAttr(self, *args, **kwargs): self.calls.append(("setAttr", args, kwargs))
+    def setKeyframe(self, *args, **kwargs): self.calls.append(("setKeyframe", args, kwargs))
+
+
+def _listener_manifest(tmp_path: Path, *, b_affect: str = "Confused-25") -> Path:
+    artifacts = {}
+    for alias, events in (("A", [{"phrase_id": "P02", "channel": "affect", "value": "Smug-20"}]), ("B", [{"phrase_id": "P01", "channel": "affect", "value": b_affect}])):
+        path = tmp_path / f"{alias}_events.json"; path.write_text(json.dumps({"events": events})); artifacts[alias] = str(path)
+    timing = tmp_path / "conversation_phrase_timing.json"
+    timing.write_text(json.dumps({"phrases": [{"phrase_id": "P01", "speaker": "A", "canonical_start": 0, "canonical_end": 1}, {"phrase_id": "P02", "speaker": "B", "canonical_start": 1, "canonical_end": 2}]}))
+    artifacts["conversation_phrase_timing"] = str(timing)
+    manifest = tmp_path / "listener_manifest.json"
+    manifest.write_text(json.dumps({"schema_version": "dual_animation_manifest_v0", "fps": 24.0, "character_runtime_mapping": {"A": {"script_name": "AGNES", "sound_file": "A"}, "B": {"script_name": "WILL", "sound_file": "B"}}, "artifacts": artifacts}))
+    return manifest
+
+
+def _listener_mappings():
+    return {"A": {"maya_node": "|A:ROOT"}, "B": {"maya_node": "|B:ROOT"}}
+
+
+def test_listener_preflight_and_apply_only_write_user_mask_controls(monkeypatch, tmp_path):
+    cmds = _ListenerCmds()
+    manifest = _listener_manifest(tmp_path)
+    prepared = prepare_dual_listener_mask_artifacts(manifest_path=manifest, character_mappings=_listener_mappings(), cmds_module=cmds)
+    assert prepared["A"]["add_index"] == 2 and prepared["B"]["listener_mask_events"] == 1
+    result = apply_dual_listener_mask_artifacts(prepared_context=prepared, cmds_module=cmds)
+    set_attrs = [call[1][0] for call in cmds.calls if call[0] == "setAttr"]
+    assert "A:FACSMaster.FACS_animationSource" in set_attrs and "B:FACSMaster.FACS_animationSource" in set_attrs
+    assert not any("jSync" in plug or "blink" in plug.casefold() or "loLid" in plug for plug in set_attrs)
+    assert all(plug.startswith(("A:usr_", "B:usr_", "A:FACSMaster.", "B:FACSMaster.")) for plug in set_attrs)
+    keyed = [call[1][0] for call in cmds.calls if call[0] == "setKeyframe"]
+    assert keyed and all(plug.startswith(("A:usr_", "B:usr_")) for plug in keyed)
+    assert result["B"]["eyelid_channels_filtered"] is True and result["A"]["FACS_animationSource"] == "Add"
+
+
+def test_listener_unsupported_mask_fails_preflight_before_either_actor_mutates(tmp_path):
+    cmds = _ListenerCmds()
+    with pytest.raises(ValueError, match="Unsupported listener Mask"):
+        prepare_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path, b_affect="Alien-25"), character_mappings=_listener_mappings(), cmds_module=cmds)
+    assert cmds.calls == []
+
+
+def test_listener_missing_b_control_fails_before_either_actor_mutates(tmp_path):
+    cmds = _ListenerCmds(missing="B:usr_Squint_R.Squint_R")
+    with pytest.raises(RuntimeError, match="B: missing User FACS controls"):
+        prepare_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path), character_mappings=_listener_mappings(), cmds_module=cmds)
+    assert cmds.calls == []
 
 
 def _dual_manifest(tmp_path: Path) -> Path:
