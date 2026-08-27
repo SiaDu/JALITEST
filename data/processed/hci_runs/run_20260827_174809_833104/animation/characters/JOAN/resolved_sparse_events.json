@@ -60,7 +60,7 @@
       "anchor_speaker": "JOAN",
       "timing_role": "SPEAK_ONSET",
       "raw_anchor_start": 14.833813,
-      "raw_anchor_end": 15.513813,
+      "raw_anchor_end": 15.523813,
       "resolved_start": 14.833813,
       "changes": {
         "gaze": "GAZE-RIGHT",
