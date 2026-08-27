@@ -57,10 +57,22 @@ def _render_dual_prompt(
     prompt_template_path: str | Path, extra_config_paths: Iterable[str | Path],
 ) -> str:
     prompt = load_prompt_template(prompt_template_path)
+    character_a, character_b = anchor_model.aliases["A"], anchor_model.aliases["B"]
+    identity_contract = "\n".join((
+        "IDENTITY CONTRACT",
+        f"A = {character_a}",
+        f"B = {character_b}",
+        "",
+        f"Every A.* field describes {character_a}.",
+        f"Every B.* field describes {character_b}.",
+        "Never reinterpret or swap these aliases based on dialogue order, personality, "
+        "speaker order, examples, or narrative role.",
+    ))
     replacements = {
-        "{{character_a}}": anchor_model.aliases["A"],
-        "{{character_b}}": anchor_model.aliases["B"],
+        "{{character_a}}": character_a,
+        "{{character_b}}": character_b,
         "{{alias_map}}": json.dumps(anchor_model.aliases, ensure_ascii=False, sort_keys=True),
+        "{{identity_contract}}": identity_contract,
         "{{context}}": str(context or "").strip() or "NONE",
         "{{immutable_script}}": anchor_model.script,
         "{{anchored_script}}": anchor_model.anchored_script().rstrip("\n"),

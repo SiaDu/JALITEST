@@ -355,6 +355,25 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
         assert (tmp_path / "dual_run" / name).exists()
 
 
+def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scene_names():
+    reversed_prompt = build_dual_generation_prompt(
+        script="WILL: Look there.\nAGNES: I see it.", character_a="WILL", character_b="AGNES"
+    )
+    assert "IDENTITY CONTRACT\nA = WILL\nB = AGNES" in reversed_prompt
+    assert "Every A.* field describes WILL." in reversed_prompt
+    assert "Every B.* field describes AGNES." in reversed_prompt
+    assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly `[ANALYZE]`")
+    assert "Character A may become increasingly curious about Character B" in reversed_prompt
+    assert "Agnes may become increasingly curious about Will" not in reversed_prompt
+    assert "GROWING_CURIOSITY_ABOUT_WILL" not in reversed_prompt
+
+    generic_prompt = build_dual_generation_prompt(
+        script="ALICE: Hello.\nBOB: Hello.", character_a="ALICE", character_b="BOB"
+    )
+    assert "IDENTITY CONTRACT\nA = ALICE\nB = BOB" in generic_prompt
+    assert "AGNES" not in generic_prompt and "WILL" not in generic_prompt
+
+
 def test_backend_runner_keeps_single_command_and_builds_dual_command(tmp_path: Path):
     single = prepare_generation_command(
         mode="single", script="AGNES: Hello.", context=None, character_a="AGNES",

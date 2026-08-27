@@ -17,6 +17,8 @@ Optional context:
 [SEMANTIC VOCABULARY]
 {{semantic_reference}}
 
+{{identity_contract}}
+
 Return exactly `[ANALYZE]`, `[PERFORMANCE]`, and `[REASONS]`, in that order.
 Make one LLM proposal for the whole conversation. Never copy dialogue, provide end anchors, generate
 XML, JSON, source IDs, character offsets, Maya controls, timing, frames, or seconds.
@@ -36,18 +38,18 @@ Do not put descriptive concepts such as Curious, Warm, Interested, Concerned, or
 these executable fields. If an acting concept has no direct JALI Mask label, preserve it in intent/reasoning
 and realize it with an appropriate supported combination of visible affect, gaze, head, lid, blink, and heart.
 
-Example: Agnes may become increasingly curious about Will in `[ANALYZE]`, have the shared intent
-`GROWING_CURIOSITY_ABOUT_WILL`, and use `A.affect: Watchful-35`, `A.gaze: GAZE-B`, and `A.head: MEDIUM`.
+Example: Character A may become increasingly curious about Character B in `[ANALYZE]`, have the shared intent
+`GROWING_CURIOSITY`, and use `A.affect: Watchful-35`, `A.gaze: GAZE-B`, and `A.head: MEDIUM`.
 This is an acting choice for the scene, not a fixed Curious-to-Watchful mapping.
 
 ```text
 [ANALYZE]
-Agnes becomes increasingly curious about Will, but keeps the curiosity socially contained.
+Character A becomes increasingly curious about Character B, but keeps the curiosity socially contained.
 
 [PERFORMANCE]
 S09
 start: w0042
-intent: GROWING_CURIOSITY_ABOUT_WILL
+intent: GROWING_CURIOSITY
 A.affect: Watchful-35
 A.heart: NONE
 A.gaze: GAZE-B
@@ -66,8 +68,8 @@ B.blink_suppression: NONE
 [REASONS]
 S09
 intent: Curiosity becomes a shared conversational beat.
-A.affect: Her curiosity appears outwardly as attentive, contained observation.
-A.gaze: She studies Will more directly as her interest grows.
+A.affect: Character A's curiosity appears outwardly as attentive, contained observation.
+A.gaze: Character A studies Character B more directly as interest grows.
 ```
 
 Exact grammar:

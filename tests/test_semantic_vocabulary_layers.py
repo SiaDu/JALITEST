@@ -161,5 +161,5 @@ def test_prompts_explain_open_acting_language_and_closed_executable_vocabularies
         assert "Curious -> Watchful" not in prompt
         assert "fixed Curious-to-Watchful mapping" in prompt
         assert "S09" in prompt
-        assert "GROWING_CURIOSITY_ABOUT_WILL" in prompt
+        assert "GROWING_CURIOSITY" in prompt
         assert "Watchful-35" in prompt
