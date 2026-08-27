@@ -1,0 +1,1069 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "AGNES",
+    "B": "WILL"
+  },
+  "aliases": {
+    "A": "AGNES",
+    "B": "WILL"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "AGNES",
+      "char_start": 0,
+      "char_end": 21,
+      "utterance_start": 7,
+      "utterance_end": 21,
+      "utterance_text": "Good day, sir.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "AGNES",
+          "text": "Good",
+          "char_start": 7,
+          "char_end": 11
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "AGNES",
+          "text": "day,",
+          "char_start": 12,
+          "char_end": 16
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "AGNES",
+          "text": "sir.",
+          "char_start": 17,
+          "char_end": 21
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "WILL",
+      "char_start": 22,
+      "char_end": 44,
+      "utterance_start": 28,
+      "utterance_end": 44,
+      "utterance_text": "Good day to you.",
+      "anchors": [
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T02",
+          "speaker": "WILL",
+          "text": "Good",
+          "char_start": 28,
+          "char_end": 32
+        },
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T02",
+          "speaker": "WILL",
+          "text": "day",
+          "char_start": 33,
+          "char_end": 36
+        },
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T02",
+          "speaker": "WILL",
+          "text": "to",
+          "char_start": 37,
+          "char_end": 39
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T02",
+          "speaker": "WILL",
+          "text": "you.",
+          "char_start": 40,
+          "char_end": 44
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "AGNES",
+      "char_start": 45,
+      "char_end": 80,
+      "utterance_start": 52,
+      "utterance_end": 80,
+      "utterance_text": "What brings you to Hewlands?",
+      "anchors": [
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T03",
+          "speaker": "AGNES",
+          "text": "What",
+          "char_start": 52,
+          "char_end": 56
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T03",
+          "speaker": "AGNES",
+          "text": "brings",
+          "char_start": 57,
+          "char_end": 63
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T03",
+          "speaker": "AGNES",
+          "text": "you",
+          "char_start": 64,
+          "char_end": 67
+        },
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T03",
+          "speaker": "AGNES",
+          "text": "to",
+          "char_start": 68,
+          "char_end": 70
+        },
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T03",
+          "speaker": "AGNES",
+          "text": "Hewlands?",
+          "char_start": 71,
+          "char_end": 80
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "WILL",
+      "char_start": 81,
+      "char_end": 114,
+      "utterance_start": 87,
+      "utterance_end": 114,
+      "utterance_text": "I'm tutoring the boys here.",
+      "anchors": [
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T04",
+          "speaker": "WILL",
+          "text": "I'm",
+          "char_start": 87,
+          "char_end": 90
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T04",
+          "speaker": "WILL",
+          "text": "tutoring",
+          "char_start": 91,
+          "char_end": 99
+        },
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T04",
+          "speaker": "WILL",
+          "text": "the",
+          "char_start": 100,
+          "char_end": 103
+        },
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T04",
+          "speaker": "WILL",
+          "text": "boys",
+          "char_start": 104,
+          "char_end": 108
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T04",
+          "speaker": "WILL",
+          "text": "here.",
+          "char_start": 109,
+          "char_end": 114
+        }
+      ]
+    },
+    {
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "char_start": 115,
+      "char_end": 157,
+      "utterance_start": 122,
+      "utterance_end": 157,
+      "utterance_text": "The Latin tutor. I've heard of you.",
+      "anchors": [
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "The",
+          "char_start": 122,
+          "char_end": 125
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "Latin",
+          "char_start": 126,
+          "char_end": 131
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "tutor.",
+          "char_start": 132,
+          "char_end": 138
+        },
+        {
+          "anchor_id": "w0021",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "I've",
+          "char_start": 139,
+          "char_end": 143
+        },
+        {
+          "anchor_id": "w0022",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "heard",
+          "char_start": 144,
+          "char_end": 149
+        },
+        {
+          "anchor_id": "w0023",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "of",
+          "char_start": 150,
+          "char_end": 152
+        },
+        {
+          "anchor_id": "w0024",
+          "turn_id": "T05",
+          "speaker": "AGNES",
+          "text": "you.",
+          "char_start": 153,
+          "char_end": 157
+        }
+      ]
+    },
+    {
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "char_start": 158,
+      "char_end": 198,
+      "utterance_start": 165,
+      "utterance_end": 198,
+      "utterance_text": "What brought you into the garden?",
+      "anchors": [
+        {
+          "anchor_id": "w0025",
+          "turn_id": "T06",
+          "speaker": "AGNES",
+          "text": "What",
+          "char_start": 165,
+          "char_end": 169
+        },
+        {
+          "anchor_id": "w0026",
+          "turn_id": "T06",
+          "speaker": "AGNES",
+          "text": "brought",
+          "char_start": 170,
+          "char_end": 177
+        },
+        {
+          "anchor_id": "w0027",
+          "turn_id": "T06",
+          "speaker": "AGNES",
+          "text": "you",
+          "char_start": 178,
+          "char_end": 181
+        },
+        {
+          "anchor_id": "w0028",
+          "turn_id": "T06",
+          "speaker": "AGNES",
+          "text": "into",
+          "char_start": 182,
+          "char_end": 186
+        },
+        {
+          "anchor_id": "w0029",
+          "turn_id": "T06",
+          "speaker": "AGNES",
+          "text": "the",
+          "char_start": 187,
+          "char_end": 190
+        },
+        {
+          "anchor_id": "w0030",
+          "turn_id": "T06",
+          "speaker": "AGNES",
+          "text": "garden?",
+          "char_start": 191,
+          "char_end": 198
+        }
+      ]
+    },
+    {
+      "turn_id": "T07",
+      "speaker": "WILL",
+      "char_start": 199,
+      "char_end": 210,
+      "utterance_start": 205,
+      "utterance_end": 210,
+      "utterance_text": "Uh...",
+      "anchors": [
+        {
+          "anchor_id": "w0031",
+          "turn_id": "T07",
+          "speaker": "WILL",
+          "text": "Uh...",
+          "char_start": 205,
+          "char_end": 210
+        }
+      ]
+    },
+    {
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "char_start": 211,
+      "char_end": 253,
+      "utterance_start": 218,
+      "utterance_end": 253,
+      "utterance_text": "It's just a question, master tutor.",
+      "anchors": [
+        {
+          "anchor_id": "w0032",
+          "turn_id": "T08",
+          "speaker": "AGNES",
+          "text": "It's",
+          "char_start": 218,
+          "char_end": 222
+        },
+        {
+          "anchor_id": "w0033",
+          "turn_id": "T08",
+          "speaker": "AGNES",
+          "text": "just",
+          "char_start": 223,
+          "char_end": 227
+        },
+        {
+          "anchor_id": "w0034",
+          "turn_id": "T08",
+          "speaker": "AGNES",
+          "text": "a",
+          "char_start": 228,
+          "char_end": 229
+        },
+        {
+          "anchor_id": "w0035",
+          "turn_id": "T08",
+          "speaker": "AGNES",
+          "text": "question,",
+          "char_start": 230,
+          "char_end": 239
+        },
+        {
+          "anchor_id": "w0036",
+          "turn_id": "T08",
+          "speaker": "AGNES",
+          "text": "master",
+          "char_start": 240,
+          "char_end": 246
+        },
+        {
+          "anchor_id": "w0037",
+          "turn_id": "T08",
+          "speaker": "AGNES",
+          "text": "tutor.",
+          "char_start": 247,
+          "char_end": 253
+        }
+      ]
+    },
+    {
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "char_start": 254,
+      "char_end": 348,
+      "utterance_start": 260,
+      "utterance_end": 348,
+      "utterance_text": "Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.",
+      "anchors": [
+        {
+          "anchor_id": "w0038",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "Yes,",
+          "char_start": 260,
+          "char_end": 264
+        },
+        {
+          "anchor_id": "w0039",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "I,",
+          "char_start": 265,
+          "char_end": 267
+        },
+        {
+          "anchor_id": "w0040",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "uh...",
+          "char_start": 268,
+          "char_end": 273
+        },
+        {
+          "anchor_id": "w0041",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "I",
+          "char_start": 274,
+          "char_end": 275
+        },
+        {
+          "anchor_id": "w0042",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "suppose",
+          "char_start": 276,
+          "char_end": 283
+        },
+        {
+          "anchor_id": "w0043",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "the",
+          "char_start": 284,
+          "char_end": 287
+        },
+        {
+          "anchor_id": "w0044",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "air",
+          "char_start": 288,
+          "char_end": 291
+        },
+        {
+          "anchor_id": "w0045",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "was",
+          "char_start": 292,
+          "char_end": 295
+        },
+        {
+          "anchor_id": "w0046",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "fresh",
+          "char_start": 296,
+          "char_end": 301
+        },
+        {
+          "anchor_id": "w0047",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "out",
+          "char_start": 302,
+          "char_end": 305
+        },
+        {
+          "anchor_id": "w0048",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "here,",
+          "char_start": 306,
+          "char_end": 311
+        },
+        {
+          "anchor_id": "w0049",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "and...",
+          "char_start": 312,
+          "char_end": 318
+        },
+        {
+          "anchor_id": "w0050",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "uh,",
+          "char_start": 319,
+          "char_end": 322
+        },
+        {
+          "anchor_id": "w0051",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "I",
+          "char_start": 323,
+          "char_end": 324
+        },
+        {
+          "anchor_id": "w0052",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "saw",
+          "char_start": 325,
+          "char_end": 328
+        },
+        {
+          "anchor_id": "w0053",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "you",
+          "char_start": 329,
+          "char_end": 332
+        },
+        {
+          "anchor_id": "w0054",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "with",
+          "char_start": 333,
+          "char_end": 337
+        },
+        {
+          "anchor_id": "w0055",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "your",
+          "char_start": 338,
+          "char_end": 342
+        },
+        {
+          "anchor_id": "w0056",
+          "turn_id": "T09",
+          "speaker": "WILL",
+          "text": "bird.",
+          "char_start": 343,
+          "char_end": 348
+        }
+      ]
+    },
+    {
+      "turn_id": "T10",
+      "speaker": "AGNES",
+      "char_start": 349,
+      "char_end": 368,
+      "utterance_start": 356,
+      "utterance_end": 368,
+      "utterance_text": "It's a hawk.",
+      "anchors": [
+        {
+          "anchor_id": "w0057",
+          "turn_id": "T10",
+          "speaker": "AGNES",
+          "text": "It's",
+          "char_start": 356,
+          "char_end": 360
+        },
+        {
+          "anchor_id": "w0058",
+          "turn_id": "T10",
+          "speaker": "AGNES",
+          "text": "a",
+          "char_start": 361,
+          "char_end": 362
+        },
+        {
+          "anchor_id": "w0059",
+          "turn_id": "T10",
+          "speaker": "AGNES",
+          "text": "hawk.",
+          "char_start": 363,
+          "char_end": 368
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "AGNES",
+      "text": "Good",
+      "char_start": 7,
+      "char_end": 11
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "AGNES",
+      "text": "day,",
+      "char_start": 12,
+      "char_end": 16
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "AGNES",
+      "text": "sir.",
+      "char_start": 17,
+      "char_end": 21
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T02",
+      "speaker": "WILL",
+      "text": "Good",
+      "char_start": 28,
+      "char_end": 32
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T02",
+      "speaker": "WILL",
+      "text": "day",
+      "char_start": 33,
+      "char_end": 36
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T02",
+      "speaker": "WILL",
+      "text": "to",
+      "char_start": 37,
+      "char_end": 39
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T02",
+      "speaker": "WILL",
+      "text": "you.",
+      "char_start": 40,
+      "char_end": 44
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T03",
+      "speaker": "AGNES",
+      "text": "What",
+      "char_start": 52,
+      "char_end": 56
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T03",
+      "speaker": "AGNES",
+      "text": "brings",
+      "char_start": 57,
+      "char_end": 63
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T03",
+      "speaker": "AGNES",
+      "text": "you",
+      "char_start": 64,
+      "char_end": 67
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T03",
+      "speaker": "AGNES",
+      "text": "to",
+      "char_start": 68,
+      "char_end": 70
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T03",
+      "speaker": "AGNES",
+      "text": "Hewlands?",
+      "char_start": 71,
+      "char_end": 80
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T04",
+      "speaker": "WILL",
+      "text": "I'm",
+      "char_start": 87,
+      "char_end": 90
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T04",
+      "speaker": "WILL",
+      "text": "tutoring",
+      "char_start": 91,
+      "char_end": 99
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T04",
+      "speaker": "WILL",
+      "text": "the",
+      "char_start": 100,
+      "char_end": 103
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T04",
+      "speaker": "WILL",
+      "text": "boys",
+      "char_start": 104,
+      "char_end": 108
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T04",
+      "speaker": "WILL",
+      "text": "here.",
+      "char_start": 109,
+      "char_end": 114
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "The",
+      "char_start": 122,
+      "char_end": 125
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "Latin",
+      "char_start": 126,
+      "char_end": 131
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "tutor.",
+      "char_start": 132,
+      "char_end": 138
+    },
+    {
+      "anchor_id": "w0021",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "I've",
+      "char_start": 139,
+      "char_end": 143
+    },
+    {
+      "anchor_id": "w0022",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "heard",
+      "char_start": 144,
+      "char_end": 149
+    },
+    {
+      "anchor_id": "w0023",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "of",
+      "char_start": 150,
+      "char_end": 152
+    },
+    {
+      "anchor_id": "w0024",
+      "turn_id": "T05",
+      "speaker": "AGNES",
+      "text": "you.",
+      "char_start": 153,
+      "char_end": 157
+    },
+    {
+      "anchor_id": "w0025",
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "text": "What",
+      "char_start": 165,
+      "char_end": 169
+    },
+    {
+      "anchor_id": "w0026",
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "text": "brought",
+      "char_start": 170,
+      "char_end": 177
+    },
+    {
+      "anchor_id": "w0027",
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "text": "you",
+      "char_start": 178,
+      "char_end": 181
+    },
+    {
+      "anchor_id": "w0028",
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "text": "into",
+      "char_start": 182,
+      "char_end": 186
+    },
+    {
+      "anchor_id": "w0029",
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "text": "the",
+      "char_start": 187,
+      "char_end": 190
+    },
+    {
+      "anchor_id": "w0030",
+      "turn_id": "T06",
+      "speaker": "AGNES",
+      "text": "garden?",
+      "char_start": 191,
+      "char_end": 198
+    },
+    {
+      "anchor_id": "w0031",
+      "turn_id": "T07",
+      "speaker": "WILL",
+      "text": "Uh...",
+      "char_start": 205,
+      "char_end": 210
+    },
+    {
+      "anchor_id": "w0032",
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "text": "It's",
+      "char_start": 218,
+      "char_end": 222
+    },
+    {
+      "anchor_id": "w0033",
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "text": "just",
+      "char_start": 223,
+      "char_end": 227
+    },
+    {
+      "anchor_id": "w0034",
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "text": "a",
+      "char_start": 228,
+      "char_end": 229
+    },
+    {
+      "anchor_id": "w0035",
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "text": "question,",
+      "char_start": 230,
+      "char_end": 239
+    },
+    {
+      "anchor_id": "w0036",
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "text": "master",
+      "char_start": 240,
+      "char_end": 246
+    },
+    {
+      "anchor_id": "w0037",
+      "turn_id": "T08",
+      "speaker": "AGNES",
+      "text": "tutor.",
+      "char_start": 247,
+      "char_end": 253
+    },
+    {
+      "anchor_id": "w0038",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "Yes,",
+      "char_start": 260,
+      "char_end": 264
+    },
+    {
+      "anchor_id": "w0039",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "I,",
+      "char_start": 265,
+      "char_end": 267
+    },
+    {
+      "anchor_id": "w0040",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "uh...",
+      "char_start": 268,
+      "char_end": 273
+    },
+    {
+      "anchor_id": "w0041",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "I",
+      "char_start": 274,
+      "char_end": 275
+    },
+    {
+      "anchor_id": "w0042",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "suppose",
+      "char_start": 276,
+      "char_end": 283
+    },
+    {
+      "anchor_id": "w0043",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "the",
+      "char_start": 284,
+      "char_end": 287
+    },
+    {
+      "anchor_id": "w0044",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "air",
+      "char_start": 288,
+      "char_end": 291
+    },
+    {
+      "anchor_id": "w0045",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "was",
+      "char_start": 292,
+      "char_end": 295
+    },
+    {
+      "anchor_id": "w0046",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "fresh",
+      "char_start": 296,
+      "char_end": 301
+    },
+    {
+      "anchor_id": "w0047",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "out",
+      "char_start": 302,
+      "char_end": 305
+    },
+    {
+      "anchor_id": "w0048",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "here,",
+      "char_start": 306,
+      "char_end": 311
+    },
+    {
+      "anchor_id": "w0049",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "and...",
+      "char_start": 312,
+      "char_end": 318
+    },
+    {
+      "anchor_id": "w0050",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "uh,",
+      "char_start": 319,
+      "char_end": 322
+    },
+    {
+      "anchor_id": "w0051",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "I",
+      "char_start": 323,
+      "char_end": 324
+    },
+    {
+      "anchor_id": "w0052",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "saw",
+      "char_start": 325,
+      "char_end": 328
+    },
+    {
+      "anchor_id": "w0053",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "you",
+      "char_start": 329,
+      "char_end": 332
+    },
+    {
+      "anchor_id": "w0054",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "with",
+      "char_start": 333,
+      "char_end": 337
+    },
+    {
+      "anchor_id": "w0055",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "your",
+      "char_start": 338,
+      "char_end": 342
+    },
+    {
+      "anchor_id": "w0056",
+      "turn_id": "T09",
+      "speaker": "WILL",
+      "text": "bird.",
+      "char_start": 343,
+      "char_end": 348
+    },
+    {
+      "anchor_id": "w0057",
+      "turn_id": "T10",
+      "speaker": "AGNES",
+      "text": "It's",
+      "char_start": 356,
+      "char_end": 360
+    },
+    {
+      "anchor_id": "w0058",
+      "turn_id": "T10",
+      "speaker": "AGNES",
+      "text": "a",
+      "char_start": 361,
+      "char_end": 362
+    },
+    {
+      "anchor_id": "w0059",
+      "turn_id": "T10",
+      "speaker": "AGNES",
+      "text": "hawk.",
+      "char_start": 363,
+      "char_end": 368
+    }
+  ]
+}
