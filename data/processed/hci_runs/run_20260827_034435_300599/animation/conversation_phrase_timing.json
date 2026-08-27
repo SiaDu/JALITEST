@@ -1,0 +1,126 @@
+{
+  "phrases": [
+    {
+      "phrase_id": "P01",
+      "plan_index": 0,
+      "speaker": "B",
+      "raw_start": 0.0,
+      "raw_source_end": 2.25,
+      "canonical_start": 0.0,
+      "start_adjusted": false,
+      "canonical_end": 3.580437
+    },
+    {
+      "phrase_id": "P02",
+      "plan_index": 1,
+      "speaker": "A",
+      "raw_start": 3.580437,
+      "raw_source_end": 4.140437,
+      "canonical_start": 3.580437,
+      "start_adjusted": false,
+      "canonical_end": 5.648625
+    },
+    {
+      "phrase_id": "P03",
+      "plan_index": 2,
+      "speaker": "B",
+      "raw_start": 5.648625,
+      "raw_source_end": 6.868625,
+      "canonical_start": 5.648625,
+      "start_adjusted": false,
+      "canonical_end": 6.868625
+    },
+    {
+      "phrase_id": "P04",
+      "plan_index": 3,
+      "speaker": "A",
+      "raw_start": 4.140437,
+      "raw_source_end": 9.134001,
+      "canonical_start": 6.868625,
+      "start_adjusted": true,
+      "adjustment_reason": "raw_start preceded previous phrase source end",
+      "canonical_end": 9.673126
+    },
+    {
+      "phrase_id": "P05",
+      "plan_index": 4,
+      "speaker": "B",
+      "raw_start": 9.673126,
+      "raw_source_end": 12.67525,
+      "canonical_start": 9.673126,
+      "start_adjusted": false,
+      "canonical_end": 13.261625
+    },
+    {
+      "phrase_id": "P06",
+      "plan_index": 5,
+      "speaker": "B",
+      "raw_start": 13.261625,
+      "raw_source_end": 21.501312,
+      "canonical_start": 13.261625,
+      "start_adjusted": false,
+      "canonical_end": 24.461063
+    },
+    {
+      "phrase_id": "P07",
+      "plan_index": 6,
+      "speaker": "A",
+      "raw_start": 24.461063,
+      "raw_source_end": 25.031063,
+      "canonical_start": 24.461063,
+      "start_adjusted": false,
+      "canonical_end": 27.416878
+    },
+    {
+      "phrase_id": "P08",
+      "plan_index": 7,
+      "speaker": "B",
+      "raw_start": 27.416878,
+      "raw_source_end": 29.336876,
+      "canonical_start": 27.416878,
+      "start_adjusted": false,
+      "canonical_end": 29.336876
+    },
+    {
+      "phrase_id": "P09",
+      "plan_index": 8,
+      "speaker": "A",
+      "raw_start": 25.471064,
+      "raw_source_end": 32.992622,
+      "canonical_start": 29.336876,
+      "start_adjusted": true,
+      "adjustment_reason": "raw_start preceded previous phrase source end",
+      "canonical_end": 32.992622
+    },
+    {
+      "phrase_id": "P10",
+      "plan_index": 9,
+      "speaker": "A",
+      "raw_start": 32.992622,
+      "raw_source_end": 34.362621,
+      "canonical_start": 32.992622,
+      "start_adjusted": false,
+      "canonical_end": 34.362621
+    },
+    {
+      "phrase_id": "P11",
+      "plan_index": 10,
+      "speaker": "A",
+      "raw_start": 34.362621,
+      "raw_source_end": 38.102684,
+      "canonical_start": 34.362621,
+      "start_adjusted": false,
+      "canonical_end": 40.322876
+    },
+    {
+      "phrase_id": "P12",
+      "plan_index": 11,
+      "speaker": "B",
+      "raw_start": 40.322876,
+      "raw_source_end": 41.902874,
+      "canonical_start": 40.322876,
+      "start_adjusted": false,
+      "canonical_end": 41.902874
+    }
+  ]
+}

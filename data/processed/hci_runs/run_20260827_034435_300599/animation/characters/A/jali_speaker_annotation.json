@@ -1,0 +1,87 @@
+{
+  "alias": "A",
+  "script_name": "WILL",
+  "included_phrase_ids": [
+    "P02",
+    "P04",
+    "P07",
+    "P09",
+    "P10",
+    "P11"
+  ],
+  "skipped_listener_phrase_ids": [
+    "P01",
+    "P03",
+    "P05",
+    "P06",
+    "P08",
+    "P12"
+  ],
+  "mask_tag_count": 6,
+  "heart_tag_count": 0,
+  "events": [
+    {
+      "type": "mask",
+      "value": "Watchful-30",
+      "span": {
+        "start": 0,
+        "end": 15
+      },
+      "order": 0,
+      "phrase_id": "P02"
+    },
+    {
+      "type": "mask",
+      "value": "Watchful-35",
+      "span": {
+        "start": 17,
+        "end": 43
+      },
+      "order": 1,
+      "phrase_id": "P04"
+    },
+    {
+      "type": "mask",
+      "value": "Watchful-55",
+      "span": {
+        "start": 45,
+        "end": 47
+      },
+      "order": 2,
+      "phrase_id": "P07"
+    },
+    {
+      "type": "mask",
+      "value": "Watchful-45",
+      "span": {
+        "start": 51,
+        "end": 66
+      },
+      "order": 3,
+      "phrase_id": "P09"
+    },
+    {
+      "type": "mask",
+      "value": "Watchful-50",
+      "span": {
+        "start": 67,
+        "end": 101
+      },
+      "order": 4,
+      "phrase_id": "P10"
+    },
+    {
+      "type": "mask",
+      "value": "Watchful-60",
+      "span": {
+        "start": 103,
+        "end": 138
+      },
+      "order": 5,
+      "phrase_id": "P11"
+    }
+  ],
+  "sound_file": "SeqT_WILL",
+  "source_transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT_temp2\\SeqT_WILL.txt",
+  "annotated_transcript_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_034435_300599\\animation\\characters\\A\\jali_speaker_annotated.txt"
+}
