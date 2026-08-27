@@ -112,6 +112,9 @@ maya_head_overlay:
   pitch_up_sign: -1
   tilt_left_sign: 1
 
+maya_affect_overlay:
+  transition_frames: 12
+
 maya_performative_blink_overlay:
   central_control_suffix: usr_blink
   central_attribute: LidDown

@@ -66,6 +66,7 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     monkeypatch.setattr(builtins, "__import__", no_pyyaml)
     config = _v2_overlay_config()
     assert config["head"]["control_suffix"] == "jNeck_ctl"
+    assert config["affect"]["transition_frames"] == 12
     assert config["blink"]["presets"]["BLINK"]["closure"] == 7
 
 
@@ -348,13 +349,13 @@ def test_v2_user_mask_schedule_interpolates_without_shifting_semantic_boundaries
     listener = build_v2_listener_mask_key_schedule([
         {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
         {"phrase_id": "listen", "start": 2, "pose": nervous, "boundary_kind": "affect", "timing_role": "LISTEN_REACTION"},
-    ], fps=24)
+    ], fps=30)
     speaker_affect = build_v2_listener_mask_key_schedule([
         {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
         {"phrase_id": "speak", "start": 2, "pose": nervous, "boundary_kind": "affect", "timing_role": "SPEAK_ONSET"},
-    ], fps=24)
-    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, watchful), (52.0, nervous)]
-    assert [(key["frame"], key["pose"]) for key in speaker_affect] == [(0.0, watchful), (44.0, watchful), (48.0, nervous)]
+    ], fps=30)
+    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (60.0, watchful), (72.0, nervous)]
+    assert [(key["frame"], key["pose"]) for key in speaker_affect] == [(0.0, watchful), (48.0, watchful), (60.0, nervous)]
 
 
 def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path):
@@ -417,7 +418,7 @@ def test_v2_user_mask_affect_persists_through_turn_boundaries_until_next_affect(
     timeline = [(row["start"], row["state"]) for row in prepared["CHAYTON"]["timeline"]]
     assert timeline == [(0.0, "Nervous-78"), (6.0, "Dislike-70")]
     keys = prepared["CHAYTON"]["key_schedule"]
-    assert [key["frame"] for key in keys] == [0.0, 144.0, 148.0]
+    assert [key["frame"] for key in keys] == [0.0, 144.0, 156.0]
     assert keys[0]["pose"] == user_pose_for_mask("Nervous-78")
     assert keys[-1]["pose"] == user_pose_for_mask("Dislike-70")
 
@@ -504,6 +505,65 @@ def test_v2_regulatory_blink_planner_priority_and_transition_rules():
     assert sum(row["resolved_start"] == 3 for row in planned) == 1  # gaze beats affect
     assert sum(row["resolved_start"] == 4 for row in planned) == 1  # explicit suppresses regulatory
     assert all(row["resolved_start"] != 6 for row in planned)  # unchanged gaze
+
+
+def test_v2_affect_regulatory_blinks_are_centered_in_configured_affect_transitions():
+    blink_config = _v2_overlay_config()["blink"]
+    speaker = _resolved("S", 2, affect="Watchful-82")
+    speaker["timing_role"] = "SPEAK_ONSET"
+    listener = _resolved("L", 2, affect="Watchful-82")
+    listener["timing_role"] = "LISTEN_REACTION"
+    common = {"initial_state": {"affect": "Nervous-78", "gaze": "GAZE-BOB"}, "fps": 30, "affect_transition_frames": 12, "blink_config": blink_config}
+    speaker_plan = plan_v2_blinks([speaker], **common)
+    listener_plan = plan_v2_blinks([listener], **common)
+    assert speaker_plan[0]["resolved_start"] == listener_plan[0]["resolved_start"] == 2.0
+    assert speaker_plan[0]["visual_start_frame"] == 52.0
+    assert listener_plan[0]["visual_start_frame"] == 64.0
+    speaker_keys = build_blink_overlay_key_schedule(speaker_plan, fps=30, config=blink_config)
+    listener_keys = build_blink_overlay_key_schedule(listener_plan, fps=30, config=blink_config)
+    assert speaker_keys[1]["frame"] == 54.0
+    assert listener_keys[1]["frame"] == 66.0
+
+
+def test_v2_only_affect_regulatory_blinks_receive_visual_offsets():
+    blink_config = _v2_overlay_config()["blink"]
+    affect = _resolved("A", 2, affect="Watchful-82")
+    affect["timing_role"] = "LISTEN_REACTION"
+    gaze = _resolved("G", 3, gaze="GAZE-DOWN")
+    explicit = _resolved("E", 4, blink="SLOW_BLINK")
+    planned = plan_v2_blinks(
+        [affect, gaze, explicit], initial_state={"affect": "Nervous-78", "gaze": "GAZE-BOB"},
+        fps=30, affect_transition_frames=12, blink_config=blink_config,
+    )
+    by_source = {row["blink_source"]: row for row in planned}
+    assert by_source["affect_regulatory"]["visual_start_frame"] == 64.0
+    assert "visual_start_frame" not in by_source["gaze_regulatory"]
+    assert "visual_start_frame" not in by_source["explicit"]
+
+
+def test_v2_intensity_only_affect_transition_is_smooth_without_regulatory_blink():
+    nervous_65 = user_pose_for_mask("Nervous-65")
+    nervous_78 = user_pose_for_mask("Nervous-78")
+    keys = build_v2_listener_mask_key_schedule([
+        {"phrase_id": "INITIAL_STATE", "start": 0, "pose": nervous_65, "boundary_kind": "INITIAL_STATE"},
+        {"phrase_id": "intensity", "start": 2, "pose": nervous_78, "boundary_kind": "affect", "timing_role": "LISTEN_REACTION"},
+    ], fps=30)
+    event = _resolved("I", 2, affect="Nervous-78")
+    event["timing_role"] = "LISTEN_REACTION"
+    assert [key["frame"] for key in keys] == [0.0, 60.0, 72.0]
+    assert plan_v2_blinks([event], initial_state={"affect": "Nervous-65", "gaze": "GAZE-BOB"}) == []
+
+
+def test_v2_close_affect_boundaries_clamp_post_anchor_transition_without_neutral():
+    nervous = {"value": 1.0}; watchful = {"value": 2.0}; dislike = {"value": 3.0}
+    keys = build_v2_listener_mask_key_schedule([
+        {"phrase_id": "INITIAL_STATE", "start": 0, "pose": nervous, "boundary_kind": "INITIAL_STATE"},
+        {"phrase_id": "first", "start": 2.0, "pose": watchful, "boundary_kind": "affect", "timing_role": "LISTEN_REACTION"},
+        {"phrase_id": "second", "start": 2.2, "pose": dislike, "boundary_kind": "affect", "timing_role": "LISTEN_REACTION"},
+    ], fps=30)
+    assert [key["frame"] for key in keys] == sorted(key["frame"] for key in keys)
+    assert not any(key["pose"] == nervous and key["frame"] > 66.0 for key in keys)
+    assert {tuple(key["pose"].items()) for key in keys} <= {tuple(nervous.items()), tuple(watchful.items()), tuple(dislike.items())}
 
 
 def test_v2_regulatory_blink_planner_is_actor_independent_and_first_state_is_initialization():

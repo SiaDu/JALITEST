@@ -16,6 +16,7 @@ from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, ma
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAYA_CONFIG = REPO_ROOT / "configs" / "maya" / "valleygirl.yaml"
+DEFAULT_V2_AFFECT_TRANSITION_FRAMES = 12
 
 _FPS_BY_UNIT = {
     "game": 15.0,
@@ -416,14 +417,16 @@ def build_listener_mask_key_schedule(
 
 
 def build_v2_listener_mask_key_schedule(
-    intervals: Iterable[dict[str, Any]], *, fps: float
+    intervals: Iterable[dict[str, Any]], *, fps: float,
+    transition_frames: int = DEFAULT_V2_AFFECT_TRANSITION_FRAMES,
 ) -> list[dict[str, Any]]:
     """Realize exact v2 semantic boundaries with role-aware visual interpolation."""
-    if fps <= 0:
-        raise ValueError("V2 Listener Mask timing requires positive fps.")
+    if fps <= 0 or transition_frames < 1:
+        raise ValueError("V2 Listener Mask timing requires positive fps and transition_frames.")
     keys: list[dict[str, Any]] = []
     previous: dict[str, float] | None = None
-    for interval in intervals:
+    ordered = list(intervals)
+    for index, interval in enumerate(ordered):
         pose = dict(interval["pose"])
         boundary = float(interval["start"]) * fps
         if previous == pose:
@@ -433,11 +436,13 @@ def build_v2_listener_mask_key_schedule(
         if previous is None or kind == "INITIAL_STATE":
             keys.append({"frame": 0.0, "pose": pose, "phrase_id": interval["phrase_id"]})
         elif kind == "turn_start" or (kind == "affect" and role == "SPEAK_ONSET"):
-            keys.append({"frame": max(0.0, boundary - 4.0), "pose": previous, "phrase_id": interval["phrase_id"]})
+            prior_boundary = float(ordered[index - 1]["start"]) * fps
+            keys.append({"frame": max(0.0, prior_boundary, boundary - float(transition_frames)), "pose": previous, "phrase_id": interval["phrase_id"]})
             keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
         else:
+            next_boundary = float(ordered[index + 1]["start"]) * fps if index + 1 < len(ordered) else float("inf")
             keys.append({"frame": boundary, "pose": previous, "phrase_id": interval["phrase_id"]})
-            keys.append({"frame": boundary + 4.0, "pose": pose, "phrase_id": interval["phrase_id"]})
+            keys.append({"frame": min(boundary + float(transition_frames), next_boundary), "pose": pose, "phrase_id": interval["phrase_id"]})
         previous = pose
     return keys
 
@@ -724,10 +729,11 @@ def _v2_overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]
 
     value = _load_yaml_file(Path(path))
     head = value.get("maya_head_overlay")
+    affect = value.get("maya_affect_overlay")
     blink = value.get("maya_performative_blink_overlay")
-    if not isinstance(head, dict) or not isinstance(blink, dict):
-        raise ValueError("Maya config requires maya_head_overlay and maya_performative_blink_overlay.")
-    return {"head": head, "blink": blink}
+    if not isinstance(head, dict) or not isinstance(affect, dict) or not isinstance(blink, dict):
+        raise ValueError("Maya config requires maya_head_overlay, maya_affect_overlay, and maya_performative_blink_overlay.")
+    return {"head": head, "affect": affect, "blink": blink}
 
 
 def head_layer_name(actor: str) -> str:
@@ -791,7 +797,7 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
         value = (event.get("changes") or {}).get("blink")
         if not value:
             continue
-        cursor = float(event["resolved_start"]) * float(fps)
+        cursor = float(event.get("visual_start_frame", float(event["resolved_start"]) * float(fps)))
         if value == "EYE_CLOSE_HOLD":
             if hold_active:
                 raise ValueError("EYE_CLOSE_HOLD requires EYE_OPEN before another hold.")
@@ -842,7 +848,12 @@ def _affect_identity(value: object) -> str:
     return state if separator and intensity.isdigit() else text
 
 
-def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def plan_v2_blinks(
+    events: Iterable[dict[str, Any]], *, initial_state: dict[str, Any] | None = None,
+    fps: float | None = None,
+    affect_transition_frames: int = DEFAULT_V2_AFFECT_TRANSITION_FRAMES,
+    blink_config: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     """Plan explicit and deterministic regulatory blinks for one actor.
 
     Boundaries are coalesced before applying explicit > gaze > affect priority.
@@ -898,12 +909,21 @@ def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str,
             blink = ""
             source = ""
         if blink and source_event is not None:
-            planned.append({
+            item = {
                 "event_id": source_event.get("event_id"), "actor": source_event.get("actor"),
                 "resolved_start": time, "changes": {"blink": blink},
                 "blink_source": source,
                 "source_event_ids": [event.get("event_id") for event in boundary],
-            })
+                "timing_role": source_event.get("timing_role"),
+            }
+            if source == "affect_regulatory" and fps is not None and blink_config is not None:
+                preset = (blink_config.get("presets") or {}).get("BLINK")
+                if not isinstance(preset, dict):
+                    raise ValueError("Maya blink config requires BLINK for affect-regulatory timing.")
+                semantic_frame = time * float(fps)
+                midpoint = semantic_frame - float(affect_transition_frames) / 2.0 if item["timing_role"] == "SPEAK_ONSET" else semantic_frame + float(affect_transition_frames) / 2.0
+                item["visual_start_frame"] = midpoint - float(preset["close_frames"])
+            planned.append(item)
         if gaze_values:
             if not authored_gaze.startswith("GLANCE-"):
                 gaze_state = authored_gaze
@@ -962,7 +982,13 @@ def prepare_dual_v2_head_blink_overlays(
         head_events = [event for event in events if "head" in (event.get("changes") or {})]
         if initial_state.get("head") not in (None, "NONE", "HEAD-NONE"):
             head_events = [{"event_id": "INITIAL_STATE", "actor": actor, "timing_role": "INITIAL_STATE", "resolved_start": 0.0, "changes": {"head": initial_state["head"]}}] + head_events
-        blink_events = plan_v2_blinks(events, initial_state=initial_state)
+        blink_events = plan_v2_blinks(
+            events,
+            initial_state=initial_state,
+            fps=float(manifest["fps"]),
+            affect_transition_frames=int(config["affect"]["transition_frames"]),
+            blink_config=config["blink"],
+        )
         neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
         head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
         if head_events and any(not cmds_module.objExists(plug) for plug in head_plugs):
@@ -1040,6 +1066,7 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
     unresolved_eyelids = list(unmapped_expressive_eyelid_aus())
     if unresolved_eyelids:
         raise RuntimeError("Unmapped JALI 2025 expressive eyelid AUs: " + ", ".join(unresolved_eyelids))
+    affect_config = _v2_overlay_config()["affect"]
     prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "expressive_eyelid_mapping_requirement": []}
     for actor in actors:
         events = _load_v2_actor_events(manifest, actor)
@@ -1080,7 +1107,7 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
         if missing:
             raise RuntimeError(f"{actor}: missing User FACS controls: {', '.join(missing)}")
-        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_v2_listener_mask_key_schedule(intervals, fps=float(manifest["fps"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
+        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_v2_listener_mask_key_schedule(intervals, fps=float(manifest["fps"]), transition_frames=int(affect_config["transition_frames"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
     return prepared
 
 
