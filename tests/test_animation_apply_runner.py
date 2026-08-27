@@ -545,25 +545,33 @@ def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
     assert result["ALICE"]["jali_calculate_blinks_disabled"] is True
 
 
-def test_v2_blink_ownership_diagnostic_checks_vendor_and_owned_curves():
+def test_v2_blink_ownership_diagnostic_allows_native_vendor_curves_but_rejects_actual_conflicts():
     context = {"schema_version": "dual_v2_head_blink_prepared_v1", "actors": {"ALICE": {
         "jsync": "ALICE:jSync", "blink_layer": "JALITEST_blink_ALICE",
         "vendor_blink_plug": "ALICE:LIDS_jSync_plusMinus.Down_upLids_jSync",
         "blink_plugs": ["ALICE:usr_blink.LidDown"],
     }}}
     class Cmds:
-        def __init__(self, bad=False): self.bad = bad
-        def getAttr(self, _plug): return self.bad
+        def __init__(self, *, calculate_blinks=False, vendor_curves=(), user_curves=("jalitestBlinkCurve",)):
+            self.calculate_blinks = calculate_blinks
+            self.vendor_curves = vendor_curves
+            self.user_curves = user_curves
+        def getAttr(self, _plug): return self.calculate_blinks
         def objExists(self, _node): return True
         def animLayer(self, _layer, **_kwargs): return ["jalitestBlinkCurve"]
         def listConnections(self, plug, **_kwargs):
-            if "LIDS_jSync" in plug: return ["vendorBlinkCurve"] if self.bad else []
-            return ["foreignCurve"] if self.bad else ["jalitestBlinkCurve"]
+            return self.vendor_curves if "LIDS_jSync" in plug else self.user_curves
     assert diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds())["passed"] is True
-    report = diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds(True), strict=False)
-    assert report["passed"] is False and report["actors"]["ALICE"]["vendor_anim_curves"] == ["vendorBlinkCurve"]
-    with pytest.raises(RuntimeError, match="calculate_blinks is not False.*vendor blink output"):
-        diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds(True))
+    native = diagnose_v2_blink_ownership(
+        prepared_context=context,
+        cmds_module=Cmds(vendor_curves=("jSync1_au41_LidDwnA",)),
+    )
+    assert native["passed"] is True
+    assert native["actors"]["ALICE"]["vendor_anim_curves"] == ["jSync1_au41_LidDwnA"]
+    with pytest.raises(RuntimeError, match="calculate_blinks is not False"):
+        diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds(calculate_blinks=True))
+    with pytest.raises(RuntimeError, match="User blink controls have curves outside"):
+        diagnose_v2_blink_ownership(prepared_context=context, cmds_module=Cmds(user_curves=("foreignCurve",)))
 
 
 def test_v2_actor_two_blink_preflight_fails_before_any_maya_mutation(monkeypatch, tmp_path):

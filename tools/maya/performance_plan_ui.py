@@ -829,7 +829,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     overlay_summary = f"; additive head/blink overlays ({sum(row['head_key_count'] + row['blink_key_count'] for row in overlay_result.values())} keys)" if overlay_result else ""
                     self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events){overlay_summary}\njSync preserved: yes")
                     if blink_diagnostic:
-                        self._append_backend_output("Blink ownership diagnostic: JALI calculate_blinks=False; no vendor blink curves; only JALITEST blink-layer curves on User blink controls.")
+                        self._append_backend_output("Blink ownership diagnostic: JALI calculate_blinks=False; native JALI eyelid/paralingual curves allowed; User performative blink controls owned by JALITEST blink layer.")
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),

@@ -1171,9 +1171,9 @@ def diagnose_head_local_axes(character_node: str, *, degrees: float = 5.0, cmds_
 def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module: Any | None = None, strict: bool = True) -> dict[str, Any]:
     """Post-Generate Maya probe for exclusive JALITEST v2 blink ownership.
 
-    The configured vendor output is the repository's known JALI blink/lid path.
-    If a production rig uses another output, preflight fails and the config must
-    be corrected from a real Maya observation rather than inferred in Python.
+    Native JALI eyelid/paralingual curves may legitimately contribute to the
+    configured vendor output. Ownership is therefore established by disabled
+    JALI automatic blink generation and JALITEST-only User blink control curves.
     """
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
@@ -1190,7 +1190,7 @@ def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module
             for curve in (cmds_module.listConnections(plug, source=True, destination=False, type="animCurve") or [])
         }
         foreign_user_curves = sorted(user_curves - owned_curves)
-        actor_passed = not calculate_blinks and not vendor_curves and not foreign_user_curves
+        actor_passed = not calculate_blinks and not foreign_user_curves
         report["actors"][actor] = {
             "jsync": item["jsync"], "calculate_blinks": calculate_blinks,
             "vendor_output_plug": item["vendor_blink_plug"],
@@ -1200,8 +1200,6 @@ def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module
         }
         if calculate_blinks:
             problems.append(f"{actor}: jSync.calculate_blinks is not False")
-        if vendor_curves:
-            problems.append(f"{actor}: vendor blink output still has animCurve contribution(s): {sorted(vendor_curves)}")
         if foreign_user_curves:
             problems.append(f"{actor}: User blink controls have curves outside {item['blink_layer']}: {foreign_user_curves}")
     report["passed"] = not problems
