@@ -194,7 +194,9 @@ def test_v2_resolves_independent_role_aware_events_and_persistent_affect(tmp_pat
     assert "reaction_delay_frames" not in will[0]
     assert will[0]["resolved_start"] == .2
     assert agnes[1]["timing_role"] == "LISTEN_REACTION" and agnes[1]["anchor_speaker"] == "WILL"
-    assert "<mask=Watchful-80> one three </mask=Watchful-80>" in Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
+    annotation = Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
+    assert "<mask=Watchful-80> one </mask=Watchful-80> <mask=Watchful-80> three </mask=Watchful-80>" in annotation
+    assert "<mask=Watchful-80> one three </mask=Watchful-80>" not in annotation
     assert "<mask=Thinking-60> two </mask=Thinking-60>" in Path(result["artifacts"]["characters"]["WILL"]["jali_speaker_annotated"]).read_text()
 
 
@@ -270,4 +272,6 @@ def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_pat
     assert payload["events"][2]["timing_role"] == "SPEAK_ONSET"
     timeline = json.loads(Path(bob_artifacts["state_timeline"]).read_text())
     assert timeline["initial_state"]["affect"] == "Watchful-85" and timeline["initial_timing"] == {"timing_role": "INITIAL_STATE", "resolved_start": 0.0}
-    assert "<mask=Watchful-85> No. Bert </mask=Watchful-85>" in Path(bob_artifacts["jali_speaker_annotated"]).read_text()
+    annotation = Path(bob_artifacts["jali_speaker_annotated"]).read_text()
+    assert "<mask=Watchful-85> No </mask=Watchful-85>" in annotation
+    assert "<mask=Watchful-85> Bert </mask=Watchful-85>" in annotation

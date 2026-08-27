@@ -960,8 +960,13 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         events = _load_v2_actor_events(manifest, actor)
         initial_state = _load_v2_actor_initial_state(manifest, actor)
         points: list[tuple[float, int, str, Any]] = []
+        turns: dict[str, list[dict[str, Any]]] = {}
         for anchor_id, anchor in anchor_times.items():
-            points.append((float(anchor["start"]), 1, "role", str(anchor["speaker"])))
+            turns.setdefault(str(anchor.get("turn_id") or anchor_id), []).append(anchor)
+        for turn in turns.values():
+            ordered_turn = sorted(turn, key=lambda anchor: (float(anchor["start"]), float(anchor["end"])))
+            points.append((float(ordered_turn[0]["start"]), 2, "turn_start", str(ordered_turn[0]["speaker"])))
+            points.append((float(ordered_turn[-1]["end"]), 1, "turn_end", str(ordered_turn[-1]["speaker"])))
         for event in events:
             if "affect" in (event.get("changes") or {}):
                 points.append((float(event["resolved_start"]), 0, "affect", event["changes"]["affect"]))
@@ -976,6 +981,9 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
             if kind == "affect":
                 name, intensity = parse_mask_state("NONE" if value == "MASK-NONE" else value)
                 affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
+            elif kind == "turn_end":
+                if speaker == value:
+                    speaker = None
             else:
                 speaker = value
             state = "NONE" if speaker == actor else affect
@@ -1008,6 +1016,10 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
     manifest = load_dual_animation_manifest(manifest_path)
     if manifest.get("schema_version") != "dual_animation_manifest_v2":
         raise ValueError("Expected dual_animation_manifest_v2.")
+    source_path = str(REPO_ROOT / "src")
+    if source_path not in sys.path: sys.path.insert(0, source_path)
+    from expregaze_jali.maya_apply_gaze import load_maya_gaze_config  # noqa: PLC0415
+    gaze_config = load_maya_gaze_config(DEFAULT_MAYA_CONFIG)
     prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}}
     directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
     for actor in manifest["characters"]:
@@ -1022,25 +1034,30 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
             gaze_rows = [{"event_id": "INITIAL_STATE", "resolved_start": 0.0, "changes": {"gaze": initial_gaze}, "reason": None}] + gaze_rows
         for index, event in enumerate(gaze_rows):
             value = str(event["changes"]["gaze"])
-            end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])
+            start = float(event["resolved_start"])
             if value == "GAZE-NONE":
                 mode, target = "RESET", "__BASE__"
             else:
                 mode, target = value.split("-", 1)
                 if mode not in {"GAZE", "GLANCE"}:
                     raise ValueError(f"{actor}: v2 executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
-            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "social_avert": False, "resolved_time": {"start": float(event["resolved_start"]), "end": end}})
+            if mode == "GLANCE":
+                transition = float(gaze_config.get("glance_transition_frames", 3)) / float(manifest["fps"])
+                end = start + transition + float(gaze_config.get("glance_hold_seconds", 0.5)) + transition
+            else:
+                end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])
+            raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "social_avert": False, "resolved_time": {"start": start, "end": end}})
         reference = capture_character_gaze_reference(rig, cmds_module=cmds_module)
         positions: dict[str, list[float]] = {}
         for event in raw:
             target = event["target"]
             if event["mode"] in {"GAZE", "GLANCE"} and target not in directions:
                 positions[target] = resolve_actor_target_position(actor, target, character_mappings)
-        schedule = build_dual_gaze_schedule(raw, neutral_position=reference["eye_stare_translate"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions)
+        schedule = build_dual_gaze_schedule(raw, neutral_position=reference["eye_stare_translate"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions, magnitude=float(gaze_config.get("directional_eye_magnitude", 5)), limit=float(gaze_config.get("directional_eye_limit", 6)))
         plugs = [*(f"{reference['eye_stare_node']}.translate{axis}" for axis in "XYZ"), f"{reference['both_eyes_node']}.translateX", f"{reference['both_eyes_node']}.translateY"]
         if any(not cmds_module.objExists(plug) for plug in plugs):
             raise RuntimeError(f"{actor}: required gaze controls do not exist.")
-        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=4), "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs}
+        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)), allow_shortened_glance=True), "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs}
     return prepared
 
 
@@ -1219,7 +1236,7 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
     return schedule
 
 
-def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_min_hold_seconds: float = 0.5, timeline_start: float = 0.0, initialization_epsilon: float = 1e-6) -> list[dict[str, Any]]:
+def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_min_hold_seconds: float | None = None, glance_hold_seconds: float | None = None, glance_transition_frames: int | None = None, allow_shortened_glance: bool = False, timeline_start: float = 0.0, initialization_epsilon: float = 1e-6) -> list[dict[str, Any]]:
     """Expand complete semantic states into chronological Maya key states."""
     keys=[]
     ordered = list(schedule)
@@ -1234,8 +1251,9 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
         arrival=min(start+transition_frames,end)
         keys.append({"frame":start,"eye_stare":list(previous["eye_stare"]),"eyes":list(previous["eyes"])})
         if event["mode"]=="GLANCE":
-            transition = max(1, int(transition_frames))
-            minimum_hold = max(1, int(math.ceil(float(glance_min_hold_seconds) * float(fps))))
+            transition = max(1, int(glance_transition_frames if glance_transition_frames is not None else transition_frames))
+            hold_seconds = glance_hold_seconds if glance_hold_seconds is not None else (glance_min_hold_seconds if glance_min_hold_seconds is not None else 0.5)
+            minimum_hold = 1 if allow_shortened_glance else max(1, int(math.ceil(float(hold_seconds) * float(fps))))
             out = start + transition
             back = end - transition
             if back - out < minimum_hold:
@@ -1317,7 +1335,7 @@ def prepare_dual_animation_overlay(*, manifest_path: str | Path, character_mappi
             if item["target"] not in {"__BASE__", "DOWN", "UP", "LEFT", "RIGHT", "DOWN_LEFT", "DOWN_RIGHT", "UP_LEFT", "UP_RIGHT"}:
                 positions[item["target"]] = resolve_actor_target_position(alias,item["target"],character_mappings)
         schedule=build_dual_gaze_schedule(gaze,neutral_position=reference["eye_stare_translate"],neutral_eyes=reference["both_eyes_translate"],target_positions=positions,magnitude=float(gaze_config.get("directional_eye_magnitude",5)),limit=float(gaze_config.get("directional_eye_limit",6)))
-        key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_min_hold_seconds=float(gaze_config.get("glance_min_hold_seconds",0.5)))
+        key_schedule=build_dual_gaze_key_schedule(schedule,fps=float(manifest["fps"]),transition_frames=int(gaze_config.get("gaze_transition_frames",3)),glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", gaze_config.get("glance_min_hold_seconds", 0.5))))
         eye = _dual_eye_events(events)
         eyelid_control = qualify_rig_control(node, str(eye_config.get("eyelid_control_suffix", "LIDS_jSync_plusMinus")))
         eyelid_attr = str(eye_config.get("eyelid_attr", "Down_upLids_jSync"))

@@ -922,7 +922,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _refresh_required_look_at_targets(self) -> None:
         if self.plan is None:
             return
-        if self.plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
+        if self.plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1", "dual_performance_plan_v2"}:
             self._clear_look_at_targets()
             self.legacy_look_at_label.hide()
             while self.gaze_calibration_layout.count():
@@ -995,7 +995,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         # Legacy lists contain world positions only and must be recaptured.
         self.dual_gaze_calibrations = {str(key): dict(value) for key, value in (session.get("gaze_calibrations") or {}).items() if isinstance(value, dict) and isinstance(value.get("eye_stare_translate"), (list, tuple)) and len(value["eye_stare_translate"]) == 3}
         self.dual_gaze_baselines = {}
-        self.jali_base_baseline = dict(session["jali_base_baseline"]) if isinstance(session.get("jali_base_baseline"), dict) else None
+        saved_baseline = session.get("jali_base_baseline")
+        if isinstance(saved_baseline, dict) and saved_baseline.get("schema_version") == "dual_jali_base_v2":
+            self.jali_base_baseline = dict(saved_baseline)
+        else:
+            self.jali_base_baseline = None
+            if saved_baseline is not None:
+                self._append_backend_output("Discarded legacy JALI baseline; a fresh dual_jali_base_v2 baseline will be captured on Generate.")
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
             maya_field.clear()

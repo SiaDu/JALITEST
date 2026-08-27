@@ -32,13 +32,30 @@ def dual_actor_row_index(plan: dict[str, Any], actor_name: str) -> int:
 
 
 def required_calibration_pairs(plan: dict[str, Any]) -> list[tuple[str, str]]:
-    characters = plan.get("characters") or {}
+    directions = {"UP", "DOWN", "LEFT", "RIGHT", "UP_LEFT", "UP_RIGHT", "DOWN_LEFT", "DOWN_RIGHT"}
     pairs: list[tuple[str, str]] = []
-    for phrase in plan.get("phrases", []):
-        for actor, state in (phrase.get("states") or {}).items():
+    if plan.get("schema_version") == "dual_performance_plan_v2":
+        states = [
+            (actor, state)
+            for actor in plan.get("characters") or []
+            for state in [((plan.get("initial_states") or {}).get(actor) or {})]
+        ]
+        states.extend(
+            (actor, event.get("changes") or {})
+            for actor in plan.get("characters") or []
+            for event in (plan.get("tracks") or {}).get(actor, [])
+            if isinstance(event, dict)
+        )
+    else:
+        states = [
+            (actor, state)
+            for phrase in plan.get("phrases", [])
+            for actor, state in (phrase.get("states") or {}).items()
+        ]
+    for actor, state in states:
             gaze = str((state or {}).get("gaze") or "")
             mode, _, target = gaze.partition("-")
-            if mode not in {"GAZE", "GLANCE"} or not target:
+            if mode not in {"GAZE", "GLANCE"} or not target or target == "NONE" or target in directions:
                 continue
             pair = (str(actor), target)
             if pair not in pairs: pairs.append(pair)

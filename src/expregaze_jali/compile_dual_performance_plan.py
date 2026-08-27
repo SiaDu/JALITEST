@@ -119,7 +119,7 @@ def _compile_v2(
             while cursor < len(affect_events) and affect_events[cursor]["resolved_start"] <= anchor_time + 1e-9:
                 active_affect = affect_events[cursor]["state_after"]["affect"]
                 cursor += 1
-            spoken.append({"anchor_id": anchor.anchor_id, "text": anchor.text, "affect": active_affect})
+            spoken.append({"anchor_id": anchor.anchor_id, "turn_id": anchor.turn_id, "text": anchor.text, "affect": active_affect})
         source = Path(mapping[actor].get("transcript_path") or (Path(audio_folder) / f"{mapping[actor]['sound_file']}.txt"))
         if not source.is_file():
             raise FileNotFoundError(f"{actor}: JALI source transcript not found: {source}")
@@ -273,7 +273,7 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
             if index >= len(timing.words): raise ValueError(f"{actor} {turn.turn_id}: missing timing word for {anchor.text!r} in {timing.path}")
             word = timing.words[index]; actual = str(word.get("norm") or word.get("word") or "")
             if normalize_word(anchor.text) != normalize_word(actual): raise ValueError(f"{actor} {turn.turn_id}: expected word {anchor.text!r}, timing word {actual!r}, source {timing.path}")
-            anchor_times[anchor.anchor_id] = {"speaker": turn.speaker, "text": anchor.text, "start": float(word["start"]), "end": float(word["end"]), "timing_source": str(timing.path)}
+            anchor_times[anchor.anchor_id] = {"speaker": turn.speaker, "turn_id": turn.turn_id, "text": anchor.text, "start": float(word["start"]), "end": float(word["end"]), "timing_source": str(timing.path)}
             cursors[actor] += 1
     for actor, timing in timings.items():
         if cursors[actor] != len(timing.words):

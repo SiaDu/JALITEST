@@ -252,14 +252,15 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
         artifacts["characters"][actor] = {"resolved_sparse_events": str(path)}
     timing = tmp_path / "anchor_timing.json"
     timing.write_text(json.dumps({
-        "w0001": {"speaker": "ALICE", "text": "Hello", "start": .5, "end": .7},
-        "w0002": {"speaker": "BOB", "text": "No.", "start": 2.0, "end": 2.2},
+        "w0001": {"speaker": "ALICE", "turn_id": "T01", "text": "Hello", "start": .5, "end": .7},
+        "w0002": {"speaker": "BOB", "turn_id": "T02", "text": "No.", "start": 2.0, "end": 2.2},
+        "w0003": {"speaker": "ALICE", "turn_id": "T03", "text": "Again", "start": 3.0, "end": 3.2},
     }))
     artifacts["conversation_anchor_timing"] = str(timing)
     manifest = tmp_path / "manifest.json"
     manifest.write_text(json.dumps({
         "schema_version": "dual_animation_manifest_v2", "characters": ["ALICE", "BOB"], "fps": 24,
-        "shared_duration_seconds": 3.0,
+        "shared_duration_seconds": 4.0,
         "character_runtime_mapping": {"ALICE": {"script_name": "ALICE", "sound_file": "A"}, "BOB": {"script_name": "BOB", "sound_file": "B"}},
         "artifacts": artifacts,
     }))
@@ -271,9 +272,37 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
     assert prepared["ALICE"]["timeline"][0]["start"] == 0.0
     assert prepared["ALICE"]["timeline"][0]["state"] == "Watchful-80"
     assert any(row["start"] == .5 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
+    assert any(row["start"] == .7 and row["state"] == "Watchful-80" for row in prepared["ALICE"]["timeline"])
+    assert any(row["start"] == 3.0 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
+    assert any(row["start"] == 3.2 and row["state"] == "Watchful-80" for row in prepared["ALICE"]["timeline"])
     assert prepared["BOB"]["timeline"][0]["start"] == 0.0
     assert prepared["BOB"]["timeline"][0]["state"] == "Watchful-85"
     assert any(row["start"] == 2.0 and row["state"] == "NONE" for row in prepared["BOB"]["timeline"])
+    assert any(row["start"] == 2.2 and row["state"] == "Watchful-85" for row in prepared["BOB"]["timeline"])
+
+
+def test_v2_glance_returns_to_persistent_gaze_before_clip_end():
+    events = [
+        {"mode": "GAZE", "target": "BOB", "resolved_time": {"start": 0.0, "end": 2.0}},
+        {"mode": "GLANCE", "target": "DOWN", "resolved_time": {"start": 2.0, "end": 2.75}},
+    ]
+    schedule = build_dual_gaze_schedule(events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0], target_positions={"BOB": [1, 2, 3]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_transition_frames=3, glance_hold_seconds=.5, allow_shortened_glance=True)
+    assert schedule[1]["return_state"]["eye_stare"] == [1, 2, 3]
+    assert any(key["frame"] == 66.0 and key["eye_stare"] == [1, 2, 3] for key in keys)
+
+
+def test_v2_glance_returns_to_persistent_gaze_until_later_authored_gaze():
+    events = [
+        {"mode": "GAZE", "target": "BOB", "resolved_time": {"start": 0.0, "end": 2.0}},
+        {"mode": "GLANCE", "target": "DOWN", "resolved_time": {"start": 2.0, "end": 2.75}},
+        {"mode": "GAZE", "target": "RIGHT", "resolved_time": {"start": 4.0, "end": 6.0}},
+    ]
+    schedule = build_dual_gaze_schedule(events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0], target_positions={"BOB": [1, 2, 3]})
+    keys = build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_transition_frames=3, glance_hold_seconds=.5, allow_shortened_glance=True)
+    assert schedule[1]["end"] == 2.75
+    assert any(key["frame"] == 66.0 and key["eye_stare"] == [1, 2, 3] for key in keys)
+    assert any(key["frame"] == 99.0 and key["eyes"] == [5.0, 0.0] for key in keys)
 
 
 def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():

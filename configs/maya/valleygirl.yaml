@@ -6,8 +6,10 @@ maya_gaze:
   eye_stare_node_suffix: eyeStare_world
   clear_existing_eye_stare_translate_keys: true
   gaze_transition_frames: 3
-  glance_min_hold_seconds: 0.5
+  glance_hold_seconds: 0.5
   glance_transition_frames: 3
+  directional_eye_magnitude: 5
+  directional_eye_limit: 6
   apply_weighted_flat_tangents: true
 
   # Gaze targets are not listed here. They are read dynamically from:

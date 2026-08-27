@@ -149,7 +149,8 @@ def build_sparse_speaker_jali_annotation(
         if index == 0:
             active = normalized
             continue
-        if normalized == active and index < len(spoken_anchors):
+        same_turn = index < len(spoken_anchors) and anchor.get("turn_id") == spoken_anchors[index - 1].get("turn_id")
+        if normalized == active and same_turn:
             continue
         if active is not None:
             events.append({

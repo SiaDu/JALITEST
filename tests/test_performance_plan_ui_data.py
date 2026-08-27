@@ -317,6 +317,19 @@ def test_authoring_session_restores_script_and_context_in_ui_source():
     assert "input_context=self.input_context.toPlainText()" in build
 
 
+def test_dual_v2_uses_actor_calibration_and_discards_legacy_jali_baselines():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    refresh = source.split("    def _refresh_required_look_at_targets", 1)[1].split(
+        "    def _capture_dual_look_at", 1
+    )[0]
+    restore = source.split("    def _restore_authoring_session", 1)[1].split(
+        "    def _build_authoring_session_data", 1
+    )[0]
+    assert '"dual_performance_plan_v2"' in refresh
+    assert 'saved_baseline.get("schema_version") == "dual_jali_base_v2"' in restore
+    assert "Discarded legacy JALI baseline" in restore
+
+
 def test_generation_success_loads_plan_without_reformatting_authoring_text():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     succeeded = source.split("    def _generation_succeeded", 1)[1].split(

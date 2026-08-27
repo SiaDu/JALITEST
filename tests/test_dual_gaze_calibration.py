@@ -35,6 +35,22 @@ def test_v1_names_stay_name_keyed_for_calibration_display_and_rows():
     assert dual_actor_row_index(plan, "BOB") == 1
 
 
+def test_v2_calibration_pairs_include_initial_and_sparse_named_gazes_only():
+    plan = {
+        "schema_version": "dual_performance_plan_v2", "characters": ["JOAN", "CHAYTON"],
+        "initial_states": {"JOAN": {"gaze": "GAZE-CHAYTON"}, "CHAYTON": {"gaze": "GAZE-DOWN"}},
+        "tracks": {
+            "JOAN": [
+                {"changes": {"gaze": "GLANCE-IN_SIDE_ROOM"}},
+                {"changes": {"gaze": "GAZE-UP_LEFT"}},
+                {"changes": {"gaze": "GAZE-CHAYTON"}},
+            ],
+            "CHAYTON": [{"changes": {"gaze": "GAZE-NONE"}}],
+        },
+    }
+    assert required_calibration_pairs(plan) == [("JOAN", "CHAYTON"), ("JOAN", "IN_SIDE_ROOM")]
+
+
 def test_capture_look_at_keeps_local_pose_as_data_and_restores_forward_neutral():
     class Cmds:
         values = {"eye.translateX": 4.0, "eye.translateY": -3.0, "eye.translateZ": 12.0}
