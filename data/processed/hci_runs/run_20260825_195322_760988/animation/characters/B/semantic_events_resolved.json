@@ -87,7 +87,7 @@
       "actor": "B",
       "intent": "COURTEOUS_RECIPROCATION",
       "channel": "affect",
-      "value": "Nervous-100",
+      "value": "Nervous-25",
       "source_char_span": {
         "text": "Good day to you.",
         "turn_id": "T02",
@@ -167,7 +167,7 @@
       "actor": "B",
       "intent": "CAREFUL_INQUIRY_INTO_WILL",
       "channel": "affect",
-      "value": "Thinking-100",
+      "value": "Thinking-25",
       "source_char_span": {
         "text": "What brings you to Hewlands?",
         "turn_id": "T03",
@@ -247,7 +247,7 @@
       "actor": "B",
       "intent": "PLAIN_ACCOUNT_WITH_SOCIAL_CAUTION",
       "channel": "affect",
-      "value": "Nervous-100",
+      "value": "Nervous-35",
       "source_char_span": {
         "text": "I'm tutoring the boys here.",
         "turn_id": "T04",
@@ -327,7 +327,7 @@
       "actor": "B",
       "intent": "RECOGNITION_CREATES_ASYMMETRY",
       "channel": "affect",
-      "value": "Confused-100",
+      "value": "Confused-25",
       "source_char_span": {
         "text": "The Latin tutor. I've heard of you.",
         "turn_id": "T05",
@@ -427,7 +427,7 @@
       "actor": "B",
       "intent": "AGNES_PRESSES_FOR_HIS_REAL_MOTIVE",
       "channel": "affect",
-      "value": "Nervous-100",
+      "value": "Nervous-45",
       "source_char_span": {
         "text": "What brought you into the garden?",
         "turn_id": "T06",
@@ -447,7 +447,7 @@
       "actor": "B",
       "intent": "AGNES_PRESSES_FOR_HIS_REAL_MOTIVE",
       "channel": "heart",
-      "value": "Surprised-100",
+      "value": "Surprised-20",
       "source_char_span": {
         "text": "What brought you into the garden?",
         "turn_id": "T06",
@@ -547,7 +547,7 @@
       "actor": "B",
       "intent": "WILL_SEARCHES_FOR_A_SAFE_ANSWER",
       "channel": "affect",
-      "value": "Thinking-100",
+      "value": "Thinking-45",
       "source_char_span": {
         "text": "Uh...",
         "turn_id": "T07",
@@ -567,7 +567,7 @@
       "actor": "B",
       "intent": "WILL_SEARCHES_FOR_A_SAFE_ANSWER",
       "channel": "heart",
-      "value": "Afraid-100",
+      "value": "Afraid-15",
       "source_char_span": {
         "text": "Uh...",
         "turn_id": "T07",
@@ -647,7 +647,7 @@
       "actor": "B",
       "intent": "AGNES_LIGHTLY_REASSURES_WHILE_RETAINING_CONTROL",
       "channel": "affect",
-      "value": "Nervous-100",
+      "value": "Nervous-40",
       "source_char_span": {
         "text": "It's just a question, master tutor.",
         "turn_id": "T08",
@@ -667,7 +667,7 @@
       "actor": "B",
       "intent": "AGNES_LIGHTLY_REASSURES_WHILE_RETAINING_CONTROL",
       "channel": "heart",
-      "value": "Afraid-100",
+      "value": "Afraid-10",
       "source_char_span": {
         "text": "It's just a question, master tutor.",
         "turn_id": "T08",
@@ -747,7 +747,7 @@
       "actor": "B",
       "intent": "WILL_ATTEMPTS_A_HALTING_EXPLANATION",
       "channel": "affect",
-      "value": "Nervous-100",
+      "value": "Nervous-55",
       "source_char_span": {
         "text": "Yes, I, uh... I ",
         "turn_id": "T09",
@@ -767,7 +767,7 @@
       "actor": "B",
       "intent": "WILL_ATTEMPTS_A_HALTING_EXPLANATION",
       "channel": "heart",
-      "value": "Surprised-100",
+      "value": "Surprised-15",
       "source_char_span": {
         "text": "Yes, I, uh... I ",
         "turn_id": "T09",
@@ -847,7 +847,7 @@
       "actor": "B",
       "intent": "WILL_GATHERS_CONFIDENCE_BY_DESCRIBING_THE_AIR",
       "channel": "affect",
-      "value": "Thinking-100",
+      "value": "Thinking-40",
       "source_char_span": {
         "text": "suppose the air was fresh out here, and... uh, I saw you with your bird.",
         "turn_id": "T09",
@@ -927,7 +927,7 @@
       "actor": "B",
       "intent": "SHARED_INTEREST_FINDS_SAFE_GROUND_IN_THE_HAWK",
       "channel": "affect",
-      "value": "Friendly-100",
+      "value": "Friendly-25",
       "source_char_span": {
         "text": "It's a hawk.",
         "turn_id": "T10",
@@ -947,7 +947,7 @@
       "actor": "B",
       "intent": "SHARED_INTEREST_FINDS_SAFE_GROUND_IN_THE_HAWK",
       "channel": "heart",
-      "value": "Happy-100",
+      "value": "Happy-10",
       "source_char_span": {
         "text": "It's a hawk.",
         "turn_id": "T10",

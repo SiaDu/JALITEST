@@ -20,7 +20,7 @@
       "intent": "FORMAL_FIRST_CONTACT",
       "states": {
         "A": {
-          "affect": "Polite-100",
+          "affect": "Angered-100",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "LOW",
@@ -84,7 +84,7 @@
       "intent": "COURTEOUS_RECIPROCATION",
       "states": {
         "A": {
-          "affect": "Watchful-100",
+          "affect": "Watchful-25",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "LOW",
@@ -92,7 +92,7 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Nervous-100",
+          "affect": "Nervous-25",
           "heart": "NONE",
           "gaze": "GAZE-A",
           "head": "LOW",
@@ -156,7 +156,7 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Thinking-100",
+          "affect": "Thinking-25",
           "heart": "NONE",
           "gaze": "GAZE-A",
           "head": "LOW",
@@ -212,7 +212,7 @@
       "intent": "PLAIN_ACCOUNT_WITH_SOCIAL_CAUTION",
       "states": {
         "A": {
-          "affect": "Watchful-100",
+          "affect": "Watchful-30",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "LOW",
@@ -220,7 +220,7 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Nervous-100",
+          "affect": "Nervous-35",
           "heart": "NONE",
           "gaze": "AVERT-A",
           "head": "LOW",
@@ -276,7 +276,7 @@
       "intent": "RECOGNITION_CREATES_ASYMMETRY",
       "states": {
         "A": {
-          "affect": "Smug-100",
+          "affect": "Smug-20",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "MEDIUM",
@@ -284,7 +284,7 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Confused-100",
+          "affect": "Confused-25",
           "heart": "Surprised-15",
           "gaze": "GAZE-A",
           "head": "LOW",
@@ -341,7 +341,7 @@
       "intent": "AGNES_PRESSES_FOR_HIS_REAL_MOTIVE",
       "states": {
         "A": {
-          "affect": "Watchful-100",
+          "affect": "Watchful-45",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "MEDIUM",
@@ -349,8 +349,8 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Nervous-100",
-          "heart": "Surprised-100",
+          "affect": "Nervous-45",
+          "heart": "Surprised-20",
           "gaze": "AVERT-A",
           "head": "LOW",
           "lid": -3,
@@ -406,7 +406,7 @@
       "intent": "WILL_SEARCHES_FOR_A_SAFE_ANSWER",
       "states": {
         "A": {
-          "affect": "Watchful-100",
+          "affect": "Watchful-40",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "LOW",
@@ -414,8 +414,8 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Thinking-100",
-          "heart": "Afraid-100",
+          "affect": "Thinking-45",
+          "heart": "Afraid-15",
           "gaze": "AVERT-DOWN",
           "head": "LOW",
           "lid": -3,
@@ -472,7 +472,7 @@
       "intent": "AGNES_LIGHTLY_REASSURES_WHILE_RETAINING_CONTROL",
       "states": {
         "A": {
-          "affect": "Sassy-100",
+          "affect": "Sassy-25",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "MEDIUM",
@@ -480,8 +480,8 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Nervous-100",
-          "heart": "Afraid-100",
+          "affect": "Nervous-40",
+          "heart": "Afraid-10",
           "gaze": "GAZE-A",
           "head": "LOW",
           "lid": -2,
@@ -537,7 +537,7 @@
       "intent": "WILL_ATTEMPTS_A_HALTING_EXPLANATION",
       "states": {
         "A": {
-          "affect": "Watchful-100",
+          "affect": "Watchful-40",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "LOW",
@@ -545,8 +545,8 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Nervous-100",
-          "heart": "Surprised-100",
+          "affect": "Nervous-55",
+          "heart": "Surprised-15",
           "gaze": "AVERT-A",
           "head": "LOW",
           "lid": -3,
@@ -603,7 +603,7 @@
       "intent": "WILL_GATHERS_CONFIDENCE_BY_DESCRIBING_THE_AIR",
       "states": {
         "A": {
-          "affect": "Watchful-100",
+          "affect": "Watchful-35",
           "heart": "NONE",
           "gaze": "GAZE-B",
           "head": "MEDIUM",
@@ -611,7 +611,7 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Thinking-100",
+          "affect": "Thinking-40",
           "heart": "NONE",
           "gaze": "GAZE-A",
           "head": "LOW",
@@ -667,7 +667,7 @@
       "intent": "SHARED_INTEREST_FINDS_SAFE_GROUND_IN_THE_HAWK",
       "states": {
         "A": {
-          "affect": "Sassy-100",
+          "affect": "Sassy-30",
           "heart": "Happy-15",
           "gaze": "GAZE-B",
           "head": "MEDIUM",
@@ -675,8 +675,8 @@
           "blink_suppression": "NONE"
         },
         "B": {
-          "affect": "Friendly-100",
-          "heart": "Happy-100",
+          "affect": "Friendly-25",
+          "heart": "Happy-10",
           "gaze": "GAZE-A",
           "head": "LOW",
           "lid": -1,
@@ -1012,90 +1012,6 @@
         "phrase_id": "P01",
         "changed_categories": [
           "A.affect"
-        ]
-      },
-      {
-        "phrase_number": 2,
-        "phrase_id": "P02",
-        "changed_categories": [
-          "A.affect",
-          "B.affect"
-        ]
-      },
-      {
-        "phrase_number": 3,
-        "phrase_id": "P03",
-        "changed_categories": [
-          "B.affect"
-        ]
-      },
-      {
-        "phrase_number": 4,
-        "phrase_id": "P04",
-        "changed_categories": [
-          "A.affect",
-          "B.affect"
-        ]
-      },
-      {
-        "phrase_number": 5,
-        "phrase_id": "P05",
-        "changed_categories": [
-          "A.affect",
-          "B.affect"
-        ]
-      },
-      {
-        "phrase_number": 6,
-        "phrase_id": "P06",
-        "changed_categories": [
-          "A.affect",
-          "B.affect",
-          "B.heart"
-        ]
-      },
-      {
-        "phrase_number": 7,
-        "phrase_id": "P07",
-        "changed_categories": [
-          "A.affect",
-          "B.affect",
-          "B.heart"
-        ]
-      },
-      {
-        "phrase_number": 8,
-        "phrase_id": "P08",
-        "changed_categories": [
-          "A.affect",
-          "B.affect",
-          "B.heart"
-        ]
-      },
-      {
-        "phrase_number": 9,
-        "phrase_id": "P09",
-        "changed_categories": [
-          "A.affect",
-          "B.affect",
-          "B.heart"
-        ]
-      },
-      {
-        "phrase_number": 10,
-        "phrase_id": "P10",
-        "changed_categories": [
-          "A.affect",
-          "B.affect"
-        ]
-      },
-      {
-        "phrase_number": 11,
-        "phrase_id": "P11",
-        "changed_categories": [
-          "A.affect",
-          "B.affect",
-          "B.heart"
         ]
       }
     ]

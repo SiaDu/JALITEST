@@ -21,7 +21,7 @@
   "events": [
     {
       "type": "mask",
-      "value": "Nervous-100",
+      "value": "Nervous-25",
       "span": {
         "start": 0,
         "end": 15
@@ -31,7 +31,7 @@
     },
     {
       "type": "mask",
-      "value": "Nervous-100",
+      "value": "Nervous-35",
       "span": {
         "start": 17,
         "end": 43
@@ -41,7 +41,7 @@
     },
     {
       "type": "mask",
-      "value": "Thinking-100",
+      "value": "Thinking-45",
       "span": {
         "start": 45,
         "end": 47
@@ -51,7 +51,7 @@
     },
     {
       "type": "heart",
-      "value": "Afraid-100",
+      "value": "Afraid-15",
       "span": {
         "start": 45,
         "end": 47
@@ -61,7 +61,7 @@
     },
     {
       "type": "mask",
-      "value": "Nervous-100",
+      "value": "Nervous-55",
       "span": {
         "start": 51,
         "end": 66
@@ -71,7 +71,7 @@
     },
     {
       "type": "heart",
-      "value": "Surprised-100",
+      "value": "Surprised-15",
       "span": {
         "start": 51,
         "end": 66
@@ -81,7 +81,7 @@
     },
     {
       "type": "mask",
-      "value": "Thinking-100",
+      "value": "Thinking-40",
       "span": {
         "start": 67,
         "end": 138

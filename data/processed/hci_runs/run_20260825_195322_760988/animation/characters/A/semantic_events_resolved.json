@@ -7,7 +7,7 @@
       "actor": "A",
       "intent": "FORMAL_FIRST_CONTACT",
       "channel": "affect",
-      "value": "Polite-100",
+      "value": "Angered-100",
       "source_char_span": {
         "text": "Good day, sir.",
         "turn_id": "T01",
@@ -87,7 +87,7 @@
       "actor": "A",
       "intent": "COURTEOUS_RECIPROCATION",
       "channel": "affect",
-      "value": "Watchful-100",
+      "value": "Watchful-25",
       "source_char_span": {
         "text": "Good day to you.",
         "turn_id": "T02",
@@ -247,7 +247,7 @@
       "actor": "A",
       "intent": "PLAIN_ACCOUNT_WITH_SOCIAL_CAUTION",
       "channel": "affect",
-      "value": "Watchful-100",
+      "value": "Watchful-30",
       "source_char_span": {
         "text": "I'm tutoring the boys here.",
         "turn_id": "T04",
@@ -327,7 +327,7 @@
       "actor": "A",
       "intent": "RECOGNITION_CREATES_ASYMMETRY",
       "channel": "affect",
-      "value": "Smug-100",
+      "value": "Smug-20",
       "source_char_span": {
         "text": "The Latin tutor. I've heard of you.",
         "turn_id": "T05",
@@ -407,7 +407,7 @@
       "actor": "A",
       "intent": "AGNES_PRESSES_FOR_HIS_REAL_MOTIVE",
       "channel": "affect",
-      "value": "Watchful-100",
+      "value": "Watchful-45",
       "source_char_span": {
         "text": "What brought you into the garden?",
         "turn_id": "T06",
@@ -487,7 +487,7 @@
       "actor": "A",
       "intent": "WILL_SEARCHES_FOR_A_SAFE_ANSWER",
       "channel": "affect",
-      "value": "Watchful-100",
+      "value": "Watchful-40",
       "source_char_span": {
         "text": "Uh...",
         "turn_id": "T07",
@@ -567,7 +567,7 @@
       "actor": "A",
       "intent": "AGNES_LIGHTLY_REASSURES_WHILE_RETAINING_CONTROL",
       "channel": "affect",
-      "value": "Sassy-100",
+      "value": "Sassy-25",
       "source_char_span": {
         "text": "It's just a question, master tutor.",
         "turn_id": "T08",
@@ -647,7 +647,7 @@
       "actor": "A",
       "intent": "WILL_ATTEMPTS_A_HALTING_EXPLANATION",
       "channel": "affect",
-      "value": "Watchful-100",
+      "value": "Watchful-40",
       "source_char_span": {
         "text": "Yes, I, uh... I ",
         "turn_id": "T09",
@@ -727,7 +727,7 @@
       "actor": "A",
       "intent": "WILL_GATHERS_CONFIDENCE_BY_DESCRIBING_THE_AIR",
       "channel": "affect",
-      "value": "Watchful-100",
+      "value": "Watchful-35",
       "source_char_span": {
         "text": "suppose the air was fresh out here, and... uh, I saw you with your bird.",
         "turn_id": "T09",
@@ -807,7 +807,7 @@
       "actor": "A",
       "intent": "SHARED_INTEREST_FINDS_SAFE_GROUND_IN_THE_HAWK",
       "channel": "affect",
-      "value": "Sassy-100",
+      "value": "Sassy-30",
       "source_char_span": {
         "text": "It's a hawk.",
         "turn_id": "T10",

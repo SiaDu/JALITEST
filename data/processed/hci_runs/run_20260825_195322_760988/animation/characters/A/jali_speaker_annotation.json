@@ -21,7 +21,7 @@
   "events": [
     {
       "type": "mask",
-      "value": "Polite-100",
+      "value": "Angered-100",
       "span": {
         "start": 0,
         "end": 13
@@ -41,7 +41,7 @@
     },
     {
       "type": "mask",
-      "value": "Smug-100",
+      "value": "Smug-20",
       "span": {
         "start": 44,
         "end": 78
@@ -51,7 +51,7 @@
     },
     {
       "type": "mask",
-      "value": "Watchful-100",
+      "value": "Watchful-45",
       "span": {
         "start": 80,
         "end": 112
@@ -61,7 +61,7 @@
     },
     {
       "type": "mask",
-      "value": "Sassy-100",
+      "value": "Sassy-25",
       "span": {
         "start": 114,
         "end": 148
@@ -71,7 +71,7 @@
     },
     {
       "type": "mask",
-      "value": "Sassy-100",
+      "value": "Sassy-30",
       "span": {
         "start": 150,
         "end": 161
