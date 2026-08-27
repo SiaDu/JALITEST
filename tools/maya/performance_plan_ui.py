@@ -61,6 +61,7 @@ from authoring_requirements import (  # noqa: E402
     refresh_look_at_mappings,
     required_look_at_targets,
 )
+from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -157,21 +158,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _build_animation_setup(self, authoring: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("ANIMATION SETUP")
         layout = QtWidgets.QVBoxLayout(group)
-        audio = QtWidgets.QHBoxLayout()
-        audio.addWidget(QtWidgets.QLabel("Input Audio Folder"))
-        self.audio_folder = QtWidgets.QLineEdit()
-        audio.addWidget(self.audio_folder, 1)
-        choose_audio = QtWidgets.QPushButton("Select Folder")
-        choose_audio.clicked.connect(self._select_audio_folder)
-        audio.addWidget(choose_audio)
-        layout.addLayout(audio)
         layout.addWidget(QtWidgets.QLabel("Character Mapping"))
         for script_name, rig_name, row in self.character_rows:
             mapping_row = QtWidgets.QWidget()
             row_layout = QtWidgets.QHBoxLayout(mapping_row)
             row_layout.setContentsMargins(0, 0, 0, 0)
-            script_display = QtWidgets.QLineEdit(script_name.text())
-            script_display.setReadOnly(True)
+            script_display = QtWidgets.QLabel(script_name.text())
             script_name.textChanged.connect(script_display.setText)
             row_layout.addWidget(script_display, 1)
             row_layout.addWidget(QtWidgets.QLabel("->"))
@@ -230,12 +222,22 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             script_name = QtWidgets.QLineEdit()
             script_name.setPlaceholderText("PROFESSOR" if row_index == 0 else "DOROTHY")
             rig_name = QtWidgets.QLineEdit()
-            rig_name.setPlaceholderText("Select a rig or Maya node")
+            script_name.textChanged.connect(lambda name, field=rig_name: field.setPlaceholderText(f"Select {name or 'this character'}'s JALI_GRP"))
+            rig_name.setPlaceholderText("Select this character's JALI_GRP")
             row_layout.addWidget(script_name, 1)
             row_layout.addWidget(QtWidgets.QLabel("→"))
             character_grid.addWidget(row_widget, row_index + 1, 0, 1, 4)
             self.character_rows.append((script_name, rig_name, row_widget))
         layout.addLayout(character_grid)
+
+        audio = QtWidgets.QHBoxLayout()
+        audio.addWidget(QtWidgets.QLabel("Input Audio Folder"))
+        self.audio_folder = QtWidgets.QLineEdit()
+        audio.addWidget(self.audio_folder, 1)
+        choose_audio = QtWidgets.QPushButton("Select Folder")
+        choose_audio.clicked.connect(self._select_audio_folder)
+        audio.addWidget(choose_audio)
+        layout.addLayout(audio)
 
         self.generate_plan_button = QtWidgets.QPushButton("Generate Performance Plan")
         self.generate_plan_button.clicked.connect(self.generate_performance_plan)
@@ -386,7 +388,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if not selected:
             QtWidgets.QMessageBox.information(self, "No Scene Selection", "Select a Maya node first.")
             return
-        field.setText(str(selected[0]))
+        node = str(selected[0])
+        if not (node.rsplit("|", 1)[-1].endswith("JALI_GRP") or cmds.objExists(node + "|FACSMaster")):
+            QtWidgets.QMessageBox.warning(self, "Invalid Character Root", "Select this character's JALI_GRP (or an equivalent root containing FACSMaster).")
+            return
+        field.setText(node)
 
     def _add_look_at_target(self, semantic_name: str = "") -> None:
         row = QtWidgets.QWidget()
@@ -450,6 +456,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 "Enter Script Character A before generating.",
             )
             return
+        if dual:
+            try:
+                names = [self.character_rows[index][0].text().strip() for index in (0, 1)]
+                if not all(names) or names[0].casefold() == names[1].casefold():
+                    raise ValueError("Dual mode requires two distinct Script Character names.")
+                for name in names:
+                    resolve_character_wav(self.audio_folder.text().strip(), name)
+            except Exception as exc:
+                QtWidgets.QMessageBox.warning(self, "Dual Audio Setup Incomplete", str(exc))
+                return
         self._pending_animation_mode = "single"
         self._pending_dual_mappings = {}
         self.backend_log.clear()
@@ -482,6 +498,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.load_plan(path, preserve_authoring_text=True)
         if self.source_path == path:
             try:
+                if self.mode_combo.currentIndex() == 1:
+                    names = [self.character_rows[index][0].text().strip() for index in (0, 1)]
+                    exports = export_dual_source_transcripts(script=self.input_script.toPlainText(), audio_folder=self.audio_folder.text().strip(), characters=names)
+                    self._append_backend_output("JALI source transcripts:")
+                    for name in names:
+                        item = exports[name]
+                        self._append_backend_output(f"  {name}\n    WAV: {item['wav']}\n    TXT: {item['txt']}\n    utterances: {item['utterances']}")
                 self._save_authoring_session_for_path(path)
             except Exception as exc:
                 self._generation_failed(
