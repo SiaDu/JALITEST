@@ -121,3 +121,47 @@ def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str,
     if not mask_only:
         diagnostic["heart_tag_count"] = sum(e["type"] == "heart" for e in events)
     return text, diagnostic
+
+
+def build_sparse_speaker_jali_annotation(
+    source_text: str, spoken_anchors: list[dict[str, Any]], *, actor: str, script_name: str
+) -> tuple[str, dict[str, Any]]:
+    """Annotate persistent v2 affect across this actor's isolated spoken words."""
+    tokens = iter_word_tokens(source_text)
+    if len(tokens) != len(spoken_anchors):
+        raise ValueError(
+            f"{actor}: isolated transcript has {len(tokens)} words but dialogue has "
+            f"{len(spoken_anchors)} spoken anchors."
+        )
+    for token, anchor in zip(tokens, spoken_anchors):
+        if token["norm"] != normalize_word(str(anchor["text"])):
+            raise ValueError(
+                f"{actor}: isolated transcript word {token['text']!r} does not match "
+                f"anchor {anchor['anchor_id']} {anchor['text']!r}."
+            )
+    events: list[dict[str, Any]] = []
+    segment_start = 0
+    active: str | None = None
+    order = 0
+    for index, anchor in enumerate(spoken_anchors + [{"affect": None}]):
+        value = anchor.get("affect")
+        normalized = None if value in (None, "NONE", "MASK-NONE") else str(value)
+        if index == 0:
+            active = normalized
+            continue
+        if normalized == active and index < len(spoken_anchors):
+            continue
+        if active is not None:
+            events.append({
+                "type": "mask", "value": active,
+                "span": {"start": tokens[segment_start]["start"], "end": tokens[index - 1]["end"]},
+                "order": order, "anchor_id": spoken_anchors[segment_start]["anchor_id"],
+            })
+            order += 1
+        segment_start = index
+        active = normalized
+    text = export_jali_annotation({"clean_transcript": source_text}, {"events": events})
+    return text, {
+        "actor": actor, "script_name": script_name, "mask_tag_count": len(events),
+        "spoken_anchor_ids": [row["anchor_id"] for row in spoken_anchors], "events": events,
+    }

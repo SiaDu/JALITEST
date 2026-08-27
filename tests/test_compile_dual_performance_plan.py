@@ -160,3 +160,55 @@ def test_v1_compiler_uses_actual_names_and_mask_only_artifacts(tmp_path):
     annotation = Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
     diagnostic = json.loads(Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotation"]).read_text())
     assert "<heart=" not in annotation and "heart_tag_count" not in diagnostic
+
+
+def test_v2_resolves_independent_role_aware_events_and_persistent_affect(tmp_path):
+    _legacy_plan, audio = _fixture(tmp_path)
+    plan = tmp_path / "v2.json"
+    plan.write_text(json.dumps({
+        "schema_version": "dual_performance_plan_v2",
+        "sequence_id": "v2",
+        "characters": ["AGNES", "WILL"],
+        "tracks": {
+            "AGNES": [
+                {"event_id": "E001", "anchor_id": "w0001", "changes": {"affect": "Watchful-80", "gaze": "GAZE-WILL"}, "reason": "Starts watchful."},
+                {"event_id": "E003", "anchor_id": "w0002", "changes": {"gaze": "AVERT-RIGHT"}, "reason": "Looks away while listening."},
+            ],
+            "WILL": [
+                {"event_id": "E002", "anchor_id": "w0001", "changes": {"affect": "Thinking-60"}, "reason": "Reacts to one."},
+            ],
+        },
+    }), encoding="utf-8")
+    mapping = {"AGNES": MAPPING["A"], "WILL": MAPPING["B"]}
+    result = compile_dual_performance_plan(
+        performance_plan_path=plan, script=SCRIPT, script_source="script.txt",
+        audio_folder=audio, fps=24, runtime_mapping=mapping, output_dir=tmp_path / "v2out",
+    )
+    assert result["schema_version"] == "dual_animation_manifest_v2"
+    assert "conversation_phrase_timing" not in result["artifacts"]
+    agnes = json.loads(Path(result["artifacts"]["characters"]["AGNES"]["resolved_sparse_events"]).read_text())["events"]
+    will = json.loads(Path(result["artifacts"]["characters"]["WILL"]["resolved_sparse_events"]).read_text())["events"]
+    assert agnes[0]["timing_role"] == "SPEAK_ONSET" and agnes[0]["resolved_start"] == 0.0
+    assert will[0]["timing_role"] == "LISTEN_REACTION"
+    assert will[0]["raw_anchor_end"] == .2
+    assert will[0]["reaction_delay_frames"] == 4
+    assert will[0]["resolved_start"] == pytest.approx(.2 + 4 / 24)
+    assert agnes[1]["timing_role"] == "LISTEN_REACTION" and agnes[1]["anchor_speaker"] == "WILL"
+    assert "<mask=Watchful-80> one three </mask=Watchful-80>" in Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text()
+    assert "<mask=Thinking-60> two </mask=Thinking-60>" in Path(result["artifacts"]["characters"]["WILL"]["jali_speaker_annotated"]).read_text()
+
+
+def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
+    _legacy_plan, audio = _fixture(tmp_path)
+    plan = tmp_path / "v2.json"
+    plan.write_text(json.dumps({
+        "schema_version": "dual_performance_plan_v2", "characters": ["AGNES", "WILL"],
+        "tracks": {
+            "AGNES": [{"event_id": "E001", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}}],
+            "WILL": [{"event_id": "E002", "anchor_id": "w0001", "changes": {"blink": "BLINK"}}],
+        },
+    }), encoding="utf-8")
+    result = compile_dual_performance_plan(performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24, runtime_mapping={"AGNES": MAPPING["A"], "WILL": MAPPING["B"]}, output_dir=tmp_path / "out")
+    rows = [json.loads(Path(result["artifacts"]["characters"][name]["resolved_sparse_events"]).read_text())["events"][0] for name in ("AGNES", "WILL")]
+    assert rows[0]["resolved_start"] == 0.0
+    assert rows[1]["resolved_start"] == pytest.approx(.2 + 4 / 24)

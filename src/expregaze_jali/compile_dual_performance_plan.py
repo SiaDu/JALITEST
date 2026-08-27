@@ -12,9 +12,121 @@ from expregaze_jali.compile_performance_plan import TimingAlignment, _validate_w
 from expregaze_jali.performance_event_resolver import load_words_jsonl
 from expregaze_jali.text_utils import normalize_word
 from expregaze_jali.textgrid_parser import parse_textgrid_words
-from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation
+from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation, build_sparse_speaker_jali_annotation
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
 from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PERFORMANCE_RULES_PATH = REPO_ROOT / "configs" / "performance_rules.yaml"
+
+
+def _listener_reaction_delay_frames(path: str | Path = PERFORMANCE_RULES_PATH) -> int:
+    import yaml
+    data = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
+    value = (data.get("performance_rules") or {}).get("listener_reaction_delay_frames")
+    if not isinstance(value, int) or value < 0:
+        raise ValueError("performance_rules.listener_reaction_delay_frames must be a non-negative integer")
+    return value
+
+
+def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
+    characters = plan.get("characters")
+    tracks = plan.get("tracks")
+    if not isinstance(characters, list) or len(characters) != 2:
+        raise ValueError("Dual v2 plan requires two ordered character names.")
+    if not isinstance(tracks, dict) or set(tracks) != set(characters):
+        raise ValueError("Dual v2 plan requires name-keyed character tracks.")
+    anchors = {anchor.anchor_id for anchor in model.anchors}
+    event_ids: set[str] = set()
+    for actor in characters:
+        if not isinstance(tracks[actor], list):
+            raise ValueError(f"Dual v2 track {actor} must be a list.")
+        for event in tracks[actor]:
+            if not isinstance(event, dict) or not event.get("event_id") or event.get("anchor_id") not in anchors:
+                raise ValueError(f"{actor}: v2 event requires event_id and known anchor_id.")
+            if event["event_id"] in event_ids:
+                raise ValueError(f"Duplicate v2 event_id {event['event_id']}.")
+            event_ids.add(event["event_id"])
+            changes = event.get("changes")
+            if not isinstance(changes, dict) or not changes or not set(changes) <= {"affect", "gaze", "head", "blink"}:
+                raise ValueError(f"{event['event_id']}: invalid or empty v2 changes.")
+
+
+def _compile_v2(
+    *, plan: dict[str, Any], model: Any, anchor_times: dict[str, dict[str, Any]],
+    mapping: dict[str, Any], audio_folder: str | Path, fps: float, out: Path,
+    performance_plan_path: str | Path, script_source: str | Path | None,
+    wavs: dict[str, tuple[Path, float]], shared_duration: float, duration_warning: str,
+) -> dict[str, Any]:
+    _validate_v2_plan(plan, model)
+    characters = plan["characters"]
+    anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(model.anchors)}
+    delay_frames = _listener_reaction_delay_frames()
+    artifacts: dict[str, Any] = {"characters": {}}
+    timing_path = out / "conversation_anchor_timing.json"
+    timing_path.write_text(json.dumps(anchor_times, indent=2) + "\n", encoding="utf-8")
+    artifacts["conversation_anchor_timing"] = str(timing_path)
+    for actor in characters:
+        resolved: list[dict[str, Any]] = []
+        for plan_index, event in enumerate(plan["tracks"][actor]):
+            anchor = anchor_times[event["anchor_id"]]
+            speaking = speaker_key(anchor["speaker"]) == speaker_key(actor)
+            role = "SPEAK_ONSET" if speaking else "LISTEN_REACTION"
+            reaction_frames = 0 if speaking else delay_frames
+            start = float(anchor["start"]) if speaking else float(anchor["end"]) + delay_frames / float(fps)
+            resolved.append({
+                "event_id": event["event_id"], "actor": actor, "anchor_id": event["anchor_id"],
+                "anchor_text": anchor["text"], "anchor_speaker": anchor["speaker"],
+                "timing_role": role, "raw_anchor_start": float(anchor["start"]),
+                "raw_anchor_end": float(anchor["end"]), "reaction_delay_frames": reaction_frames,
+                "resolved_start": start, "changes": event["changes"], "reason": event.get("reason"),
+                "_plan_index": plan_index,
+            })
+        resolved.sort(key=lambda row: (row["resolved_start"], anchor_order[row["anchor_id"]], row["_plan_index"]))
+        state = {"affect": "NONE", "gaze": "NONE", "head": "NONE"}
+        timeline: list[dict[str, Any]] = []
+        for event in resolved:
+            for channel in ("affect", "gaze", "head"):
+                if channel in event["changes"]:
+                    value = event["changes"][channel]
+                    state[channel] = "NONE" if value in {"MASK-NONE", "GAZE-NONE", "HEAD-NONE"} else value
+            event["state_after"] = dict(state)
+            timeline.append({"event_id": event["event_id"], "resolved_start": event["resolved_start"], "state": dict(state)})
+            event.pop("_plan_index")
+        token = re.sub(r"[^A-Za-z0-9_.-]+", "_", actor).strip("_") or "character"
+        actor_dir = out / "characters" / token
+        actor_dir.mkdir(parents=True, exist_ok=True)
+        resolved_path = actor_dir / "resolved_sparse_events.json"
+        state_path = actor_dir / "state_timeline.json"
+        resolved_path.write_text(json.dumps({"events": resolved}, indent=2) + "\n", encoding="utf-8")
+        state_path.write_text(json.dumps({"initial_state": {"affect": "NONE", "gaze": "NONE", "head": "NONE"}, "timeline": timeline}, indent=2) + "\n", encoding="utf-8")
+        spoken: list[dict[str, Any]] = []
+        active_affect = "NONE"
+        affect_events = [row for row in resolved if "affect" in row["changes"]]
+        cursor = 0
+        for anchor in model.anchors:
+            if speaker_key(anchor.speaker) != speaker_key(actor):
+                continue
+            anchor_time = float(anchor_times[anchor.anchor_id]["start"])
+            while cursor < len(affect_events) and affect_events[cursor]["resolved_start"] <= anchor_time + 1e-9:
+                active_affect = affect_events[cursor]["state_after"]["affect"]
+                cursor += 1
+            spoken.append({"anchor_id": anchor.anchor_id, "text": anchor.text, "affect": active_affect})
+        source = Path(mapping[actor].get("transcript_path") or (Path(audio_folder) / f"{mapping[actor]['sound_file']}.txt"))
+        if not source.is_file():
+            raise FileNotFoundError(f"{actor}: JALI source transcript not found: {source}")
+        annotated, diagnostic = build_sparse_speaker_jali_annotation(source.read_text(encoding="utf-8"), spoken, actor=actor, script_name=str(mapping[actor]["script_name"]))
+        annotated_path = actor_dir / "jali_speaker_annotated.txt"
+        diagnostic_path = actor_dir / "jali_speaker_annotation.json"
+        annotated_path.write_text(annotated, encoding="utf-8")
+        diagnostic.update({"sound_file": mapping[actor]["sound_file"], "source_transcript_path": str(source), "annotated_transcript_path": str(annotated_path)})
+        diagnostic_path.write_text(json.dumps(diagnostic, indent=2) + "\n", encoding="utf-8")
+        artifacts["characters"][actor] = {"resolved_sparse_events": str(resolved_path), "state_timeline": str(state_path), "jali_speaker_annotated": str(annotated_path), "jali_speaker_annotation": str(diagnostic_path)}
+    manifest = {"schema_version": "dual_animation_manifest_v2", "characters": characters, "performance_plan_source": str(performance_plan_path), "full_script_source": str(script_source or "<provided script text>"), "fps": float(fps), "listener_reaction_delay_frames": delay_frames, "character_runtime_mapping": mapping, "wav_durations": {name: {"path": str(wavs[name][0]), "seconds": wavs[name][1]} for name in characters}, "shared_duration_seconds": shared_duration, "artifacts": artifacts, "warnings": [duration_warning] if duration_warning else []}
+    path = out / "dual_animation_manifest.json"
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    manifest["manifest_path"] = str(path)
+    return manifest
 
 
 def discover_character_timing(audio_folder: str | Path, sound_file: str) -> TimingAlignment:
@@ -117,7 +229,8 @@ def build_canonical_phrase_timeline(
 
 def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: str, audio_folder: str | Path, fps: float, runtime_mapping: dict[str, Any], output_dir: str | Path, script_source: str | Path | None = None) -> dict[str, Any]:
     raw_plan = json.loads(Path(performance_plan_path).read_text(encoding="utf-8"))
-    plan = adapt_dual_performance_plan_v0(raw_plan)
+    is_v2 = raw_plan.get("schema_version") == "dual_performance_plan_v2"
+    plan = raw_plan if is_v2 else adapt_dual_performance_plan_v0(raw_plan)
     characters = plan.get("characters")
     if not isinstance(characters, list) or len(characters) != 2:
         raise ValueError("Dual plan requires two ordered character names.")
@@ -134,7 +247,7 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
         if speaker_key(name) != speaker_key(str(mapping[name]["script_name"])):
             raise ValueError(f"Runtime mapping {name} script_name does not match dual plan character.")
     model = build_conversation_anchor_model(script, character_a=characters[0], character_b=characters[1])
-    phrases = _validate_plan(plan, model)
+    phrases = None if is_v2 else _validate_plan(plan, model)
     timings = {name: discover_character_timing(audio_folder, str(row["sound_file"])) for name, row in mapping.items()}
     wavs = {name: _wav_duration(audio_folder, str(row["sound_file"])) for name,row in mapping.items()}
     shared_duration = min(wavs[name][1] for name in characters)
@@ -159,6 +272,13 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
             remaining=timing.words[cursors[actor]:]
             raise ValueError(f"{actor}: {len(remaining)} unexpected remaining timing word(s) in {timing.path}: {remaining[:3]}")
     out = Path(output_dir); out.mkdir(parents=True, exist_ok=True)
+    if is_v2:
+        return _compile_v2(
+            plan=plan, model=model, anchor_times=anchor_times, mapping=mapping,
+            audio_folder=audio_folder, fps=fps, out=out,
+            performance_plan_path=performance_plan_path, script_source=script_source,
+            wavs=wavs, shared_duration=shared_duration, duration_warning=duration_warning,
+        )
     timing_path = out / "conversation_anchor_timing.json"; timing_path.write_text(json.dumps(anchor_times, indent=2)+"\n", encoding="utf-8")
     artifacts: dict[str, Any] = {"conversation_anchor_timing": str(timing_path), "characters": {}}
     canonical_timeline = build_canonical_phrase_timeline(phrases, model, anchor_times)
