@@ -436,6 +436,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.character_rows[1][2].setVisible(dual)
         if self.character_mapping_rows:
             self.character_mapping_rows[1].setVisible(dual)
+        if hasattr(self, "legacy_look_at_label"):
+            self.legacy_look_at_label.setVisible(not dual)
+            for _semantic, _maya, row in self.look_at_rows:
+                row.setVisible(not dual)
+        if hasattr(self, "gaze_calibration_label"):
+            self.gaze_calibration_label.setVisible(dual)
         if dual:
             self.validation_label.setText(
                 "Dual semantic authoring uses one shared conversation plan."
@@ -751,7 +757,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if self.plan is None:
             return
         if self.plan.get("schema_version") == "dual_performance_plan_v0":
-            self.legacy_look_at_label.hide(); self.look_at_layout.parent().setEnabled(False)
+            self._clear_look_at_targets()
+            self.legacy_look_at_label.hide()
             while self.gaze_calibration_layout.count():
                 item=self.gaze_calibration_layout.takeAt(0)
                 if item.widget(): item.widget().deleteLater()
@@ -767,7 +774,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 button.clicked.connect(lambda _checked=False,a=actor,t=target: self._capture_dual_look_at(a,t))
                 layout.addWidget(button); self.gaze_calibration_layout.addWidget(row)
             return
-        self.legacy_look_at_label.show(); self.look_at_layout.parent().setEnabled(True)
+        self.legacy_look_at_label.show()
         rows = refresh_look_at_mappings(
             required_look_at_targets(self.plan), self._look_at_mapping_data()
         )
