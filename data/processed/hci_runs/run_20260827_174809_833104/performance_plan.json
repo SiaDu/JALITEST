@@ -1,0 +1,223 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260827_174809_833104",
+  "characters": [
+    "CHAYTON",
+    "JOAN"
+  ],
+  "acting_interpretation": "CHAYTON speaks with controlled authority while listening for contradictions. JOAN remains guarded and protective, concealing the stranger's presence; the warning and direct questioning increase her tension. Chayton's suspicion sharpens when Joan denies seeing anyone, calls for Bert, and appears to protect the house.",
+  "initial_states": {
+    "CHAYTON": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-80",
+      "gaze": "GAZE-JOAN"
+    },
+    "JOAN": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-CHAYTON"
+    }
+  },
+  "initial_reasons": {
+    "CHAYTON": "Enters focused on assessing Joan's response and locating the dangerous man.",
+    "JOAN": "Enters guarded and ready to conceal the stranger's presence."
+  },
+  "tracks": {
+    "CHAYTON": [
+      {
+        "event_id": "E002",
+        "actor": "CHAYTON",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Thinking-72",
+          "head": "HEAD-TILT_LEFT-SUBTLE"
+        },
+        "reason": "Joan's flat denial conflicts with his expectation that the fugitive may have reached the property."
+      },
+      {
+        "event_id": "E005",
+        "actor": "CHAYTON",
+        "anchor_id": "w0028",
+        "changes": {
+          "affect": "Watchful-90",
+          "gaze": "GAZE-JOAN"
+        },
+        "reason": "His direct question tests whether Joan is protecting someone inside."
+      },
+      {
+        "event_id": "E008",
+        "actor": "CHAYTON",
+        "anchor_id": "w0042",
+        "changes": {
+          "affect": "Intimidating-68",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "“We need to act” turns the warning into controlled pressure for immediate cooperation."
+      }
+    ],
+    "JOAN": [
+      {
+        "event_id": "E001",
+        "actor": "JOAN",
+        "anchor_id": "w0009",
+        "changes": {
+          "affect": "Nervous-78",
+          "head": "HEAD-TILT_RIGHT-SUBTLE"
+        },
+        "reason": "The word “dangerous” confirms that the visitors pose an immediate threat to the household's secret."
+      },
+      {
+        "event_id": "E003",
+        "actor": "JOAN",
+        "anchor_id": "w0021",
+        "changes": {
+          "gaze": "GAZE-DOWN"
+        },
+        "reason": "The denial requires her to break eye contact while maintaining the concealment."
+      },
+      {
+        "event_id": "E004",
+        "actor": "JOAN",
+        "anchor_id": "w0022",
+        "changes": {
+          "gaze": "GAZE-RIGHT",
+          "head": "HEAD-UP-SUBTLE"
+        },
+        "reason": "Calling for Bert redirects attention toward the house while summoning support."
+      },
+      {
+        "event_id": "E006",
+        "actor": "JOAN",
+        "anchor_id": "w0028",
+        "changes": {
+          "affect": "Watchful-82",
+          "gaze": "GAZE-CHAYTON"
+        },
+        "reason": "The question directly challenges her concealment, prompting a deliberate return to guarded eye contact."
+      },
+      {
+        "event_id": "E007",
+        "actor": "JOAN",
+        "anchor_id": "w0034",
+        "changes": {
+          "affect": "Dislike-70",
+          "head": "HEAD-DOWN-SUBTLE"
+        },
+        "reason": "The warning confirms Chayton's hostile judgment of the injured man she has chosen to shelter."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "CHAYTON",
+        "JOAN"
+      ],
+      "initial_states": {
+        "CHAYTON": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-80",
+          "gaze": "GAZE-JOAN"
+        },
+        "JOAN": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-65",
+          "gaze": "GAZE-CHAYTON"
+        }
+      },
+      "initial_reasons": {
+        "CHAYTON": "Enters focused on assessing Joan's response and locating the dangerous man.",
+        "JOAN": "Enters guarded and ready to conceal the stranger's presence."
+      },
+      "tracks": [
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Thinking-72",
+            "head": "HEAD-TILT_LEFT-SUBTLE"
+          },
+          "reason": "Joan's flat denial conflicts with his expectation that the fugitive may have reached the property."
+        },
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0028",
+          "changes": {
+            "affect": "Watchful-90",
+            "gaze": "GAZE-JOAN"
+          },
+          "reason": "His direct question tests whether Joan is protecting someone inside."
+        },
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0042",
+          "changes": {
+            "affect": "Intimidating-68",
+            "head": "HEAD-UP-MEDIUM"
+          },
+          "reason": "“We need to act” turns the warning into controlled pressure for immediate cooperation."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0009",
+          "changes": {
+            "affect": "Nervous-78",
+            "head": "HEAD-TILT_RIGHT-SUBTLE"
+          },
+          "reason": "The word “dangerous” confirms that the visitors pose an immediate threat to the household's secret."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0021",
+          "changes": {
+            "gaze": "GAZE-DOWN"
+          },
+          "reason": "The denial requires her to break eye contact while maintaining the concealment."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0022",
+          "changes": {
+            "gaze": "GAZE-RIGHT",
+            "head": "HEAD-UP-SUBTLE"
+          },
+          "reason": "Calling for Bert redirects attention toward the house while summoning support."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0028",
+          "changes": {
+            "affect": "Watchful-82",
+            "gaze": "GAZE-CHAYTON"
+          },
+          "reason": "The question directly challenges her concealment, prompting a deliberate return to guarded eye contact."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0034",
+          "changes": {
+            "affect": "Dislike-70",
+            "head": "HEAD-DOWN-SUBTLE"
+          },
+          "reason": "The warning confirms Chayton's hostile judgment of the injured man she has chosen to shelter."
+        }
+      ]
+    }
+  }
+}

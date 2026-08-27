@@ -1,0 +1,53 @@
+{
+  "schema_version": "dual_animation_manifest_v2",
+  "characters": [
+    "CHAYTON",
+    "JOAN"
+  ],
+  "performance_plan_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\performance_plan.json",
+  "full_script_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\input_script.txt",
+  "fps": 30.0,
+  "character_runtime_mapping": {
+    "CHAYTON": {
+      "script_name": "CHAYTON",
+      "sound_file": "Seq1_Sub_CHAYTON",
+      "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1_temp1\\Seq1_Sub_CHAYTON.txt"
+    },
+    "JOAN": {
+      "script_name": "JOAN",
+      "sound_file": "Seq1_Sub_JOAN",
+      "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1_temp1\\Seq1_Sub_JOAN.txt"
+    }
+  },
+  "wav_durations": {
+    "CHAYTON": {
+      "path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1_temp1\\Seq1_Sub_CHAYTON.wav",
+      "seconds": 28.96
+    },
+    "JOAN": {
+      "path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1_temp1\\Seq1_Sub_JOAN.wav",
+      "seconds": 15.92
+    }
+  },
+  "shared_duration_seconds": 15.92,
+  "artifacts": {
+    "characters": {
+      "CHAYTON": {
+        "resolved_sparse_events": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\CHAYTON\\resolved_sparse_events.json",
+        "state_timeline": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\CHAYTON\\state_timeline.json",
+        "jali_speaker_annotated": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\CHAYTON\\jali_speaker_annotated.txt",
+        "jali_speaker_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\CHAYTON\\jali_speaker_annotation.json"
+      },
+      "JOAN": {
+        "resolved_sparse_events": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\JOAN\\resolved_sparse_events.json",
+        "state_timeline": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\JOAN\\state_timeline.json",
+        "jali_speaker_annotated": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\JOAN\\jali_speaker_annotated.txt",
+        "jali_speaker_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\characters\\JOAN\\jali_speaker_annotation.json"
+      }
+    },
+    "conversation_anchor_timing": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\animation\\conversation_anchor_timing.json"
+  },
+  "warnings": [
+    "Runtime WAV durations differ (CHAYTON=28.960s, JOAN=15.920s); using the shortest shared duration 15.920s."
+  ]
+}

@@ -1,0 +1,69 @@
+[ANALYZE]
+CHAYTON speaks with controlled authority while listening for contradictions. JOAN remains guarded and protective, concealing the stranger's presence; the warning and direct questioning increase her tension. Chayton's suspicion sharpens when Joan denies seeing anyone, calls for Bert, and appears to protect the house.
+
+[INITIAL]
+CHAYTON
+affect: Watchful-80
+gaze: GAZE-JOAN
+reason: Enters focused on assessing Joan's response and locating the dangerous man.
+
+JOAN
+affect: Nervous-65
+gaze: GAZE-CHAYTON
+reason: Enters guarded and ready to conceal the stranger's presence.
+
+[CHANGES]
+E001
+actor: JOAN
+anchor: w0009
+affect: Nervous-78
+head: HEAD-TILT_RIGHT-SUBTLE
+reason: The word “dangerous” confirms that the visitors pose an immediate threat to the household's secret.
+
+E002
+actor: CHAYTON
+anchor: w0021
+affect: Thinking-72
+head: HEAD-TILT_LEFT-SUBTLE
+reason: Joan's flat denial conflicts with his expectation that the fugitive may have reached the property.
+
+E003
+actor: JOAN
+anchor: w0021
+gaze: GAZE-DOWN
+reason: The denial requires her to break eye contact while maintaining the concealment.
+
+E004
+actor: JOAN
+anchor: w0022
+gaze: GAZE-RIGHT
+head: HEAD-UP-SUBTLE
+reason: Calling for Bert redirects attention toward the house while summoning support.
+
+E005
+actor: CHAYTON
+anchor: w0028
+affect: Watchful-90
+gaze: GAZE-JOAN
+reason: His direct question tests whether Joan is protecting someone inside.
+
+E006
+actor: JOAN
+anchor: w0028
+affect: Watchful-82
+gaze: GAZE-CHAYTON
+reason: The question directly challenges her concealment, prompting a deliberate return to guarded eye contact.
+
+E007
+actor: JOAN
+anchor: w0034
+affect: Dislike-70
+head: HEAD-DOWN-SUBTLE
+reason: The warning confirms Chayton's hostile judgment of the injured man she has chosen to shelter.
+
+E008
+actor: CHAYTON
+anchor: w0042
+affect: Intimidating-68
+head: HEAD-UP-MEDIUM
+reason: “We need to act” turns the warning into controlled pressure for immediate cooperation.

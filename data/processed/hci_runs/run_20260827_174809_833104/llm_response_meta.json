@@ -1,0 +1,22 @@
+{
+  "response_id": "resp_0cabc2774c433a5d006a906a4d5c0087d0a3347029571d0bb2",
+  "model": "gpt-5.6-luna",
+  "prompt_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\actor_prompt.txt",
+  "usage": {
+    "input_tokens": 1888,
+    "input_tokens_details": {
+      "cache_write_tokens": 1885,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1063,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 2951
+  },
+  "status": "completed",
+  "incomplete_details": null,
+  "created_at": 1787849293.0,
+  "output_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\performance_proposal.txt",
+  "proposal_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260827_174809_833104\\performance_proposal.txt"
+}

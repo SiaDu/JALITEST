@@ -1,0 +1,12 @@
+{
+  "CHAYTON": {
+    "script_name": "CHAYTON",
+    "sound_file": "Seq1_Sub_CHAYTON",
+    "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1_temp1\\Seq1_Sub_CHAYTON.txt"
+  },
+  "JOAN": {
+    "script_name": "JOAN",
+    "sound_file": "Seq1_Sub_JOAN",
+    "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1_temp1\\Seq1_Sub_JOAN.txt"
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "initial_state": {
+    "actor": "JOAN",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-CHAYTON"
+    },
+    "reason": "Enters guarded and ready to conceal the stranger's presence."
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "actor": "JOAN",
+      "anchor_id": "w0009",
+      "anchor_text": "dangerous.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 5.93375,
+      "raw_anchor_end": 6.61375,
+      "resolved_start": 6.61375,
+      "changes": {
+        "affect": "Nervous-78",
+        "head": "HEAD-TILT_RIGHT-SUBTLE"
+      },
+      "reason": "The word \u201cdangerous\u201d confirms that the visitors pose an immediate threat to the household's secret.",
+      "state_after": {
+        "head": "HEAD-TILT_RIGHT-SUBTLE",
+        "affect": "Nervous-78",
+        "gaze": "GAZE-CHAYTON"
+      }
+    },
+    {
+      "event_id": "E003",
+      "actor": "JOAN",
+      "anchor_id": "w0021",
+      "anchor_text": "No.",
+      "anchor_speaker": "JOAN",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 11.940375,
+      "raw_anchor_end": 12.370376,
+      "resolved_start": 11.940375,
+      "changes": {
+        "gaze": "GAZE-DOWN"
+      },
+      "reason": "The denial requires her to break eye contact while maintaining the concealment.",
+      "state_after": {
+        "head": "HEAD-TILT_RIGHT-SUBTLE",
+        "affect": "Nervous-78",
+        "gaze": "GAZE-DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "JOAN",
+      "anchor_id": "w0022",
+      "anchor_text": "Bert!",
+      "anchor_speaker": "JOAN",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 14.833813,
+      "raw_anchor_end": 15.513813,
+      "resolved_start": 14.833813,
+      "changes": {
+        "gaze": "GAZE-RIGHT",
+        "head": "HEAD-UP-SUBTLE"
+      },
+      "reason": "Calling for Bert redirects attention toward the house while summoning support.",
+      "state_after": {
+        "head": "HEAD-UP-SUBTLE",
+        "affect": "Nervous-78",
+        "gaze": "GAZE-RIGHT"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "JOAN",
+      "anchor_id": "w0028",
+      "anchor_text": "you,",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 17.195187,
+      "raw_anchor_end": 17.275187,
+      "resolved_start": 17.275187,
+      "changes": {
+        "affect": "Watchful-82",
+        "gaze": "GAZE-CHAYTON"
+      },
+      "reason": "The question directly challenges her concealment, prompting a deliberate return to guarded eye contact.",
+      "state_after": {
+        "head": "HEAD-UP-SUBTLE",
+        "affect": "Watchful-82",
+        "gaze": "GAZE-CHAYTON"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "JOAN",
+      "anchor_id": "w0034",
+      "anchor_text": "seems.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 22.119375,
+      "raw_anchor_end": 22.659374,
+      "resolved_start": 22.659374,
+      "changes": {
+        "affect": "Dislike-70",
+        "head": "HEAD-DOWN-SUBTLE"
+      },
+      "reason": "The warning confirms Chayton's hostile judgment of the injured man she has chosen to shelter.",
+      "state_after": {
+        "head": "HEAD-DOWN-SUBTLE",
+        "affect": "Dislike-70",
+        "gaze": "GAZE-CHAYTON"
+      }
+    }
+  ]
+}
