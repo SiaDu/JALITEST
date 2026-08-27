@@ -1028,13 +1028,12 @@ def _load_v2_actor_initial_state(manifest: dict[str, Any], actor: str) -> dict[s
 
 
 def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
-    """Build persistent v2 listener Mask handoff schedules without shared phrases."""
+    """Build persistent v2 User FACS semantic-affect schedules."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     manifest = load_dual_animation_manifest(manifest_path)
     if manifest.get("schema_version") != "dual_animation_manifest_v2":
         raise ValueError("Expected dual_animation_manifest_v2.")
-    anchor_times = json.loads(Path(manifest["artifacts"]["conversation_anchor_timing"]).read_text(encoding="utf-8"))
     actors = manifest["characters"]
     # Unsupported eyelid AUs are an evidence requirement, not a blink-ownership
     # decision. They cannot be keyed until the live rig proves their User plugs.
@@ -1045,38 +1044,28 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
     for actor in actors:
         events = _load_v2_actor_events(manifest, actor)
         initial_state = _load_v2_actor_initial_state(manifest, actor)
-        points: list[tuple[float, int, str, Any]] = []
-        turns: dict[str, list[dict[str, Any]]] = {}
-        for anchor_id, anchor in anchor_times.items():
-            turns.setdefault(str(anchor.get("turn_id") or anchor_id), []).append(anchor)
-        for turn in turns.values():
-            ordered_turn = sorted(turn, key=lambda anchor: (float(anchor["start"]), float(anchor["end"])))
-            if str(ordered_turn[0]["speaker"]) == actor:
-                points.append((float(ordered_turn[0]["start"]), 2, "turn_start", actor))
-                points.append((float(ordered_turn[-1]["end"]), 1, "turn_end", actor))
+        affect_events: list[dict[str, Any]] = []
         for event in events:
             if "affect" in (event.get("changes") or {}):
-                points.append((float(event["resolved_start"]), 0, "affect", event))
+                affect_events.append(event)
         initial_affect = initial_state.get("affect", "MASK-NONE")
         name, intensity = parse_mask_state("NONE" if initial_affect == "MASK-NONE" else initial_affect)
         affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
-        # Each actor owns its own speaking state; overlapping dialogue is valid.
-        is_speaking = False
+        # User FACS holds semantic affect continuously; native JALI speaker
+        # Mask/paralingual animation remains additive on its separate path.
         intervals: list[dict[str, Any]] = [{"phrase_id": "INITIAL_STATE", "speaker": None, "start": 0.0, "end": float(manifest["shared_duration_seconds"]), "state": affect, "pose": user_pose_for_mask(affect), "boundary_kind": "INITIAL_STATE", "timing_role": "INITIAL_STATE"}]
-        for time, _priority, kind, value in sorted(points):
-            if kind == "affect":
-                name, intensity = parse_mask_state("NONE" if value["changes"]["affect"] == "MASK-NONE" else value["changes"]["affect"])
-                affect = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
-            elif kind == "turn_end":
-                is_speaking = False
-            else:
-                is_speaking = True
-            state = "NONE" if is_speaking else affect
-            metadata = {"boundary_kind": kind, "timing_role": value.get("timing_role") if kind == "affect" else None}
+        for event in sorted(affect_events, key=lambda item: float(item["resolved_start"])):
+            time = float(event["resolved_start"])
+            name, intensity = parse_mask_state("NONE" if event["changes"]["affect"] == "MASK-NONE" else event["changes"]["affect"])
+            state = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
+            if state == affect:
+                continue
+            affect = state
+            metadata = {"boundary_kind": "affect", "timing_role": event.get("timing_role")}
             if intervals and intervals[-1]["start"] == time:
                 intervals[-1].update({"state": state, "pose": user_pose_for_mask(state), **metadata})
-            elif not intervals or intervals[-1]["state"] != state:
-                intervals.append({"phrase_id": f"v2@{time:g}", "speaker": actor if is_speaking else None, "start": time, "end": float(manifest["shared_duration_seconds"]), "state": state, "pose": user_pose_for_mask(state), **metadata})
+            else:
+                intervals.append({"phrase_id": f"v2@{time:g}", "speaker": None, "start": time, "end": float(manifest["shared_duration_seconds"]), "state": state, "pose": user_pose_for_mask(state), **metadata})
         for index, interval in enumerate(intervals[:-1]):
             interval["end"] = intervals[index + 1]["start"]
         row = character_mappings.get(actor) or {}

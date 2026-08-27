@@ -292,14 +292,10 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
     assert {"ALICE:usr_blink_L.LidDown_L", "ALICE:usr_blink_R.LidDown_R", "ALICE:usr_loLid_L.LidUp_L", "ALICE:usr_loLid_R.LidUp_R"} <= set(prepared["ALICE"]["managed_user_plugs"])
     assert prepared["ALICE"]["timeline"][0]["start"] == 0.0
     assert prepared["ALICE"]["timeline"][0]["state"] == "Watchful-80"
-    assert any(row["start"] == .5 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
-    assert any(row["start"] == .7 and row["state"] == "Watchful-80" for row in prepared["ALICE"]["timeline"])
-    assert any(row["start"] == 3.0 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
-    assert any(row["start"] == 3.2 and row["state"] == "Watchful-80" for row in prepared["ALICE"]["timeline"])
+    assert [(row["start"], row["state"]) for row in prepared["ALICE"]["timeline"]] == [(0.0, "Watchful-80")]
     assert prepared["BOB"]["timeline"][0]["start"] == 0.0
     assert prepared["BOB"]["timeline"][0]["state"] == "Watchful-85"
-    assert any(row["start"] == 2.0 and row["state"] == "NONE" for row in prepared["BOB"]["timeline"])
-    assert any(row["start"] == 2.2 and row["state"] == "Watchful-85" for row in prepared["BOB"]["timeline"])
+    assert [(row["start"], row["state"]) for row in prepared["BOB"]["timeline"]] == [(0.0, "Watchful-85")]
 
 
 def test_v2_glance_returns_to_persistent_gaze_before_clip_end():
@@ -348,18 +344,17 @@ def test_v2_head_realization_preserves_semantic_timing_roles():
 
 
 def test_v2_user_mask_schedule_interpolates_without_shifting_semantic_boundaries():
-    watchful = {"value": 1.0}; nervous = {"value": 2.0}; none = {"value": 0.0}
+    watchful = {"value": 1.0}; nervous = {"value": 2.0}
     listener = build_v2_listener_mask_key_schedule([
         {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
         {"phrase_id": "listen", "start": 2, "pose": nervous, "boundary_kind": "affect", "timing_role": "LISTEN_REACTION"},
     ], fps=24)
-    own_turn = build_v2_listener_mask_key_schedule([
+    speaker_affect = build_v2_listener_mask_key_schedule([
         {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
-        {"phrase_id": "start", "start": 2, "pose": none, "boundary_kind": "turn_start"},
-        {"phrase_id": "end", "start": 4, "pose": watchful, "boundary_kind": "turn_end"},
+        {"phrase_id": "speak", "start": 2, "pose": nervous, "boundary_kind": "affect", "timing_role": "SPEAK_ONSET"},
     ], fps=24)
     assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, watchful), (52.0, nervous)]
-    assert [(key["frame"], key["pose"]) for key in own_turn] == [(0.0, watchful), (44.0, watchful), (48.0, none), (96.0, none), (100.0, watchful)]
+    assert [(key["frame"], key["pose"]) for key in speaker_affect] == [(0.0, watchful), (44.0, watchful), (48.0, nervous)]
 
 
 def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path):
@@ -379,8 +374,52 @@ def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path)
     prepared = prepare_dual_v2_listener_mask_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=_ListenerCmds())
     alice = [(row["start"], row["state"]) for row in prepared["ALICE"]["timeline"]]
     bob = [(row["start"], row["state"]) for row in prepared["BOB"]["timeline"]]
-    assert alice == [(0.0, "Watchful-80"), (1.0, "NONE"), (3.0, "Watchful-80")]
-    assert bob == [(0.0, "Nervous-60"), (2.8, "NONE"), (4.0, "Nervous-60")]
+    assert alice == [(0.0, "Watchful-80")]
+    assert bob == [(0.0, "Nervous-60")]
+    prepared_cmds = _ListenerCmds()
+    result = apply_dual_listener_mask_artifacts(prepared_context=prepared, cmds_module=prepared_cmds)
+    assert result["ALICE"]["FACS_animationSource"] == "Add"
+    assert ("setAttr", ("ALICE:FACSMaster.FACS_animationSource", 2), {}) in prepared_cmds.calls
+
+
+def test_v2_user_mask_affect_persists_through_turn_boundaries_until_next_affect(tmp_path):
+    artifacts = {"characters": {}}
+    chayton_events = tmp_path / "CHAYTON.json"
+    chayton_events.write_text(json.dumps({
+        "initial_state": {"state": {"affect": "Nervous-78"}},
+        "events": [{"event_id": "E_AFFECT", "resolved_start": 6.0, "timing_role": "LISTEN_REACTION", "changes": {"affect": "Dislike-70"}}],
+    }))
+    joan_events = tmp_path / "JOAN.json"
+    joan_events.write_text(json.dumps({"initial_state": {"state": {"affect": "MASK-NONE"}}, "events": []}))
+    artifacts["characters"] = {
+        "CHAYTON": {"resolved_sparse_events": str(chayton_events)},
+        "JOAN": {"resolved_sparse_events": str(joan_events)},
+    }
+    timing = tmp_path / "timing.json"
+    timing.write_text(json.dumps({
+        "w1": {"speaker": "CHAYTON", "turn_id": "T01", "start": 1.0, "end": 1.5},
+        "w2": {"speaker": "JOAN", "turn_id": "T02", "start": 2.0, "end": 3.0},
+        "w3": {"speaker": "CHAYTON", "turn_id": "T03", "start": 4.0, "end": 4.5},
+    }))
+    artifacts["conversation_anchor_timing"] = str(timing)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({
+        "schema_version": "dual_animation_manifest_v2", "characters": ["CHAYTON", "JOAN"], "fps": 24,
+        "shared_duration_seconds": 8.0,
+        "character_runtime_mapping": {"CHAYTON": {"script_name": "CHAYTON", "sound_file": "C"}, "JOAN": {"script_name": "JOAN", "sound_file": "J"}},
+        "artifacts": artifacts,
+    }))
+    prepared = prepare_dual_v2_listener_mask_artifacts(
+        manifest_path=manifest,
+        character_mappings={"CHAYTON": {"maya_node": "|CHAYTON:ROOT"}, "JOAN": {"maya_node": "|JOAN:ROOT"}},
+        cmds_module=_ListenerCmds(),
+    )
+    timeline = [(row["start"], row["state"]) for row in prepared["CHAYTON"]["timeline"]]
+    assert timeline == [(0.0, "Nervous-78"), (6.0, "Dislike-70")]
+    keys = prepared["CHAYTON"]["key_schedule"]
+    assert [key["frame"] for key in keys] == [0.0, 144.0, 148.0]
+    assert keys[0]["pose"] == user_pose_for_mask("Nervous-78")
+    assert keys[-1]["pose"] == user_pose_for_mask("Dislike-70")
 
 
 def test_eyelid_mapping_probe_is_read_only_and_reports_exact_plug_edges():

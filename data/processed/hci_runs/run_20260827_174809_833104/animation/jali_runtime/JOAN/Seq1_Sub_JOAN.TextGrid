@@ -30,10 +30,10 @@ item[]
 				text = "XXNONVERBALXX"
 			intervals [5]:
 				xmin = 14.833813
-				xmax = 15.513813
+				xmax = 15.523813
 				text = "bert"
 			intervals [6]:
-				xmin = 15.513813
+				xmin = 15.523813
 				xmax = 15.919000
 				text = "XXNONVERBALXX"
 	item[2]:
@@ -68,14 +68,14 @@ item[]
 				text = "b"
 			intervals [7]:
 				xmin = 14.893813
-				xmax = 15.483813
+				xmax = 15.493813
 				text = "''E"
 			intervals [8]:
-				xmin = 15.483813
-				xmax = 15.513813
+				xmin = 15.493813
+				xmax = 15.523813
 				text = "t"
 			intervals [9]:
-				xmin = 15.513813
+				xmin = 15.523813
 				xmax = 15.919000
 				text = "spn"
 

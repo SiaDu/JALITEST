@@ -5,8 +5,8 @@ total_clip_time = 12.1104.
 total_clip_time = 12.3704. 
 total_clip_time = 14.8338. 
 total_clip_time = 14.8938. 
-total_clip_time = 15.4838. 
-total_clip_time = 15.5138. 
+total_clip_time = 15.4938. 
+total_clip_time = 15.5238. 
 total_clip_time = 15.919. 
 Not using it, so, not loading profile file: ""
 Lip-Sync: sil, . Start. 
