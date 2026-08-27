@@ -120,8 +120,8 @@ def test_listener_timeline_assigns_affect_only_to_non_speaker_and_updates_intens
         "A": [{"phrase_id": "P03", "channel": "affect", "value": "Smug-20"}],
         "B": [{"phrase_id": "P01", "channel": "affect", "value": "Watchful-25"}, {"phrase_id": "P02", "channel": "affect", "value": "Watchful-35"}],
     })
-    assert [item["state"] for item in timeline["A"]] == ["NEUTRAL", "NEUTRAL", "Smug-20"]
-    assert [item["state"] for item in timeline["B"]] == ["Watchful-25", "Watchful-35", "NEUTRAL"]
+    assert [item["state"] for item in timeline["A"]] == ["NONE", "NONE", "Smug-20"]
+    assert [item["state"] for item in timeline["B"]] == ["Watchful-25", "Watchful-35", "NONE"]
     keys = build_listener_mask_key_schedule(timeline["B"], fps=24)
     assert [key["frame"] for key in keys] == [0.0, 22.0, 26.0, 46.0, 50.0]
     assert keys[2]["pose"]["usr_OuterBrowRaise_L.OuterBrowRaise_L"] == 1.75

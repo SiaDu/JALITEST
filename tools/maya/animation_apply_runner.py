@@ -214,9 +214,9 @@ def build_listener_mask_timeline(
             # that keeps preflight deterministic across future role changes.
             if alias != speaker:
                 name, intensity = parse_mask_state(raw_state)
-                state = "NEUTRAL" if name == "NEUTRAL" else f"{name}-{intensity:g}"
+                state = "NONE" if name == "NONE" else f"{name}-{intensity:g}"
             else:
-                state = "NEUTRAL"
+                state = "NONE"
             result[alias].append({"phrase_id": phrase_id, "speaker": speaker, "start": start, "end": end, "state": state, "pose": user_pose_for_mask(state)})
     return result
 
@@ -293,7 +293,7 @@ def prepare_dual_listener_mask_artifacts(
         missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
         if missing:
             raise RuntimeError(f"{alias}: missing User FACS controls: {', '.join(missing)}")
-        events = [item for item in timeline[alias] if item["state"] != "NEUTRAL"]
+        events = [item for item in timeline[alias] if item["state"] != "NONE"]
         scene_range = None
         if hasattr(cmds_module, "playbackOptions"):
             scene_range = (float(cmds_module.playbackOptions(query=True, minTime=True)), float(cmds_module.playbackOptions(query=True, maxTime=True)))
