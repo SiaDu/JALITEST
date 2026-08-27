@@ -384,17 +384,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.phrase_reason = QtWidgets.QPlainTextEdit()
         _configure_multiline_editor(self.phrase_reason, height=240, read_only=True)
         layout.addWidget(self.phrase_reason)
-        self.reason_actions = QtWidgets.QHBoxLayout()
-        self.confirm_reason_button = QtWidgets.QPushButton("Confirm Original Reason")
-        self.confirm_reason_button.clicked.connect(self._confirm_sparse_reason)
-        self.reason_actions.addWidget(self.confirm_reason_button)
-        self.edit_reason_button = QtWidgets.QPushButton("Replace Animator Reason...")
-        self.edit_reason_button.clicked.connect(self._replace_sparse_reason)
-        self.reason_actions.addWidget(self.edit_reason_button)
-        self.reason_actions.addStretch(1)
-        layout.addLayout(self.reason_actions)
-        self.confirm_reason_button.hide()
-        self.edit_reason_button.hide()
         parent.addWidget(group)
 
     def _build_advanced_tab(self) -> None:
@@ -1338,54 +1327,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.phrase_reason.setPlainText(
                 self.score_model.rationale_view(self.phrase_number.value())
             )
-            rows = self.score_model.reason_entries()
-            event = rows[max(0, min(self.phrase_number.value() - 1, len(rows) - 1))][1] if rows else None
-            needs_confirmation = bool(event and event.get("reason_status") == "needs_confirmation")
-            self.confirm_reason_button.setVisible(needs_confirmation and bool(event.get("original_reason")))
-            self.edit_reason_button.setVisible(bool(event))
         else:
             self.phrase_reason.setPlainText(
                 format_rationale_view(self.score_model, self.phrase_number.value())
             )
-            self.confirm_reason_button.hide()
-            self.edit_reason_button.hide()
-
-    def _selected_sparse_reason(self) -> tuple[str, str] | None:
-        if not isinstance(self.score_model, DualSparseScoreModel):
-            return None
-        rows = self.score_model.reason_entries()
-        if not rows:
-            return None
-        actor, event = rows[max(0, min(self.phrase_number.value() - 1, len(rows) - 1))]
-        return actor, str(event.get("event_id") or "")
-
-    def _confirm_sparse_reason(self) -> None:
-        selected = self._selected_sparse_reason()
-        if selected is None:
-            return
-        try:
-            self.score_model.confirm_reason(*selected)
-            self.plan = self.score_model.plan
-            self._refresh_phrase_reason()
-        except Exception as exc:
-            QtWidgets.QMessageBox.warning(self, "Reason Confirmation Required", str(exc))
-
-    def _replace_sparse_reason(self) -> None:
-        selected = self._selected_sparse_reason()
-        if selected is None:
-            return
-        existing = self.score_model._provenance_row(*selected).get("reason") or ""
-        reason, accepted = QtWidgets.QInputDialog.getMultiLineText(
-            self, "Animator Reason", "Current / Animator reason:", str(existing)
-        )
-        if not accepted:
-            return
-        try:
-            self.score_model.set_reason(*selected, reason)
-            self.plan = self.score_model.plan
-            self._refresh_phrase_reason()
-        except Exception as exc:
-            QtWidgets.QMessageBox.warning(self, "Animator Reason Required", str(exc))
 
     def _refresh_metadata_and_diagnostics(self) -> None:
         if self.plan is None:

@@ -69,6 +69,35 @@ def test_v2_rejects_unknown_actor_anchor_and_empty_event():
             parse(body)
 
 
+def test_v2_rejects_two_events_for_one_actor_at_one_anchor_but_allows_multi_channel_event():
+    duplicate = """E001
+actor: ALICE
+anchor: w0001
+gaze: GAZE-BOB
+reason: Looks.
+
+E002
+actor: ALICE
+anchor: w0001
+head: HEAD-DOWN-SUBTLE
+reason: Lowers her head."""
+    with pytest.raises(ProposalValidationError, match="at most one v2 event"):
+        parse(duplicate)
+    proposal = parse("""E001
+actor: ALICE
+anchor: w0001
+gaze: GAZE-BOB
+head: HEAD-DOWN-SUBTLE
+reason: Looks while lowering her head.
+
+E002
+actor: BOB
+anchor: w0001
+head: HEAD-UP-SUBTLE
+reason: Independently reacts.""")
+    assert proposal["events"][0]["changes"] == {"gaze": "GAZE-BOB", "head": "HEAD-DOWN-SUBTLE"}
+
+
 def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
     assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt

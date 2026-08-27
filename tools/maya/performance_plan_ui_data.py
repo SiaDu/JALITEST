@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from expregaze_jali.dual_v2_authored_content import canonical_v2_authored_content
+
 HEAD_VALUE_BY_INVOLVEMENT = {
     0.0: "NONE",
     0.25: "LOW",
@@ -65,34 +67,12 @@ def next_edited_snapshot_path(path: str | Path) -> Path:
     return source.with_name(f"{base}_edited_{max(existing, default=0) + 1:02d}{source.suffix}")
 
 
-def canonical_v2_authored_content(plan: dict[str, Any]) -> dict[str, Any]:
-    """Return only v2 animator-authorable semantics in deterministic form."""
-    characters = [str(actor) for actor in plan.get("characters", [])]
-    tracks: list[dict[str, Any]] = []
-    for actor in characters:
-        for event in (plan.get("tracks", {}).get(actor) or []):
-            tracks.append({
-                "actor": actor,
-                "anchor_id": event.get("anchor_id"),
-                "changes": dict(event.get("changes") or {}),
-                "reason": event.get("reason"),
-            })
-    tracks.sort(key=lambda row: (row["actor"], str(row["anchor_id"]), json.dumps(row["changes"], sort_keys=True), str(row["reason"])))
-    return {
-        "characters": characters,
-        "initial_states": {actor: dict((plan.get("initial_states") or {}).get(actor) or {}) for actor in characters},
-        "initial_reasons": {actor: (plan.get("initial_reasons") or {}).get(actor) for actor in characters},
-        "tracks": tracks,
-    }
-
-
 def is_v2_plan_edited(plan: dict[str, Any], original_plan: dict[str, Any] | None = None) -> bool:
     """Compare current v2 semantics with the immutable LLM-authored baseline."""
     if plan.get("schema_version") != "dual_performance_plan_v2":
         return True
     baseline = ((original_plan or plan).get("provenance") or {}).get("original_authored_content")
-    if not isinstance(baseline, dict):
-        baseline = canonical_v2_authored_content(original_plan or plan)
+    baseline = canonical_v2_authored_content(baseline) if isinstance(baseline, dict) else canonical_v2_authored_content(original_plan or plan)
     return canonical_v2_authored_content(plan) != baseline
 
 
@@ -115,16 +95,6 @@ def save_animation_runtime_plan(
     """Validate/apply the current score and persist the exact canonical runtime plan."""
     plan = score_model.apply(score_text)
     if plan.get("schema_version") == "dual_performance_plan_v2":
-        unresolved = [
-            event["event_id"] for track in plan.get("tracks", {}).values() for event in track
-            if event.get("reason_status") == "needs_confirmation"
-        ]
-        unresolved.extend(
-            f"INITIAL:{actor}" for actor, row in (plan.get("initial_provenance") or {}).items()
-            if isinstance(row, dict) and row.get("reason_status") == "needs_confirmation"
-        )
-        if unresolved:
-            raise ValueError("Edited v2 performance decisions require reason confirmation: " + ", ".join(unresolved))
         output = Path(path)
         if output.exists() and output.name == "performance_plan.json" and not is_v2_plan_edited(plan):
             return plan

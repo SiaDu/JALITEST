@@ -184,4 +184,7 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
         if not changes:
             raise ProposalValidationError(f"{event_id}: At least one semantic change is required")
         events.append({"event_id": event_id, "actor": actor, "anchor_id": anchor_id, "changes": changes, "reason": raw.get("reason", "").strip() or None})
+    identities = [(event["actor"], event["anchor_id"]) for event in events]
+    if len(identities) != len(set(identities)):
+        raise ProposalValidationError("Each actor may have at most one v2 event at the same anchor")
     return {"analyze": "\n".join(sections["ANALYZE"]).strip(), "initial_states": initial_states, "initial_reasons": initial_reasons, "events": events, "diagnostics": {"errors": [], "warnings": []}}

@@ -63,7 +63,7 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
         if not isinstance(tracks[actor], list):
             raise ValueError(f"Dual v2 track {actor} must be a list.")
         anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(model.anchors)}
-        assigned_channels: set[tuple[str, str]] = set()
+        assigned_anchors: set[str] = set()
         blink_hold_active = False
         ordered_events = sorted(enumerate(tracks[actor]), key=lambda row: (anchor_order.get(row[1].get("anchor_id"), len(anchor_order)), row[0]))
         for _source_index, event in ordered_events:
@@ -75,11 +75,9 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
             changes = event.get("changes")
             if not isinstance(changes, dict) or not changes or not set(changes) <= {"affect", "gaze", "head", "blink"}:
                 raise ValueError(f"{event['event_id']}: invalid or empty v2 changes.")
-            for channel in changes:
-                key = (event["anchor_id"], channel)
-                if key in assigned_channels:
-                    raise ValueError(f"{actor}: duplicate v2 {channel} change at anchor {event['anchor_id']}.")
-                assigned_channels.add(key)
+            if event["anchor_id"] in assigned_anchors:
+                raise ValueError(f"{actor}: duplicate v2 event at anchor {event['anchor_id']}.")
+            assigned_anchors.add(event["anchor_id"])
             if not str(event.get("reason") or "").strip():
                 raise ValueError(f"{event['event_id']}: v2 event reason is required.")
             if "affect" in changes and not valid_affect(changes["affect"], initial=False):

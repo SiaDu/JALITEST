@@ -231,8 +231,8 @@ def test_v2_compiler_rejects_none_duplicate_channels_and_invalid_blink_hold_orde
     none = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "GLANCE-NONE"}, "reason": "Bad."}], "WILL": []}}
     with pytest.raises(ValueError, match="invalid v2 executable gaze"):
         _validate_v2_plan(none, model)
-    duplicate = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "One."}, {"event_id": "E2", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}, "reason": "Two."}], "WILL": [{"event_id": "E3", "actor": "WILL", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "Independent actor."}]}}
-    with pytest.raises(ValueError, match="duplicate v2 head"):
+    duplicate = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "GAZE-WILL"}, "reason": "One."}, {"event_id": "E2", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}, "reason": "Two."}], "WILL": [{"event_id": "E3", "actor": "WILL", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "Independent actor."}]}}
+    with pytest.raises(ValueError, match="duplicate v2 event"):
         _validate_v2_plan(duplicate, model)
     invalid_hold = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"blink": "EYE_OPEN"}, "reason": "Bad open."}], "WILL": []}}
     with pytest.raises(ValueError, match="requires an active"):

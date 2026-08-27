@@ -398,9 +398,10 @@ def test_dual_ui_keeps_acting_interpretation_read_only_and_regenerate_placeholde
     assert 'self._show_phase_one_placeholder("Regenerate Plan")' in source
     save_section = source.split("    def _save_to", 1)[1].split("    def ", 1)[0]
     assert "not isinstance(self.score_model, DualSparseScoreModel)" in save_section
+    assert "Confirm Original Reason" not in source and "Replace Animator Reason" not in source
 
 
-def test_v2_runtime_plan_rejects_unconfirmed_reason(tmp_path: Path):
+def test_v2_runtime_plan_saves_edited_semantics_without_reason_confirmation(tmp_path: Path):
     from tools.maya.dual_sparse_score_model import DualSparseScoreModel
     from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
@@ -412,12 +413,9 @@ def test_v2_runtime_plan_rejects_unconfirmed_reason(tmp_path: Path):
     model = DualSparseScoreModel(plan, anchors)
     texts = dict(model.score_texts)
     texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-60>")
-    with pytest.raises(ValueError, match="E1"):
-        save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_edited_01.json")
-    model.apply(texts)
-    model.set_reason("BOB", "E1", "She covers the refusal with warmth.")
     saved = save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_edited_01.json")
     assert saved["tracks"]["BOB"][0]["reason_status"] == "user_edited"
+    assert saved["tracks"]["BOB"][0]["reason"] == "user_edited"
 
 
 def test_v2_canonical_snapshots_are_immutable_and_unedited_runtime_reuses_original(tmp_path: Path):
@@ -457,6 +455,25 @@ def test_v2_canonical_comparison_detects_every_authored_change_but_ignores_displ
     changed_initial = copy.deepcopy(unchanged); changed_initial["initial_states"]["ALICE"]["affect"] = "Happy-60"; variants.append(changed_initial)
     changed_initial_reason = copy.deepcopy(unchanged); changed_initial_reason["initial_reasons"]["ALICE"] = "Changed."; variants.append(changed_initial_reason)
     assert all(is_v2_plan_edited(plan, original) for plan in variants)
+
+
+def test_real_v2_builder_baseline_is_canonical_and_untouched_score_is_not_edited():
+    from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
+    from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
+    from tools.maya.dual_sparse_score_model import DualSparseScoreModel
+
+    anchors = build_conversation_anchor_model("ALICE: Hello.\nBOB: No.", character_a="ALICE", character_b="BOB")
+    proposal = {"analyze": "Context.", "initial_states": {"ALICE": {"affect": "Watchful-60", "gaze": "GAZE-BOB"}, "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "Ready.", "BOB": "Ready."}, "events": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0002", "changes": {"gaze": "GAZE-DOWN", "head": "HEAD-DOWN-SUBTLE"}, "reason": "Withdraws."}], "diagnostics": {"errors": [], "warnings": []}}
+    plan = build_dual_performance_plan_v2(proposal, anchor_model=anchors, sequence_id="fixture")
+    assert plan["provenance"]["original_authored_content"] == canonical_v2_authored_content(plan)
+    model = DualSparseScoreModel(plan, anchors)
+    untouched = model.apply(dict(model.score_texts))
+    assert not is_v2_plan_edited(untouched, model.original_plan)
+    assert len(untouched["tracks"]["ALICE"]) == 1
+    assert untouched["tracks"]["ALICE"][0]["changes"] == {"gaze": "GAZE-DOWN", "head": "HEAD-DOWN-SUBTLE"}
+    texts = dict(model.score_texts)
+    texts["ALICE"] = texts["ALICE"].replace("<GAZE-DOWN>", "<GAZE-RIGHT>")
+    assert is_v2_plan_edited(model.apply(texts), model.original_plan)
 
 
 def test_v2_delete_only_edit_saves_numbered_snapshot_without_resurrecting_event(tmp_path: Path):

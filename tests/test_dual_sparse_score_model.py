@@ -60,7 +60,9 @@ def test_editing_tags_updates_only_sparse_track_and_reason_view():
     assert applied["tracks"]["ALICE"][0]["changes"] == PLAN["tracks"]["ALICE"][0]["changes"]
     assert applied["tracks"]["ALICE"][0]["reason_status"] == "llm_original"
     assert applied["tracks"]["BOB"][0]["source_event_id"] == "E002"
-    assert applied["tracks"]["BOB"][0]["reason_status"] == "needs_confirmation"
+    assert applied["tracks"]["BOB"][0]["reason_status"] == "user_edited"
+    assert applied["tracks"]["BOB"][0]["reason"] == "user_edited"
+    assert applied["tracks"]["BOB"][0]["changes"] == {"affect": "Happy-120", "gaze": "GAZE-DOWN"}
     reason = model.rationale_view(3)
     assert "ALICE @ \"No.\"" in reason and "affect -> Watchful-100" in reason
 
@@ -74,22 +76,29 @@ def test_deleting_only_original_event_is_preserved_as_a_semantic_edit_baseline()
     assert applied["provenance"]["original_authored_content"]["tracks"]["BOB"][0]["event_id"] == "E002"
 
 
-def test_edited_reason_requires_explicit_confirmation_or_animator_replacement():
+def test_new_score_event_uses_user_edited_reason_without_an_original_rationale():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    texts = dict(model.score_texts)
+    texts["BOB"] = texts["BOB"].replace("No.", "<HEAD-UP-SUBTLE>No.")
+    applied = model.apply(texts)
+    added = next(event for event in applied["tracks"]["BOB"] if event["anchor_id"] == "w0004")
+    assert added["edited_by_user"] is True
+    assert added["reason"] == "user_edited"
+    assert added["original_reason"] is None
+
+
+def test_edited_semantics_use_non_blocking_user_edited_provenance():
     model = DualSparseScoreModel(PLAN, ANCHORS)
     texts = dict(model.score_texts)
     texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-120>")
     plan = model.apply(texts)
-    assert plan["tracks"]["BOB"][0]["reason_status"] == "needs_confirmation"
-    model.confirm_reason("BOB", "E002")
-    assert model.plan["tracks"]["BOB"][0]["reason_status"] == "user_confirmed"
-    # A subsequent score apply preserves the explicit confirmation.
-    assert model.apply(texts)["tracks"]["BOB"][0]["reason_status"] == "user_confirmed"
-    model.set_reason("BOB", "E002", "The new warmth defuses the threat.")
-    event = model.plan["tracks"]["BOB"][0]
+    event = plan["tracks"]["BOB"][0]
     assert event["reason_status"] == "user_edited"
+    assert event["reason"] == "user_edited"
+    assert event["edited_by_user"] is True
     assert event["original_reason"] == "The threat lands."
     assert event["original_changes"] == {"affect": "Nervous-60", "gaze": "GAZE-DOWN"}
-    assert "Original LLM reason" in model.rationale_view(4)
+    assert "Reason:\nuser_edited" in model.rationale_view(4)
 
 
 def test_initial_edit_has_separate_reason_provenance():
@@ -100,9 +109,8 @@ def test_initial_edit_has_separate_reason_provenance():
     row = plan["initial_provenance"]["ALICE"]
     assert row["source_event_id"] == "INITIAL:ALICE"
     assert row["original_state"]["affect"] == "Watchful-80"
-    assert row["reason_status"] == "needs_confirmation"
-    model.confirm_reason("ALICE", "INITIAL:ALICE")
-    assert model.plan["initial_provenance"]["ALICE"]["reason_status"] == "user_confirmed"
+    assert row["reason_status"] == "user_edited"
+    assert row["reason"] == "user_edited"
 
 
 def test_score_requires_visible_initial_affect_and_initial_reason():
