@@ -22,7 +22,9 @@ from listener_mask_library import (  # noqa: E402
     exported_combined_rows,
     exported_factory_rows,
     is_eyelid_au,
+    mapped_user_plugs,
     parse_mask_state,
+    unmapped_expressive_eyelid_aus,
     user_pose_for_mask,
 )
 
@@ -85,12 +87,31 @@ def test_all_factory_masks_and_native_jali_percentages_are_supported():
     assert user_pose_for_mask("Watchful-200")["usr_OuterBrowRaise_L.OuterBrowRaise_L"] == FACTORY_MASK_AUS["Watchful"]["au02_ouBrowL"] * 2.0
 
 
-def test_all_non_eyelid_factory_aus_are_explicitly_mapped_and_lids_are_filtered():
+def test_all_factory_aus_are_explicitly_mapped_including_expressive_eyelids():
     used = {au for pose in FACTORY_MASK_AUS.values() for au in pose}
-    assert all(au in AU_TO_USER_CONTROL or is_eyelid_au(au) for au in used)
-    assert {au for au in used if is_eyelid_au(au)} >= {"au05_uLidUpL", "au07_lLidUpL", "au41_LidDwnR"}
+    assert used <= set(AU_TO_USER_CONTROL)
+    assert not unmapped_expressive_eyelid_aus()
+    assert AU_TO_USER_CONTROL["au05_uLidUpL"] == {"plug": "usr_blink_L.LidDown_L", "multiplier": -1.0}
+    assert AU_TO_USER_CONTROL["au05_uLidUpR"] == {"plug": "usr_blink_R.LidDown_R", "multiplier": -1.0}
+    assert AU_TO_USER_CONTROL["au07_lLidUpL"] == {"plug": "usr_loLid_L.LidUp_L", "multiplier": 1.0}
+    assert AU_TO_USER_CONTROL["au07_lLidUpR"] == {"plug": "usr_loLid_R.LidUp_R", "multiplier": 1.0}
+    assert AU_TO_USER_CONTROL["au41_LidDwnL"] == {"plug": "usr_blink_L.LidDown_L", "multiplier": 1.0}
+    assert AU_TO_USER_CONTROL["au41_LidDwnR"] == {"plug": "usr_blink_R.LidDown_R", "multiplier": 1.0}
+    assert {"usr_blink_L.LidDown_L", "usr_blink_R.LidDown_R", "usr_loLid_L.LidUp_L", "usr_loLid_R.LidUp_R"} <= set(mapped_user_plugs())
     pose = user_pose_for_mask("Angered-100")
     assert pose["usr_Sneer_R.Sneer_R"] == 2.0
     assert pose["usr_LoLip_L_ctl.TightenFunnel_loLip_L"] == 2.0
     assert pose["usr_UpLip_R_ctl.DownUp_upLip_R"] == 1.0
-    assert all("lid" not in plug.casefold() for plug in pose)
+    assert pose["usr_blink_L.LidDown_L"] == -4.0
+    assert pose["usr_blink_R.LidDown_R"] == -4.0
+    assert pose["usr_loLid_L.LidUp_L"] == 1.0
+
+
+def test_shared_eyelid_plugs_accumulate_factory_au_contributions(monkeypatch):
+    import listener_mask_library as library
+
+    monkeypatch.setitem(library.FACTORY_MASK_AUS, "Neutral", {
+        "au05_uLidUpL": 4.0,
+        "au41_LidDwnL": 1.5,
+    })
+    assert user_pose_for_mask("Neutral-100")["usr_blink_L.LidDown_L"] == -2.5

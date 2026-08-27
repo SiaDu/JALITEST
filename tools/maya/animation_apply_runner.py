@@ -11,7 +11,7 @@ import shutil
 import sys
 from typing import Any, Iterable
 
-from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, parse_mask_state, unmapped_expressive_eyelid_aus, user_pose_for_mask
+from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, mapped_user_plugs, parse_mask_state, unmapped_expressive_eyelid_aus, user_pose_for_mask
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -487,7 +487,7 @@ def prepare_dual_listener_mask_artifacts(
         if not cmds_module.objExists(source_plug):
             raise RuntimeError(f"{alias}: missing {source_plug}.")
         add_index = _enum_index(facs, "FACS_animationSource", "Add", cmds_module)
-        plugs = [qualify_rig_control(rig, plug) for plug in AU_TO_USER_CONTROL.values()]
+        plugs = [qualify_rig_control(rig, plug) for plug in mapped_user_plugs()]
         missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
         if missing:
             raise RuntimeError(f"{alias}: missing User FACS controls: {', '.join(missing)}")
@@ -779,7 +779,7 @@ def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: fl
 
 
 def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
-    opened, closed = float(config.get("open_value", 0)), float(config.get("closed_value", 1))
+    opened = float(config.get("open_value", 0))
     presets = config.get("presets") or {}
     keys: list[dict[str, Any]] = []
     hold_active = False
@@ -792,6 +792,7 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
             if hold_active:
                 raise ValueError("EYE_CLOSE_HOLD requires EYE_OPEN before another hold.")
             preset = presets.get(value) or {}
+            closed = float(preset["closure"])
             keys.extend([
                 {"frame": cursor, "value": opened, "event_id": event.get("event_id")},
                 {"frame": cursor + int(preset.get("close_frames", 4)), "value": closed, "event_id": event.get("event_id")},
@@ -807,6 +808,7 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
         preset = presets.get(value)
         if not isinstance(preset, dict):
             raise ValueError(f"Missing performative blink preset {value}")
+        closed = float(preset["closure"])
         for _index in range(int(preset["count"])):
             keys.extend([
                 {"frame": cursor, "value": opened, "event_id": event.get("event_id")},
@@ -1020,7 +1022,10 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
     actors = manifest["characters"]
     # Unsupported eyelid AUs are an evidence requirement, not a blink-ownership
     # decision. They cannot be keyed until the live rig proves their User plugs.
-    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "expressive_eyelid_mapping_requirement": list(unmapped_expressive_eyelid_aus())}
+    unresolved_eyelids = list(unmapped_expressive_eyelid_aus())
+    if unresolved_eyelids:
+        raise RuntimeError("Unmapped JALI 2025 expressive eyelid AUs: " + ", ".join(unresolved_eyelids))
+    prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "expressive_eyelid_mapping_requirement": []}
     for actor in actors:
         events = _load_v2_actor_events(manifest, actor)
         initial_state = _load_v2_actor_initial_state(manifest, actor)
@@ -1066,7 +1071,7 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         source_plug = f"{facs}.FACS_animationSource"
         if not cmds_module.objExists(source_plug):
             raise RuntimeError(f"{actor}: missing {source_plug}.")
-        plugs = [qualify_rig_control(rig, plug) for plug in AU_TO_USER_CONTROL.values()]
+        plugs = [qualify_rig_control(rig, plug) for plug in mapped_user_plugs()]
         missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
         if missing:
             raise RuntimeError(f"{actor}: missing User FACS controls: {', '.join(missing)}")

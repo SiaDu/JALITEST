@@ -24,9 +24,9 @@ _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 FACTORY_EXPORT_PATH: Final = _REPOSITORY_ROOT / "data" / "debug" / "jali_factory_paralingual_array_JALI2025.json"
 COMBINED_EXPORT_PATH: Final = _REPOSITORY_ROOT / "data" / "debug" / "FACS_paralingual_array_JALI2025.json"
 
-# These exported expressive eyelid AUs have no evidenced User FACSMaster
-# conversion in the checked-in JALI 2025 control data. They remain a Maya-smoke
-# mapping requirement; do not invent plugs for them.
+# Expressive eyelid AUs are persistent Mask pose, distinct from the central
+# transient blink control. These mappings are live-validated on Angela and
+# ValleyGirl JALI 2025 rigs.
 EYELID_AU_PREFIXES: Final = ("au05_", "au07_", "au41_")
 EYELID_AUS: Final = frozenset(EYELID_AU_PREFIXES)
 
@@ -94,9 +94,9 @@ def exported_combined_rows() -> dict[str, dict[str, float]]:
 # Only non-zero exported coefficients for the supported semantic vocabulary.
 FACTORY_MASK_AUS: Final[dict[str, dict[str, float]]] = exported_factory_rows()
 
-# Explicit namespace-free User FACSMaster controls.  These correspond to the
+# Explicit namespace-free User FACSMaster controls. These correspond to the
 # installed JALI 2025 conversion table and ValleyGirl usr_FACSMaster topology.
-AU_TO_USER_CONTROL: Final[dict[str, str]] = {
+_AU_TO_USER_PLUG: Final[dict[str, str]] = {
     "au01_inBrowL": "usr_InnerBrowRaise_L.InnerBrowRaise_L", "au01_inBrowR": "usr_InnerBrowRaise_R.InnerBrowRaise_R",
     "au02_ouBrowL": "usr_OuterBrowRaise_L.OuterBrowRaise_L", "au02_ouBrowR": "usr_OuterBrowRaise_R.OuterBrowRaise_R",
     "au03_doBrowL": "usr_Squint_L.OuterSquint_L", "au03_doBrowR": "usr_Squint_R.OuterSquint_R",
@@ -120,11 +120,30 @@ AU_TO_USER_CONTROL: Final[dict[str, str]] = {
     "au44_SquintL": "usr_Squint_L.Squint_L", "au44_SquintR": "usr_Squint_R.Squint_R",
 }
 
+# One authoritative AU conversion table. A multiplier is necessary because
+# AU05 and AU41 intentionally share side-specific LidDown plugs with opposite
+# polarities; callers must accumulate rather than overwrite shared plugs.
+AU_TO_USER_CONTROL: Final[dict[str, dict[str, float | str]]] = {
+    au: {"plug": plug, "multiplier": 1.0} for au, plug in _AU_TO_USER_PLUG.items()
+} | {
+    "au05_uLidUpL": {"plug": "usr_blink_L.LidDown_L", "multiplier": -1.0},
+    "au05_uLidUpR": {"plug": "usr_blink_R.LidDown_R", "multiplier": -1.0},
+    "au07_lLidUpL": {"plug": "usr_loLid_L.LidUp_L", "multiplier": 1.0},
+    "au07_lLidUpR": {"plug": "usr_loLid_R.LidUp_R", "multiplier": 1.0},
+    "au41_LidDwnL": {"plug": "usr_blink_L.LidDown_L", "multiplier": 1.0},
+    "au41_LidDwnR": {"plug": "usr_blink_R.LidDown_R", "multiplier": 1.0},
+}
+
+
+def mapped_user_plugs() -> tuple[str, ...]:
+    """Namespace-free User controls managed by listener Mask realization."""
+    return tuple(sorted({str(mapping["plug"]) for mapping in AU_TO_USER_CONTROL.values()}))
+
 
 def _validate_au_classification() -> None:
     unknown = sorted({
         au for pose in FACTORY_MASK_AUS.values() for au in pose
-        if not is_eyelid_au(au) and au not in AU_TO_USER_CONTROL
+        if au not in AU_TO_USER_CONTROL
     })
     if unknown:
         raise RuntimeError(f"Unclassified non-eyelid listener Mask AUs: {unknown}")
@@ -154,18 +173,17 @@ def parse_mask_state(value: object) -> tuple[str, float]:
 
 
 def user_pose_for_mask(value: object) -> dict[str, float]:
-    """Resolve one Mask into filtered User-lane plug values."""
+    """Resolve one Mask into accumulated persistent User-lane values."""
     name, intensity = parse_mask_state(value)
-    result = {plug: 0.0 for plug in AU_TO_USER_CONTROL.values()}
+    result = {plug: 0.0 for plug in mapped_user_plugs()}
     if name == "NONE":
         return result
     scale = intensity / 100.0
     for au, coefficient in FACTORY_MASK_AUS[name].items():
-        if is_eyelid_au(au):
-            continue
         try:
-            plug = AU_TO_USER_CONTROL[au]
+            mapping = AU_TO_USER_CONTROL[au]
         except KeyError as exc:  # A future source change must never be silent.
-            raise RuntimeError(f"Unmapped non-eyelid listener Mask AU {au!r}.") from exc
-        result[plug] = coefficient * scale
+            raise RuntimeError(f"Unmapped listener Mask AU {au!r}.") from exc
+        plug = str(mapping["plug"])
+        result[plug] += coefficient * scale * float(mapping["multiplier"])
     return result

@@ -153,7 +153,7 @@ def test_v2_generate_disables_jali_blink_before_each_realign(monkeypatch, tmp_pa
         assert result[actor]["calculate_blinks"] is False
 
 
-def test_confused_25_scales_factory_coefficients_and_filters_eyelids():
+def test_confused_25_scales_factory_coefficients_including_expressive_eyelids():
     pose = user_pose_for_mask("Confused-25")
     assert pose["usr_InnerBrowRaise_L.InnerBrowRaise_L"] == 1.25
     assert pose["usr_OuterBrowRaise_R.OuterBrowRaise_R"] == 1.5
@@ -162,7 +162,8 @@ def test_confused_25_scales_factory_coefficients_and_filters_eyelids():
     assert pose["usr_Pucker_L.Pucker_L"] == 0.5
     assert pose["usr_Squint_R.Squint_R"] == 0.5
     assert "au05_uLidUpL" in FACTORY_MASK_AUS["Confused"]
-    assert all("blink" not in plug.casefold() and "lid" not in plug.casefold() for plug in pose)
+    assert pose["usr_blink_L.LidDown_L"] == -0.75
+    assert pose["usr_blink_R.LidDown_R"] == -0.75
 
 
 def test_listener_timeline_assigns_affect_only_to_non_speaker_and_updates_intensity():
@@ -271,7 +272,8 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
         character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}},
         cmds_module=_ListenerCmds(),
     )
-    assert prepared["expressive_eyelid_mapping_requirement"]
+    assert prepared["expressive_eyelid_mapping_requirement"] == []
+    assert {"ALICE:usr_blink_L.LidDown_L", "ALICE:usr_blink_R.LidDown_R", "ALICE:usr_loLid_L.LidUp_L", "ALICE:usr_loLid_R.LidUp_R"} <= set(prepared["ALICE"]["managed_user_plugs"])
     assert prepared["ALICE"]["timeline"][0]["start"] == 0.0
     assert prepared["ALICE"]["timeline"][0]["state"] == "Watchful-80"
     assert any(row["start"] == .5 and row["state"] == "NONE" for row in prepared["ALICE"]["timeline"])
@@ -376,18 +378,18 @@ def test_eyelid_mapping_probe_is_read_only_and_reports_exact_plug_edges():
 
 
 def test_v2_blink_schedule_contains_only_explicit_performative_events():
-    config = {"open_value": 0, "closed_value": 1, "presets": {"DOUBLE_BLINK": {"close_frames": 2, "hold_frames": 1, "open_frames": 2, "count": 2, "gap_frames": 4}}}
+    config = {"open_value": 0, "presets": {"DOUBLE_BLINK": {"closure": 7, "close_frames": 2, "hold_frames": 1, "open_frames": 2, "count": 2, "gap_frames": 4}}}
     keys = build_blink_overlay_key_schedule([{"event_id": "E1", "resolved_start": 1.0, "changes": {"blink": "DOUBLE_BLINK"}}], fps=24, config=config)
-    assert len(keys) == 8 and keys[0]["frame"] == 24 and keys[-1]["value"] == 0
+    assert len(keys) == 8 and keys[0]["frame"] == 24 and keys[1]["value"] == 7 and keys[-1]["value"] == 0
 
 
 def test_v2_eye_close_hold_persists_until_explicit_eye_open_and_suppresses_regulatory_blinks():
-    config = {"open_value": 0, "closed_value": 1, "presets": {"EYE_CLOSE_HOLD": {"close_frames": 4}}}
+    config = {"open_value": 0, "presets": {"EYE_CLOSE_HOLD": {"closure": 9, "close_frames": 4}}}
     events = [
         {"event_id": "HOLD", "resolved_start": 1, "changes": {"blink": "EYE_CLOSE_HOLD"}},
         {"event_id": "OPEN", "resolved_start": 3, "changes": {"blink": "EYE_OPEN"}},
     ]
-    assert [(key["frame"], key["value"]) for key in build_blink_overlay_key_schedule(events, fps=24, config=config)] == [(24.0, 0.0), (28.0, 1.0), (72.0, 0.0)]
+    assert [(key["frame"], key["value"]) for key in build_blink_overlay_key_schedule(events, fps=24, config=config)] == [(24.0, 0.0), (28.0, 9.0), (72.0, 0.0)]
     planned = plan_v2_blinks([
         _resolved("HOLD", 1, blink="EYE_CLOSE_HOLD"),
         _resolved("AFFECT", 2, affect="Nervous-80"),
@@ -396,6 +398,29 @@ def test_v2_eye_close_hold_persists_until_explicit_eye_open_and_suppresses_regul
     assert [(row["resolved_start"], row["changes"]["blink"]) for row in planned] == [(1.0, "EYE_CLOSE_HOLD"), (3.0, "EYE_OPEN")]
     with pytest.raises(ValueError, match="requires an active EYE_CLOSE_HOLD"):
         build_blink_overlay_key_schedule([{"event_id": "OPEN", "resolved_start": 1, "changes": {"blink": "EYE_OPEN"}}], fps=24, config=config)
+
+
+def test_v2_blink_schedule_uses_evidenced_per_preset_closure_values():
+    config = {"open_value": 0, "presets": {
+        "BLINK": {"closure": 7, "close_frames": 1, "hold_frames": 0, "open_frames": 1, "count": 1, "gap_frames": 0},
+        "DOUBLE_BLINK": {"closure": 7, "close_frames": 1, "hold_frames": 0, "open_frames": 1, "count": 2, "gap_frames": 1},
+        "SLOW_BLINK": {"closure": 8, "close_frames": 1, "hold_frames": 0, "open_frames": 1, "count": 1, "gap_frames": 0},
+        "EYE_CLOSE_HOLD": {"closure": 9, "close_frames": 1},
+    }}
+    for blink, closure in (("BLINK", 7), ("DOUBLE_BLINK", 7), ("SLOW_BLINK", 8), ("EYE_CLOSE_HOLD", 9)):
+        keys = build_blink_overlay_key_schedule([{"event_id": blink, "resolved_start": 0, "changes": {"blink": blink}}], fps=24, config=config)
+        assert closure in [key["value"] for key in keys]
+
+
+def test_v2_blink_config_uses_live_evidenced_per_preset_closures():
+    import yaml
+
+    config = yaml.safe_load((Path(__file__).resolve().parents[1] / "configs" / "maya" / "valleygirl.yaml").read_text(encoding="utf-8"))["maya_performative_blink_overlay"]
+    assert config["open_value"] == 0
+    assert {name: preset["closure"] for name, preset in config["presets"].items()} == {
+        "BLINK": 7, "DOUBLE_BLINK": 7, "SLOW_BLINK": 8, "EYE_CLOSE_HOLD": 9,
+    }
+    assert "closed_value" not in config
 
 
 def _resolved(event_id, time, actor="ALICE", **changes):

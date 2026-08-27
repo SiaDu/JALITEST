@@ -122,13 +122,12 @@ maya_performative_blink_overlay:
   vendor_output_control_suffix: LIDS_jSync_plusMinus
   vendor_output_attribute: Down_upLids_jSync
   open_value: 0
-  closed_value: 1
   presets:
-    BLINK: {close_frames: 2, hold_frames: 1, open_frames: 2, count: 1, gap_frames: 0}
-    SLOW_BLINK: {close_frames: 5, hold_frames: 4, open_frames: 6, count: 1, gap_frames: 0}
-    DOUBLE_BLINK: {close_frames: 2, hold_frames: 1, open_frames: 2, count: 2, gap_frames: 4}
+    BLINK: {closure: 7, close_frames: 2, hold_frames: 1, open_frames: 2, count: 1, gap_frames: 0}
+    SLOW_BLINK: {closure: 8, close_frames: 5, hold_frames: 4, open_frames: 6, count: 1, gap_frames: 0}
+    DOUBLE_BLINK: {closure: 7, close_frames: 2, hold_frames: 1, open_frames: 2, count: 2, gap_frames: 4}
     # Persistent authored eye closure; EYE_OPEN explicitly releases this state.
-    EYE_CLOSE_HOLD: {close_frames: 4}
+    EYE_CLOSE_HOLD: {closure: 9, close_frames: 4}
 
 maya_jali_annotation:
   jsync_node: jSync1
