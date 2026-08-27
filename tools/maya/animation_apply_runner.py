@@ -418,7 +418,7 @@ def build_listener_mask_key_schedule(
 def build_v2_listener_mask_key_schedule(
     intervals: Iterable[dict[str, Any]], *, fps: float
 ) -> list[dict[str, Any]]:
-    """Emit exact semantic-boundary v2 User Mask keys; legacy schedules stay unchanged."""
+    """Realize exact v2 semantic boundaries with role-aware visual interpolation."""
     if fps <= 0:
         raise ValueError("V2 Listener Mask timing requires positive fps.")
     keys: list[dict[str, Any]] = []
@@ -428,7 +428,16 @@ def build_v2_listener_mask_key_schedule(
         boundary = float(interval["start"]) * fps
         if previous == pose:
             continue
-        keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
+        kind = str(interval.get("boundary_kind") or "INITIAL_STATE")
+        role = str(interval.get("timing_role") or "")
+        if previous is None or kind == "INITIAL_STATE":
+            keys.append({"frame": 0.0, "pose": pose, "phrase_id": interval["phrase_id"]})
+        elif kind == "turn_start" or (kind == "affect" and role == "SPEAK_ONSET"):
+            keys.append({"frame": max(0.0, boundary - 4.0), "pose": previous, "phrase_id": interval["phrase_id"]})
+            keys.append({"frame": boundary, "pose": pose, "phrase_id": interval["phrase_id"]})
+        else:
+            keys.append({"frame": boundary, "pose": previous, "phrase_id": interval["phrase_id"]})
+            keys.append({"frame": boundary + 4.0, "pose": pose, "phrase_id": interval["phrase_id"]})
         previous = pose
     return keys
 
@@ -747,6 +756,8 @@ def _head_target(value: str, config: dict[str, Any]) -> dict[str, float]:
 
 
 def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
+    transition = int(config.get("transition_frames", 4))
+    previous = {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
     keys: list[dict[str, Any]] = []
     for event in events:
         value = (event.get("changes") or {}).get("head")
@@ -754,7 +765,16 @@ def build_head_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: fl
             continue
         frame = float(event["resolved_start"]) * float(fps)
         target = _head_target(str(value), config)
-        keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
+        role = str(event.get("timing_role") or "SPEAK_ONSET")
+        if role == "INITIAL_STATE":
+            keys.append({"frame": 0.0, "values": target, "event_id": event.get("event_id")})
+        elif role == "LISTEN_REACTION":
+            keys.append({"frame": frame, "values": dict(previous), "event_id": event.get("event_id")})
+            keys.append({"frame": frame + transition, "values": target, "event_id": event.get("event_id")})
+        else:
+            keys.append({"frame": max(0.0, frame - transition), "values": dict(previous), "event_id": event.get("event_id")})
+            keys.append({"frame": frame, "values": target, "event_id": event.get("event_id")})
+        previous = target
     return keys
 
 
@@ -762,14 +782,31 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
     opened, closed = float(config.get("open_value", 0)), float(config.get("closed_value", 1))
     presets = config.get("presets") or {}
     keys: list[dict[str, Any]] = []
+    hold_active = False
     for event in events:
         value = (event.get("changes") or {}).get("blink")
         if not value:
             continue
+        cursor = float(event["resolved_start"]) * float(fps)
+        if value == "EYE_CLOSE_HOLD":
+            if hold_active:
+                raise ValueError("EYE_CLOSE_HOLD requires EYE_OPEN before another hold.")
+            preset = presets.get(value) or {}
+            keys.extend([
+                {"frame": cursor, "value": opened, "event_id": event.get("event_id")},
+                {"frame": cursor + int(preset.get("close_frames", 4)), "value": closed, "event_id": event.get("event_id")},
+            ])
+            hold_active = True
+            continue
+        if value == "EYE_OPEN":
+            if not hold_active:
+                raise ValueError("EYE_OPEN requires an active EYE_CLOSE_HOLD.")
+            keys.append({"frame": cursor, "value": opened, "event_id": event.get("event_id")})
+            hold_active = False
+            continue
         preset = presets.get(value)
         if not isinstance(preset, dict):
             raise ValueError(f"Missing performative blink preset {value}")
-        cursor = float(event["resolved_start"]) * float(fps)
         for _index in range(int(preset["count"])):
             keys.extend([
                 {"frame": cursor, "value": opened, "event_id": event.get("event_id")},
@@ -808,6 +845,7 @@ def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str,
     affect_initialized = initial_state is not None
     gaze_state = str((initial_state or {}).get("gaze", "GAZE-NONE"))
     affect_state = _affect_identity((initial_state or {}).get("affect", "NONE"))
+    hold_active = False
     planned: list[dict[str, Any]] = []
     for time, boundary in groups:
         explicit = next((event for event in boundary if (event.get("changes") or {}).get("blink")), None)
@@ -820,7 +858,18 @@ def plan_v2_blinks(events: Iterable[dict[str, Any]], *, initial_state: dict[str,
         source_event = explicit or (boundary[-1] if gaze_candidate or affect_candidate else None)
         if explicit is not None:
             blink = str(explicit["changes"]["blink"])
+            if blink == "EYE_CLOSE_HOLD":
+                if hold_active:
+                    raise ValueError("EYE_CLOSE_HOLD requires EYE_OPEN before another hold.")
+                hold_active = True
+            elif blink == "EYE_OPEN":
+                if not hold_active:
+                    raise ValueError("EYE_OPEN requires an active EYE_CLOSE_HOLD.")
+                hold_active = False
             source = "explicit"
+        elif hold_active:
+            blink = ""
+            source = ""
         elif gaze_candidate:
             blink = "BLINK"
             source = "gaze_regulatory"

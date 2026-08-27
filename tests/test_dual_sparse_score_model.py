@@ -56,7 +56,10 @@ def test_editing_tags_updates_only_sparse_track_and_reason_view():
     texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-120>")
     applied = model.apply(texts)
     assert applied["tracks"]["BOB"][0]["changes"]["affect"] == "Happy-120"
-    assert applied["tracks"]["ALICE"] == PLAN["tracks"]["ALICE"]
+    assert applied["tracks"]["ALICE"][0]["changes"] == PLAN["tracks"]["ALICE"][0]["changes"]
+    assert applied["tracks"]["ALICE"][0]["reason_status"] == "llm_original"
+    assert applied["tracks"]["BOB"][0]["source_event_id"] == "E002"
+    assert applied["tracks"]["BOB"][0]["reason_status"] == "needs_confirmation"
     reason = model.rationale_view(1)
     assert "ALICE @ \"No.\"" in reason and "affect -> Watchful-100" in reason
 

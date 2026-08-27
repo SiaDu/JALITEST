@@ -313,21 +313,21 @@ def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
         {"event_id": "E2", "resolved_start": 2.0, "changes": {"head": "HEAD-NONE"}},
     ]
     keys = build_head_overlay_key_schedule(events, fps=24, config=config)
-    assert keys[0] == {"frame": 24.0, "values": {"rotateX": -10.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "E1"}
+    assert keys[1] == {"frame": 24.0, "values": {"rotateX": -10.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "E1"}
     assert keys[-1]["values"] == {"rotateX": 0.0, "rotateY": 0.0, "rotateZ": 0.0}
 
 
-def test_v2_head_states_land_exactly_on_every_semantic_timing_role():
+def test_v2_head_realization_preserves_semantic_timing_roles():
     config = {"transition_frames": 4, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
     initial = build_head_overlay_key_schedule([{"event_id": "I", "timing_role": "INITIAL_STATE", "resolved_start": 0, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     listener = build_head_overlay_key_schedule([{"event_id": "L", "timing_role": "LISTEN_REACTION", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     speaker = build_head_overlay_key_schedule([{"event_id": "S", "timing_role": "SPEAK_ONSET", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     assert initial == [{"frame": 0.0, "values": {"rotateX": -3.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "I"}]
-    assert [key["frame"] for key in listener] == [48.0]
-    assert [key["frame"] for key in speaker] == [48.0]
+    assert [key["frame"] for key in listener] == [48.0, 52.0]
+    assert [key["frame"] for key in speaker] == [44.0, 48.0]
 
 
-def test_v2_user_mask_schedule_lands_exactly_on_listener_and_own_turn_boundaries():
+def test_v2_user_mask_schedule_interpolates_without_shifting_semantic_boundaries():
     watchful = {"value": 1.0}; nervous = {"value": 2.0}; none = {"value": 0.0}
     listener = build_v2_listener_mask_key_schedule([
         {"phrase_id": "INITIAL_STATE", "start": 0, "pose": watchful, "boundary_kind": "INITIAL_STATE"},
@@ -338,8 +338,8 @@ def test_v2_user_mask_schedule_lands_exactly_on_listener_and_own_turn_boundaries
         {"phrase_id": "start", "start": 2, "pose": none, "boundary_kind": "turn_start"},
         {"phrase_id": "end", "start": 4, "pose": watchful, "boundary_kind": "turn_end"},
     ], fps=24)
-    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, nervous)]
-    assert [(key["frame"], key["pose"]) for key in own_turn] == [(0.0, watchful), (48.0, none), (96.0, watchful)]
+    assert [(key["frame"], key["pose"]) for key in listener] == [(0.0, watchful), (48.0, watchful), (52.0, nervous)]
+    assert [(key["frame"], key["pose"]) for key in own_turn] == [(0.0, watchful), (44.0, watchful), (48.0, none), (96.0, none), (100.0, watchful)]
 
 
 def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path):
@@ -367,6 +367,23 @@ def test_v2_blink_schedule_contains_only_explicit_performative_events():
     config = {"open_value": 0, "closed_value": 1, "presets": {"DOUBLE_BLINK": {"close_frames": 2, "hold_frames": 1, "open_frames": 2, "count": 2, "gap_frames": 4}}}
     keys = build_blink_overlay_key_schedule([{"event_id": "E1", "resolved_start": 1.0, "changes": {"blink": "DOUBLE_BLINK"}}], fps=24, config=config)
     assert len(keys) == 8 and keys[0]["frame"] == 24 and keys[-1]["value"] == 0
+
+
+def test_v2_eye_close_hold_persists_until_explicit_eye_open_and_suppresses_regulatory_blinks():
+    config = {"open_value": 0, "closed_value": 1, "presets": {"EYE_CLOSE_HOLD": {"close_frames": 4}}}
+    events = [
+        {"event_id": "HOLD", "resolved_start": 1, "changes": {"blink": "EYE_CLOSE_HOLD"}},
+        {"event_id": "OPEN", "resolved_start": 3, "changes": {"blink": "EYE_OPEN"}},
+    ]
+    assert [(key["frame"], key["value"]) for key in build_blink_overlay_key_schedule(events, fps=24, config=config)] == [(24.0, 0.0), (28.0, 1.0), (72.0, 0.0)]
+    planned = plan_v2_blinks([
+        _resolved("HOLD", 1, blink="EYE_CLOSE_HOLD"),
+        _resolved("AFFECT", 2, affect="Nervous-80"),
+        _resolved("OPEN", 3, blink="EYE_OPEN"),
+    ], initial_state={"affect": "Neutral-60", "gaze": "GAZE-NONE"})
+    assert [(row["resolved_start"], row["changes"]["blink"]) for row in planned] == [(1.0, "EYE_CLOSE_HOLD"), (3.0, "EYE_OPEN")]
+    with pytest.raises(ValueError, match="requires an active EYE_CLOSE_HOLD"):
+        build_blink_overlay_key_schedule([{"event_id": "OPEN", "resolved_start": 1, "changes": {"blink": "EYE_OPEN"}}], fps=24, config=config)
 
 
 def _resolved(event_id, time, actor="ALICE", **changes):

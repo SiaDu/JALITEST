@@ -338,7 +338,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
 
     def runner(**kwargs):
         calls.append(kwargs)
-        proposal_text = "[ANALYZE]\nx\n[INITIAL]\nAGNES\naffect: Watchful-80\ngaze: GAZE-WILL\n\nWILL\naffect: Nervous-60\ngaze: GAZE-AGNES\n[CHANGES]\nE001\nactor: AGNES\nanchor: w0001\naffect: Watchful-100\nreason: x"
+        proposal_text = "[ANALYZE]\nx\n[INITIAL]\nAGNES\naffect: Watchful-80\ngaze: GAZE-WILL\nreason: Enters watchful.\n\nWILL\naffect: Nervous-60\ngaze: GAZE-AGNES\nreason: Enters guarded.\n[CHANGES]\nE001\nactor: AGNES\nanchor: w0001\naffect: Watchful-100\nreason: x"
         Path(kwargs["output_text"]).write_text(proposal_text, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
         return proposal_text, {"status": "completed"}

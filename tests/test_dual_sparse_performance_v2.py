@@ -14,7 +14,7 @@ MODEL = build_conversation_anchor_model("ALICE: Hello there.\nBOB: No.", charact
 
 def parse(body: str):
     return parse_dual_sparse_performance_proposal(
-        "[ANALYZE]\ntest\n[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\n[CHANGES]\n" + body,
+        "[ANALYZE]\ntest\n[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\nreason: Enters attentive.\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\nreason: Enters guarded.\n[CHANGES]\n" + body,
         vocabulary=load_semantic_vocabulary(), anchor_model=MODEL,
     )
 
@@ -79,19 +79,32 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     assert "Listeners may react during another actor's utterance" in prompt
     assert "earliest semantically sufficient heard cue word" in prompt
     assert "Do not automatically wait for sentence completion, dialogue-turn completion" in prompt
-    assert "one block for each actor" in prompt and "before the first spoken word" in prompt
+    assert "Both actors enter the scene already performing" in prompt and "Initial affect may not be `MASK-NONE`" in prompt
     assert "There is no fixed event count" in prompt
 
 
-def test_initial_state_defaults_persistent_channels_and_rejects_blink():
-    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-120\nreason: Enters openly.\n\nBOB\ngaze: GAZE-ALICE\n[CHANGES]\n"
+def test_initial_state_requires_visible_affect_and_reason_and_rejects_blink():
+    source = "[ANALYZE]\nx\n[INITIAL]\nALICE\naffect: Happy-120\nreason: Enters openly.\n\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: Enters composed.\n[CHANGES]\n"
     proposal = parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     assert proposal["initial_states"]["ALICE"] == {"affect": "Happy-120", "gaze": "GAZE-NONE", "head": "HEAD-NONE"}
-    assert proposal["initial_states"]["BOB"] == {"affect": "MASK-NONE", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}
+    assert proposal["initial_states"]["BOB"] == {"affect": "Neutral-60", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"}
     assert proposal["initial_reasons"]["ALICE"] == "Enters openly."
     with pytest.raises(ProposalValidationError, match="initial channel blink is not allowed"):
         parse_dual_sparse_performance_proposal(source.replace("affect: Happy-120", "blink: BLINK"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     with pytest.raises(ProposalValidationError, match="initial gaze must be persistent"):
         parse_dual_sparse_performance_proposal(source.replace("gaze: GAZE-ALICE", "gaze: GLANCE-DOWN"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     with pytest.raises(ProposalValidationError, match="requires one explicit actor block"):
-        parse_dual_sparse_performance_proposal(source.replace("\nBOB\ngaze: GAZE-ALICE", ""), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+        parse_dual_sparse_performance_proposal(source.replace("\nBOB\naffect: Neutral-60\ngaze: GAZE-ALICE\nreason: Enters composed.", ""), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    with pytest.raises(ProposalValidationError, match="affect is required"):
+        parse_dual_sparse_performance_proposal(source.replace("affect: Neutral-60\n", ""), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    with pytest.raises(ProposalValidationError, match="visible Mask"):
+        parse_dual_sparse_performance_proposal(source.replace("affect: Neutral-60", "affect: MASK-NONE"), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    with pytest.raises(ProposalValidationError, match="reason is required"):
+        parse_dual_sparse_performance_proposal(source.replace("reason: Enters composed.", "reason:  "), vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+
+
+@pytest.mark.parametrize("blink", ["SLOW_BLINK", "DOUBLE_BLINK", "EYE_CLOSE_HOLD", "EYE_OPEN"])
+def test_v2_authored_blink_vocabulary_accepts_only_explicit_performative_commands(blink):
+    assert parse(f"E001\nactor: ALICE\nanchor: w0001\nblink: {blink}\nreason: A deliberate eye action.")["events"][0]["changes"]["blink"] == blink
+    with pytest.raises(ProposalValidationError, match="Invalid performative blink"):
+        parse("E001\nactor: ALICE\nanchor: w0001\nblink: BLINK\nreason: Invalid authored tag.")

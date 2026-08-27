@@ -68,6 +68,13 @@ def save_animation_runtime_plan(
 ) -> dict[str, Any]:
     """Validate/apply the current score and persist the exact canonical runtime plan."""
     plan = score_model.apply(score_text)
+    if plan.get("schema_version") == "dual_performance_plan_v2":
+        unresolved = [
+            event["event_id"] for track in plan.get("tracks", {}).values() for event in track
+            if event.get("reason_status") == "needs_confirmation"
+        ]
+        if unresolved:
+            raise ValueError("Edited v2 performance decisions require reason confirmation: " + ", ".join(unresolved))
     save_performance_plan(plan, path)
     return plan
 

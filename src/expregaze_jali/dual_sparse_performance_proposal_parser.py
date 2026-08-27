@@ -10,7 +10,7 @@ from expregaze_jali.performance_proposal_parser import ProposalValidationError, 
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 
 PERSISTENT_CHANNELS = ("affect", "gaze", "head")
-BLINK_VALUES = {"BLINK", "SLOW_BLINK", "DOUBLE_BLINK", "EYE_CLOSE_HOLD"}
+BLINK_VALUES = {"SLOW_BLINK", "DOUBLE_BLINK", "EYE_CLOSE_HOLD", "EYE_OPEN"}
 HEAD_VALUES = {f"HEAD-{direction}-{strength}" for direction in ("UP", "DOWN", "TILT_LEFT", "TILT_RIGHT") for strength in ("SUBTLE", "MEDIUM", "STRONG")} | {"HEAD-NONE"}
 DIRECTION_TARGETS = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
 REMOVED_CHANNELS = {"heart", "lid", "blink_suppression"}
@@ -108,7 +108,11 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     initial_reasons: dict[str, str | None] = {}
     for actor in characters:
         raw = raw_initial[actor]
-        affect = _normalize_affect(raw.get("affect", "MASK-NONE"), event_id=f"{actor} initial", vocabulary=vocabulary)
+        if not raw.get("affect", "").strip():
+            raise ProposalValidationError(f"{actor} initial: affect is required")
+        affect = _normalize_affect(raw["affect"], event_id=f"{actor} initial", vocabulary=vocabulary)
+        if affect == "MASK-NONE":
+            raise ProposalValidationError(f"{actor} initial: affect must be a visible Mask, not MASK-NONE")
         gaze = _normalize_gaze(raw.get("gaze", "GAZE-NONE"), event_id=f"{actor} initial", characters=characters)
         if gaze.startswith("GLANCE-"):
             raise ProposalValidationError(f"{actor} initial: GLANCE is instantaneous; initial gaze must be persistent GAZE or GAZE-NONE")
@@ -116,7 +120,10 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
         if head not in HEAD_VALUES:
             raise ProposalValidationError(f'{actor} initial: Invalid v2 head value "{raw.get("head")}"')
         initial_states[actor] = {"affect": affect, "gaze": gaze, "head": head}
-        initial_reasons[actor] = raw.get("reason", "").strip() or None
+        reason = raw.get("reason", "").strip()
+        if not reason:
+            raise ProposalValidationError(f"{actor} initial: reason is required")
+        initial_reasons[actor] = reason
     raw_events: list[dict[str, str]] = []
     event: dict[str, str] | None = None
     for line in sections["CHANGES"]:
@@ -146,7 +153,7 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     events: list[dict[str, Any]] = []
     for raw in raw_events:
         event_id = raw["event_id"]
-        missing = [field for field in ("actor", "anchor") if not raw.get(field, "").strip()]
+        missing = [field for field in ("actor", "anchor", "reason") if not raw.get(field, "").strip()]
         if missing:
             raise ProposalValidationError(f"{event_id}: Missing required fields: {', '.join(missing)}")
         actor = next((name for name in characters if speaker_key(name) == speaker_key(raw["actor"])), None)

@@ -14,7 +14,7 @@ Context: {{context}}
 
 {{identity_contract}}
 
-Return exactly `[ANALYZE]`, `[INITIAL]`, then `[CHANGES]`. Use the supplied names exactly. `[INITIAL]` must contain one block for each actor and describes how that actor enters the scene before the first spoken word. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. It may contain affect, persistent GAZE (not GLANCE), head, and one optional actor-level reason; blink is not allowed. Omitted persistent channels default to MASK-NONE, GAZE-NONE, or HEAD-NONE.
+Return exactly `[ANALYZE]`, `[INITIAL]`, then `[CHANGES]`. Use the supplied names exactly. Both actors enter the scene already performing: `[INITIAL]` must contain one block for each actor with a visible `affect` and a meaningful `reason`. Initial affect may not be `MASK-NONE`; use a real visible Mask such as `Neutral-60` when appropriate. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. It may contain persistent GAZE (not GLANCE) and head; blink is not allowed.
 
 For each actor independently, analyze both speaking behavior and listening behavior. Listeners may react during another actor's utterance: anchor a meaningful listener change to the earliest semantically sufficient heard cue word. Do not automatically wait for sentence completion, dialogue-turn completion, or the listener's next spoken line. Phrase and clause comprehension matter more than punctuation. Do not over-segment; create a listener event only when heard information meaningfully changes the acting state.
 
@@ -28,7 +28,7 @@ Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE.
 
 Concepts such as avoiding eye contact, averting one's eyes, thinking, recalling, searching for words, guilt, discomfort, hesitation, or suspicion are acting motivations. They should influence the contextual choice of GAZE/GLANCE and target, but are never executable gaze modes. Do not map an emotion or motivation to a fixed direction; choose the target from this scene's acting context. For example, `gaze: GAZE-DOWN` may be motivated by avoiding eye contact, while `gaze: GLANCE-UP_LEFT` may be motivated by briefly trying to recall a detail.
 
-Head is HEAD-UP/DOWN/TILT_LEFT/TILT_RIGHT with SUBTLE/MEDIUM/STRONG, or HEAD-NONE. Blink is BLINK, SLOW_BLINK, DOUBLE_BLINK, or EYE_CLOSE_HOLD and is instantaneous.
+Head is HEAD-UP/DOWN/TILT_LEFT/TILT_RIGHT with SUBTLE/MEDIUM/STRONG, or HEAD-NONE. Authored blink options are only SLOW_BLINK, DOUBLE_BLINK, EYE_CLOSE_HOLD, or EYE_OPEN; never author plain BLINK. SLOW_BLINK and DOUBLE_BLINK execute finite presets. EYE_CLOSE_HOLD remains active until an explicit EYE_OPEN. Semantic anchors never contain timing, duration, or frames.
 
 ```text
 [ANALYZE]

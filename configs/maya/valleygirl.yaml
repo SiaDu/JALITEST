@@ -90,8 +90,6 @@ maya_eye_performance:
     EYE_CLOSE_HOLD:
       closure: 9
       close_frames: 4
-      hold_frames: 16
-      open_frames: 6
       count: 1
       gap_frames: 0
     SLOW_BLINK:
@@ -129,7 +127,8 @@ maya_performative_blink_overlay:
     BLINK: {close_frames: 2, hold_frames: 1, open_frames: 2, count: 1, gap_frames: 0}
     SLOW_BLINK: {close_frames: 5, hold_frames: 4, open_frames: 6, count: 1, gap_frames: 0}
     DOUBLE_BLINK: {close_frames: 2, hold_frames: 1, open_frames: 2, count: 2, gap_frames: 4}
-    EYE_CLOSE_HOLD: {close_frames: 4, hold_frames: 16, open_frames: 6, count: 1, gap_frames: 0}
+    # Persistent authored eye closure; EYE_OPEN explicitly releases this state.
+    EYE_CLOSE_HOLD: {close_frames: 4}
 
 maya_jali_annotation:
   jsync_node: jSync1

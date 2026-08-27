@@ -125,6 +125,7 @@ class DualSparseScoreModel:
         if plan.get("schema_version") != "dual_performance_plan_v2":
             raise ValueError("DualSparseScoreModel requires dual_performance_plan_v2")
         self.plan = deepcopy(plan)
+        self.original_plan = deepcopy(plan)
         self.characters = list(self.plan.get("characters", []))
         if len(self.characters) != 2 or set(self.plan.get("tracks", {})) != set(self.characters):
             raise ValueError("v2 requires two named characters and name-keyed tracks")
@@ -248,6 +249,7 @@ class DualSparseScoreModel:
         if not result.valid:
             raise ValueError("\n".join(str(error) for error in result.errors))
         old = {(actor, event["anchor_id"]): event for actor in self.characters for event in self.plan["tracks"][actor]}
+        originals = {(actor, event["anchor_id"]): event for actor in self.characters for event in self.original_plan["tracks"][actor]}
         next_id = max([int(event["event_id"][1:]) for event in old.values() if re.fullmatch(r"E\d+", event.get("event_id", ""))] or [0]) + 1
         tracks = {actor: [] for actor in self.characters}
         initial_states = {actor: dict(INITIAL_DEFAULTS) for actor in self.characters}
@@ -256,10 +258,21 @@ class DualSparseScoreModel:
                 initial_states[row["actor"]].update(deepcopy(row["changes"]))
                 continue
             prior = old.get((row["actor"], row["anchor_id"]))
+            original = originals.get((row["actor"], row["anchor_id"]))
             event_id = prior.get("event_id") if prior else f"E{next_id:03d}"
             if prior is None:
                 next_id += 1
-            tracks[row["actor"]].append({"event_id": event_id, "anchor_id": row["anchor_id"], "changes": deepcopy(row["changes"]), "reason": prior.get("reason") if prior else None})
+            changes = deepcopy(row["changes"])
+            original_changes = deepcopy((original or {}).get("changes") or {})
+            changed = original is not None and changes != original_changes
+            tracks[row["actor"]].append({
+                "event_id": event_id, "source_event_id": (original or prior or {}).get("source_event_id", event_id),
+                "anchor_id": row["anchor_id"], "changes": changes,
+                "reason": prior.get("reason") if prior else None,
+                "original_reason": (original or prior or {}).get("original_reason", (original or prior or {}).get("reason")),
+                "edited_by_user": changed,
+                "reason_status": "needs_confirmation" if changed else "llm_original",
+            })
         self.plan["tracks"] = tracks
         self.plan["initial_states"] = initial_states
         self.score_texts = dict(texts)
