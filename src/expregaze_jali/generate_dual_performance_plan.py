@@ -9,8 +9,11 @@ import re
 from typing import Any, Callable, Iterable
 
 from expregaze_jali.actor_prompt_builder import load_prompt_template
-from expregaze_jali.dual_performance_plan_from_proposal import build_dual_performance_plan_from_proposal
-from expregaze_jali.dual_performance_proposal_parser import parse_dual_performance_proposal
+from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
+from expregaze_jali.dual_sparse_performance_proposal_parser import (
+    BLINK_VALUES, DIRECTIONAL_AVERT_TARGETS, HEAD_VALUES,
+    parse_dual_sparse_performance_proposal,
+)
 from expregaze_jali.generate_performance_plan import (
     DEFAULT_EXTRA_CONFIG_FILES,
     DEFAULT_HCI_RUNS_DIR,
@@ -19,10 +22,7 @@ from expregaze_jali.generate_performance_plan import (
     hci_run_paths,
     validate_run_id,
 )
-from expregaze_jali.performance_proposal_parser import (
-    BLINK_VALUES, DIRECTION_TARGETS, HEAD_VALUES, LID_VALUES, SUPPRESSION_VALUES,
-    load_semantic_vocabulary,
-)
+from expregaze_jali.performance_proposal_parser import load_semantic_vocabulary
 from expregaze_jali.run_actor_llm import generate_text_artifacts
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, build_conversation_anchor_model
 
@@ -41,11 +41,9 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
         "VISIBLE AFFECT — CLOSED VOCABULARY: " + " | ".join(vocabulary.affect_states.values()) + " | NONE",
         "Any other value is invalid in this executable field.",
         "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.",
-        "Head values: " + ", ".join(HEAD_VALUES),
-        "Lid values: " + ", ".join(str(value) for value in sorted(LID_VALUES)),
+        "Head values: " + ", ".join(sorted(HEAD_VALUES)),
         "Blink values: " + ", ".join(sorted(BLINK_VALUES)),
-        "Blink suppression: " + ", ".join(sorted(SUPPRESSION_VALUES)),
-        "Direction targets: " + ", ".join(sorted(DIRECTION_TARGETS)),
+        "Directional AVERT targets: " + ", ".join(sorted(DIRECTIONAL_AVERT_TARGETS)),
     ))
 def _render_dual_prompt(
     *, anchor_model: ConversationAnchorModel, context: str | None,
@@ -61,7 +59,7 @@ def _render_dual_prompt(
         "{{identity_contract}}": identity_contract,
         "{{context}}": str(context or "").strip() or "NONE",
         "{{immutable_script}}": anchor_model.script,
-        "{{anchored_script}}": anchor_model.anchored_script().rstrip("\n"),
+        "{{anchored_script}}": anchor_model.anchored_dialogue_with_speaker_metadata().rstrip("\n"),
         "{{semantic_reference}}": _semantic_reference(extra_config_paths),
     }
     for marker, value in replacements.items():
@@ -131,17 +129,19 @@ def generate_dual_performance_plan(
     proposal_text, _meta = runner(
         prompt=prompt, llm_config_path=llm_config_path, prompt_path=paths.prompt,
         output_text=paths.proposal, output_meta=paths.response_meta,
-        required_sections=("[ANALYZE]", "[PERFORMANCE]", "[REASONS]"),
+        required_sections=("[ANALYZE]", "[CHANGES]"),
         artifact_name="proposal", overwrite=overwrite,
     )
     vocabulary = load_semantic_vocabulary(extras[0])
-    proposal = parse_dual_performance_proposal(proposal_text, vocabulary=vocabulary, character_names=(character_a, character_b))
-    plan = build_dual_performance_plan_from_proposal(
+    proposal = parse_dual_sparse_performance_proposal(
+        proposal_text, vocabulary=vocabulary, anchor_model=model
+    )
+    plan = build_dual_performance_plan_v2(
         proposal, anchor_model=model, sequence_id=resolved_run_id,
         proposal_path=str(paths.proposal),
     )
     _write_text(paths.performance_plan, json.dumps(plan, ensure_ascii=False, indent=2) + "\n", overwrite)
-    print(f"Phrases: {len(plan['phrases'])}", flush=True)
+    print(f"Events: {sum(len(track) for track in plan['tracks'].values())}", flush=True)
     print(f"Performance Plan: {paths.performance_plan}", flush=True)
     return plan
 

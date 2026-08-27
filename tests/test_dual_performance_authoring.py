@@ -326,22 +326,19 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     prompt = build_dual_generation_prompt(
         script=SCRIPT, character_a="AGNES", character_b="WILL"
     )
-    assert "shared conversational beat" in prompt
-    assert "AGNES.affect: Nervous-60" in prompt
-    assert "Do not output `Nothing`" in prompt
+    assert "sparse change points" in prompt
+    assert "actor: AGNES" in prompt
+    assert "MASK-NONE" in prompt
     assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
     assert "HEART" not in prompt
-    assert "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons." in prompt
-    assert "[REASONS]" in prompt
+    assert "ACTING LANGUAGE: Open vocabulary" in prompt
+    assert "[CHANGES]" in prompt
     assert "GAZE-WILL" in prompt
     calls = []
 
     def runner(**kwargs):
         calls.append(kwargs)
-        proposal_text = dual_proposal()
-        proposal_text = "\n".join(line for line in proposal_text.splitlines() if ".heart:" not in line)
-        proposal_text = proposal_text.replace("GAZE-A", "GAZE-AGNES").replace("GAZE-B", "GAZE-WILL")
-        proposal_text = proposal_text.replace("A.", "AGNES.").replace("B.", "WILL.")
+        proposal_text = "[ANALYZE]\nx\n[CHANGES]\nE001\nactor: AGNES\nanchor: w0001\naffect: Watchful-80\ngaze: GAZE-WILL\nreason: x"
         Path(kwargs["output_text"]).write_text(proposal_text, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
         return proposal_text, {"status": "completed"}
@@ -350,7 +347,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
         script=SCRIPT, character_a="AGNES", character_b="WILL", context=None,
         run_id="dual_run", output_dir=tmp_path / "dual_run", proposal_runner=runner,
     )
-    assert len(calls) == 1 and plan["schema_version"] == "dual_performance_plan_v1"
+    assert len(calls) == 1 and plan["schema_version"] == "dual_performance_plan_v2"
     for name in (
         "input_script.txt", "input_context.txt", "actor_prompt.txt", "anchored_script.txt",
         "anchor_map.json", "performance_proposal.txt", "llm_response_meta.json", "performance_plan.json",
@@ -364,7 +361,7 @@ def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scen
     )
     assert "WILL and AGNES are immutable script identities." in reversed_prompt
     assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly `[ANALYZE]`")
-    assert "WILL becomes increasingly curious about AGNES" in reversed_prompt
+    assert "actor: WILL" in reversed_prompt
     assert "Agnes may become increasingly curious about Will" not in reversed_prompt
     assert "GROWING_CURIOSITY_ABOUT_WILL" not in reversed_prompt
 

@@ -124,6 +124,14 @@ class ConversationAnchorModel:
             blocks.append(f"{turn.turn_id} {turn.speaker}:\n{units}")
         return "\n\n".join(blocks) + "\n"
 
+    def anchored_dialogue_with_speaker_metadata(self) -> str:
+        """Render anchors with speaker ownership as non-dialogue metadata."""
+        blocks: list[str] = []
+        for turn in self.turns:
+            units = " ".join(f"[{a.anchor_id} {a.text}]" for a in turn.anchors)
+            blocks.append(f"{turn.turn_id} [speaker={turn.speaker}]\n{units}")
+        return "\n\n".join(blocks) + "\n"
+
     def anchor_map(self) -> dict[str, Any]:
         return {
             "format": "conversation_anchor_v1",

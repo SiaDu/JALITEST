@@ -5,6 +5,8 @@ import re
 from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0, build_dual_performance_plan_from_proposal
 from expregaze_jali.dual_performance_proposal_parser import parse_dual_performance_proposal
 from expregaze_jali.generate_dual_performance_plan import build_dual_generation_prompt
+from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
+from expregaze_jali.dual_sparse_performance_proposal_parser import parse_dual_sparse_performance_proposal
 from expregaze_jali.performance_proposal_parser import load_semantic_vocabulary
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
@@ -15,13 +17,15 @@ def _proposal() -> str:
 
 def test_named_mask_only_prompt_parser_and_plan():
     prompt = build_dual_generation_prompt(script="ALICE: hi\nBOB: yo", character_a="ALICE", character_b="BOB")
-    assert "ALICE.affect" in prompt and "BOB.affect" in prompt and ".heart" not in prompt
-    assert not re.search(r"(?m)^A\.affect", prompt) and not re.search(r"GAZE-A(?:\s|$)", prompt) and "Trace=5" in prompt and "Ludicrous=200" in prompt
-    vocabulary = load_semantic_vocabulary(); parsed = parse_dual_performance_proposal(_proposal(), vocabulary=vocabulary, character_names=("ALICE", "BOB"))
-    assert parsed["phrases"][0]["states"]["ALICE"]["affect"] == "Happy-80"
-    plan = build_dual_performance_plan_from_proposal(parsed, anchor_model=build_conversation_anchor_model("ALICE: hi\nBOB: yo", character_a="ALICE", character_b="BOB"), sequence_id="x")
-    assert plan["schema_version"] == "dual_performance_plan_v1" and plan["characters"] == ["ALICE", "BOB"]
-    assert plan["phrases"][0]["speaker"] == "ALICE" and set(plan["phrases"][0]["states"]) == {"ALICE", "BOB"}
+    assert "actor: ALICE" in prompt and "actor: BOB" in prompt and ".heart" not in prompt
+    assert not re.search(r"(?m)^A\.affect", prompt) and "any positive integer percentage" in prompt
+    model = build_conversation_anchor_model("ALICE: hi\nBOB: yo", character_a="ALICE", character_b="BOB")
+    source = "[ANALYZE]\nx\n[CHANGES]\nE001\nactor: ALICE\nanchor: w0001\naffect: Happy-80\nreason: x"
+    parsed = parse_dual_sparse_performance_proposal(source, vocabulary=load_semantic_vocabulary(), anchor_model=model)
+    plan = build_dual_performance_plan_v2(parsed, anchor_model=model, sequence_id="x")
+    assert plan["schema_version"] == "dual_performance_plan_v2" and plan["characters"] == ["ALICE", "BOB"]
+    assert plan["tracks"]["ALICE"][0]["changes"]["affect"] == "Happy-80"
+    assert plan["tracks"]["BOB"] == []
 
 
 def test_v0_adapter_is_structural():
