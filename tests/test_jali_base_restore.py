@@ -23,7 +23,7 @@ _ATTRS = ("calculate_paralinguals", "paralingual_bearing", "paralingual_intensit
 class _Cmds:
     def __init__(self, source_dir: Path):
         self.calls: list[tuple[str, tuple, dict]] = []; self.selection = ["|camera"]
-        self.nodes = {"|A:ROOT", "|B:ROOT", "|A:ROOT|jSyncA", "|B:ROOT|jSyncB", "JALITEST_listenerMask_A", "JALITEST_listenerMask_B", "JALITEST_gaze_A", "JALITEST_gaze_B", "JALITEST_head_A", "JALITEST_head_B", "JALITEST_blink_A", "JALITEST_blink_B", "animator_layer"}
+        self.nodes = {"|A:ROOT", "|B:ROOT", "|A:ROOT|jSyncA", "|B:ROOT|jSyncB", "JALITEST_listenerMask_A", "JALITEST_listenerMask_B", "JALITEST_gaze_A", "JALITEST_gaze_B", "JALITEST_head_A", "JALITEST_head_B", "JALITEST_blink_A", "JALITEST_blink_B", "JALITEST_microSaccade_A", "JALITEST_microSaccade_B", "animator_layer"}
         self.values: dict[str, object] = {}
         for alias, jsync, sound, source, facs in (("A", "|A:ROOT|jSyncA", "SA", source_dir / "SA.txt", "A:FACSMaster"), ("B", "|B:ROOT|jSyncB", "SB", source_dir / "SB.txt", "B:FACSMaster")):
             self.values.update({f"{jsync}.sound_file": sound, f"{jsync}.text_input_path": str(source_dir), f"{jsync}.sound_input_path": f"{alias}/sound", f"{jsync}.output_path": f"{alias}/output", f"{jsync}.transcript": f"original {alias}", f"{facs}.FACS_animationSource": 1})
@@ -109,7 +109,7 @@ def test_named_restore_reasserts_gaze_neutral_after_realign(tmp_path, monkeypatc
     class NamedCmds(_Cmds):
         def __init__(self, source_dir):
             super().__init__(source_dir)
-            self.nodes = {"|ALICE:ROOT", "|BOB:ROOT", "|ALICE:ROOT|jSyncA", "|BOB:ROOT|jSyncB", "JALITEST_listenerMask_ALICE", "JALITEST_listenerMask_BOB", "JALITEST_gaze_ALICE", "JALITEST_gaze_BOB"}
+            self.nodes = {"|ALICE:ROOT", "|BOB:ROOT", "|ALICE:ROOT|jSyncA", "|BOB:ROOT|jSyncB", "JALITEST_listenerMask_ALICE", "JALITEST_listenerMask_BOB", "JALITEST_gaze_ALICE", "JALITEST_gaze_BOB", "JALITEST_microSaccade_ALICE", "JALITEST_microSaccade_BOB"}
             for actor, z, x, y in (("ALICE", 9.0, 1.0, 2.0), ("BOB", 11.0, 3.0, 4.0)):
                 self.values.update({f"{actor}:eyeStare_world.translateZ": z, f"{actor}:CNT_BOTH_EYES.translateX": x, f"{actor}:CNT_BOTH_EYES.translateY": y})
         def objExists(self, item):
@@ -137,7 +137,7 @@ def test_named_restore_reasserts_gaze_neutral_after_realign(tmp_path, monkeypatc
     mel.eval = realign
     result = restore_dual_jali_base(baseline=baseline, character_mappings=mappings, cmds_module=cmds, mel_module=mel)
     assert set(result["restored"]) == {"ALICE", "BOB"}
-    assert set(result["removed_layers"]) == {"JALITEST_listenerMask_ALICE", "JALITEST_listenerMask_BOB", "JALITEST_gaze_ALICE", "JALITEST_gaze_BOB"}
+    assert set(result["removed_layers"]) == {"JALITEST_listenerMask_ALICE", "JALITEST_listenerMask_BOB", "JALITEST_gaze_ALICE", "JALITEST_gaze_BOB", "JALITEST_microSaccade_ALICE", "JALITEST_microSaccade_BOB"}
     assert cmds.values["|ALICE:ROOT|jSyncA.transcript"] == "original A"
     assert cmds.values["|BOB:ROOT|jSyncB.transcript"] == "original B"
     assert cmds.values["ALICE:eyeStare_world.translateX"] == 0.0

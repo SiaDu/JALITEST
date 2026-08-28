@@ -171,20 +171,40 @@ def _key_position(node: str, frame: float, xyz: list[float]) -> None:
     key_translate(node, frame)
 
 
+def _split_inline_yaml_items(text: str) -> list[str]:
+    """Split a compact YAML list/map while preserving nested list values."""
+    items: list[str] = []
+    start = depth = 0
+    for index, character in enumerate(text):
+        if character in "[{":
+            depth += 1
+        elif character in "]}":
+            depth -= 1
+        elif character == "," and depth == 0:
+            item = text[start:index].strip()
+            if item:
+                items.append(item)
+            start = index + 1
+    item = text[start:].strip()
+    if item:
+        items.append(item)
+    return items
+
+
 def _parse_scalar(value: str) -> Any:
     text = value.strip()
     if not text:
         return ""
     if text.startswith("{") and text.endswith("}"):
         result: dict[str, Any] = {}
-        for item in text[1:-1].split(","):
+        for item in _split_inline_yaml_items(text[1:-1]):
             key, separator, item_value = item.partition(":")
             if not separator:
                 raise ValueError(f"Unsupported inline YAML mapping: {value!r}")
             result[key.strip()] = _parse_scalar(item_value)
         return result
     if text.startswith("[") and text.endswith("]"):
-        items = [item.strip() for item in text[1:-1].split(",") if item.strip()]
+        items = _split_inline_yaml_items(text[1:-1])
         return [_parse_scalar(item) for item in items]
     lowered = text.lower()
     if lowered == "true":

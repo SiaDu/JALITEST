@@ -53,6 +53,7 @@ maya_gaze:
 maya_eye_performance:
   eyelid_control_suffix: LIDS_jSync_plusMinus
   eyelid_attr: Down_upLids_jSync
+
   default_lid_state: 0.0
   clear_existing_eyelid_keys: true
   lid_state_transition_frames: 8
@@ -99,6 +100,21 @@ maya_eye_performance:
       open_frames: 6
       count: 1
       gap_frames: 0
+
+maya_fixation_micro_saccade:
+  enabled: true
+  control_suffix: CNT_BOTH_EYES
+  x_attribute: translateX
+  y_attribute: translateY
+  transition_frames: 2
+  min_interval_seconds: 1.8
+  max_interval_seconds: 3.2
+  gaze_start_guard_seconds: 0.35
+  gaze_end_guard_seconds: 0.25
+  blink_guard_seconds: 0.15
+  patterns:
+    A: [[-0.28, 0.10], [0.00, -0.18], [0.24, 0.08]]
+    B: [[0.28, 0.10], [0.00, -0.18], [-0.24, 0.08]]
 
 maya_head_overlay:
   control_suffix: jNeck_ctl

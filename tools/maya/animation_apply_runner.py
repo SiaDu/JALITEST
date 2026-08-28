@@ -180,6 +180,7 @@ LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
 GAZE_LAYER_PREFIX = "JALITEST_gaze_"
 HEAD_LAYER_PREFIX = "JALITEST_head_"
 BLINK_LAYER_PREFIX = "JALITEST_blink_"
+MICRO_SACCADE_LAYER_PREFIX = "JALITEST_microSaccade_"
 JALI_BASELINE_SCHEMA = "dual_jali_base_v2"
 _JSYNC_BASELINE_ATTRS = (
     "calculate_paralinguals", "paralingual_bearing", "paralingual_intensity",
@@ -280,7 +281,7 @@ def _validate_dual_jali_base(
             reference = {}
         if not isinstance(reference, dict):
             raise ValueError(f"{alias}: JALI Base baseline lacks named gaze reference.")
-        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}", f"{HEAD_LAYER_PREFIX}{alias}", f"{BLINK_LAYER_PREFIX}{alias}"]}
+        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}", f"{HEAD_LAYER_PREFIX}{alias}", f"{BLINK_LAYER_PREFIX}{alias}", f"{MICRO_SACCADE_LAYER_PREFIX}{alias}"]}
     return prepared
 
 
@@ -513,6 +514,10 @@ def _clear_listener_layer_keys(layer: str, plugs: Iterable[str], *, scene_range:
     elif override:
         # Repair layers created by prior JALITEST versions as additive layers.
         cmds_module.animLayer(layer, edit=True, override=True)
+    else:
+        # A fixation layer must remain additive even if a prior run left a
+        # layer with the same owned name in override mode.
+        cmds_module.animLayer(layer, edit=True, override=False)
     for plug in plugs:
         cmds_module.animLayer(layer, edit=True, attribute=plug)
     for curve in cmds_module.animLayer(layer, query=True, animCurves=True) or []:
@@ -600,7 +605,15 @@ def apply_dual_gaze_only_artifacts(*, prepared_context: dict[str, Any], cmds_mod
             for axis, value in zip("XYZ", state["eye_stare"]): cmds_module.setKeyframe(reference["eye_stare_node"], attribute=f"translate{axis}", time=state["frame"], value=value, animLayer=item["layer"])
             cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateX", time=state["frame"], value=state["eyes"][0], animLayer=item["layer"])
             cmds_module.setKeyframe(reference["both_eyes_node"], attribute="translateY", time=state["frame"], value=state["eyes"][1], animLayer=item["layer"])
-        result[alias] = {"gaze_events": item["gaze_events"], "key_count": len(item["keys"]), "layer": item["layer"], "managed_gaze_plugs": item["managed_gaze_plugs"]}
+        micro_keys = item.get("micro_saccade_keys", [])
+        if "micro_saccade_layer" in item:
+            _clear_listener_layer_keys(item["micro_saccade_layer"], item["micro_saccade_plugs"], scene_range=None, cmds_module=cmds_module, override=False)
+            for key in micro_keys:
+                for attribute, value in ((item["micro_saccade_x_attribute"], key["x"]), (item["micro_saccade_y_attribute"], key["y"])):
+                    cmds_module.setKeyframe(item["micro_saccade_node"], attribute=attribute, time=key["frame"], value=value, animLayer=item["micro_saccade_layer"])
+                    if hasattr(cmds_module, "keyTangent"):
+                        cmds_module.keyTangent(item["micro_saccade_node"], attribute=attribute, time=(key["frame"], key["frame"]), inTangentType="linear", outTangentType="linear")
+        result[alias] = {"gaze_events": item["gaze_events"], "key_count": len(item["keys"]), "layer": item["layer"], "managed_gaze_plugs": item["managed_gaze_plugs"], "micro_saccade_layer": item.get("micro_saccade_layer"), "micro_saccade_key_count": len(micro_keys), "micro_saccade_plugs": list(item.get("micro_saccade_plugs", []))}
     return result
 
 
@@ -733,9 +746,10 @@ def _v2_overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]
     head = value.get("maya_head_overlay")
     affect = value.get("maya_affect_overlay")
     blink = value.get("maya_performative_blink_overlay")
-    if not isinstance(head, dict) or not isinstance(affect, dict) or not isinstance(blink, dict):
-        raise ValueError("Maya config requires maya_head_overlay, maya_affect_overlay, and maya_performative_blink_overlay.")
-    return {"head": head, "affect": affect, "blink": blink}
+    micro = value.get("maya_fixation_micro_saccade")
+    if not isinstance(head, dict) or not isinstance(affect, dict) or not isinstance(blink, dict) or not isinstance(micro, dict):
+        raise ValueError("Maya config requires head, affect, blink, and fixation micro-saccade overlay blocks.")
+    return {"head": head, "affect": affect, "blink": blink, "micro_saccade": micro}
 
 
 def head_layer_name(actor: str) -> str:
@@ -744,6 +758,10 @@ def head_layer_name(actor: str) -> str:
 
 def blink_layer_name(actor: str) -> str:
     return f"{BLINK_LAYER_PREFIX}{actor}"
+
+
+def micro_saccade_layer_name(actor: str) -> str:
+    return f"{MICRO_SACCADE_LAYER_PREFIX}{actor}"
 
 
 def _head_target(value: str, config: dict[str, Any]) -> dict[str, float]:
@@ -1306,6 +1324,8 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
     if source_path not in sys.path: sys.path.insert(0, source_path)
     from expregaze_jali.maya_apply_gaze import load_maya_gaze_config  # noqa: PLC0415
     gaze_config = load_maya_gaze_config(DEFAULT_MAYA_CONFIG)
+    overlay_config = _v2_overlay_config()
+    micro_config = overlay_config["micro_saccade"]
     prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}}
     directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
     for actor in manifest["characters"]:
@@ -1354,7 +1374,24 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
             keys = build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)))
         except ValueError as exc:
             raise ValueError(f"{actor}: v2 gaze event cannot be scheduled: {exc}") from exc
-        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": keys, "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs}
+        micro_node = qualify_rig_control(rig, str(micro_config["control_suffix"]))
+        micro_plugs = [f"{micro_node}.{micro_config['x_attribute']}", f"{micro_node}.{micro_config['y_attribute']}"]
+        if any(not cmds_module.objExists(plug) for plug in micro_plugs):
+            raise RuntimeError(f"{actor}: required fixation micro-saccade controls do not exist.")
+        blink_plan = plan_v2_blinks(
+            _load_v2_actor_events(manifest, actor), initial_state=_load_v2_actor_initial_state(manifest, actor),
+            fps=float(manifest["fps"]), affect_transition_frames=int(overlay_config["affect"]["transition_frames"]), blink_config=overlay_config["blink"],
+        )
+        blink_plan = inject_idle_regulatory_blinks(
+            blink_plan, actor=actor, sound_file=str(runtime["sound_file"]), duration_seconds=float(manifest["shared_duration_seconds"]),
+            fps=float(manifest["fps"]), blink_config=overlay_config["blink"],
+        )
+        micro_clusters = plan_fixation_micro_saccades(
+            fixation_gaze_intervals(raw, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), duration_seconds=float(manifest["shared_duration_seconds"])),
+            blink_events=blink_plan, actor=actor, sound_file=str(runtime["sound_file"]), duration_seconds=float(manifest["shared_duration_seconds"]),
+            fps=float(manifest["fps"]), config=micro_config, blink_config=overlay_config["blink"],
+        )
+        prepared[actor] = {"reference": reference, "schedule": schedule, "keys": keys, "gaze_events": len(raw), "layer": gaze_layer_name(actor), "managed_gaze_plugs": plugs, "micro_saccade_node": micro_node, "micro_saccade_layer": micro_saccade_layer_name(actor), "micro_saccade_plugs": micro_plugs, "micro_saccade_x_attribute": str(micro_config["x_attribute"]), "micro_saccade_y_attribute": str(micro_config["y_attribute"]), "micro_saccade_clusters": micro_clusters, "micro_saccade_keys": build_fixation_micro_saccade_key_schedule(micro_clusters, config=micro_config)}
     return prepared
 
 
@@ -1578,6 +1615,91 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
         if prior != state:
             raise ValueError(f"Conflicting gaze keys at frame {key['frame']}.")
     return ordered_keys
+
+
+def fixation_gaze_intervals(
+    gaze_events: Iterable[dict[str, Any]], *, fps: float, transition_frames: int, duration_seconds: float,
+) -> list[tuple[float, float]]:
+    """Return realized persistent-GAZE windows, excluding GLANCE motion/return."""
+    events = sorted(gaze_events, key=lambda event: float(event["resolved_time"]["start"]))
+    intervals: list[tuple[float, float]] = []
+    active_start: float | None = None
+    for index, event in enumerate(events):
+        mode = str(event.get("mode") or "")
+        start = float(event["resolved_time"]["start"])
+        onset = float(event.get("visual_onset", start))
+        if mode == "GAZE":
+            if active_start is not None:
+                intervals.append((active_start, onset))
+            if index == 0 and start == 0.0:
+                active_start = 0.0
+            elif event.get("timing_role") == "SPEAK_ONSET":
+                active_start = start
+            else:
+                next_start = float(events[index + 1]["resolved_time"]["start"]) if index + 1 < len(events) else duration_seconds
+                active_start = min(start + float(transition_frames) / fps, next_start)
+        elif mode == "GLANCE":
+            if active_start is not None:
+                intervals.append((active_start, onset))
+                # The existing GLANCE key schedule returns to the prior
+                # persistent target at its resolved end; only then may
+                # fixation resume. A standalone GLANCE never becomes GAZE.
+                active_start = float(event["resolved_time"]["end"])
+    if active_start is not None:
+        intervals.append((active_start, duration_seconds))
+    return [(max(0.0, start), min(duration_seconds, end)) for start, end in intervals if end > start]
+
+
+def build_fixation_micro_saccade_key_schedule(
+    clusters: Iterable[dict[str, Any]], *, config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Expand micro-saccade clusters into literal additive X/Y delta keys."""
+    transition = int(config["transition_frames"])
+    patterns = config["patterns"]
+    keys: list[dict[str, Any]] = []
+    for cluster in clusters:
+        pattern = patterns[str(cluster["pattern"])]
+        frame = float(cluster["start_frame"])
+        values = [(0.0, 0.0), *[(float(x), float(y)) for x, y in pattern], (0.0, 0.0)]
+        for index, (x, y) in enumerate(values):
+            keys.append({"frame": frame + index * transition, "x": x, "y": y, "cluster_id": cluster.get("cluster_id")})
+    return keys
+
+
+def plan_fixation_micro_saccades(
+    gaze_intervals: Iterable[tuple[float, float]], *, blink_events: Iterable[dict[str, Any]], actor: str,
+    sound_file: str, duration_seconds: float, fps: float, config: dict[str, Any], blink_config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Plan deterministic, guarded fixation clusters for persistent GAZE only."""
+    if not bool(config.get("enabled", False)):
+        return []
+    minimum, maximum = float(config["min_interval_seconds"]), float(config["max_interval_seconds"])
+    start_guard, end_guard, blink_guard = (float(config[key]) for key in ("gaze_start_guard_seconds", "gaze_end_guard_seconds", "blink_guard_seconds"))
+    if minimum <= 0 or maximum < minimum or min(start_guard, end_guard, blink_guard) < 0 or fps <= 0:
+        raise ValueError("Invalid fixation micro-saccade timing config.")
+    transition = int(config["transition_frames"])
+    cluster_seconds = 4.0 * transition / fps
+    patterns = config.get("patterns") or {}
+    if not isinstance(patterns.get("A"), list) or not isinstance(patterns.get("B"), list):
+        raise ValueError("Fixation micro-saccade config requires patterns A and B.")
+    blink_windows = [(max(0.0, start - blink_guard), min(duration_seconds, end + blink_guard)) for start, end in _blink_episodes(blink_events, fps=fps, duration_seconds=duration_seconds, blink_config=blink_config)]
+    seed = int.from_bytes(hashlib.sha256(f"{actor}|{sound_file}|micro_saccade".encode("utf-8")).digest()[:8], "big")
+    rng = random.Random(seed)
+    clusters: list[dict[str, Any]] = []
+    for interval_start, interval_end in gaze_intervals:
+        origin = max(0.0, interval_start + start_guard)
+        latest = min(duration_seconds, interval_end - end_guard) - cluster_seconds
+        while origin <= latest:
+            candidate = origin + rng.uniform(minimum, maximum)
+            if candidate > latest:
+                break
+            collision = next((window for window in blink_windows if candidate < window[1] and candidate + cluster_seconds > window[0]), None)
+            if collision is not None:
+                origin = max(origin, collision[1])
+                continue
+            clusters.append({"actor": actor, "cluster_id": f"MICRO_SACCADE_{len(clusters) + 1:03d}", "start_frame": candidate * fps, "pattern": rng.choice(("A", "B"))})
+            origin = candidate + cluster_seconds
+    return clusters
 
 
 def _dual_eye_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
