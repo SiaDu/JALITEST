@@ -116,7 +116,7 @@ maya_fixation_micro_saccade:
 maya_head_overlay:
   control_suffix: jNeck_ctl
   attack_frames: 15
-  settle_frames: 5
+  settle_frames: 10
   overshoot_ratio: 0.20
   strength_degrees:
     SUBTLE: 3
@@ -132,8 +132,8 @@ maya_idle_head:
   control_suffix: jNeck_ctl
   pitch_axis: rotateX
   roll_axis: rotateZ
-  max_pitch_degrees: 0.40
-  max_roll_degrees: 0.22
+  max_pitch_degrees: 0.80
+  max_roll_degrees: 0.45
   min_waypoint_seconds: 1.4
   max_waypoint_seconds: 2.4
   speech_fade_frames: 6

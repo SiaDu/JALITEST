@@ -76,7 +76,7 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     monkeypatch.setattr(builtins, "__import__", no_pyyaml)
     config = _v2_overlay_config()
     assert config["head"]["control_suffix"] == "jNeck_ctl"
-    assert (config["head"]["attack_frames"], config["head"]["settle_frames"], config["head"]["overshoot_ratio"]) == (15, 5, 0.20)
+    assert (config["head"]["attack_frames"], config["head"]["settle_frames"], config["head"]["overshoot_ratio"]) == (15, 10, 0.20)
     assert config["affect"]["transition_frames"] == 12
     assert config["blink"]["presets"]["BLINK"]["closure"] == 7
     assert config["blink"]["brow_companion"]["delta"] == 2
@@ -87,7 +87,7 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     micro = config["micro_saccade"]
     assert {key: micro[key] for key in ("enabled", "move_frames", "hold_frames")} == {"enabled": True, "move_frames": 2, "hold_frames": 10}
     assert micro["points"] == {"A": [-.28, .10], "B": [0.0, -.18], "C": [.24, .08]}
-    assert config["idle_head"]["max_pitch_degrees"] == .40 and config["idle_head"]["max_roll_degrees"] == .22
+    assert config["idle_head"]["max_pitch_degrees"] == .80 and config["idle_head"]["max_roll_degrees"] == .45
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -344,7 +344,7 @@ def test_v2_glance_returns_to_persistent_gaze_until_later_authored_gaze():
 
 
 def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
-    config = {"attack_frames": 15, "settle_frames": 5, "overshoot_ratio": .2, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
+    config = {"attack_frames": 15, "settle_frames": 10, "overshoot_ratio": .2, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
     events = [
         {"event_id": "E1", "resolved_start": 1.0, "changes": {"head": "HEAD-UP-STRONG"}},
         {"event_id": "E2", "resolved_start": 2.0, "changes": {"head": "HEAD-NONE"}},
@@ -357,18 +357,18 @@ def test_v2_head_schedule_is_additive_config_driven_and_none_returns_zero():
 
 
 def test_v2_head_realization_preserves_semantic_timing_roles():
-    config = {"attack_frames": 15, "settle_frames": 5, "overshoot_ratio": .2, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
+    config = {"attack_frames": 15, "settle_frames": 10, "overshoot_ratio": .2, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
     initial = build_head_overlay_key_schedule([{"event_id": "I", "timing_role": "INITIAL_STATE", "resolved_start": 0, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     listener = build_head_overlay_key_schedule([{"event_id": "L", "timing_role": "LISTEN_REACTION", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     speaker = build_head_overlay_key_schedule([{"event_id": "S", "timing_role": "SPEAK_ONSET", "resolved_start": 2, "changes": {"head": "HEAD-UP-SUBTLE"}}], fps=24, config=config)
     assert initial == [{"frame": 0.0, "values": {"rotateX": -3.0, "rotateY": 0.0, "rotateZ": 0.0}, "event_id": "I"}]
-    assert [key["frame"] for key in listener] == [48.0, 63.0, 68.0]
-    assert [key["frame"] for key in speaker] == [33.0, 48.0, 53.0]
+    assert [key["frame"] for key in listener] == [48.0, 63.0, 73.0]
+    assert [key["frame"] for key in speaker] == [33.0, 48.0, 58.0]
     assert not any(key["frame"] < 48.0 for key in listener)
 
 
 def test_v2_head_overshoot_uses_movement_delta_and_clamps_speaker_attack():
-    config = {"attack_frames": 15, "settle_frames": 5, "overshoot_ratio": .2, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
+    config = {"attack_frames": 15, "settle_frames": 10, "overshoot_ratio": .2, "strength_degrees": {"SUBTLE": 3, "MEDIUM": 6, "STRONG": 10}, "pitch_axis": "rotateX", "roll_axis": "rotateZ", "pitch_up_sign": -1, "tilt_left_sign": 1}
     events = [
         {"event_id": "A", "timing_role": "INITIAL_STATE", "resolved_start": 0, "changes": {"head": "HEAD-DOWN-MEDIUM"}},
         {"event_id": "B", "timing_role": "SPEAK_ONSET", "resolved_start": 2, "changes": {"head": "HEAD-DOWN-STRONG"}},
@@ -379,7 +379,7 @@ def test_v2_head_overshoot_uses_movement_delta_and_clamps_speaker_attack():
     assert any(key["frame"] == 60.0 and key["values"]["rotateX"] == 10.8 for key in keys)
     assert any(key["frame"] == 90.0 and key["values"]["rotateX"] == -2.0 for key in keys)
     early = build_head_overlay_key_schedule([{"event_id": "E", "timing_role": "SPEAK_ONSET", "resolved_start": 8 / 30, "changes": {"head": "HEAD-DOWN-SUBTLE"}}], fps=30, config=config)
-    assert [key["frame"] for key in early] == [0.0, 8.0, 13.0]
+    assert [key["frame"] for key in early] == [0.0, 8.0, 18.0]
 
 
 def test_v2_user_mask_schedule_interpolates_without_shifting_semantic_boundaries():
@@ -570,7 +570,7 @@ def test_v2_idle_head_is_deterministic_actor_specific_and_never_yaws():
     b = plan_idle_head_drift(actor="A", sound_file="S", speaking_intervals=[(0, 5), (10, 12)], duration_seconds=15, fps=30, config=config)
     listener = plan_idle_head_drift(actor="B", sound_file="S", speaking_intervals=[], duration_seconds=5, fps=30, config=config)
     assert a == b and listener and any(key["frame"] == 150 and key["rotateX"] == key["rotateZ"] == 0 for key in a)
-    assert all(abs(key["rotateX"]) <= .40 and abs(key["rotateZ"]) <= .22 and "rotateY" not in key for key in a + listener)
+    assert all(abs(key["rotateX"]) <= .80 and abs(key["rotateZ"]) <= .45 and "rotateY" not in key for key in a + listener)
     assert idle_head_layer_name("JOAN") == "JALITEST_idleHead_JOAN"
 
 
