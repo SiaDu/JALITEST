@@ -26,10 +26,10 @@ item[]
 				text = "ma'am"
 			intervals [4]:
 				xmin = 1.323125
-				xmax = 3.173750
+				xmax = 3.163750
 				text = "XXNONVERBALXX"
 			intervals [5]:
-				xmin = 3.173750
+				xmin = 3.163750
 				xmax = 3.373750
 				text = "we're"
 			intervals [6]:
@@ -42,10 +42,10 @@ item[]
 				text = "pursuit"
 			intervals [8]:
 				xmin = 4.033750
-				xmax = 4.383750
+				xmax = 4.383749
 				text = "XXNONVERBALXX"
 			intervals [9]:
-				xmin = 4.383750
+				xmin = 4.383749
 				xmax = 4.533750
 				text = "of"
 			intervals [10]:
@@ -54,10 +54,10 @@ item[]
 				text = "someone"
 			intervals [11]:
 				xmin = 4.953750
-				xmax = 5.673750
+				xmax = 5.673749
 				text = "XXNONVERBALXX"
 			intervals [12]:
-				xmin = 5.673750
+				xmin = 5.673749
 				xmax = 5.933750
 				text = "very"
 			intervals [13]:
@@ -66,10 +66,10 @@ item[]
 				text = "dangerous"
 			intervals [14]:
 				xmin = 6.613750
-				xmax = 7.193750
+				xmax = 7.193749
 				text = "XXNONVERBALXX"
 			intervals [15]:
-				xmin = 7.193750
+				xmin = 7.193749
 				xmax = 7.303750
 				text = "he"
 			intervals [16]:
@@ -78,10 +78,10 @@ item[]
 				text = "might've"
 			intervals [17]:
 				xmin = 7.613750
-				xmax = 7.813750
+				xmax = 7.813749
 				text = "come"
 			intervals [18]:
-				xmin = 7.813750
+				xmin = 7.813749
 				xmax = 8.103749
 				text = "onto"
 			intervals [19]:
@@ -304,10 +304,10 @@ item[]
 				text = "m"
 			intervals [10]:
 				xmin = 1.323125
-				xmax = 3.173750
+				xmax = 3.163750
 				text = "spn"
 			intervals [11]:
-				xmin = 3.173750
+				xmin = 3.163750
 				xmax = 3.283750
 				text = "w"
 			intervals [12]:
@@ -316,10 +316,10 @@ item[]
 				text = "''3`"
 			intervals [13]:
 				xmin = 3.373750
-				xmax = 3.423750
+				xmax = 3.423749
 				text = "I"
 			intervals [14]:
-				xmin = 3.423750
+				xmin = 3.423749
 				xmax = 3.473750
 				text = "n"
 			intervals [15]:
@@ -344,10 +344,10 @@ item[]
 				text = "t"
 			intervals [20]:
 				xmin = 4.033750
-				xmax = 4.383750
+				xmax = 4.383749
 				text = "spn"
 			intervals [21]:
-				xmin = 4.383750
+				xmin = 4.383749
 				xmax = 4.443750
 				text = "V"
 			intervals [22]:
@@ -380,22 +380,22 @@ item[]
 				text = "n"
 			intervals [29]:
 				xmin = 4.953750
-				xmax = 5.673750
+				xmax = 5.673749
 				text = "spn"
 			intervals [30]:
-				xmin = 5.673750
-				xmax = 5.733750
+				xmin = 5.673749
+				xmax = 5.733749
 				text = "v"
 			intervals [31]:
-				xmin = 5.733750
+				xmin = 5.733749
 				xmax = 5.803750
 				text = "''E"
 			intervals [32]:
 				xmin = 5.803750
-				xmax = 5.903750
+				xmax = 5.903749
 				text = "r\"
 			intervals [33]:
-				xmin = 5.903750
+				xmin = 5.903749
 				xmax = 5.933750
 				text = "i"
 			intervals [34]:
@@ -432,14 +432,14 @@ item[]
 				text = "s"
 			intervals [42]:
 				xmin = 6.613750
-				xmax = 7.193750
+				xmax = 7.193749
 				text = "spn"
 			intervals [43]:
-				xmin = 7.193750
-				xmax = 7.273750
+				xmin = 7.193749
+				xmax = 7.273749
 				text = "h"
 			intervals [44]:
-				xmin = 7.273750
+				xmin = 7.273749
 				xmax = 7.303750
 				text = "''i"
 			intervals [45]:
@@ -456,34 +456,34 @@ item[]
 				text = "t"
 			intervals [48]:
 				xmin = 7.523750
-				xmax = 7.563750
+				xmax = 7.563749
 				text = "V"
 			intervals [49]:
-				xmin = 7.563750
+				xmin = 7.563749
 				xmax = 7.613750
 				text = "v"
 			intervals [50]:
 				xmin = 7.613750
-				xmax = 7.693750
+				xmax = 7.693749
 				text = "k"
 			intervals [51]:
-				xmin = 7.693750
-				xmax = 7.733750
+				xmin = 7.693749
+				xmax = 7.733749
 				text = "''V"
 			intervals [52]:
-				xmin = 7.733750
-				xmax = 7.813750
+				xmin = 7.733749
+				xmax = 7.813749
 				text = "m"
 			intervals [53]:
-				xmin = 7.813750
-				xmax = 7.923750
+				xmin = 7.813749
+				xmax = 7.923749
 				text = "''O"
 			intervals [54]:
-				xmin = 7.923750
-				xmax = 7.983750
+				xmin = 7.923749
+				xmax = 7.983749
 				text = "n"
 			intervals [55]:
-				xmin = 7.983750
+				xmin = 7.983749
 				xmax = 8.073750
 				text = "t"
 			intervals [56]:
