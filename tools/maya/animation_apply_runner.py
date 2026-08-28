@@ -1653,52 +1653,57 @@ def fixation_gaze_intervals(
 def build_fixation_micro_saccade_key_schedule(
     clusters: Iterable[dict[str, Any]], *, config: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    """Expand micro-saccade clusters into literal additive X/Y delta keys."""
-    transition = int(config["transition_frames"])
-    patterns = config["patterns"]
+    """Expand continuous fixation runs into literal additive X/Y delta keys."""
+    move, hold = int(config["move_frames"]), int(config["hold_frames"])
+    points = {name: tuple(map(float, value)) for name, value in config["points"].items()}
     keys: list[dict[str, Any]] = []
     for cluster in clusters:
-        pattern = patterns[str(cluster["pattern"])]
-        frame = float(cluster["start_frame"])
-        values = [(0.0, 0.0), *[(float(x), float(y)) for x, y in pattern], (0.0, 0.0)]
-        for index, (x, y) in enumerate(values):
-            keys.append({"frame": frame + index * transition, "x": x, "y": y, "cluster_id": cluster.get("cluster_id")})
-    return keys
+        frame, end = float(cluster["start_frame"]), float(cluster["end_frame"])
+        values: list[tuple[float, tuple[float, float]]] = [(frame, (0.0, 0.0))]
+        cursor, index = frame + move, 0
+        if cursor <= end:
+            values.append((cursor, points["A"]))
+            while cursor + hold + 2 * move <= end:
+                values.append((cursor + hold, points[("A", "B", "C")[index]]))
+                index = (index + 1) % 3
+                cursor += hold + move
+                values.append((cursor, points[("A", "B", "C")[index]]))
+            if end - cursor >= move:
+                values.append((end - move, points[("A", "B", "C")[index]]))
+            values.append((end, (0.0, 0.0)))
+        for key_frame, (x, y) in values:
+            if keys and keys[-1]["frame"] == key_frame and keys[-1]["x"] == x and keys[-1]["y"] == y:
+                continue
+            keys.append({"frame": key_frame, "x": x, "y": y, "cluster_id": cluster.get("cluster_id")})
+    return sorted(keys, key=lambda key: key["frame"])
 
 
 def plan_fixation_micro_saccades(
     gaze_intervals: Iterable[tuple[float, float]], *, blink_events: Iterable[dict[str, Any]], actor: str,
     sound_file: str, duration_seconds: float, fps: float, config: dict[str, Any], blink_config: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    """Plan deterministic, guarded fixation clusters for persistent GAZE only."""
+    """Plan continuous persistent-GAZE fixation runs, split only by eye holds."""
     if not bool(config.get("enabled", False)):
         return []
-    minimum, maximum = float(config["min_interval_seconds"]), float(config["max_interval_seconds"])
-    start_guard, end_guard, blink_guard = (float(config[key]) for key in ("gaze_start_guard_seconds", "gaze_end_guard_seconds", "blink_guard_seconds"))
-    if minimum <= 0 or maximum < minimum or min(start_guard, end_guard, blink_guard) < 0 or fps <= 0:
+    if int(config["move_frames"]) <= 0 or int(config["hold_frames"]) < 0 or fps <= 0:
         raise ValueError("Invalid fixation micro-saccade timing config.")
-    transition = int(config["transition_frames"])
-    cluster_seconds = 4.0 * transition / fps
-    patterns = config.get("patterns") or {}
-    if not isinstance(patterns.get("A"), list) or not isinstance(patterns.get("B"), list):
-        raise ValueError("Fixation micro-saccade config requires patterns A and B.")
-    blink_windows = [(max(0.0, start - blink_guard), min(duration_seconds, end + blink_guard)) for start, end in _blink_episodes(blink_events, fps=fps, duration_seconds=duration_seconds, blink_config=blink_config)]
-    seed = int.from_bytes(hashlib.sha256(f"{actor}|{sound_file}|micro_saccade".encode("utf-8")).digest()[:8], "big")
-    rng = random.Random(seed)
+    planned_blinks = list(blink_events)
+    hold_starts = {
+        _blink_visual_start_seconds(event, fps=fps) for event in planned_blinks
+        if (event.get("changes") or {}).get("blink") == "EYE_CLOSE_HOLD"
+    }
+    holds = [episode for episode in _blink_episodes(planned_blinks, fps=fps, duration_seconds=duration_seconds, blink_config=blink_config) if episode[0] in hold_starts]
     clusters: list[dict[str, Any]] = []
     for interval_start, interval_end in gaze_intervals:
-        origin = max(0.0, interval_start + start_guard)
-        latest = min(duration_seconds, interval_end - end_guard) - cluster_seconds
-        while origin <= latest:
-            candidate = origin + rng.uniform(minimum, maximum)
-            if candidate > latest:
-                break
-            collision = next((window for window in blink_windows if candidate < window[1] and candidate + cluster_seconds > window[0]), None)
-            if collision is not None:
-                origin = max(origin, collision[1])
+        cursor = max(0.0, interval_start)
+        for hold_start, hold_end in holds:
+            if hold_end <= cursor or hold_start >= interval_end:
                 continue
-            clusters.append({"actor": actor, "cluster_id": f"MICRO_SACCADE_{len(clusters) + 1:03d}", "start_frame": candidate * fps, "pattern": rng.choice(("A", "B"))})
-            origin = candidate + cluster_seconds
+            if hold_start > cursor:
+                clusters.append({"actor": actor, "cluster_id": f"MICRO_SACCADE_{len(clusters) + 1:03d}", "start_frame": cursor * fps, "end_frame": hold_start * fps})
+            cursor = max(cursor, hold_end)
+        if cursor < interval_end:
+            clusters.append({"actor": actor, "cluster_id": f"MICRO_SACCADE_{len(clusters) + 1:03d}", "start_frame": cursor * fps, "end_frame": min(duration_seconds, interval_end) * fps})
     return clusters
 
 

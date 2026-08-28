@@ -106,15 +106,12 @@ maya_fixation_micro_saccade:
   control_suffix: CNT_BOTH_EYES
   x_attribute: translateX
   y_attribute: translateY
-  transition_frames: 2
-  min_interval_seconds: 1.8
-  max_interval_seconds: 3.2
-  gaze_start_guard_seconds: 0.35
-  gaze_end_guard_seconds: 0.25
-  blink_guard_seconds: 0.15
-  patterns:
-    A: [[-0.28, 0.10], [0.00, -0.18], [0.24, 0.08]]
-    B: [[0.28, 0.10], [0.00, -0.18], [-0.24, 0.08]]
+  move_frames: 2
+  hold_frames: 10
+  points:
+    A: [-0.28, 0.10]
+    B: [0.00, -0.18]
+    C: [0.24, 0.08]
 
 maya_head_overlay:
   control_suffix: jNeck_ctl

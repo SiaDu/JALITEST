@@ -1,0 +1,78 @@
+[ANALYZE]
+JOAN listens for the threat beneath CHAYTON's controlled warning while concealing that the stranger is inside. She maintains ownership of the encounter, briefly redirects attention toward the house to protect the hidden man, and hardens when CHAYTON presses for action.
+
+CHAYTON begins formally but grows more urgent as he describes the danger. He watches JOAN for signs of recognition, becomes suspicious after her denial and call to BERT, and intensifies the warning without openly threatening her.
+
+[INITIAL]
+JOAN
+affect: Watchful-85
+gaze: GAZE-CHAYTON
+reason: Enters armed and guarded, prepared to protect her household while assessing the visitors.
+
+CHAYTON
+affect: Watchful-75
+gaze: GAZE-JOAN
+reason: Enters focused on persuading JOAN to reveal whether the dangerous man is present.
+
+[CHANGES]
+E001
+actor: JOAN
+anchor: w0009
+affect: Watchful-92
+head: HEAD-TILT_RIGHT-SUBTLE
+reason: Hearing that the pursued man is dangerous confirms the encounter is an immediate threat.
+
+E002
+actor: CHAYTON
+anchor: w0015
+gaze: GAZE-RIGHT
+reason: The reference to JOAN's property prompts him to search the farmhouse and grounds for signs of concealment.
+
+E003
+actor: JOAN
+anchor: w0021
+affect: Scheming-78
+head: HEAD-DOWN-SUBTLE
+reason: CHAYTON's question exposes the risk in her denial, forcing her to preserve the deception.
+
+E004
+actor: CHAYTON
+anchor: w0021
+affect: Suspicious-82
+head: HEAD-TILT_LEFT-MEDIUM
+reason: JOAN's abrupt denial makes him suspect that she is withholding information.
+
+E005
+actor: JOAN
+anchor: w0022
+gaze: GAZE-RIGHT
+affect: Nervous-72
+reason: Calling for BERT redirects attention toward the house while concealing the stranger's presence.
+
+E006
+actor: CHAYTON
+anchor: w0028
+gaze: GAZE-RIGHT
+reason: JOAN's call toward the house strengthens his suspicion that someone is inside.
+
+E007
+actor: JOAN
+anchor: w0034
+affect: Provoked-76
+gaze: GAZE-CHAYTON
+head: HEAD-UP-MEDIUM
+reason: The accusation that the hidden man is deceptive challenges her decision to shelter him.
+
+E008
+actor: JOAN
+anchor: w0042
+affect: Watchful-95
+head: HEAD-UP-STRONG
+reason: The warning about letting the man into her home confirms that CHAYTON is close to discovering the truth.
+
+E009
+actor: CHAYTON
+anchor: w0049
+affect: Intimidating-68
+gaze: GAZE-JOAN
+reason: The call to act marks his final urgent attempt to make JOAN take the danger seriously without issuing an explicit threat.

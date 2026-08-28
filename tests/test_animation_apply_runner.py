@@ -83,8 +83,8 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     assert (config["blink"]["brow_companion"]["left_attribute"], config["blink"]["brow_companion"]["right_attribute"]) == ("BrowDown_L", "BrowDown_R")
     assert config["blink"]["idle_regulatory"] == {"enabled": True, "min_interval_seconds": 3.5, "max_interval_seconds": 6.0, "min_separation_seconds": 0.75}
     micro = config["micro_saccade"]
-    assert {key: micro[key] for key in ("enabled", "transition_frames", "min_interval_seconds", "max_interval_seconds", "gaze_start_guard_seconds", "gaze_end_guard_seconds", "blink_guard_seconds")} == {"enabled": True, "transition_frames": 2, "min_interval_seconds": 1.8, "max_interval_seconds": 3.2, "gaze_start_guard_seconds": .35, "gaze_end_guard_seconds": .25, "blink_guard_seconds": .15}
-    assert micro["patterns"] == {"A": [[-.28, .10], [0.0, -.18], [.24, .08]], "B": [[.28, .10], [0.0, -.18], [-.24, .08]]}
+    assert {key: micro[key] for key in ("enabled", "move_frames", "hold_frames")} == {"enabled": True, "move_frames": 2, "hold_frames": 10}
+    assert micro["points"] == {"A": [-.28, .10], "B": [0.0, -.18], "C": [.24, .08]}
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -598,12 +598,10 @@ def _fixation_gaze(mode, start, end, *, role=None, onset=None):
     return event
 
 
-def test_v2_micro_saccade_pattern_keys_are_literal_additive_deltas():
+def test_v2_micro_saccade_continuous_triangle_keys_are_literal_additive_deltas():
     config = _v2_overlay_config()["micro_saccade"]
-    a = build_fixation_micro_saccade_key_schedule([{"cluster_id": "A", "start_frame": 100, "pattern": "A"}], config=config)
-    b = build_fixation_micro_saccade_key_schedule([{"cluster_id": "B", "start_frame": 100, "pattern": "B"}], config=config)
-    assert [(key["frame"], key["x"], key["y"]) for key in a] == [(100.0, 0.0, 0.0), (102.0, -.28, .10), (104.0, 0.0, -.18), (106.0, .24, .08), (108.0, 0.0, 0.0)]
-    assert [(key["frame"], key["x"], key["y"]) for key in b][1:4] == [(102.0, .28, .10), (104.0, 0.0, -.18), (106.0, -.24, .08)]
+    keys = build_fixation_micro_saccade_key_schedule([{"cluster_id": "A", "start_frame": 100, "end_frame": 170}], config=config)
+    assert [(key["frame"], key["x"], key["y"]) for key in keys[:10]] == [(100.0, 0.0, 0.0), (102.0, -.28, .10), (112.0, -.28, .10), (114.0, 0.0, -.18), (124.0, 0.0, -.18), (126.0, .24, .08), (136.0, .24, .08), (138.0, -.28, .10), (148.0, -.28, .10), (150.0, 0.0, -.18)]
 
 
 def test_v2_micro_saccades_only_use_persistent_gaze_and_exclude_glance():
@@ -617,21 +615,18 @@ def test_v2_micro_saccades_only_use_persistent_gaze_and_exclude_glance():
         assert plan_fixation_micro_saccades(gaze, blink_events=[], actor="ALICE", sound_file=direction, duration_seconds=10, fps=30, config=config, blink_config=blink)
 
 
-def test_v2_micro_saccades_guard_gaze_glance_blinks_and_held_closure_deterministically():
-    micro = dict(_v2_overlay_config()["micro_saccade"])
-    micro.update({"min_interval_seconds": 1.8, "max_interval_seconds": 1.8})
+def test_v2_micro_saccades_continue_under_blinks_but_restart_after_held_closure():
+    micro = _v2_overlay_config()["micro_saccade"]
     blink = _v2_overlay_config()["blink"]
     raw = [_fixation_gaze("GAZE", 0, 4), _fixation_gaze("GLANCE", 4, 5, onset=3.9), _fixation_gaze("GAZE", 8, 12)]
     intervals = fixation_gaze_intervals(raw, fps=30, transition_frames=3, duration_seconds=12)
     assert intervals == [(0.0, 3.9), (5.0, 8.0), (8.1, 12)]
     blinks = [{"resolved_start": 1.0, "changes": {"blink": "BLINK"}}, {"resolved_start": 6.0, "changes": {"blink": "EYE_CLOSE_HOLD"}}, {"resolved_start": 7.0, "changes": {"blink": "EYE_OPEN"}}, {"resolved_start": 10.0, "changes": {"blink": "BLINK"}, "blink_source": "idle_regulatory"}]
-    first = plan_fixation_micro_saccades(intervals, blink_events=blinks, actor="ALICE", sound_file="A", duration_seconds=12, fps=30, config=micro, blink_config=blink)
-    second = plan_fixation_micro_saccades(intervals, blink_events=blinks, actor="ALICE", sound_file="A", duration_seconds=12, fps=30, config=micro, blink_config=blink)
-    assert first == second
-    duration = 8 / 30
-    forbidden = [(0.85, 1 + 5 / 30 + .15), (5.85, 7 + 4 / 30 + .15), (9.85, 10 + 5 / 30 + .15)]
-    assert all(not any(cluster["start_frame"] / 30 < end and cluster["start_frame"] / 30 + duration > start for start, end in forbidden) for cluster in first)
-    assert all(cluster["start_frame"] / 30 >= .35 and cluster["start_frame"] / 30 + duration <= 3.9 - .25 or cluster["start_frame"] / 30 >= 8.1 + .35 for cluster in first)
+    runs = plan_fixation_micro_saccades(intervals, blink_events=blinks, actor="ALICE", sound_file="A", duration_seconds=12, fps=30, config=micro, blink_config=blink)
+    keys = build_fixation_micro_saccade_key_schedule(runs, config=micro)
+    assert any(30 < key["frame"] < 120 and key["x"] != 0 for key in keys)  # ordinary blink does not interrupt
+    assert all(not 180 < key["frame"] < 214 for key in keys)  # held closed through release
+    assert any(key["frame"] == 214 and key["x"] == 0 for key in keys)
 
 
 def test_v2_micro_saccade_layer_name_and_plugs_are_separate_from_eye_stare():
@@ -651,13 +646,13 @@ def test_v2_micro_saccade_apply_uses_only_additive_both_eyes_layer():
             "layer": "JALITEST_gaze_ALICE", "managed_gaze_plugs": [], "micro_saccade_node": "ALICE:CNT_BOTH_EYES",
             "micro_saccade_layer": "JALITEST_microSaccade_ALICE", "micro_saccade_plugs": ["ALICE:CNT_BOTH_EYES.translateX", "ALICE:CNT_BOTH_EYES.translateY"],
             "micro_saccade_x_attribute": "translateX", "micro_saccade_y_attribute": "translateY",
-            "micro_saccade_keys": build_fixation_micro_saccade_key_schedule([{"start_frame": 100, "pattern": "A"}], config=_v2_overlay_config()["micro_saccade"]),
+            "micro_saccade_keys": build_fixation_micro_saccade_key_schedule([{"start_frame": 100, "end_frame": 170}], config=_v2_overlay_config()["micro_saccade"]),
         },
     }
     result = apply_dual_gaze_only_artifacts(prepared_context=context, cmds_module=cmds)
     micro = [call for call in cmds.calls if call[0] == "setKeyframe" and call[1][0] == "ALICE:CNT_BOTH_EYES"]
     assert result["ALICE"]["micro_saccade_plugs"] == ["ALICE:CNT_BOTH_EYES.translateX", "ALICE:CNT_BOTH_EYES.translateY"]
-    assert len(micro) == 10 and {call[2]["animLayer"] for call in micro} == {"JALITEST_microSaccade_ALICE"}
+    assert len(micro) == 2 * len(context["ALICE"]["micro_saccade_keys"]) and {call[2]["animLayer"] for call in micro} == {"JALITEST_microSaccade_ALICE"}
     assert not any(call[0] == "setKeyframe" and "eyeStare_world" in call[1][0] for call in cmds.calls)
     assert ("JALITEST_microSaccade_ALICE",) in {call[1] for call in cmds.calls if call[0] == "animLayer" and call[2].get("override") is False}
 
@@ -680,7 +675,7 @@ def test_v2_gaze_prepare_keeps_micro_saccades_in_a_separate_runtime_section(monk
     assert alice["micro_saccade_layer"] == "JALITEST_microSaccade_ALICE"
     assert alice["micro_saccade_plugs"] == ["ALICE:CNT_BOTH_EYES.translateX", "ALICE:CNT_BOTH_EYES.translateY"]
     assert alice["micro_saccade_keys"] and all("eyeStare_world" not in plug for plug in alice["micro_saccade_plugs"])
-    assert all(key["x"] in {0.0, -.28, 0.0, .24, .28, -.24} and key["y"] in {0.0, .10, -.18, .08} for key in alice["micro_saccade_keys"])
+    assert all(key["x"] in {0.0, -.28, .24} and key["y"] in {0.0, .10, -.18, .08} for key in alice["micro_saccade_keys"])
 
 
 def test_v2_regulatory_blink_planner_priority_and_transition_rules():
