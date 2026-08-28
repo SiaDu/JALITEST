@@ -57,6 +57,8 @@ from animation_apply_runner import (  # noqa: E402
     _v2_overlay_config,
     _resolve_user_blink_brow_plugs,
     micro_saccade_layer_name,
+    idle_head_layer_name,
+    plan_idle_head_drift,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 from diagnose_eyelid_user_mappings import diagnose_eyelid_user_mappings  # noqa: E402
@@ -85,6 +87,7 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     micro = config["micro_saccade"]
     assert {key: micro[key] for key in ("enabled", "move_frames", "hold_frames")} == {"enabled": True, "move_frames": 2, "hold_frames": 10}
     assert micro["points"] == {"A": [-.28, .10], "B": [0.0, -.18], "C": [.24, .08]}
+    assert config["idle_head"]["max_pitch_degrees"] == .40 and config["idle_head"]["max_roll_degrees"] == .22
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -559,6 +562,16 @@ def test_v2_blink_config_uses_live_evidenced_per_preset_closures():
 
 def _resolved(event_id, time, actor="ALICE", **changes):
     return {"event_id": event_id, "actor": actor, "resolved_start": time, "changes": changes}
+
+
+def test_v2_idle_head_is_deterministic_actor_specific_and_never_yaws():
+    config = _v2_overlay_config()["idle_head"]
+    a = plan_idle_head_drift(actor="A", sound_file="S", speaking_intervals=[(0, 5), (10, 12)], duration_seconds=15, fps=30, config=config)
+    b = plan_idle_head_drift(actor="A", sound_file="S", speaking_intervals=[(0, 5), (10, 12)], duration_seconds=15, fps=30, config=config)
+    listener = plan_idle_head_drift(actor="B", sound_file="S", speaking_intervals=[], duration_seconds=5, fps=30, config=config)
+    assert a == b and listener and any(key["frame"] == 150 and key["rotateX"] == key["rotateZ"] == 0 for key in a)
+    assert all(abs(key["rotateX"]) <= .40 and abs(key["rotateZ"]) <= .22 and "rotateY" not in key for key in a + listener)
+    assert idle_head_layer_name("JOAN") == "JALITEST_idleHead_JOAN"
 
 
 def test_v2_idle_regulatory_blinks_are_deterministic_and_feed_existing_blink_schedules():

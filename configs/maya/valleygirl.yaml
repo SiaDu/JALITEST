@@ -127,6 +127,18 @@ maya_head_overlay:
   pitch_up_sign: -1
   tilt_left_sign: 1
 
+maya_idle_head:
+  enabled: true
+  control_suffix: jNeck_ctl
+  pitch_axis: rotateX
+  roll_axis: rotateZ
+  max_pitch_degrees: 0.40
+  max_roll_degrees: 0.22
+  min_waypoint_seconds: 1.4
+  max_waypoint_seconds: 2.4
+  speech_fade_frames: 6
+  speech_resume_frames: 8
+
 maya_affect_overlay:
   transition_frames: 12
 

@@ -180,6 +180,7 @@ LISTENER_MASK_LAYER_PREFIX = "JALITEST_listenerMask_"
 GAZE_LAYER_PREFIX = "JALITEST_gaze_"
 HEAD_LAYER_PREFIX = "JALITEST_head_"
 BLINK_LAYER_PREFIX = "JALITEST_blink_"
+IDLE_HEAD_LAYER_PREFIX = "JALITEST_idleHead_"
 MICRO_SACCADE_LAYER_PREFIX = "JALITEST_microSaccade_"
 JALI_BASELINE_SCHEMA = "dual_jali_base_v2"
 _JSYNC_BASELINE_ATTRS = (
@@ -281,7 +282,7 @@ def _validate_dual_jali_base(
             reference = {}
         if not isinstance(reference, dict):
             raise ValueError(f"{alias}: JALI Base baseline lacks named gaze reference.")
-        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}", f"{HEAD_LAYER_PREFIX}{alias}", f"{BLINK_LAYER_PREFIX}{alias}", f"{MICRO_SACCADE_LAYER_PREFIX}{alias}"]}
+        prepared[alias] = {"baseline": item, "facs_plug": facs_plug, "gaze_reference": reference, "layers": [f"{LISTENER_MASK_LAYER_PREFIX}{alias}", f"{GAZE_LAYER_PREFIX}{alias}", f"{HEAD_LAYER_PREFIX}{alias}", f"{BLINK_LAYER_PREFIX}{alias}", f"{MICRO_SACCADE_LAYER_PREFIX}{alias}", f"{IDLE_HEAD_LAYER_PREFIX}{alias}"]}
     return prepared
 
 
@@ -747,13 +748,18 @@ def _v2_overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]
     affect = value.get("maya_affect_overlay")
     blink = value.get("maya_performative_blink_overlay")
     micro = value.get("maya_fixation_micro_saccade")
-    if not isinstance(head, dict) or not isinstance(affect, dict) or not isinstance(blink, dict) or not isinstance(micro, dict):
+    idle_head = value.get("maya_idle_head")
+    if not isinstance(head, dict) or not isinstance(affect, dict) or not isinstance(blink, dict) or not isinstance(micro, dict) or not isinstance(idle_head, dict):
         raise ValueError("Maya config requires head, affect, blink, and fixation micro-saccade overlay blocks.")
-    return {"head": head, "affect": affect, "blink": blink, "micro_saccade": micro}
+    return {"head": head, "affect": affect, "blink": blink, "micro_saccade": micro, "idle_head": idle_head}
 
 
 def head_layer_name(actor: str) -> str:
     return f"{HEAD_LAYER_PREFIX}{actor}"
+
+
+def idle_head_layer_name(actor: str) -> str:
+    return f"{IDLE_HEAD_LAYER_PREFIX}{actor}"
 
 
 def blink_layer_name(actor: str) -> str:
@@ -1137,6 +1143,42 @@ def _resolve_user_blink_brow_plugs(rig: str, config: dict[str, Any], cmds_module
     )
 
 
+def _actor_speaking_intervals(manifest: dict[str, Any], actor: str) -> list[tuple[float, float]]:
+    path = Path(str((manifest.get("artifacts") or {}).get("conversation_anchor_timing") or ""))
+    if not path.is_file():
+        raise FileNotFoundError("V2 idle head requires conversation_anchor_timing.")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.values() if isinstance(payload, dict) else []
+    intervals = sorted((float(row["start"]), float(row["end"])) for row in rows if isinstance(row, dict) and row.get("speaker") == actor and "start" in row and "end" in row)
+    merged: list[tuple[float, float]] = []
+    for start, end in intervals:
+        if merged and start <= merged[-1][1]: merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else: merged.append((start, end))
+    return merged
+
+
+def plan_idle_head_drift(*, actor: str, sound_file: str, speaking_intervals: Iterable[tuple[float, float]], duration_seconds: float, fps: float, config: dict[str, Any]) -> list[dict[str, float]]:
+    """Deterministic low-amplitude additive neck drift in the actor's idle complement."""
+    if not config.get("enabled", False): return []
+    seed = int.from_bytes(hashlib.sha256(f"{actor}|{sound_file}|idle_head".encode()).digest()[:8], "big"); rng = random.Random(seed)
+    speech = list(speaking_intervals); keys: list[dict[str, float]] = []; cursor = 0.0
+    intervals = [(start, end) for start, end in speech] + [(duration_seconds, duration_seconds)]
+    for speech_start, speech_end in intervals:
+        end = min(duration_seconds, speech_start); resume = cursor + (int(config["speech_resume_frames"]) / fps if cursor else 0.0)
+        if resume < end:
+            keys.append({"frame": cursor * fps, "rotateX": 0.0, "rotateZ": 0.0})
+            current = resume
+            if resume > cursor: keys.append({"frame": resume * fps, "rotateX": rng.triangular(-float(config["max_pitch_degrees"]), float(config["max_pitch_degrees"]), 0.0), "rotateZ": rng.triangular(-float(config["max_roll_degrees"]), float(config["max_roll_degrees"]), 0.0)})
+            while current < end:
+                current = min(end, current + rng.uniform(float(config["min_waypoint_seconds"]), float(config["max_waypoint_seconds"])))
+                keys.append({"frame": current * fps, "rotateX": rng.triangular(-float(config["max_pitch_degrees"]), float(config["max_pitch_degrees"]), 0.0), "rotateZ": rng.triangular(-float(config["max_roll_degrees"]), float(config["max_roll_degrees"]), 0.0)})
+            if speech_start < duration_seconds:
+                fade = max(resume, end - int(config["speech_fade_frames"]) / fps)
+                keys.append({"frame": fade * fps, "rotateX": keys[-1]["rotateX"], "rotateZ": keys[-1]["rotateZ"]}); keys.append({"frame": end * fps, "rotateX": 0.0, "rotateZ": 0.0})
+        cursor = max(cursor, speech_end)
+    return sorted({key["frame"]: key for key in keys}.values(), key=lambda key: key["frame"])
+
+
 def prepare_dual_v2_head_blink_overlays(
     *, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]],
     baseline: dict[str, Any], cmds_module: Any | None = None, mel_module: Any | None = None,
@@ -1187,6 +1229,9 @@ def prepare_dual_v2_head_blink_overlays(
         )
         neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
         head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
+        idle_neck = qualify_rig_control(rig, str(config["idle_head"]["control_suffix"]))
+        idle_head_plugs = [f"{idle_neck}.{config['idle_head']['pitch_axis']}", f"{idle_neck}.{config['idle_head']['roll_axis']}"]
+        if any(not cmds_module.objExists(plug) for plug in idle_head_plugs): raise RuntimeError(f"{actor}: idle head requires jNeck_ctl rotateX/rotateZ.")
         if head_events and any(not cmds_module.objExists(plug) for plug in head_plugs):
             raise RuntimeError(f"{actor}: head event requires {neck}.rotateX/Y/Z.")
         blink_plugs = _resolve_user_blink_plugs(rig, config["blink"], cmds_module) if blink_events else []
@@ -1199,11 +1244,13 @@ def prepare_dual_v2_head_blink_overlays(
         if blink_events and not cmds_module.objExists(facs_plug):
             raise RuntimeError(f"{actor}: performative blink requires {facs_plug}.")
         prepared["actors"][actor] = {
-            "rig": rig, "jsync": jsync, "head_layer": head_layer_name(actor), "blink_layer": blink_layer_name(actor),
+            "rig": rig, "jsync": jsync, "head_layer": head_layer_name(actor), "blink_layer": blink_layer_name(actor), "idle_head_layer": idle_head_layer_name(actor),
             "head_plugs": head_plugs, "blink_plugs": blink_plugs, "blink_brow_plugs": blink_brow_plugs, "facs_plug": facs_plug,
             "vendor_blink_plug": vendor_blink_plug,
             "facs_add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module) if blink_events else None,
             "head_keys": build_head_overlay_key_schedule(head_events, fps=float(manifest["fps"]), config=config["head"]),
+            "idle_head_plugs": idle_head_plugs, "idle_head_speaking_intervals": _actor_speaking_intervals(manifest, actor),
+            "idle_head_keys": plan_idle_head_drift(actor=actor, sound_file=str(runtime["sound_file"]), speaking_intervals=_actor_speaking_intervals(manifest, actor), duration_seconds=float(manifest["shared_duration_seconds"]), fps=float(manifest["fps"]), config=config["idle_head"]),
             "blink_plan": blink_events,
             "blink_keys": build_blink_overlay_key_schedule(blink_events, fps=float(manifest["fps"]), config=config["blink"]),
             "blink_brow_keys": build_blink_brow_companion_key_schedule(blink_events, fps=float(manifest["fps"]), config=config["blink"]),
@@ -1220,6 +1267,12 @@ def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_
         raise ValueError("Invalid prepared v2 overlay context.")
     result: dict[str, Any] = {}
     for actor, item in prepared_context["actors"].items():
+        if "idle_head_layer" in item:
+            _clear_listener_layer_keys(item["idle_head_layer"], item["idle_head_plugs"], scene_range=None, cmds_module=cmds_module, override=False)
+            for key in item.get("idle_head_keys", []):
+                for plug in item["idle_head_plugs"]:
+                    node, attr = plug.rsplit(".", 1)
+                    cmds_module.setKeyframe(node, attribute=attr, time=key["frame"], value=key[attr], animLayer=item["idle_head_layer"])
         if item["head_keys"]:
             _clear_listener_layer_keys(item["head_layer"], item["head_plugs"], scene_range=None, cmds_module=cmds_module, override=False)
             for key in item["head_keys"]:
@@ -1237,7 +1290,7 @@ def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_
                 for plug in item.get("blink_brow_plugs", []):
                     node, attr = plug.rsplit(".", 1)
                     cmds_module.setKeyframe(node, attribute=attr, time=key["frame"], value=key["value"], animLayer=item["blink_layer"])
-        result[actor] = {"head_layer": item["head_layer"], "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "blink_brow_key_count": len(item.get("blink_brow_keys", [])), "blink_plan": item.get("blink_plan", []), "jali_calculate_blinks_disabled": True}
+        result[actor] = {"head_layer": item["head_layer"], "idle_head_layer": item.get("idle_head_layer"), "idle_head_key_count": len(item.get("idle_head_keys", [])), "blink_layer": item["blink_layer"], "head_key_count": len(item["head_keys"]), "blink_key_count": len(item["blink_keys"]), "blink_brow_key_count": len(item.get("blink_brow_keys", [])), "blink_plan": item.get("blink_plan", []), "jali_calculate_blinks_disabled": True}
     return result
 
 
