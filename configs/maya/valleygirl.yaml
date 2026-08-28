@@ -127,6 +127,11 @@ maya_performative_blink_overlay:
   vendor_output_control_suffix: LIDS_jSync_plusMinus
   vendor_output_attribute: Down_upLids_jSync
   open_value: 0
+  idle_regulatory:
+    enabled: true
+    min_interval_seconds: 3.5
+    max_interval_seconds: 6.0
+    min_separation_seconds: 0.75
   brow_companion:
     delta: 2
     central_control_suffix: usr_BrowInDown

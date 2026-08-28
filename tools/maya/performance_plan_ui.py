@@ -171,6 +171,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         super().__init__(parent or maya_main_window())
         self.setObjectName(WINDOW_OBJECT_NAME)
         self.setWindowTitle("Performance Plan Editor")
+        self.setWindowFlag(
+            QtCore.Qt.WindowType.WindowMinimizeButtonHint,
+            True,
+        )
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.resize(1280, 860)
 

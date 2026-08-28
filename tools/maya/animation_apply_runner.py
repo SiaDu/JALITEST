@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
 from pathlib import Path
+import random
 import re
 import shutil
 import sys
@@ -991,6 +993,103 @@ def plan_v2_blinks(
     return planned
 
 
+def _blink_visual_start_seconds(event: dict[str, Any], *, fps: float) -> float:
+    """Return the timeline start used by the existing blink key schedules."""
+    return float(event.get("visual_start_frame", float(event["resolved_start"]) * fps)) / fps
+
+
+def _normal_blink_duration_seconds(*, fps: float, blink_config: dict[str, Any]) -> float:
+    preset = (blink_config.get("presets") or {}).get("BLINK")
+    if not isinstance(preset, dict):
+        raise ValueError("Maya blink config requires BLINK for idle-regulatory timing.")
+    frames = (
+        int(preset["count"]) * (int(preset["close_frames"]) + int(preset["hold_frames"]) + int(preset["open_frames"]))
+        + max(0, int(preset["count"]) - 1) * int(preset["gap_frames"])
+    )
+    return float(frames) / fps
+
+
+def _blink_episodes(
+    planned: Iterable[dict[str, Any]], *, fps: float, duration_seconds: float, blink_config: dict[str, Any],
+) -> list[tuple[float, float]]:
+    """Collapse normal, double, and held blink plans into complete episodes."""
+    presets = blink_config.get("presets") or {}
+    episodes: list[tuple[float, float]] = []
+    hold_start: float | None = None
+    for event in sorted(planned, key=lambda item: _blink_visual_start_seconds(item, fps=fps)):
+        blink = str((event.get("changes") or {}).get("blink") or "")
+        if not blink:
+            continue
+        start = _blink_visual_start_seconds(event, fps=fps)
+        if blink == "EYE_CLOSE_HOLD":
+            hold_start = start
+            continue
+        if blink == "EYE_OPEN":
+            if hold_start is not None:
+                hold = presets.get("EYE_CLOSE_HOLD") or {}
+                release = int(hold.get("release_frames", hold.get("open_frames", 4)))
+                episodes.append((hold_start, start + float(release) / fps))
+                hold_start = None
+            continue
+        preset = presets.get(blink)
+        if not isinstance(preset, dict):
+            raise ValueError(f"Missing performative blink preset {blink}")
+        frames = (
+            int(preset["count"]) * (int(preset["close_frames"]) + int(preset["hold_frames"]) + int(preset["open_frames"]))
+            + max(0, int(preset["count"]) - 1) * int(preset["gap_frames"])
+        )
+        episodes.append((start, start + float(frames) / fps))
+    if hold_start is not None:
+        episodes.append((hold_start, duration_seconds))
+    return sorted(episodes)
+
+
+def inject_idle_regulatory_blinks(
+    planned: Iterable[dict[str, Any]], *, actor: str, sound_file: str, duration_seconds: float,
+    fps: float, blink_config: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Deterministically fill semantic blink-free time with normal idle blinks.
+
+    This deliberately returns ordinary ``BLINK`` events so both existing V2
+    blink schedules own their application, including the brow companion.
+    """
+    semantic = list(planned)
+    idle = blink_config.get("idle_regulatory") or {}
+    if not bool(idle.get("enabled", False)) or duration_seconds <= 0 or fps <= 0:
+        return semantic
+    minimum = float(idle["min_interval_seconds"])
+    maximum = float(idle["max_interval_seconds"])
+    separation = float(idle["min_separation_seconds"])
+    if minimum <= 0 or maximum < minimum or separation < 0:
+        raise ValueError("idle_regulatory requires positive ordered intervals and non-negative separation.")
+    normal_duration = _normal_blink_duration_seconds(fps=fps, blink_config=blink_config)
+    seed = int.from_bytes(hashlib.sha256(f"{actor}|{sound_file}".encode("utf-8")).digest()[:8], "big")
+    rng = random.Random(seed)
+    episodes = _blink_episodes(semantic, fps=fps, duration_seconds=duration_seconds, blink_config=blink_config)
+    idle_events: list[dict[str, Any]] = []
+    origin = 0.0
+    episode_index = 0
+    while origin < duration_seconds:
+        candidate = origin + rng.uniform(minimum, maximum)
+        while episode_index < len(episodes) and episodes[episode_index][1] <= origin:
+            episode_index += 1
+        if episode_index < len(episodes):
+            higher_start, higher_end = episodes[episode_index]
+            if higher_start <= candidate or abs(candidate - higher_start) < separation:
+                origin = max(origin, higher_end)
+                episode_index += 1
+                continue
+        if candidate >= duration_seconds or candidate + normal_duration > duration_seconds:
+            break
+        idle_events.append({
+            "event_id": f"IDLE_BLINK_{len(idle_events) + 1:03d}", "actor": actor,
+            "resolved_start": candidate, "changes": {"blink": "BLINK"},
+            "blink_source": "idle_regulatory", "source_event_ids": [], "timing_role": None,
+        })
+        origin = candidate + normal_duration
+    return sorted(semantic + idle_events, key=lambda event: (float(event["resolved_start"]), event.get("blink_source") == "idle_regulatory"))
+
+
 def _resolve_user_blink_plugs(rig: str, config: dict[str, Any], cmds_module: Any) -> list[str]:
     central = f"{qualify_rig_control(rig, str(config['central_control_suffix']))}.{config['central_attribute']}"
     if cmds_module.objExists(central):
@@ -1062,6 +1161,11 @@ def prepare_dual_v2_head_blink_overlays(
             fps=float(manifest["fps"]),
             affect_transition_frames=int(config["affect"]["transition_frames"]),
             blink_config=config["blink"],
+        )
+        blink_events = inject_idle_regulatory_blinks(
+            blink_events, actor=actor, sound_file=str(runtime["sound_file"]),
+            duration_seconds=float(manifest["shared_duration_seconds"]),
+            fps=float(manifest["fps"]), blink_config=config["blink"],
         )
         neck = qualify_rig_control(rig, str(config["head"]["control_suffix"]))
         head_plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]

@@ -47,6 +47,7 @@ from animation_apply_runner import (  # noqa: E402
     apply_dual_v2_head_blink_overlays,
     prepare_dual_v2_head_blink_overlays,
     plan_v2_blinks,
+    inject_idle_regulatory_blinks,
     diagnose_v2_blink_ownership,
     prepare_dual_v2_listener_mask_artifacts,
     _v2_overlay_config,
@@ -75,6 +76,7 @@ def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypat
     assert config["blink"]["brow_companion"]["central_control_suffix"] == "usr_BrowInDown"
     assert config["blink"]["brow_companion"]["central_attribute"] == "BrowDown"
     assert (config["blink"]["brow_companion"]["left_attribute"], config["blink"]["brow_companion"]["right_attribute"]) == ("BrowDown_L", "BrowDown_R")
+    assert config["blink"]["idle_regulatory"] == {"enabled": True, "min_interval_seconds": 3.5, "max_interval_seconds": 6.0, "min_separation_seconds": 0.75}
 
 
 def test_resolve_jali_source_transcript_path_supports_directory_and_full_txt(tmp_path):
@@ -549,6 +551,36 @@ def test_v2_blink_config_uses_live_evidenced_per_preset_closures():
 
 def _resolved(event_id, time, actor="ALICE", **changes):
     return {"event_id": event_id, "actor": actor, "resolved_start": time, "changes": changes}
+
+
+def test_v2_idle_regulatory_blinks_are_deterministic_and_feed_existing_blink_schedules():
+    config = _v2_overlay_config()["blink"]
+    first = inject_idle_regulatory_blinks([], actor="ALICE", sound_file="Seq1_ALICE", duration_seconds=14, fps=30, blink_config=config)
+    second = inject_idle_regulatory_blinks([], actor="ALICE", sound_file="Seq1_ALICE", duration_seconds=14, fps=30, blink_config=config)
+    assert first == second and first
+    assert all(row["changes"] == {"blink": "BLINK"} and row["blink_source"] == "idle_regulatory" for row in first)
+    assert all(0 <= row["resolved_start"] < 14 and row["resolved_start"] + 5 / 30 <= 14 for row in first)
+    eyelid = build_blink_overlay_key_schedule(first, fps=30, config=config)
+    brow = build_blink_brow_companion_key_schedule(first, fps=30, config=config)
+    assert len(eyelid) == len(brow) == 4 * len(first)
+    assert [key["value"] for key in eyelid[:4]] == [0.0, 7.0, 7.0, 0.0]
+    assert [key["value"] for key in brow[:4]] == [0.0, 2.0, 2.0, 0.0]
+
+
+def test_v2_idle_regulatory_blinks_reset_after_higher_priority_and_hold_release():
+    config = _v2_overlay_config()["blink"]
+    config["idle_regulatory"] = {"enabled": True, "min_interval_seconds": 3.5, "max_interval_seconds": 3.5, "min_separation_seconds": 0.75}
+    semantic = plan_v2_blinks([
+        _resolved("HOLD", 1.0, blink="EYE_CLOSE_HOLD"),
+        _resolved("OPEN", 7.0, blink="EYE_OPEN"),
+        _resolved("DOUBLE", 11.0, blink="DOUBLE_BLINK"),
+    ])
+    planned = inject_idle_regulatory_blinks(semantic, actor="ALICE", sound_file="Seq1_ALICE", duration_seconds=18, fps=30, blink_config=config)
+    idle = [row for row in planned if row["blink_source"] == "idle_regulatory"]
+    assert all(not 1.0 <= row["resolved_start"] < 7.0 + 4 / 30 for row in idle)
+    assert all(abs(row["resolved_start"] - 11.0) >= 0.75 for row in idle)
+    assert any(row["resolved_start"] > 11.0 + 14 / 30 for row in idle)
+    assert all(row["resolved_start"] + 5 / 30 <= 18 for row in idle)
 
 
 def test_v2_regulatory_blink_planner_priority_and_transition_rules():
