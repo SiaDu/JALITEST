@@ -123,6 +123,8 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
     assert "GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes" in prompt
     assert "GAZE and GLANCE have different temporal semantics" in prompt
+    assert "INTERNAL ATTENTION AND DIRECTIONAL GAZE" in prompt
+    assert "These are expressive acting priors, not fixed psychological codes" in prompt
     assert "GLANCE does not replace that persistent gaze" in prompt
     assert "Never repeat the same active `GAZE-*` value" in prompt
     assert "A prior `GLANCE-*` does not change the persistent gaze" in prompt

@@ -28,6 +28,16 @@ Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE.
 
 GAZE and GLANCE have different temporal semantics. `GAZE-target` establishes a new persistent fixation and remains the actor's active gaze until a later persistent `GAZE-*` change. Use GAZE only when the actor should keep attending to that target. `GLANCE-target` is a brief temporary shift to a target and automatically returns to the actor's currently active persistent gaze; GLANCE does not replace that persistent gaze. Use GLANCE for a quick check, an involuntary look, a brief reaction, or a momentary break of eye contact when attention should return afterward.
 
+INTERNAL ATTENTION AND DIRECTIONAL GAZE
+
+Directional gaze targets may express internal attention when the actor is not attending to a physical scene target. Consider a brief directional GLANCE when the dialogue implies active remembering, mental search, visual imagery, working something out, hesitation, self-conscious withdrawal, or emotionally loaded recollection.
+
+For internal memory search or imagery, an upward or upward-diagonal aversion (`GLANCE-UP`, `GLANCE-UP_LEFT`, or `GLANCE-UP_RIGHT`) is often readable as thinking or remembering. For guilt, shame, embarrassment, discomfort, or avoidance of eye contact, a brief downward aversion (`GLANCE-DOWN` or a downward diagonal) may be appropriate when supported by the social context.
+
+These are expressive acting priors, not fixed psychological codes. Never assign a deterministic meaning such as remembered=LEFT or imagined=RIGHT. Choose among plausible directions based on the scene, character, previous gaze motion, and visual variety, and avoid repeatedly using the same direction.
+
+Do not omit gaze merely because there is no physical gaze target. If a meaningful beat involves a clear shift from external social attention to internal attention, consider whether a directional GLANCE makes that shift visible.
+
 Before emitting a gaze channel, track the actor's current persistent gaze from `[INITIAL]` and prior `GAZE-*` events. Never repeat the same active `GAZE-*` value. If the persistent gaze is unchanged and only another channel changes, omit `gaze` from that event. A prior `GLANCE-*` does not change the persistent gaze.
 
 Concepts such as avoiding eye contact, averting one's eyes, thinking, recalling, searching for words, guilt, discomfort, hesitation, or suspicion are acting motivations. They should influence the contextual choice of GAZE/GLANCE and target, but are never executable gaze modes. Do not map an emotion or motivation to a fixed direction; choose the target from this scene's acting context. For example, `gaze: GLANCE-DOWN` may be motivated by briefly breaking eye contact before returning to the prior fixation, while `gaze: GLANCE-UP_LEFT` may be motivated by briefly trying to recall a detail. Use a persistent `GAZE-*` only when the new target should remain the actor's focus.
