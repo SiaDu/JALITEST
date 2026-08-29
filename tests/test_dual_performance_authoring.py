@@ -331,7 +331,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "MASK-NONE" in prompt
     assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
     assert "HEART" not in prompt
-    assert "ACTING LANGUAGE: Open vocabulary" in prompt
+    assert "ACTING RATIONALE: Open natural language is allowed only in reason fields." in prompt
     assert "[CHANGES]" in prompt
     assert "GAZE-WILL" in prompt
     calls = []
@@ -360,7 +360,7 @@ def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scen
         script="WILL: Look there.\nAGNES: I see it.", character_a="WILL", character_b="AGNES"
     )
     assert "WILL and AGNES are immutable script identities." in reversed_prompt
-    assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly `[ANALYZE]`")
+    assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly `[GAZE_TARGETS]`")
     assert "[INITIAL]\nWILL" in reversed_prompt
     assert "Agnes may become increasingly curious about Will" not in reversed_prompt
     assert "GROWING_CURIOSITY_ABOUT_WILL" not in reversed_prompt

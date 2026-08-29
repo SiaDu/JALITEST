@@ -14,7 +14,7 @@ BLINK_VALUES = {"SLOW_BLINK", "DOUBLE_BLINK", "EYE_CLOSE_HOLD", "EYE_OPEN"}
 HEAD_VALUES = {f"HEAD-{direction}-{strength}" for direction in ("UP", "DOWN", "TILT_LEFT", "TILT_RIGHT") for strength in ("SUBTLE", "MEDIUM", "STRONG")} | {"HEAD-NONE"}
 DIRECTION_TARGETS = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
 REMOVED_CHANNELS = {"heart", "lid", "blink_suppression"}
-_SECTION = re.compile(r"^\[(ANALYZE|INITIAL|CHANGES)\]\s*$", re.IGNORECASE)
+_SECTION = re.compile(r"^\[(GAZE_TARGETS|ANALYZE|INITIAL|CHANGES)\]\s*$", re.IGNORECASE)
 _EVENT_ID = re.compile(r"^E\d+$", re.IGNORECASE)
 _FIELD = re.compile(r"^([a-z_]+)\s*:\s*(.*?)\s*$", re.IGNORECASE)
 _ANCHOR = re.compile(r"^w\d{4,}$", re.IGNORECASE)
@@ -62,7 +62,7 @@ def _normalize_gaze(value: str, *, event_id: str, characters: tuple[str, str]) -
 def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: SemanticVocabulary, anchor_model: ConversationAnchorModel) -> dict[str, Any]:
     """Parse v2 sparse changes without repairing invalid semantic values."""
     text = Path(source).read_text(encoding="utf-8") if isinstance(source, Path) else str(source)
-    sections: dict[str, list[str]] = {"ANALYZE": [], "INITIAL": [], "CHANGES": []}
+    sections: dict[str, list[str]] = {"GAZE_TARGETS": [], "ANALYZE": [], "INITIAL": [], "CHANGES": []}
     current: str | None = None
     seen: list[str] = []
     for line in text.splitlines():
@@ -75,10 +75,17 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
         elif current is not None:
             sections[current].append(line)
         elif line.strip():
-            raise ProposalValidationError("Text before [ANALYZE] is not allowed")
-    if seen != ["ANALYZE", "INITIAL", "CHANGES"]:
-        raise ProposalValidationError("Sections must be ordered [ANALYZE], [INITIAL], [CHANGES]")
+            raise ProposalValidationError("Text before the first proposal section is not allowed")
+    if seen not in (["GAZE_TARGETS", "INITIAL", "CHANGES"], ["ANALYZE", "INITIAL", "CHANGES"]):
+        raise ProposalValidationError("Sections must be [GAZE_TARGETS], [INITIAL], [CHANGES] (or legacy [ANALYZE]).")
     characters = tuple(anchor_model.aliases.values())
+    candidates = [line.strip().upper() for line in sections["GAZE_TARGETS"] if line.strip()]
+    if candidates == ["NONE"]:
+        candidates = []
+    if len(candidates) > 5 or len(set(candidates)) != len(candidates):
+        raise ProposalValidationError("[GAZE_TARGETS] requires at most five unique candidates.")
+    if any(not re.fullmatch(r"[A-Z][A-Z0-9_]*", item) or item in DIRECTION_TARGETS or item in {name.upper() for name in characters} for item in candidates):
+        raise ProposalValidationError("[GAZE_TARGETS] contains an invalid, directional, or character target.")
     raw_initial: dict[str, dict[str, str]] = {}
     current_actor: str | None = None
     for line in sections["INITIAL"]:
@@ -187,4 +194,4 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     identities = [(event["actor"], event["anchor_id"]) for event in events]
     if len(identities) != len(set(identities)):
         raise ProposalValidationError("Each actor may have at most one v2 event at the same anchor")
-    return {"analyze": "\n".join(sections["ANALYZE"]).strip(), "initial_states": initial_states, "initial_reasons": initial_reasons, "events": events, "diagnostics": {"errors": [], "warnings": []}}
+    return {"gaze_target_candidates": candidates, "initial_states": initial_states, "initial_reasons": initial_reasons, "events": events, "diagnostics": {"errors": [], "warnings": []}}

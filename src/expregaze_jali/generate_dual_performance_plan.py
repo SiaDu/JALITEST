@@ -38,9 +38,9 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
         raise ValueError("A JALI emotion vocabulary config is required.")
     vocabulary = load_semantic_vocabulary(paths[0])
     return "\n".join((
-        "VISIBLE AFFECT — CLOSED VOCABULARY: " + " | ".join(vocabulary.affect_states.values()) + " | NONE",
+        "VISIBLE AFFECT — CLOSED VOCABULARY: " + " | ".join(vocabulary.affect_states.values()) + " | MASK-NONE",
         "Any other value is invalid in this executable field.",
-        "ACTING LANGUAGE: Open vocabulary in ANALYZE / intent / reasons.",
+        "ACTING RATIONALE: Open natural language is allowed only in reason fields.",
         "Head values: " + ", ".join(sorted(HEAD_VALUES)),
         "Blink values: " + ", ".join(sorted(BLINK_VALUES)),
         "Directional gaze targets: " + ", ".join(sorted(DIRECTION_TARGETS)),
@@ -129,7 +129,7 @@ def generate_dual_performance_plan(
     proposal_text, _meta = runner(
         prompt=prompt, llm_config_path=llm_config_path, prompt_path=paths.prompt,
         output_text=paths.proposal, output_meta=paths.response_meta,
-        required_sections=("[ANALYZE]", "[INITIAL]", "[CHANGES]"),
+        required_sections=("[GAZE_TARGETS]", "[INITIAL]", "[CHANGES]"),
         artifact_name="proposal", overwrite=overwrite,
     )
     vocabulary = load_semantic_vocabulary(extras[0])

@@ -242,13 +242,11 @@ def test_advanced_debug_retains_canonical_json_load_and_save_controls():
 
 def test_setup_exposes_optional_context_and_real_generation_action():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
-    setup = source.split("    def _build_setup", 1)[1].split(
-        "    def _build_acting_interpretation", 1
-    )[0]
+    setup = source.split("    def _build_setup", 1)[1].split("    def _build_semantic_score", 1)[0]
 
-    assert 'QLabel("Context (Optional)")' in setup
+    assert 'QLabel("Acting Direction (Optional)")' in setup
     assert "self.input_context = QtWidgets.QPlainTextEdit()" in setup
-    assert "Optional scene, story, character, or performance context." in setup
+    assert "Optional acting direction, scene information, character motivation, or performance constraints." in setup
     assert "self.generate_plan_button.clicked.connect(self.generate_performance_plan)" in setup
 
 
@@ -364,7 +362,6 @@ def test_multiline_editors_share_score_font_and_use_larger_sizes():
     for editor, height in (
         ("input_script", 240),
         ("input_context", 200),
-        ("acting_interpretation", 240),
         ("score_editor", 260),
         ("phrase_reason", 240),
         ("backend_log", 180),
@@ -392,12 +389,10 @@ def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path
     ]
 
 
-def test_dual_ui_keeps_acting_interpretation_read_only_and_regenerate_placeholder():
+def test_dual_ui_removes_acting_interpretation_and_regenerate_placeholder():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
-    assert "_configure_multiline_editor(self.acting_interpretation, height=240, read_only=True)" in source
-    assert 'self._show_phase_one_placeholder("Regenerate Plan")' in source
-    save_section = source.split("    def _save_to", 1)[1].split("    def ", 1)[0]
-    assert "not isinstance(self.score_model, DualSparseScoreModel)" in save_section
+    assert "ACTING INTERPRETATION" not in source
+    assert "Regenerate Plan" not in source
     assert "Confirm Original Reason" not in source and "Replace Animator Reason" not in source
 
 
@@ -425,8 +420,8 @@ def test_v2_runtime_plan_saves_edited_semantics_without_reason_confirmation(tmp_
     texts = dict(model.score_texts)
     texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-60>")
     saved = save_animation_runtime_plan(model, texts, tmp_path / "performance_plan_edited_01.json")
-    assert saved["tracks"]["BOB"][0]["reason_status"] == "user_edited"
-    assert saved["tracks"]["BOB"][0]["reason"] == "user_edited"
+    assert saved["tracks"]["BOB"][0]["reason_status"] == "stale_after_user_edit"
+    assert saved["tracks"]["BOB"][0]["reason"] == "The refusal unsettles her."
 
 
 def test_v2_canonical_snapshots_are_immutable_and_unedited_runtime_reuses_original(tmp_path: Path):

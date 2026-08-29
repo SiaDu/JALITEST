@@ -317,10 +317,10 @@ class DualSparseScoreModel:
                 "event_id": event_id, "actor": row["actor"], "source_event_id": (original or prior or {}).get("source_event_id", event_id),
                 "anchor_id": row["anchor_id"], "changes": changes,
                 "original_changes": original_changes if original is not None else None,
-                "reason": "user_edited" if semantic_changed else original_reason,
+                "reason": original_reason,
                 "original_reason": original_reason,
                 "edited_by_user": semantic_changed,
-                "reason_status": "user_edited" if semantic_changed else "llm_original",
+                "reason_status": "stale_after_user_edit" if semantic_changed else "llm_original",
             })
         self.plan["tracks"] = tracks
         self.plan["initial_states"] = initial_states
@@ -343,9 +343,9 @@ class DualSparseScoreModel:
                 "source_event_id": f"INITIAL:{actor}",
                 "original_state": original_state,
                 "original_reason": original_reason,
-                "reason": "user_edited" if semantic_changed else original_reason,
+                "reason": original_reason,
                 "edited_by_user": semantic_changed,
-                "reason_status": "user_edited" if semantic_changed else "llm_original",
+                "reason_status": "stale_after_user_edit" if semantic_changed else "llm_original",
             }
             self.plan["initial_reasons"][actor] = rows[actor]["reason"]
         self.plan["initial_provenance"] = rows

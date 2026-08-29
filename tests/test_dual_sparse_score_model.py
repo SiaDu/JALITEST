@@ -60,8 +60,8 @@ def test_editing_tags_updates_only_sparse_track_and_reason_view():
     assert applied["tracks"]["ALICE"][0]["changes"] == PLAN["tracks"]["ALICE"][0]["changes"]
     assert applied["tracks"]["ALICE"][0]["reason_status"] == "llm_original"
     assert applied["tracks"]["BOB"][0]["source_event_id"] == "E002"
-    assert applied["tracks"]["BOB"][0]["reason_status"] == "user_edited"
-    assert applied["tracks"]["BOB"][0]["reason"] == "user_edited"
+    assert applied["tracks"]["BOB"][0]["reason_status"] == "stale_after_user_edit"
+    assert applied["tracks"]["BOB"][0]["reason"] == "The threat lands."
     assert applied["tracks"]["BOB"][0]["changes"] == {"affect": "Happy-120", "gaze": "GAZE-DOWN"}
     reason = model.rationale_view(3)
     assert "ALICE @ \"No.\"" in reason and "affect -> Watchful-100" in reason
@@ -83,7 +83,7 @@ def test_new_score_event_uses_user_edited_reason_without_an_original_rationale()
     applied = model.apply(texts)
     added = next(event for event in applied["tracks"]["BOB"] if event["anchor_id"] == "w0004")
     assert added["edited_by_user"] is True
-    assert added["reason"] == "user_edited"
+    assert added["reason"] is None
     assert added["original_reason"] is None
 
 
@@ -93,12 +93,12 @@ def test_edited_semantics_use_non_blocking_user_edited_provenance():
     texts["BOB"] = texts["BOB"].replace("<Nervous-60>", "<Happy-120>")
     plan = model.apply(texts)
     event = plan["tracks"]["BOB"][0]
-    assert event["reason_status"] == "user_edited"
-    assert event["reason"] == "user_edited"
+    assert event["reason_status"] == "stale_after_user_edit"
+    assert event["reason"] == "The threat lands."
     assert event["edited_by_user"] is True
     assert event["original_reason"] == "The threat lands."
     assert event["original_changes"] == {"affect": "Nervous-60", "gaze": "GAZE-DOWN"}
-    assert "Reason:\nuser_edited" in model.rationale_view(4)
+    assert "Reason:\nThe threat lands." in model.rationale_view(4)
 
 
 def test_initial_edit_has_separate_reason_provenance():
@@ -109,8 +109,8 @@ def test_initial_edit_has_separate_reason_provenance():
     row = plan["initial_provenance"]["ALICE"]
     assert row["source_event_id"] == "INITIAL:ALICE"
     assert row["original_state"]["affect"] == "Watchful-80"
-    assert row["reason_status"] == "user_edited"
-    assert row["reason"] == "user_edited"
+    assert row["reason_status"] == "stale_after_user_edit"
+    assert row["reason"] == "Begins guarded."
 
 
 def test_score_requires_visible_initial_affect_and_initial_reason():

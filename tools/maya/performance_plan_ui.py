@@ -209,6 +209,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addWidget(self.tabs, 1)
         self._build_authoring_tab()
         self._build_advanced_tab()
+        self.tabs.setTabVisible(self.tabs.indexOf(self.advanced_tab), False)
 
     def _build_authoring_tab(self) -> None:
         scroll = QtWidgets.QScrollArea()
@@ -217,7 +218,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         authoring = QtWidgets.QVBoxLayout(content)
         authoring.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
         self._build_setup(authoring)
-        self._build_acting_interpretation(authoring)
         self._build_semantic_score(authoring)
         self._build_reason_view(authoring)
         self._build_animation_setup(authoring)
@@ -250,6 +250,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addWidget(self.gaze_calibration_label)
         self.gaze_calibration_layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.gaze_calibration_layout)
+        optional = QtWidgets.QHBoxLayout()
+        optional.addWidget(QtWidgets.QLabel("Optional Scene Target"))
+        self.optional_gaze_actor = QtWidgets.QComboBox(); optional.addWidget(self.optional_gaze_actor)
+        self.optional_gaze_target = QtWidgets.QComboBox(); self.optional_gaze_target.setEditable(True); optional.addWidget(self.optional_gaze_target, 1)
+        capture_optional = QtWidgets.QPushButton("Capture Optional Look-at")
+        capture_optional.clicked.connect(lambda: self._capture_dual_look_at(self.optional_gaze_actor.currentText(), self.optional_gaze_target.currentText().strip().upper()))
+        optional.addWidget(capture_optional); layout.addLayout(optional)
         bottom = QtWidgets.QHBoxLayout()
         self.generate_animation_button = QtWidgets.QPushButton("Generate Animation")
         self.generate_animation_button.clicked.connect(self.generate_animation)
@@ -273,22 +280,18 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         _configure_multiline_editor(self.input_script, height=240)
         layout.addWidget(self.input_script)
 
-        layout.addWidget(QtWidgets.QLabel("Context (Optional)"))
+        layout.addWidget(QtWidgets.QLabel("Acting Direction (Optional)"))
         self.input_context = QtWidgets.QPlainTextEdit()
         self.input_context.setPlaceholderText(
-            "Optional scene, story, character, or performance context."
+            "Optional acting direction, scene information, character motivation, or performance constraints."
         )
         _configure_multiline_editor(self.input_context, height=200)
         layout.addWidget(self.input_context)
 
-        mode_row = QtWidgets.QHBoxLayout()
-        mode_row.addWidget(QtWidgets.QLabel("Authoring Mode"))
         self.mode_combo = QtWidgets.QComboBox()
         self.mode_combo.addItems(["Single Character", "Dual Character"])
+        self.mode_combo.setCurrentIndex(1)
         self.mode_combo.currentIndexChanged.connect(self._update_character_mode)
-        mode_row.addWidget(self.mode_combo)
-        mode_row.addStretch(1)
-        layout.addLayout(mode_row)
 
         character_grid = QtWidgets.QGridLayout()
         character_grid.addWidget(QtWidgets.QLabel("Script Character"), 0, 0)
@@ -324,19 +327,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         parent.addWidget(group)
         self._update_character_mode()
 
-    def _build_acting_interpretation(self, parent: QtWidgets.QVBoxLayout) -> None:
-        group = QtWidgets.QGroupBox("ACTING INTERPRETATION")
-        layout = QtWidgets.QVBoxLayout(group)
-        self.acting_interpretation = QtWidgets.QPlainTextEdit()
-        self.acting_interpretation.setPlaceholderText(
-            "Scene:\n\nAffective state:\n\nNarrative intent:"
-        )
-        _configure_multiline_editor(self.acting_interpretation, height=240, read_only=True)
-        layout.addWidget(self.acting_interpretation)
-        self.regenerate_button = QtWidgets.QPushButton("Regenerate Plan")
-        self.regenerate_button.clicked.connect(lambda: self._show_phase_one_placeholder("Regenerate Plan"))
-        layout.addWidget(self.regenerate_button, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
-        parent.addWidget(group)
 
     def _build_semantic_score(self, parent: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("SEMANTIC PERFORMANCE TAG")
@@ -396,6 +386,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _build_advanced_tab(self) -> None:
         advanced = QtWidgets.QWidget()
+        self.advanced_tab = advanced
         layout = QtWidgets.QVBoxLayout(advanced)
 
         file_controls = QtWidgets.QHBoxLayout()
@@ -596,7 +587,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_editor_b.hide()
         self.score_title_b.hide()
         self.score_legend.hide()
-        self.acting_interpretation.clear()
         self.phrase_reason.clear()
         self.rationale.clear()
         self.event_list.clear()
@@ -738,8 +728,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         animation_dir = self.source_path.parent / "animation"
         runtime_plan = animation_dir / "performance_plan_runtime.json"
         try:
-            if self.plan is not None:
-                self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
             self.plan = save_animation_runtime_plan(
                 self.score_model,
                 self._score_payload(),
@@ -1270,19 +1258,18 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self.input_script.setPlainText(" ".join(
                     str(row.get("span", {}).get("text") or "") for row in source_rows
                 ).strip())
-        self.acting_interpretation.setPlainText(
-            str(self.plan.get("acting_interpretation") or "")
-        )
         self.score_editor.setPlainText(self.score_model.score_text)
         if isinstance(self.score_model, DualSparseScoreModel):
             first, second = self.score_model.characters
+            self.optional_gaze_actor.clear(); self.optional_gaze_actor.addItems([first, second])
+            self.optional_gaze_target.clear(); self.optional_gaze_target.addItems(list(self.plan.get("gaze_target_candidates") or []))
             self.score_title_a.setText(f"{first} PERFORMANCE")
             self.score_title_b.setText(f"{second} PERFORMANCE")
             self.score_editor_b.setPlainText(self.score_model.score_texts[second])
             self.score_title_b.show()
             self.score_editor_b.show()
             self.score_legend.show()
-            self.reason_group.setTitle("REASON BY CHANGE")
+            self.reason_group.setTitle("RATIONALE BY CHANGE")
             self._score_highlighters = [
                 _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection, self.score_model.characters, panel_actor=first),
                 _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection, self.score_model.characters, panel_actor=second),
@@ -1573,8 +1560,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _save_to(self, path: Path) -> None:
         try:
-            if self.plan is not None and not isinstance(self.score_model, DualSparseScoreModel):
-                self.plan["acting_interpretation"] = self.acting_interpretation.toPlainText()
             save_performance_plan(self.plan or {}, path)
             session_path = self._save_authoring_session_for_path(path)
         except Exception as exc:
