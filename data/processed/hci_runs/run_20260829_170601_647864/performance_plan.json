@@ -1,0 +1,262 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260829_170601_647864",
+  "characters": [
+    "AGNES",
+    "WILL"
+  ],
+  "gaze_target_candidates": [
+    "HOUSE",
+    "FLOOR",
+    "WINDOW"
+  ],
+  "initial_states": {
+    "AGNES": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-80",
+      "gaze": "GAZE-WILL"
+    },
+    "WILL": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-AGNES"
+    }
+  },
+  "initial_reasons": {
+    "AGNES": "Enters guarded and ready to measure Will's intentions.",
+    "WILL": "Enters seeking Agnes's response while carrying guilt about his absence."
+  },
+  "tracks": {
+    "AGNES": [
+      {
+        "event_id": "E002",
+        "actor": "AGNES",
+        "anchor_id": "w0035",
+        "changes": {
+          "affect": "Sad-75",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing that Will constantly searches for Hamnet reveals the depth of his private grief."
+      },
+      {
+        "event_id": "E004",
+        "actor": "AGNES",
+        "anchor_id": "w0086",
+        "changes": {
+          "affect": "Angered-70"
+        },
+        "reason": "Will's reference to a year confirms how little the passage of time has changed her grief."
+      },
+      {
+        "event_id": "E006",
+        "actor": "AGNES",
+        "anchor_id": "w0109",
+        "changes": {
+          "affect": "Provoked-80",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "She rejects the apology by naming the mental world that has taken him away from her."
+      },
+      {
+        "event_id": "E008",
+        "actor": "AGNES",
+        "anchor_id": "w0131",
+        "changes": {
+          "affect": "Angered-85"
+        },
+        "reason": "She makes his imaginative refuge culpable for separating him even from Hamnet's death."
+      }
+    ],
+    "WILL": [
+      {
+        "event_id": "E001",
+        "actor": "WILL",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Confused-70",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Agnes's questioning immediately exposes his avoidance and unsettles his composure."
+      },
+      {
+        "event_id": "E003",
+        "actor": "WILL",
+        "anchor_id": "w0056",
+        "changes": {
+          "affect": "Panicky-75",
+          "gaze": "GLANCE-UP_LEFT"
+        },
+        "reason": "The thought that Hamnet has not simply vanished becomes an urgent, almost irrational hope."
+      },
+      {
+        "event_id": "E005",
+        "actor": "WILL",
+        "anchor_id": "w0105",
+        "changes": {
+          "affect": "Sad-80"
+        },
+        "reason": "His apology is a direct attempt to restore contact with Agnes."
+      },
+      {
+        "event_id": "E007",
+        "actor": "WILL",
+        "anchor_id": "w0116",
+        "changes": {
+          "affect": "Confused-65"
+        },
+        "reason": "Agnes's accusation forces him to confront what she believes has replaced their shared life."
+      },
+      {
+        "event_id": "E009",
+        "actor": "WILL",
+        "anchor_id": "w0143",
+        "changes": {
+          "affect": "Afraid-80",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing Hamnet's death stated plainly turns Agnes's accusation into an unbearable indictment."
+      },
+      {
+        "event_id": "E010",
+        "actor": "WILL",
+        "anchor_id": "w0151",
+        "changes": {
+          "affect": "Sad-90"
+        },
+        "reason": "The charge that he should have been present confronts his deepest guilt over missing Hamnet's farewell."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": [
+      "E008: removed no-op persistent channel(s): gaze",
+      "E005: removed no-op persistent channel(s): gaze"
+    ]
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260829_170601_647864\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008",
+      "E009",
+      "E010"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "AGNES",
+        "WILL"
+      ],
+      "initial_states": {
+        "AGNES": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-80",
+          "gaze": "GAZE-WILL"
+        },
+        "WILL": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-65",
+          "gaze": "GAZE-AGNES"
+        }
+      },
+      "initial_reasons": {
+        "AGNES": "Enters guarded and ready to measure Will's intentions.",
+        "WILL": "Enters seeking Agnes's response while carrying guilt about his absence."
+      },
+      "tracks": [
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0035",
+          "changes": {
+            "affect": "Sad-75",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing that Will constantly searches for Hamnet reveals the depth of his private grief."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0086",
+          "changes": {
+            "affect": "Angered-70"
+          },
+          "reason": "Will's reference to a year confirms how little the passage of time has changed her grief."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0109",
+          "changes": {
+            "affect": "Provoked-80",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "She rejects the apology by naming the mental world that has taken him away from her."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0131",
+          "changes": {
+            "affect": "Angered-85"
+          },
+          "reason": "She makes his imaginative refuge culpable for separating him even from Hamnet's death."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Confused-70",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Agnes's questioning immediately exposes his avoidance and unsettles his composure."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0056",
+          "changes": {
+            "affect": "Panicky-75",
+            "gaze": "GLANCE-UP_LEFT"
+          },
+          "reason": "The thought that Hamnet has not simply vanished becomes an urgent, almost irrational hope."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0105",
+          "changes": {
+            "affect": "Sad-80"
+          },
+          "reason": "His apology is a direct attempt to restore contact with Agnes."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0116",
+          "changes": {
+            "affect": "Confused-65"
+          },
+          "reason": "Agnes's accusation forces him to confront what she believes has replaced their shared life."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0143",
+          "changes": {
+            "affect": "Afraid-80",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing Hamnet's death stated plainly turns Agnes's accusation into an unbearable indictment."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0151",
+          "changes": {
+            "affect": "Sad-90"
+          },
+          "reason": "The charge that he should have been present confronts his deepest guilt over missing Hamnet's farewell."
+        }
+      ]
+    }
+  }
+}

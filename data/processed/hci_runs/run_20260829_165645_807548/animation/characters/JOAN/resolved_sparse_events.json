@@ -1,0 +1,117 @@
+{
+  "initial_state": {
+    "actor": "JOAN",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-85",
+      "gaze": "GAZE-CHAYTON"
+    },
+    "reason": "Enters ready to protect the household while assessing the visitors."
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "actor": "JOAN",
+      "anchor_id": "w0009",
+      "anchor_text": "dangerous.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 5.93375,
+      "raw_anchor_end": 6.61375,
+      "resolved_start": 6.61375,
+      "changes": {
+        "affect": "Nervous-30"
+      },
+      "reason": "The word \u201cdangerous\u201d confirms that the search concerns the stranger she is sheltering.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-30",
+        "gaze": "GAZE-CHAYTON"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "JOAN",
+      "anchor_id": "w0015",
+      "anchor_text": "property.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 8.23375,
+      "raw_anchor_end": 8.84375,
+      "resolved_start": 8.84375,
+      "changes": {
+        "gaze": "GLANCE-FARMHOUSE_DOOR"
+      },
+      "reason": "The reference to her property prompts a brief check toward the house before she resumes facing Chayton.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-30",
+        "gaze": "GLANCE-FARMHOUSE_DOOR"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "JOAN",
+      "anchor_id": "w0022",
+      "anchor_text": "Bert!",
+      "anchor_speaker": "JOAN",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 14.833813,
+      "raw_anchor_end": 15.523813,
+      "resolved_start": 14.833813,
+      "changes": {
+        "affect": "Nervous-65",
+        "gaze": "GLANCE-FARMHOUSE_DOOR"
+      },
+      "reason": "Calling for Bert risks drawing attention to the concealed stranger inside.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-65",
+        "gaze": "GLANCE-FARMHOUSE_DOOR"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "JOAN",
+      "anchor_id": "w0034",
+      "anchor_text": "seems.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 22.118999,
+      "raw_anchor_end": 22.658998,
+      "resolved_start": 22.658998,
+      "changes": {
+        "affect": "Dislike-80"
+      },
+      "reason": "Chayton\u2019s warning challenges her decision to protect the injured man.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Dislike-80",
+        "gaze": "GLANCE-FARMHOUSE_DOOR"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "JOAN",
+      "anchor_id": "w0042",
+      "anchor_text": "home.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 25.659,
+      "raw_anchor_end": 25.789,
+      "resolved_start": 25.789,
+      "changes": {
+        "affect": "Watchful-90",
+        "gaze": "GAZE-FARMHOUSE_DOOR"
+      },
+      "reason": "The warning about letting the man into her home forces her to focus on the concealed danger within.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Watchful-90",
+        "gaze": "GAZE-FARMHOUSE_DOOR"
+      }
+    }
+  ]
+}

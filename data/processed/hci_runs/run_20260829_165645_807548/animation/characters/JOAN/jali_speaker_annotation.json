@@ -1,0 +1,34 @@
+{
+  "actor": "JOAN",
+  "script_name": "JOAN",
+  "mask_tag_count": 2,
+  "spoken_anchor_ids": [
+    "w0021",
+    "w0022"
+  ],
+  "events": [
+    {
+      "type": "mask",
+      "value": "Nervous-30",
+      "span": {
+        "start": 0,
+        "end": 2
+      },
+      "order": 0,
+      "anchor_id": "w0021"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-65",
+      "span": {
+        "start": 4,
+        "end": 8
+      },
+      "order": 1,
+      "anchor_id": "w0022"
+    }
+  ],
+  "sound_file": "Seq1_Sub_JOAN",
+  "source_transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_JOAN.txt",
+  "annotated_transcript_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260829_165645_807548\\animation\\characters\\JOAN\\jali_speaker_annotated.txt"
+}

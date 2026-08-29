@@ -1,0 +1,394 @@
+{
+  "w0001": {
+    "speaker": "CHAYTON",
+    "turn_id": "T01",
+    "text": "Evening,",
+    "start": 0.613125,
+    "end": 0.993125,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0002": {
+    "speaker": "CHAYTON",
+    "turn_id": "T01",
+    "text": "ma'am.",
+    "start": 0.993125,
+    "end": 1.323125,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0003": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "We're",
+    "start": 3.18375,
+    "end": 3.37375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0004": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "in",
+    "start": 3.37375,
+    "end": 3.47375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0005": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "pursuit",
+    "start": 3.47375,
+    "end": 4.03375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0006": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "of",
+    "start": 4.383749,
+    "end": 4.53375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0007": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "someone",
+    "start": 4.53375,
+    "end": 4.95375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0008": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "very",
+    "start": 5.673749,
+    "end": 5.93375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0009": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "dangerous.",
+    "start": 5.93375,
+    "end": 6.61375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0010": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "He",
+    "start": 7.193749,
+    "end": 7.30375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0011": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "might've",
+    "start": 7.30375,
+    "end": 7.61375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0012": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "come",
+    "start": 7.61375,
+    "end": 7.813749,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0013": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "onto",
+    "start": 7.813749,
+    "end": 8.103749,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0014": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "your",
+    "start": 8.103749,
+    "end": 8.23375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0015": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "property.",
+    "start": 8.23375,
+    "end": 8.84375,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0016": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "Have",
+    "start": 9.522062,
+    "end": 9.672062,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0017": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "you",
+    "start": 9.672062,
+    "end": 9.782062,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0018": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "seen",
+    "start": 9.782062,
+    "end": 10.022061,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0019": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "anyone",
+    "start": 10.022061,
+    "end": 10.382061,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0020": {
+    "speaker": "CHAYTON",
+    "turn_id": "T02",
+    "text": "recently?",
+    "start": 10.382061,
+    "end": 10.762062,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0021": {
+    "speaker": "JOAN",
+    "turn_id": "T03",
+    "text": "No.",
+    "start": 11.940375,
+    "end": 12.370376,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_JOAN.Textgrid"
+  },
+  "w0022": {
+    "speaker": "JOAN",
+    "turn_id": "T04",
+    "text": "Bert!",
+    "start": 14.833813,
+    "end": 15.523813,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_JOAN.Textgrid"
+  },
+  "w0023": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "Is",
+    "start": 16.285187,
+    "end": 16.455185,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0024": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "he",
+    "start": 16.455185,
+    "end": 16.595186,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0025": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "in",
+    "start": 16.595186,
+    "end": 16.775187,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0026": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "there",
+    "start": 16.775187,
+    "end": 16.945187,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0027": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "with",
+    "start": 16.945187,
+    "end": 17.195187,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0028": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "you,",
+    "start": 17.195187,
+    "end": 17.275187,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0029": {
+    "speaker": "CHAYTON",
+    "turn_id": "T05",
+    "text": "ma'am?",
+    "start": 17.275187,
+    "end": 17.595186,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0030": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "He's",
+    "start": 21.399,
+    "end": 21.598999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0031": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "not",
+    "start": 21.598999,
+    "end": 21.858999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0032": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "what",
+    "start": 21.858999,
+    "end": 22.028999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0033": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "he",
+    "start": 22.028999,
+    "end": 22.118999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0034": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "seems.",
+    "start": 22.118999,
+    "end": 22.658998,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0035": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "God",
+    "start": 24.198999,
+    "end": 24.448999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0036": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "forbid",
+    "start": 24.448999,
+    "end": 24.809,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0037": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "you",
+    "start": 24.809,
+    "end": 24.889,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0038": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "let",
+    "start": 24.889,
+    "end": 25.098999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0039": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "him",
+    "start": 25.098999,
+    "end": 25.229,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0040": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "into",
+    "start": 25.229,
+    "end": 25.459,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0041": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "your",
+    "start": 25.459,
+    "end": 25.659,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0042": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "home.",
+    "start": 25.659,
+    "end": 25.789,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0043": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "And",
+    "start": 25.789,
+    "end": 26.508999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0044": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "if",
+    "start": 26.539001,
+    "end": 26.729,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0045": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "so,",
+    "start": 26.729,
+    "end": 27.179001,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0046": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "we",
+    "start": 28.199001,
+    "end": 28.299,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0047": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "need",
+    "start": 28.299,
+    "end": 28.508999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0048": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "to",
+    "start": 28.508999,
+    "end": 28.629002,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  },
+  "w0049": {
+    "speaker": "CHAYTON",
+    "turn_id": "T06",
+    "text": "act.",
+    "start": 28.629002,
+    "end": 28.938999,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq1\\Seq1_Sub_CHAYTON.Textgrid"
+  }
+}
