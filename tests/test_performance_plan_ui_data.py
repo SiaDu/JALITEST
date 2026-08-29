@@ -16,6 +16,7 @@ if str(MAYA_TOOLS) not in sys.path:
 from performance_plan_ui_data import (  # noqa: E402
     canonical_v2_authored_content,
     default_edited_path,
+    is_v2_plan_changed_from_loaded_snapshot,
     is_v2_plan_edited,
     load_performance_plan,
     save_animation_runtime_plan,
@@ -410,6 +411,20 @@ def test_loading_dual_v2_forces_hidden_mode_back_to_dual_after_session_restore()
     assert "self._update_character_mode()" in load
 
 
+def test_v2_ui_tracks_loaded_snapshot_baseline_only_after_load_or_save_paths():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    dual_animation = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _animation_compile_succeeded", 1
+    )[0]
+    save = source.split("    def _save_to", 1)[1].split("\n\ndef show_performance", 1)[0]
+    assert "self._loaded_v2_snapshot_content" in source
+    assert "is_v2_plan_changed_from_loaded_snapshot(candidate_plan, loaded_content)" in dual_animation
+    assert "self.source_path = runtime_plan" in dual_animation
+    assert "self._loaded_v2_snapshot_content = canonical_v2_authored_content(candidate_plan)" in dual_animation
+    assert "self.source_path = path" in save
+    assert "self._loaded_v2_snapshot_content = canonical_v2_authored_content(self.plan or {})" in save
+
+
 def test_sparse_highlighter_discounts_initial_display_separator_from_projection_offsets():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     highlighter = source.split("class _SparseScoreHighlighter", 1)[1].split("class PerformancePlanEditor", 1)[0]
@@ -493,6 +508,43 @@ def test_v2_gaze_target_candidates_are_metadata_not_authored_content():
     original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "gaze_target_candidates": ["LETTER"], "initial_states": {"ALICE": {}, "BOB": {}}, "initial_reasons": {"ALICE": None, "BOB": None}, "tracks": {"ALICE": [], "BOB": []}}
     changed = {**copy.deepcopy(original), "gaze_target_candidates": ["WINDOW", "DOOR"]}
     assert canonical_v2_authored_content(changed) == canonical_v2_authored_content(original)
+
+
+def test_v2_loaded_snapshot_comparison_is_distinct_from_immutable_llm_baseline():
+    original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"gaze": "GAZE-BOB"}, "BOB": {"gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [], "BOB": []}}
+    original["provenance"] = {"original_authored_content": canonical_v2_authored_content(original)}
+    edited_01 = copy.deepcopy(original)
+    edited_01["initial_states"]["ALICE"]["gaze"] = "GAZE-DOWN"
+    unchanged = copy.deepcopy(edited_01)
+    assert not is_v2_plan_changed_from_loaded_snapshot(unchanged, edited_01)
+
+    changed_again = copy.deepcopy(edited_01)
+    changed_again["initial_states"]["ALICE"]["gaze"] = "GAZE-RIGHT"
+    assert is_v2_plan_changed_from_loaded_snapshot(changed_again, edited_01)
+
+    reverted_to_llm = copy.deepcopy(edited_01)
+    reverted_to_llm["initial_states"]["ALICE"]["gaze"] = "GAZE-BOB"
+    assert not is_v2_plan_edited(reverted_to_llm, original)
+    assert is_v2_plan_changed_from_loaded_snapshot(reverted_to_llm, edited_01)
+
+
+def test_v2_loaded_snapshot_comparison_ignores_metadata_and_advances_with_snapshot_sequence(tmp_path: Path):
+    loaded = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"gaze": "GAZE-BOB"}, "BOB": {"gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [], "BOB": []}}
+    metadata_only = copy.deepcopy(loaded)
+    metadata_only.update({"gaze_target_candidates": ["WINDOW"], "diagnostics": {"warnings": ["note"]}, "provenance": {"anything": "ignored"}})
+    assert not is_v2_plan_changed_from_loaded_snapshot(metadata_only, loaded)
+
+    original_path = tmp_path / "performance_plan.json"
+    assert default_edited_path(original_path).name == "performance_plan_edited_01.json"
+    edited_01 = copy.deepcopy(loaded); edited_01["initial_states"]["ALICE"]["gaze"] = "GAZE-DOWN"
+    assert is_v2_plan_changed_from_loaded_snapshot(edited_01, loaded)
+    active = copy.deepcopy(edited_01)
+    assert not is_v2_plan_changed_from_loaded_snapshot(edited_01, active)
+    (tmp_path / "performance_plan_edited_01.json").write_text("{}", encoding="utf-8")
+    edited_02 = copy.deepcopy(edited_01); edited_02["initial_states"]["ALICE"]["gaze"] = "GAZE-RIGHT"
+    assert is_v2_plan_changed_from_loaded_snapshot(edited_02, active)
+    assert default_edited_path(original_path).name == "performance_plan_edited_02.json"
+    assert not is_v2_plan_changed_from_loaded_snapshot(edited_02, edited_02)
 
 
 def test_real_v2_builder_baseline_is_canonical_and_untouched_score_is_not_edited():

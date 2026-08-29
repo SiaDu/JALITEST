@@ -25,6 +25,8 @@ if str(TOOLS_DIR) not in sys.path:
 
 from performance_plan_ui_data import (  # noqa: E402
     default_edited_path,
+    canonical_v2_authored_content,
+    is_v2_plan_changed_from_loaded_snapshot,
     is_v2_plan_edited,
     load_performance_plan,
     save_animation_runtime_plan,
@@ -184,6 +186,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_model: PerformanceScoreModel | DualPerformanceScoreModel | DualSparseScoreModel | None = None
         self.authoring_session: dict[str, Any] | None = None
         self.source_path: Path | None = None
+        self._loaded_v2_snapshot_content: dict[str, Any] | None = None
         self.current_event_index: int | None = None
         self._building = False
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
@@ -784,8 +787,20 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
             animation_dir=self.source_path.parent/"animation"
             candidate_plan = self.score_model.apply(self._score_payload())
-            runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
-            self.plan=save_animation_runtime_plan(self.score_model,self._score_payload(),runtime_plan); fps=current_scene_fps()
+            if candidate_plan.get("schema_version") == "dual_performance_plan_v2":
+                loaded_content = self._loaded_v2_snapshot_content or canonical_v2_authored_content(self.plan)
+                if is_v2_plan_changed_from_loaded_snapshot(candidate_plan, loaded_content):
+                    runtime_plan = default_edited_path(self.source_path)
+                    save_performance_plan(candidate_plan, runtime_plan)
+                    self.source_path = runtime_plan
+                    self._loaded_v2_snapshot_content = canonical_v2_authored_content(candidate_plan)
+                else:
+                    runtime_plan = self.source_path
+                self.plan = candidate_plan
+            else:
+                runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
+                self.plan = save_animation_runtime_plan(self.score_model, self._score_payload(), runtime_plan)
+            fps=current_scene_fps()
             if self.jali_base_baseline is None:
                 self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
                 self._save_authoring_session_for_path(self.source_path)
@@ -1251,6 +1266,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return False
 
         self.source_path = path
+        self._loaded_v2_snapshot_content = (
+            canonical_v2_authored_content(loaded_plan)
+            if loaded_plan.get("schema_version") == "dual_performance_plan_v2" else None
+        )
         self.current_event_index = None
         self._building = True
         events = [event for event in self.plan.get("events", []) if isinstance(event, dict)]
@@ -1575,6 +1594,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         except Exception as exc:
             QtWidgets.QMessageBox.critical(self, "Could Not Save Authoring Data", str(exc))
             return
+        self.source_path = path
+        if (self.plan or {}).get("schema_version") == "dual_performance_plan_v2":
+            self._loaded_v2_snapshot_content = canonical_v2_authored_content(self.plan or {})
         QtWidgets.QMessageBox.information(
             self,
             "Plan Saved",

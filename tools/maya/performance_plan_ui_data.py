@@ -81,6 +81,18 @@ def is_v2_plan_edited(plan: dict[str, Any], original_plan: dict[str, Any] | None
     return canonical_v2_authored_content(plan) != baseline
 
 
+def is_v2_plan_changed_from_loaded_snapshot(
+    current_plan: dict[str, Any], loaded_snapshot_plan: dict[str, Any],
+) -> bool:
+    """Compare current v2 semantics to the immutable snapshot active in this editor."""
+    if current_plan.get("schema_version") != "dual_performance_plan_v2":
+        return True
+    return (
+        canonical_v2_authored_content(current_plan)
+        != canonical_v2_authored_content(loaded_snapshot_plan)
+    )
+
+
 def _is_canonical_v2_snapshot(path: Path) -> bool:
     return bool(re.fullmatch(r"performance_plan(?:_edited_\d+)?\.json", path.name))
 
