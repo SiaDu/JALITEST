@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
-from tools.maya.dual_sparse_score_model import DualSparseScoreModel, build_dialogue_projection
+from tools.maya.dual_sparse_score_model import DualSparseScoreModel, build_dialogue_projection, projection_offset_from_score_plain_offset
 
 
 SCRIPT = "ALICE: We're very dangerous.\nBOB: No."
@@ -36,11 +36,75 @@ def test_projection_omits_prefixes_and_preserves_speaker_ranges():
 
 def test_two_actor_scores_render_role_aware_sparse_tags():
     model = DualSparseScoreModel(PLAN, ANCHORS)
-    assert model.score_texts["ALICE"].startswith("<Watchful-80><GAZE-BOB>We're")
+    assert model.score_texts["ALICE"].startswith("<Watchful-80><GAZE-BOB>\nWe're")
     assert "No.<Watchful-100>" in model.score_texts["ALICE"]
     assert "dangerous.<Nervous-60><GAZE-DOWN>" in model.score_texts["BOB"]
     assert "<Watchful" not in model.score_texts["BOB"]
     assert all(model.validate_actor(actor, text).valid for actor, text in model.score_texts.items())
+
+
+def _first_word_plan(changes: dict[str, str] | None = None) -> dict:
+    return {
+        "schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"],
+        "initial_states": {
+            "ALICE": {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"},
+            "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE", "head": "HEAD-NONE"},
+        },
+        "initial_reasons": {"ALICE": "Begins guarded.", "BOB": "Begins composed."},
+        "tracks": {"ALICE": ([] if changes is None else [{"event_id": "E001", "anchor_id": "w0001", "changes": changes, "reason": "First-word change."}]), "BOB": []},
+    }
+
+
+def test_first_word_head_renders_after_initial_separator_and_roundtrips():
+    model = DualSparseScoreModel(_first_word_plan({"head": "HEAD-UP-SUBTLE"}), ANCHORS)
+    score = model.score_texts["ALICE"]
+    assert score.startswith("<Watchful-80><GAZE-BOB>\n<HEAD-UP-SUBTLE>We're")
+    assert model.validate_actor("ALICE", score).valid
+    applied = model.apply(dict(model.score_texts))
+    assert applied["initial_states"]["ALICE"]["gaze"] == "GAZE-BOB"
+    assert applied["tracks"]["ALICE"] == [{**applied["tracks"]["ALICE"][0], "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}}]
+    assert DualSparseScoreModel(applied, ANCHORS).score_texts["ALICE"] == score
+
+
+def test_first_word_same_channel_affect_blink_and_glance_are_sparse_not_initial():
+    for changes in (
+        {"gaze": "GAZE-DOWN"}, {"affect": "Nervous-70"},
+        {"blink": "SLOW_BLINK"}, {"gaze": "GLANCE-DOWN"},
+    ):
+        model = DualSparseScoreModel(_first_word_plan(changes), ANCHORS)
+        validation = model.validate_actor("ALICE", model.score_texts["ALICE"])
+        assert validation.valid, [error.message for error in validation.errors]
+        applied = model.apply(dict(model.score_texts))
+        assert applied["initial_states"]["ALICE"] == _first_word_plan()["initial_states"]["ALICE"]
+        assert applied["tracks"]["ALICE"][0]["anchor_id"] == "w0001"
+        assert applied["tracks"]["ALICE"][0]["changes"] == changes
+
+
+def test_animator_can_add_first_word_event_and_listener_cannot_claim_global_first_token():
+    model = DualSparseScoreModel(_first_word_plan(), ANCHORS)
+    texts = dict(model.score_texts)
+    texts["ALICE"] = texts["ALICE"].replace("\nWe're", "\n<HEAD-UP-SUBTLE>We're")
+    applied = model.apply(texts)
+    assert applied["tracks"]["ALICE"][0]["anchor_id"] == "w0001"
+    assert applied["tracks"]["ALICE"][0]["changes"] == {"head": "HEAD-UP-SUBTLE"}
+
+    listener_text = model.score_texts["BOB"].replace("\nWe're", "\n<HEAD-UP-SUBTLE>We're")
+    assert not model.validate_actor("BOB", listener_text).valid
+
+
+def test_initial_separator_is_not_a_canonical_projection_character():
+    score = DualSparseScoreModel(_first_word_plan(), ANCHORS).score_texts["ALICE"]
+    plain_offset_before_first_dialogue = 1  # only the display-only separator remains after tags are stripped
+    assert projection_offset_from_score_plain_offset(score, plain_offset_before_first_dialogue) == 0
+
+
+def test_true_initial_cluster_still_rejects_blink_and_glance():
+    model = DualSparseScoreModel(_first_word_plan(), ANCHORS)
+    score = model.score_texts["ALICE"]
+    blink_at_initial = score.replace("\nWe're", "<SLOW_BLINK>\nWe're")
+    assert not model.validate_actor("ALICE", blink_at_initial).valid
+    glance_at_initial = score.replace("<GAZE-BOB>", "<GLANCE-DOWN>", 1)
+    assert not model.validate_actor("ALICE", glance_at_initial).valid
 
 
 def test_score_rejects_dialogue_edits_and_wrong_side_or_whitespace_tags():
@@ -193,7 +257,7 @@ def test_real_listener_initial_state_and_token_adjacent_changes():
     }
     model = DualSparseScoreModel(plan, anchors)
     score = model.score_texts["BOB"]
-    assert score.startswith("<Watchful-85><GAZE-ALICE>Evening,")
+    assert score.startswith("<Watchful-85><GAZE-ALICE>\nEvening,")
     assert "dangerous.<GAZE-DOWN>" in score
     assert "<HEAD-DOWN-SUBTLE>No." in score
     assert "<GAZE-RIGHT><HEAD-UP-MEDIUM>Bert!" in score

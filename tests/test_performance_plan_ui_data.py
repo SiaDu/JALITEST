@@ -410,6 +410,12 @@ def test_loading_dual_v2_forces_hidden_mode_back_to_dual_after_session_restore()
     assert "self._update_character_mode()" in load
 
 
+def test_sparse_highlighter_discounts_initial_display_separator_from_projection_offsets():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    highlighter = source.split("class _SparseScoreHighlighter", 1)[1].split("class PerformancePlanEditor", 1)[0]
+    assert "projection_offset_from_score_plain_offset(" in highlighter
+
+
 def test_debug_tab_remains_available_for_runtime_diagnostics():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     assert 'self.tabs.addTab(advanced, "Advanced / Debug")' in source

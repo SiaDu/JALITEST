@@ -46,7 +46,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_DIR = REPO_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
-from dual_sparse_score_model import DualSparseScoreModel  # noqa: E402
+from dual_sparse_score_model import DualSparseScoreModel, projection_offset_from_score_plain_offset  # noqa: E402
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key  # noqa: E402
 from authoring_session_data import (  # noqa: E402
     build_authoring_session,
@@ -147,7 +147,9 @@ class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
         block_start = self.currentBlock().position()
         whole = self.document().toPlainText()
         before = whole[:block_start]
-        plain_offset = len(__import__("re").sub(r"<[^<>\r\n]+>", "", before))
+        plain_offset = projection_offset_from_score_plain_offset(
+            whole, len(__import__("re").sub(r"<[^<>\r\n]+>", "", before))
+        )
         ranges = self.projection.speaker_ranges
         characters = []
         in_tag = False

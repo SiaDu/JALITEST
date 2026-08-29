@@ -126,7 +126,22 @@ def render_actor_score(plan: dict[str, Any], projection: DialogueProjection, act
         for channel in PERSISTENT_CHANNELS
         if initial[channel] not in {"NONE", INITIAL_DEFAULTS[channel]}
     )
-    return initial_tags + text
+    # The newline is display structure: it keeps INITIAL distinct from a
+    # legitimate event placed directly on the global first dialogue token.
+    return initial_tags + "\n" + text
+
+
+def projection_offset_from_score_plain_offset(score_text: str, plain_offset: int) -> int:
+    """Map tag-stripped editor offsets to canonical dialogue offsets.
+
+    A generated dual-v2 score begins with an INITIAL tag cluster followed by
+    one display-only newline.  That newline is not dialogue projection text.
+    """
+    initial_cluster = _TAG_CLUSTER.match(score_text)
+    separator_offset = initial_cluster.end() if initial_cluster else -1
+    if separator_offset >= 0 and score_text[separator_offset:separator_offset + 1] == "\n" and plain_offset > 0:
+        return plain_offset - 1
+    return plain_offset
 
 
 class DualSparseScoreModel:
@@ -226,15 +241,17 @@ class DualSparseScoreModel:
             errors.append(ScoreIssue(actor, "Dialogue tokens and punctuation are immutable and must preserve the canonical anchor sequence"))
         grouped: dict[str, dict[str, str]] = {}
         initial_changes: dict[str, str] = {}
+        initial_cluster_seen = False
         for cluster, offset, changes in placements:
             prior_indices = [index for index, token in enumerate(edited_tokens) if token.end() == offset]
             next_indices = [index for index, token in enumerate(edited_tokens) if token.start() == offset]
             embedded = any(token.start() < offset < token.end() for token in edited_tokens)
-            before_first_token = not edited_tokens or clean[:offset].strip() == ""
+            before_first_token = bool(edited_tokens) and offset <= edited_tokens[0].start()
             direct_previous = cluster.start() > 0 and not text[cluster.start() - 1].isspace()
             direct_next = cluster.end() < len(text) and not text[cluster.end()].isspace()
             placement_key: str | None = None
-            if before_first_token:
+            if before_first_token and not initial_cluster_seen:
+                initial_cluster_seen = True
                 if "blink" in changes:
                     errors.append(ScoreIssue(actor, "Initial state tag cluster cannot contain blink"))
                     changes = {key: value for key, value in changes.items() if key != "blink"}
@@ -242,6 +259,11 @@ class DualSparseScoreModel:
                     errors.append(ScoreIssue(actor, "Initial gaze must be persistent GAZE, not GLANCE"))
                     changes = {key: value for key, value in changes.items() if key != "gaze"}
                 placement_key = "__INITIAL__"
+            elif before_first_token:
+                if direct_next and next_indices == [0] and speaker_key(canonical_tokens[0].speaker) == speaker_key(actor):
+                    placement_key = canonical_tokens[0].anchor_id
+                else:
+                    errors.append(ScoreIssue(actor, "Leading tag cluster after INITIAL must attach directly before this actor's first dialogue token"))
             elif embedded:
                 errors.append(ScoreIssue(actor, "Tag cluster cannot split a dialogue token"))
             elif direct_next and next_indices and next_indices[0] < len(canonical_tokens) and speaker_key(canonical_tokens[next_indices[0]].speaker) == speaker_key(actor):
