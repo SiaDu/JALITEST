@@ -187,6 +187,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.authoring_session: dict[str, Any] | None = None
         self.source_path: Path | None = None
         self._loaded_v2_snapshot_content: dict[str, Any] | None = None
+        self._generation_had_active_plan = False
         self.current_event_index: int | None = None
         self._building = False
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
@@ -558,12 +559,15 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             except Exception as exc:
                 QtWidgets.QMessageBox.warning(self, "Dual Audio Setup Incomplete", str(exc))
                 return
-        self._invalidate_generated_presentation()
+        self._generation_had_active_plan = self.plan is not None and self.score_model is not None and self.source_path is not None
         self._pending_animation_mode = "single"
         self._pending_dual_mappings = {}
         self.backend_log.clear()
         self.generate_plan_button.setEnabled(False)
-        self.generation_status.setText("Generating performance plan...")
+        self.generation_status.setText(
+            "Generating performance plan... current plan preserved until replacement succeeds."
+            if self._generation_had_active_plan else "Generating performance plan..."
+        )
         self.generation_status.setStyleSheet("color: #1d4ed8;")
         try:
             command = self.backend_runner.start(
@@ -608,6 +612,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.generate_plan_button.setEnabled(True)
         path = Path(str(plan_path))
         if self.load_plan(path, preserve_authoring_text=True):
+            self._generation_had_active_plan = False
             try:
                 if self.mode_combo.currentIndex() == 1:
                     names = [self.character_rows[index][0].text().strip() for index in (0, 1)]
@@ -641,8 +646,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _generation_failed(self, message: str) -> None:
         self.generate_plan_button.setEnabled(True)
-        self.generation_status.setText("Performance plan generation failed.")
+        self.generation_status.setText(
+            "Performance plan generation failed â€” previous plan preserved."
+            if self._generation_had_active_plan else "Performance plan generation failed."
+        )
         self.generation_status.setStyleSheet("color: #9b1c1c;")
+        self._generation_had_active_plan = False
         self._append_backend_output(message)
         lines = [line.strip() for line in str(message).splitlines() if line.strip()]
         concise = lines[-1] if lines else "Unknown backend error."

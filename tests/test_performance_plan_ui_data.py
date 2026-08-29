@@ -276,15 +276,43 @@ def test_participant_setup_has_no_dataset_specific_inputs():
 def test_generation_ui_reports_progress_and_loads_backend_result():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     generation = source.split("    def generate_performance_plan", 1)[1].split(
+        "    def _invalidate_generated_presentation", 1
+    )[0]
+    generation_start = generation
+    generation = source.split("    def generate_performance_plan", 1)[1].split(
         "    def _known_look_targets", 1
     )[0]
 
-    assert 'setText("Generating performance plan...")' in generation
+    assert "current plan preserved until replacement succeeds" in generation
     assert "self.backend_runner.start(" in generation
-    assert "self.load_plan(path, preserve_authoring_text=True)" in generation
+    assert "self.load_plan(path, preserve_authoring_text=True)" in source
     assert 'setText("Performance plan generated — animation setup incomplete.")' in generation
-    assert "Performance Plan generated with" in generation
-    assert 'setText("Performance plan generation failed.")' in generation
+    assert "Performance Plan generated with" in source
+    assert "Performance plan generation failed â€” previous plan preserved." in generation
+    assert "self._invalidate_generated_presentation()" not in generation_start
+    assert "self.plan = None" not in generation_start
+    assert "self.score_model = None" not in generation_start
+    assert "self.source_path = None" not in generation_start
+
+
+def test_generation_failure_paths_preserve_the_active_plan_until_successful_load():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    generation = source.split("    def generate_performance_plan", 1)[1].split(
+        "    def _invalidate_generated_presentation", 1
+    )[0]
+    succeeded = source.split("    def _generation_succeeded", 1)[1].split(
+        "    def _generation_failed", 1
+    )[0]
+    failed = source.split("    def _generation_failed", 1)[1].split(
+        "    def _look_at_mapping_data", 1
+    )[0]
+    assert "except Exception as exc:\n            self._generation_failed(str(exc))" in generation
+    assert "self.load_plan(path, preserve_authoring_text=True)" in succeeded
+    assert "self._generation_had_active_plan = False" in succeeded
+    assert "self._invalidate_generated_presentation" not in failed
+    assert "self.plan = None" not in failed
+    assert "self.score_model = None" not in failed
+    assert "self.source_path = None" not in failed
 
 
 def test_generate_animation_uses_current_score_runtime_plan_and_real_handler():
