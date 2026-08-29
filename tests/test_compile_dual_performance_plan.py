@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, wave
+import json, re, wave
 from pathlib import Path
 import pytest
 from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan, _validate_v2_plan, _compile_v2
@@ -216,6 +216,40 @@ def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
     rows = [json.loads(Path(result["artifacts"]["characters"][name]["resolved_sparse_events"]).read_text())["events"][0] for name in ("AGNES", "WILL")]
     assert rows[0]["resolved_start"] == 0.0
     assert rows[1]["resolved_start"] == .2
+
+
+def test_v2_hyphenated_anchor_consumes_split_timing_and_sparse_annotation_tokens(tmp_path):
+    script = "WILL: Ready?\nAGNES: Mm-hmm.\nAGNES: Why?"
+    audio = tmp_path / "audio"; audio.mkdir()
+    for stem in ("SeqH_AGNES", "SeqH_WILL"):
+        _wav(audio / f"{stem}.wav")
+    _words(audio / "SeqH_WILL_words.jsonl", [{"word": "ready", "start": 0.0, "end": 0.4}])
+    _words(audio / "SeqH_AGNES_words.jsonl", [
+        {"word": "mm", "start": 1.0, "end": 1.2}, {"word": "hmm", "start": 1.2, "end": 1.5},
+        {"word": "why", "start": 1.6, "end": 1.9},
+    ])
+    (audio / "SeqH_AGNES.txt").write_text("Mm-hmm. Why?", encoding="utf-8")
+    (audio / "SeqH_WILL.txt").write_text("Ready?", encoding="utf-8")
+    plan = tmp_path / "v2_hyphen.json"
+    plan.write_text(json.dumps({
+        "schema_version": "dual_performance_plan_v2", "characters": ["AGNES", "WILL"],
+        "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}},
+        "initial_reasons": {"AGNES": "Begins attentive.", "WILL": "Begins attentive."},
+        "tracks": {"AGNES": [{"event_id": "E001", "actor": "AGNES", "anchor_id": "w0003", "changes": {"affect": "Watchful-80"}, "reason": "The question sharpens attention."}], "WILL": []},
+    }), encoding="utf-8")
+    result = compile_dual_performance_plan(
+        performance_plan_path=plan, script=script, audio_folder=audio, fps=24,
+        runtime_mapping={"AGNES": {"script_name": "AGNES", "sound_file": "SeqH_AGNES"}, "WILL": {"script_name": "WILL", "sound_file": "SeqH_WILL"}}, output_dir=tmp_path / "out",
+    )
+    timing = json.loads(Path(result["artifacts"]["conversation_anchor_timing"]).read_text())
+    assert timing["w0002"]["text"] == "Mm-hmm." and (timing["w0002"]["start"], timing["w0002"]["end"]) == (1.0, 1.5)
+    assert timing["w0003"]["text"] == "Why?" and (timing["w0003"]["start"], timing["w0003"]["end"]) == (1.6, 1.9)
+    annotation = Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotated"]).read_text(encoding="utf-8")
+    diagnostic = json.loads(Path(result["artifacts"]["characters"]["AGNES"]["jali_speaker_annotation"]).read_text())
+    visible = re.sub(r"</?(?:mask|heart)=[^>]+>", "", annotation)
+    assert re.sub(r"\s+([?.])", r"\1", " ".join(visible.split())) == "Mm-hmm. Why?"
+    assert diagnostic["anchor_token_spans"] == [[0, 2], [2, 3]]
+    assert diagnostic["events"][0]["span"] == {"start": 0, "end": 6}
 
 
 def test_v2_compiler_rejects_manual_avert_bypass():

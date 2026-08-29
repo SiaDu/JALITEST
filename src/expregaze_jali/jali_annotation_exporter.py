@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 import re
 from typing import Any
-from expregaze_jali.text_utils import iter_word_tokens, normalize_word
+from expregaze_jali.text_utils import iter_word_tokens, normalize_word, match_anchor_word_sequence
 
 
 def _jali_tag_name(event_type: str) -> str:
@@ -128,17 +128,21 @@ def build_sparse_speaker_jali_annotation(
 ) -> tuple[str, dict[str, Any]]:
     """Annotate persistent v2 affect across this actor's isolated spoken words."""
     tokens = iter_word_tokens(source_text)
-    if len(tokens) != len(spoken_anchors):
-        raise ValueError(
-            f"{actor}: isolated transcript has {len(tokens)} words but dialogue has "
-            f"{len(spoken_anchors)} spoken anchors."
-        )
-    for token, anchor in zip(tokens, spoken_anchors):
-        if token["norm"] != normalize_word(str(anchor["text"])):
+    token_texts = [str(token["text"]) for token in tokens]
+    cursor = 0
+    anchor_token_spans: list[tuple[int, int]] = []
+    for anchor in spoken_anchors:
+        consumed = match_anchor_word_sequence(str(anchor["text"]), token_texts, cursor)
+        if consumed is None:
             raise ValueError(
-                f"{actor}: isolated transcript word {token['text']!r} does not match "
-                f"anchor {anchor['anchor_id']} {anchor['text']!r}."
+                f"{actor}: isolated transcript could not align anchor {anchor['anchor_id']} "
+                f"{anchor['text']!r}; next tokens: {token_texts[cursor:cursor + 3]!r}."
             )
+        anchor_token_spans.append((cursor, cursor + consumed))
+        cursor += consumed
+    if cursor != len(tokens):
+        remaining = token_texts[cursor:cursor + 5]
+        raise ValueError(f"{actor}: isolated transcript has unconsumed word(s): {remaining}.")
     events: list[dict[str, Any]] = []
     segment_start = 0
     active: str | None = None
@@ -155,7 +159,7 @@ def build_sparse_speaker_jali_annotation(
         if active is not None:
             events.append({
                 "type": "mask", "value": active,
-                "span": {"start": tokens[segment_start]["start"], "end": tokens[index - 1]["end"]},
+                "span": {"start": tokens[anchor_token_spans[segment_start][0]]["start"], "end": tokens[anchor_token_spans[index - 1][1] - 1]["end"]},
                 "order": order, "anchor_id": spoken_anchors[segment_start]["anchor_id"],
             })
             order += 1
@@ -164,5 +168,6 @@ def build_sparse_speaker_jali_annotation(
     text = export_jali_annotation({"clean_transcript": source_text}, {"events": events})
     return text, {
         "actor": actor, "script_name": script_name, "mask_tag_count": len(events),
-        "spoken_anchor_ids": [row["anchor_id"] for row in spoken_anchors], "events": events,
+        "spoken_anchor_ids": [row["anchor_id"] for row in spoken_anchors],
+        "anchor_token_spans": anchor_token_spans, "events": events,
     }

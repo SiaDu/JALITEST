@@ -10,7 +10,7 @@ import re
 
 from expregaze_jali.compile_performance_plan import TimingAlignment, _validate_words
 from expregaze_jali.performance_event_resolver import load_words_jsonl
-from expregaze_jali.text_utils import normalize_word
+from expregaze_jali.text_utils import match_anchor_word_sequence
 from expregaze_jali.textgrid_parser import parse_textgrid_words
 from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation, build_sparse_speaker_jali_annotation
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
@@ -315,10 +315,14 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
         for anchor in turn.anchors:
             index = cursors[actor]
             if index >= len(timing.words): raise ValueError(f"{actor} {turn.turn_id}: missing timing word for {anchor.text!r} in {timing.path}")
-            word = timing.words[index]; actual = str(word.get("norm") or word.get("word") or "")
-            if normalize_word(anchor.text) != normalize_word(actual): raise ValueError(f"{actor} {turn.turn_id}: expected word {anchor.text!r}, timing word {actual!r}, source {timing.path}")
-            anchor_times[anchor.anchor_id] = {"speaker": turn.speaker, "turn_id": turn.turn_id, "text": anchor.text, "start": float(word["start"]), "end": float(word["end"]), "timing_source": str(timing.path)}
-            cursors[actor] += 1
+            timing_words = [str(row.get("word") or row.get("norm") or "") for row in timing.words]
+            consumed = match_anchor_word_sequence(anchor.text, timing_words, index)
+            if consumed is None:
+                upcoming = timing_words[index:index + 3]
+                raise ValueError(f"{actor} {turn.turn_id}: could not align canonical anchor {anchor.text!r} at {anchor.anchor_id}. Next timing words: {upcoming!r}. Source: {timing.path}")
+            first, last = timing.words[index], timing.words[index + consumed - 1]
+            anchor_times[anchor.anchor_id] = {"speaker": turn.speaker, "turn_id": turn.turn_id, "text": anchor.text, "start": float(first["start"]), "end": float(last["end"]), "timing_source": str(timing.path)}
+            cursors[actor] += consumed
     for actor, timing in timings.items():
         if cursors[actor] != len(timing.words):
             remaining=timing.words[cursors[actor]:]
