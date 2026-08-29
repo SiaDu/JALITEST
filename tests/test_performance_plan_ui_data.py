@@ -463,6 +463,12 @@ def test_v2_canonical_comparison_detects_every_authored_change_but_ignores_displ
     assert all(is_v2_plan_edited(plan, original) for plan in variants)
 
 
+def test_v2_gaze_target_candidates_are_metadata_not_authored_content():
+    original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "gaze_target_candidates": ["LETTER"], "initial_states": {"ALICE": {}, "BOB": {}}, "initial_reasons": {"ALICE": None, "BOB": None}, "tracks": {"ALICE": [], "BOB": []}}
+    changed = {**copy.deepcopy(original), "gaze_target_candidates": ["WINDOW", "DOOR"]}
+    assert canonical_v2_authored_content(changed) == canonical_v2_authored_content(original)
+
+
 def test_real_v2_builder_baseline_is_canonical_and_untouched_score_is_not_edited():
     from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
     from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model

@@ -98,7 +98,42 @@ def test_edited_semantics_use_non_blocking_user_edited_provenance():
     assert event["edited_by_user"] is True
     assert event["original_reason"] == "The threat lands."
     assert event["original_changes"] == {"affect": "Nervous-60", "gaze": "GAZE-DOWN"}
-    assert "Reason:\nThe threat lands." in model.rationale_view(4)
+    rationale = model.rationale_view(4)
+    assert "Rationale:\nThe threat lands." in rationale
+    assert "Original rationale — semantic tag has been edited." in rationale
+
+
+def test_reverting_semantic_and_initial_tags_restores_llm_provenance():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    edited = dict(model.score_texts)
+    edited["BOB"] = edited["BOB"].replace("<Nervous-60>", "<Happy-120>")
+    model.apply(edited)
+    reverted = dict(model.score_texts)
+    reverted["BOB"] = reverted["BOB"].replace("<Happy-120>", "<Nervous-60>")
+    plan = model.apply(reverted)
+    event = plan["tracks"]["BOB"][0]
+    assert event["edited_by_user"] is False
+    assert event["reason_status"] == "llm_original"
+    assert event["reason"] == event["original_reason"] == "The threat lands."
+
+    edited = dict(model.score_texts)
+    edited["ALICE"] = edited["ALICE"].replace("<Watchful-80>", "<Happy-80>", 1)
+    model.apply(edited)
+    reverted = dict(model.score_texts)
+    reverted["ALICE"] = reverted["ALICE"].replace("<Happy-80>", "<Watchful-80>", 1)
+    plan = model.apply(reverted)
+    initial = plan["initial_provenance"]["ALICE"]
+    assert initial["edited_by_user"] is False
+    assert initial["reason_status"] == "llm_original"
+    assert initial["reason"] == initial["original_reason"] == "Begins guarded."
+
+
+def test_user_added_event_rationale_identifies_absent_llm_reason():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    texts = dict(model.score_texts)
+    texts["BOB"] = texts["BOB"].replace("No.", "<HEAD-UP-SUBTLE>No.")
+    model.apply(texts)
+    assert "No original rationale — user-added semantic change." in model.rationale_view(5)
 
 
 def test_initial_edit_has_separate_reason_provenance():

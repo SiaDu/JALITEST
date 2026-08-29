@@ -929,6 +929,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             actors = names if isinstance(names, list) else list(names)
             for actor in actors:
                 self._capture_dual_baseline(actor)
+            self.gaze_calibration_layout.addWidget(QtWidgets.QLabel("Required by Current Plan"))
             for actor, target in required_calibration_pairs(self.plan):
                 row=QtWidgets.QWidget(); layout=QtWidgets.QHBoxLayout(row); layout.setContentsMargins(0,0,0,0)
                 layout.addWidget(QtWidgets.QLabel(display_target(actor, names))); layout.addWidget(QtWidgets.QLabel("→")); layout.addWidget(QtWidgets.QLabel(display_target(target, names)))

@@ -355,11 +355,18 @@ class DualSparseScoreModel:
         if not rows:
             return "No sparse change events have reasons."
         actor, event = rows[max(0, min(event_number - 1, len(rows) - 1))]
+        reason = event.get("reason")
+        if reason is None and event.get("edited_by_user"):
+            rationale = "No original rationale — user-added semantic change."
+        else:
+            rationale = str(reason or "(none)")
+            if event.get("reason_status") == "stale_after_user_edit" and reason:
+                rationale += "\n\nOriginal rationale — semantic tag has been edited."
         if event.get("initial"):
-            return f'{actor} INITIAL\n{event["changes"]}\n\nReason:\n{event.get("reason") or "(none)"}'
+            return f'{actor} INITIAL\n{event["changes"]}\n\nRationale:\n{rationale}'
         anchor = self.projection.anchor_map[event["anchor_id"]]
         changes = "\n".join(f"{channel} -> {value}" for channel, value in event["changes"].items())
-        return f'{actor} @ "{anchor.text}"\n{changes}\n\nReason:\n{event.get("reason") or "(none)"}'
+        return f'{actor} @ "{anchor.text}"\n{changes}\n\nRationale:\n{rationale}'
 
     def reason_entries(self) -> list[tuple[str, dict[str, Any]]]:
         """Return authored sparse decisions for the read-only reason display."""
