@@ -1,0 +1,78 @@
+{
+  "initial_state": {
+    "actor": "JOAN",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-CHAYTON"
+    },
+    "reason": "Maintains guarded control while concealing the stranger's presence."
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "actor": "JOAN",
+      "anchor_id": "w0009",
+      "anchor_text": "dangerous.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 5.93375,
+      "raw_anchor_end": 6.61375,
+      "resolved_start": 6.61375,
+      "changes": {
+        "affect": "Nervous-75",
+        "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+      },
+      "reason": "The word \u201cdangerous\u201d makes the concealed stranger an immediate threat.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-75",
+        "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "JOAN",
+      "anchor_id": "w0023",
+      "anchor_text": "Is",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 16.285187,
+      "raw_anchor_end": 16.455185,
+      "resolved_start": 16.455185,
+      "changes": {
+        "affect": "Nervous-80",
+        "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+      },
+      "reason": "The question confirms that Chayton is narrowing in on the stranger\u2019s location.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-80",
+        "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "JOAN",
+      "anchor_id": "w0034",
+      "anchor_text": "seems.",
+      "anchor_speaker": "CHAYTON",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 22.119375,
+      "raw_anchor_end": 22.659374,
+      "resolved_start": 22.659374,
+      "changes": {
+        "affect": "Dislike-70",
+        "head": "HEAD-UP-MEDIUM"
+      },
+      "reason": "The warning challenges her judgment and provokes a guarded refusal to yield control.",
+      "state_after": {
+        "head": "HEAD-UP-MEDIUM",
+        "affect": "Dislike-70",
+        "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+      }
+    }
+  ]
+}

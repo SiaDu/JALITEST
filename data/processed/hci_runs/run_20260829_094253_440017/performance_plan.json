@@ -1,0 +1,204 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260829_094253_440017",
+  "characters": [
+    "CHAYTON",
+    "JOAN"
+  ],
+  "gaze_target_candidates": [
+    "FARMHOUSE_ENTRANCE",
+    "GROUND"
+  ],
+  "initial_states": {
+    "CHAYTON": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-80",
+      "gaze": "GAZE-JOAN"
+    },
+    "JOAN": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-CHAYTON"
+    }
+  },
+  "initial_reasons": {
+    "CHAYTON": "Enters ready to assess Joan and detect danger.",
+    "JOAN": "Maintains guarded control while concealing the stranger's presence."
+  },
+  "tracks": {
+    "CHAYTON": [
+      {
+        "event_id": "E002",
+        "actor": "CHAYTON",
+        "anchor_id": "w0016",
+        "changes": {
+          "head": "HEAD-TILT_RIGHT-SUBTLE"
+        },
+        "reason": "His direct question presses Joan for a truthful response."
+      },
+      {
+        "event_id": "E003",
+        "actor": "CHAYTON",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Watchful-90",
+          "head": "HEAD-TILT_LEFT-MEDIUM"
+        },
+        "reason": "Joan’s denial increases his suspicion that she is withholding information."
+      },
+      {
+        "event_id": "E004",
+        "actor": "CHAYTON",
+        "anchor_id": "w0022",
+        "changes": {
+          "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+        },
+        "reason": "Hearing Bert’s name redirects his attention toward the house."
+      },
+      {
+        "event_id": "E007",
+        "actor": "CHAYTON",
+        "anchor_id": "w0047",
+        "changes": {
+          "affect": "Intimidating-75",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "His insistence on immediate action underscores the danger without becoming an open threat."
+      }
+    ],
+    "JOAN": [
+      {
+        "event_id": "E001",
+        "actor": "JOAN",
+        "anchor_id": "w0009",
+        "changes": {
+          "affect": "Nervous-75",
+          "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+        },
+        "reason": "The word “dangerous” makes the concealed stranger an immediate threat."
+      },
+      {
+        "event_id": "E005",
+        "actor": "JOAN",
+        "anchor_id": "w0023",
+        "changes": {
+          "affect": "Nervous-80",
+          "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+        },
+        "reason": "The question confirms that Chayton is narrowing in on the stranger’s location."
+      },
+      {
+        "event_id": "E006",
+        "actor": "JOAN",
+        "anchor_id": "w0034",
+        "changes": {
+          "affect": "Dislike-70",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "The warning challenges her judgment and provokes a guarded refusal to yield control."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260829_094253_440017\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "CHAYTON",
+        "JOAN"
+      ],
+      "initial_states": {
+        "CHAYTON": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-80",
+          "gaze": "GAZE-JOAN"
+        },
+        "JOAN": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-65",
+          "gaze": "GAZE-CHAYTON"
+        }
+      },
+      "initial_reasons": {
+        "CHAYTON": "Enters ready to assess Joan and detect danger.",
+        "JOAN": "Maintains guarded control while concealing the stranger's presence."
+      },
+      "tracks": [
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0016",
+          "changes": {
+            "head": "HEAD-TILT_RIGHT-SUBTLE"
+          },
+          "reason": "His direct question presses Joan for a truthful response."
+        },
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Watchful-90",
+            "head": "HEAD-TILT_LEFT-MEDIUM"
+          },
+          "reason": "Joan’s denial increases his suspicion that she is withholding information."
+        },
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0022",
+          "changes": {
+            "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+          },
+          "reason": "Hearing Bert’s name redirects his attention toward the house."
+        },
+        {
+          "actor": "CHAYTON",
+          "anchor_id": "w0047",
+          "changes": {
+            "affect": "Intimidating-75",
+            "head": "HEAD-UP-MEDIUM"
+          },
+          "reason": "His insistence on immediate action underscores the danger without becoming an open threat."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0009",
+          "changes": {
+            "affect": "Nervous-75",
+            "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+          },
+          "reason": "The word “dangerous” makes the concealed stranger an immediate threat."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0023",
+          "changes": {
+            "affect": "Nervous-80",
+            "gaze": "GAZE-FARMHOUSE_ENTRANCE"
+          },
+          "reason": "The question confirms that Chayton is narrowing in on the stranger’s location."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0034",
+          "changes": {
+            "affect": "Dislike-70",
+            "head": "HEAD-UP-MEDIUM"
+          },
+          "reason": "The warning challenges her judgment and provokes a guarded refusal to yield control."
+        }
+      ]
+    }
+  }
+}

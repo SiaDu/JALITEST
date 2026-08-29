@@ -1,0 +1,62 @@
+[GAZE_TARGETS]
+FARMHOUSE_ENTRANCE
+GROUND
+
+[INITIAL]
+CHAYTON
+affect: Watchful-80
+gaze: GAZE-JOAN
+reason: Enters ready to assess Joan and detect danger.
+
+JOAN
+affect: Nervous-65
+gaze: GAZE-CHAYTON
+reason: Maintains guarded control while concealing the stranger's presence.
+
+[CHANGES]
+E001
+actor: JOAN
+anchor: w0009
+affect: Nervous-75
+gaze: GAZE-FARMHOUSE_ENTRANCE
+reason: The word “dangerous” makes the concealed stranger an immediate threat.
+
+E002
+actor: CHAYTON
+anchor: w0016
+head: HEAD-TILT_RIGHT-SUBTLE
+reason: His direct question presses Joan for a truthful response.
+
+E003
+actor: CHAYTON
+anchor: w0021
+affect: Watchful-90
+head: HEAD-TILT_LEFT-MEDIUM
+reason: Joan’s denial increases his suspicion that she is withholding information.
+
+E004
+actor: CHAYTON
+anchor: w0022
+gaze: GAZE-FARMHOUSE_ENTRANCE
+reason: Hearing Bert’s name redirects his attention toward the house.
+
+E005
+actor: JOAN
+anchor: w0023
+affect: Nervous-80
+gaze: GAZE-FARMHOUSE_ENTRANCE
+reason: The question confirms that Chayton is narrowing in on the stranger’s location.
+
+E006
+actor: JOAN
+anchor: w0034
+affect: Dislike-70
+head: HEAD-UP-MEDIUM
+reason: The warning challenges her judgment and provokes a guarded refusal to yield control.
+
+E007
+actor: CHAYTON
+anchor: w0047
+affect: Intimidating-75
+head: HEAD-UP-MEDIUM
+reason: His insistence on immediate action underscores the danger without becoming an open threat.

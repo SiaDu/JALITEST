@@ -1,0 +1,93 @@
+# Sparse Dual-Character Performance Proposal v2
+
+Characters: CHAYTON, JOAN
+Acting Direction: Scene:
+At sunset, Chayton and a Choctaw search party arrive at Joan and Bert's farmhouse looking for a dangerous man.
+
+Story:
+Only moments earlier, Joan and Bert admitted an injured stranger into their house. The stranger claimed that a Choctaw group had attacked him and his wife, and he offered Bert gold in exchange for protection. Joan and Bert therefore know that the man Chayton is searching for is currently inside their home.
+
+Character:
+JOAN is armed, wary, and protective of her household. She does not trust the visitors and has already committed to sheltering the injured stranger.
+CHAYTON is the leader of the search party. He believes the stranger poses an immediate danger and is trying to persuade Joan to take the warning seriously.
+
+Performance Context:
+Joan is deliberately concealing information while trying not to surrender control of the encounter. Chayton becomes increasingly convinced that she is withholding something, but his goal is to warn rather than openly threaten her. The exchange carries suspicion and urgency beneath outwardly controlled language.
+
+[IMMUTABLE SCRIPT]
+CHAYTON: Evening, ma'am.
+CHAYTON: We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently?
+JOAN: No.
+JOAN: Bert!
+CHAYTON: Is he in there with you, ma'am?
+CHAYTON: He's not what he seems. God forbid you let him into your home. And if so, we need to act.
+
+[ANCHORED DIALOGUE WITH BACKEND SPEAKER METADATA]
+T01 [speaker=CHAYTON]
+[w0001 Evening,] [w0002 ma'am.]
+
+T02 [speaker=CHAYTON]
+[w0003 We're] [w0004 in] [w0005 pursuit] [w0006 of] [w0007 someone] [w0008 very] [w0009 dangerous.] [w0010 He] [w0011 might've] [w0012 come] [w0013 onto] [w0014 your] [w0015 property.] [w0016 Have] [w0017 you] [w0018 seen] [w0019 anyone] [w0020 recently?]
+
+T03 [speaker=JOAN]
+[w0021 No.]
+
+T04 [speaker=JOAN]
+[w0022 Bert!]
+
+T05 [speaker=CHAYTON]
+[w0023 Is] [w0024 he] [w0025 in] [w0026 there] [w0027 with] [w0028 you,] [w0029 ma'am?]
+
+T06 [speaker=CHAYTON]
+[w0030 He's] [w0031 not] [w0032 what] [w0033 he] [w0034 seems.] [w0035 God] [w0036 forbid] [w0037 you] [w0038 let] [w0039 him] [w0040 into] [w0041 your] [w0042 home.] [w0043 And] [w0044 if] [w0045 so,] [w0046 we] [w0047 need] [w0048 to] [w0049 act.]
+
+[SEMANTIC VOCABULARY]
+VISIBLE AFFECT — CLOSED VOCABULARY: Neutral | Polite | Friendly | Sassy | Smug | Cocky | Nervous | Panicky | Thinking | Scheming | Devious | Devilish | Provoked | Angered | Dislike | Disgust | Singing_Serene | Watchful | Intimidating | Confused | Lost | Angry | Sad | Disgusted | Afraid | Contempt | Surprised | Happy | MASK-NONE
+Any other value is invalid in this executable field.
+ACTING RATIONALE: Open natural language is allowed only in reason fields.
+Head values: HEAD-DOWN-MEDIUM, HEAD-DOWN-STRONG, HEAD-DOWN-SUBTLE, HEAD-NONE, HEAD-TILT_LEFT-MEDIUM, HEAD-TILT_LEFT-STRONG, HEAD-TILT_LEFT-SUBTLE, HEAD-TILT_RIGHT-MEDIUM, HEAD-TILT_RIGHT-STRONG, HEAD-TILT_RIGHT-SUBTLE, HEAD-UP-MEDIUM, HEAD-UP-STRONG, HEAD-UP-SUBTLE
+Blink values: DOUBLE_BLINK, EYE_CLOSE_HOLD, EYE_OPEN, SLOW_BLINK
+Directional gaze targets: DOWN, DOWN_LEFT, DOWN_RIGHT, LEFT, RIGHT, UP, UP_LEFT, UP_RIGHT
+
+IDENTITY CONTRACT
+CHAYTON and JOAN are immutable script identities.
+Never reinterpret, swap, or infer identity from dialogue order, personality, speaker order, examples, or narrative role.
+
+Reason internally about dialogue, Acting Direction, social interaction, motivation, and scene-grounded gaze opportunities; do not output that analysis. Return exactly `[GAZE_TARGETS]`, `[INITIAL]`, then `[CHANGES]`. `[GAZE_TARGETS]` contains at most five uppercase physical scene target identifiers (or `NONE`), never characters, directions, or `GAZE-*` tags. Both actors enter the scene already performing: `[INITIAL]` must contain one block for each actor with a visible `affect`, a persistent `GAZE-*`, and a meaningful `reason`. Initial affect may not be `MASK-NONE`; use a real visible Mask such as `Neutral-60` when appropriate. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. Initial gaze may not be GLANCE or GAZE-NONE; head is optional and blink is not allowed.
+
+For each actor independently, analyze both speaking behavior and listening behavior. Listeners may react during another actor's utterance: anchor a meaningful listener change to the earliest semantically sufficient heard cue word. Do not automatically wait for sentence completion, dialogue-turn completion, or the listener's next spoken line. Phrase and clause comprehension matter more than punctuation. Do not over-segment; create a listener event only when heard information meaningfully changes the acting state.
+
+Choose later sparse change points by acting meaning: threat-relevant keyword, realization, suspicion increase, hesitation, disclosure, accusation, direct question, eye-contact decision, affect transition, deliberate head pose, or meaningful performative blink. Do not create an event merely because punctuation occurred, a dialogue turn began, or N words elapsed.
+
+Each event has a unique E-number, one actor, an existing word anchor, at least one changed semantic channel, and one concise event-level reason. For one actor, never emit more than one event at the same anchor: combine simultaneous channel changes into one event with one reason. A listener reason should identify the meaningful heard stimulus rather than restating the visible action. Do not create per-channel boilerplate reasons. Emit only changed channels. There is no fixed event count, no event is required at each turn, and one actor changing never implies an event for the other actor.
+
+Allowed channels are affect, gaze, head, and blink. Never output Heart, Lid, blink_suppression, timing, seconds, frames, latency, duration, SPEAK/LISTEN mode, or speaker. The backend derives timing from actor and anchor speaker.
+
+Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE. Neutral is not NONE. Executable gaze is only GAZE-target or GLANCE-target. Targets may be characters, objects, or RIGHT/LEFT/DOWN/DOWN_LEFT/DOWN_RIGHT/UP/UP_LEFT/UP_RIGHT. GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes.
+
+Concepts such as avoiding eye contact, averting one's eyes, thinking, recalling, searching for words, guilt, discomfort, hesitation, or suspicion are acting motivations. They should influence the contextual choice of GAZE/GLANCE and target, but are never executable gaze modes. Do not map an emotion or motivation to a fixed direction; choose the target from this scene's acting context. For example, `gaze: GAZE-DOWN` may be motivated by avoiding eye contact, while `gaze: GLANCE-UP_LEFT` may be motivated by briefly trying to recall a detail.
+
+Head is HEAD-UP/DOWN/TILT_LEFT/TILT_RIGHT with SUBTLE/MEDIUM/STRONG, or HEAD-NONE. Authored blink options are only SLOW_BLINK, DOUBLE_BLINK, EYE_CLOSE_HOLD, or EYE_OPEN; never author plain BLINK. SLOW_BLINK and DOUBLE_BLINK execute finite presets. EYE_CLOSE_HOLD remains active until an explicit EYE_OPEN. Semantic anchors never contain timing, duration, or frames.
+
+```text
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+CHAYTON
+affect: Watchful-80
+gaze: GAZE-JOAN
+reason: Enters ready to assess the encounter.
+
+JOAN
+affect: Nervous-60
+gaze: GAZE-CHAYTON
+reason: Enters guarded while concealing relevant knowledge.
+
+[CHANGES]
+E001
+actor: JOAN
+anchor: w0002
+gaze: GAZE-DOWN
+reason: The heard cue increases discomfort and breaks eye contact.
+```

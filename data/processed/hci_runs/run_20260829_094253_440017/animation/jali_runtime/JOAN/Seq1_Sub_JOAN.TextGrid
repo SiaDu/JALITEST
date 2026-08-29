@@ -1,0 +1,81 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0.000000
+xmax = 15.919000
+tiers? <exists>
+size = 2
+item[]
+	item[1]:
+		class = "IntervalTier"
+		name = "words"
+		xmin = 0.000000
+		xmax = 15.919000
+		intervals: size = 6
+			intervals [1]:
+				xmin = 0.000000
+				xmax = 11.460000
+				text = "<eps>"
+			intervals [2]:
+				xmin = 11.460000
+				xmax = 11.940375
+				text = "XXNONVERBALXX"
+			intervals [3]:
+				xmin = 11.940375
+				xmax = 12.370376
+				text = "no"
+			intervals [4]:
+				xmin = 12.370376
+				xmax = 14.833813
+				text = "XXNONVERBALXX"
+			intervals [5]:
+				xmin = 14.833813
+				xmax = 15.523813
+				text = "bert"
+			intervals [6]:
+				xmin = 15.523813
+				xmax = 15.919000
+				text = "XXNONVERBALXX"
+	item[2]:
+		class = "IntervalTier"
+		name = "phones"
+		xmin = 0.000000
+		xmax = 15.919000
+		intervals: size = 9
+			intervals [1]:
+				xmin = 0.000000
+				xmax = 11.460000
+				text = "sil"
+			intervals [2]:
+				xmin = 11.460000
+				xmax = 11.940375
+				text = "spn"
+			intervals [3]:
+				xmin = 11.940375
+				xmax = 12.110375
+				text = "n"
+			intervals [4]:
+				xmin = 12.110375
+				xmax = 12.370376
+				text = "''oU"
+			intervals [5]:
+				xmin = 12.370376
+				xmax = 14.833813
+				text = "spn"
+			intervals [6]:
+				xmin = 14.833813
+				xmax = 14.893813
+				text = "b"
+			intervals [7]:
+				xmin = 14.893813
+				xmax = 15.493813
+				text = "''E"
+			intervals [8]:
+				xmin = 15.493813
+				xmax = 15.523813
+				text = "t"
+			intervals [9]:
+				xmin = 15.523813
+				xmax = 15.919000
+				text = "spn"
+
