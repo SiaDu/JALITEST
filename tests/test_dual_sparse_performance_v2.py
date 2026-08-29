@@ -19,6 +19,16 @@ def parse(body: str):
     )
 
 
+def test_gaze_target_candidates_accept_new_contract_and_reject_invalid_values():
+    base = "[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\nreason: Enters attentive.\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\nreason: Enters guarded.\n[CHANGES]\n"
+    proposal = parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\nletter\nWINDOW\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    assert proposal["gaze_target_candidates"] == ["LETTER", "WINDOW"]
+    assert parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\nNONE\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)["gaze_target_candidates"] == []
+    for invalid in ("BOB", "UP", "LETTER\nLETTER", "A\nB\nC\nD\nE\nF"):
+        with pytest.raises(ProposalValidationError):
+            parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\n" + invalid + "\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+
+
 def test_sparse_independent_tracks_and_resets():
     proposal = parse("""E001
 actor: ALICE
