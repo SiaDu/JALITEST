@@ -26,7 +26,11 @@ Allowed channels are affect, gaze, head, and blink. Never output Heart, Lid, bli
 
 Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE. Neutral is not NONE. Executable gaze is only GAZE-target or GLANCE-target. Targets may be characters, objects, or RIGHT/LEFT/DOWN/DOWN_LEFT/DOWN_RIGHT/UP/UP_LEFT/UP_RIGHT. GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes.
 
-Concepts such as avoiding eye contact, averting one's eyes, thinking, recalling, searching for words, guilt, discomfort, hesitation, or suspicion are acting motivations. They should influence the contextual choice of GAZE/GLANCE and target, but are never executable gaze modes. Do not map an emotion or motivation to a fixed direction; choose the target from this scene's acting context. For example, `gaze: GAZE-DOWN` may be motivated by avoiding eye contact, while `gaze: GLANCE-UP_LEFT` may be motivated by briefly trying to recall a detail.
+GAZE and GLANCE have different temporal semantics. `GAZE-target` establishes a new persistent fixation and remains the actor's active gaze until a later persistent `GAZE-*` change. Use GAZE only when the actor should keep attending to that target. `GLANCE-target` is a brief temporary shift to a target and automatically returns to the actor's currently active persistent gaze; GLANCE does not replace that persistent gaze. Use GLANCE for a quick check, an involuntary look, a brief reaction, or a momentary break of eye contact when attention should return afterward.
+
+Before emitting a gaze channel, track the actor's current persistent gaze from `[INITIAL]` and prior `GAZE-*` events. Never repeat the same active `GAZE-*` value. If the persistent gaze is unchanged and only another channel changes, omit `gaze` from that event. A prior `GLANCE-*` does not change the persistent gaze.
+
+Concepts such as avoiding eye contact, averting one's eyes, thinking, recalling, searching for words, guilt, discomfort, hesitation, or suspicion are acting motivations. They should influence the contextual choice of GAZE/GLANCE and target, but are never executable gaze modes. Do not map an emotion or motivation to a fixed direction; choose the target from this scene's acting context. For example, `gaze: GLANCE-DOWN` may be motivated by briefly breaking eye contact before returning to the prior fixation, while `gaze: GLANCE-UP_LEFT` may be motivated by briefly trying to recall a detail. Use a persistent `GAZE-*` only when the new target should remain the actor's focus.
 
 Head is HEAD-UP/DOWN/TILT_LEFT/TILT_RIGHT with SUBTLE/MEDIUM/STRONG, or HEAD-NONE. Authored blink options are only SLOW_BLINK, DOUBLE_BLINK, EYE_CLOSE_HOLD, or EYE_OPEN; never author plain BLINK. SLOW_BLINK and DOUBLE_BLINK execute finite presets. EYE_CLOSE_HOLD remains active until an explicit EYE_OPEN. Semantic anchors never contain timing, duration, or frames.
 
@@ -49,6 +53,6 @@ reason: Enters guarded while concealing relevant knowledge.
 E001
 actor: {{character_b}}
 anchor: w0002
-gaze: GAZE-DOWN
-reason: The heard cue increases discomfort and breaks eye contact.
+gaze: GLANCE-DOWN
+reason: The heard cue briefly breaks eye contact before attention returns to the prior fixation.
 ```

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import copy
+import json
+
 import pytest
 
 from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
@@ -40,7 +43,7 @@ def test_sparse_independent_tracks_and_resets():
     proposal = parse("""E001
 actor: ALICE
 anchor: w0001
-gaze: GAZE-BOB
+gaze: GAZE-DOWN
 reason: Looks directly.
 
 E002
@@ -63,7 +66,7 @@ reason: Releases the response.""")
     assert plan["schema_version"] == "dual_performance_plan_v2"
     assert plan["initial_states"]["ALICE"] == {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE"}
     assert len(plan["tracks"]["ALICE"]) == 1 and len(plan["tracks"]["BOB"]) == 2
-    assert plan["tracks"]["ALICE"][0]["changes"] == {"gaze": "GAZE-BOB"}
+    assert plan["tracks"]["ALICE"][0]["changes"] == {"gaze": "GAZE-DOWN"}
     assert plan["tracks"]["BOB"][1]["changes"]["affect"] == "MASK-NONE"
 
 
@@ -119,7 +122,11 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
     assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
     assert "GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes" in prompt
-    assert "gaze: GAZE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
+    assert "GAZE and GLANCE have different temporal semantics" in prompt
+    assert "GLANCE does not replace that persistent gaze" in prompt
+    assert "Never repeat the same active `GAZE-*` value" in prompt
+    assert "A prior `GLANCE-*` does not change the persistent gaze" in prompt
+    assert "gaze: GLANCE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
     assert "Do not map an emotion or motivation to a fixed direction" in prompt
     assert not __import__("re").search(r"gaze:\s*AVERT-", prompt)
     assert "Listeners may react during another actor's utterance" in prompt
@@ -127,6 +134,99 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     assert "Do not automatically wait for sentence completion, dialogue-turn completion" in prompt
     assert "Both actors enter the scene already performing" in prompt and "Initial affect may not be `MASK-NONE`" in prompt
     assert "There is no fixed event count" in prompt
+
+
+def _normalization_proposal(events, *, alice_initial=None, bob_initial=None):
+    return {
+        "initial_states": {
+            "ALICE": {"affect": "Watchful-80", "gaze": "GAZE-BOB", "head": "HEAD-NONE", **(alice_initial or {})},
+            "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE", "head": "HEAD-NONE", **(bob_initial or {})},
+        },
+        "initial_reasons": {"ALICE": "Begins watchful.", "BOB": "Begins composed."},
+        "events": events,
+        "diagnostics": {"errors": [], "warnings": []},
+    }
+
+
+def _event(event_id, actor, anchor_id, changes):
+    return {"event_id": event_id, "actor": actor, "anchor_id": anchor_id, "changes": changes, "reason": f"{event_id} rationale."}
+
+
+def test_canonical_normalizer_removes_repeated_persistent_gaze_but_keeps_real_change():
+    proposal = _normalization_proposal([_event("E001", "ALICE", "w0001", {"affect": "Watchful-90", "gaze": "GAZE-BOB"})])
+    source_copy = copy.deepcopy(proposal)
+    plan = build_dual_performance_plan_v2(
+        proposal,
+        anchor_model=MODEL, sequence_id="normalization",
+    )
+    assert plan["tracks"]["ALICE"][0]["changes"] == {"affect": "Watchful-90"}
+    assert plan["diagnostics"]["warnings"] == ["E001: removed no-op persistent channel(s): gaze"]
+    assert proposal == source_copy
+
+
+def test_canonical_normalizer_drops_fully_noop_event_and_keeps_blink():
+    plan = build_dual_performance_plan_v2(
+        _normalization_proposal([
+            _event("E001", "ALICE", "w0001", {"gaze": "GAZE-BOB", "head": "HEAD-NONE"}),
+            _event("E002", "ALICE", "w0002", {"head": "HEAD-NONE", "blink": "DOUBLE_BLINK"}),
+        ]), anchor_model=MODEL, sequence_id="normalization",
+    )
+    assert [event["event_id"] for event in plan["tracks"]["ALICE"]] == ["E002"]
+    assert plan["tracks"]["ALICE"][0]["changes"] == {"blink": "DOUBLE_BLINK"}
+    assert "E001: removed no-op persistent channel(s): head, gaze" in plan["diagnostics"]["warnings"]
+    assert "E001: dropped after no semantic changes remained" in plan["diagnostics"]["warnings"]
+    assert "E002: removed no-op persistent channel(s): head" in plan["diagnostics"]["warnings"]
+
+
+def test_glance_does_not_change_persistent_gaze_and_real_gaze_or_affect_change_remains():
+    plan = build_dual_performance_plan_v2(
+        _normalization_proposal([
+            _event("E001", "ALICE", "w0001", {"gaze": "GLANCE-DOWN"}),
+            _event("E002", "ALICE", "w0002", {"gaze": "GAZE-BOB"}),
+            _event("E003", "ALICE", "w0003", {"gaze": "GAZE-DOWN", "affect": "Watchful-90"}),
+        ]), anchor_model=MODEL, sequence_id="normalization",
+    )
+    assert [(event["event_id"], event["changes"]) for event in plan["tracks"]["ALICE"]] == [
+        ("E001", {"gaze": "GLANCE-DOWN"}), ("E003", {"gaze": "GAZE-DOWN", "affect": "Watchful-90"}),
+    ]
+    assert "E002: dropped after no semantic changes remained" in plan["diagnostics"]["warnings"]
+
+
+def test_persistent_normalization_is_actor_independent_and_uses_anchor_chronology():
+    plan = build_dual_performance_plan_v2(
+        _normalization_proposal([
+            _event("E010", "ALICE", "w0002", {"gaze": "GAZE-DOWN"}),
+            _event("E002", "BOB", "w0001", {"gaze": "GAZE-ALICE"}),
+            _event("E999", "ALICE", "w0001", {"gaze": "GAZE-DOWN"}),
+        ]), anchor_model=MODEL, sequence_id="normalization",
+    )
+    assert [(event["event_id"], event["changes"]) for event in plan["tracks"]["ALICE"]] == [("E999", {"gaze": "GAZE-DOWN"})]
+    assert plan["tracks"]["BOB"] == []
+    assert "E010: dropped after no semantic changes remained" in plan["diagnostics"]["warnings"]
+    assert "E002: dropped after no semantic changes remained" in plan["diagnostics"]["warnings"]
+
+
+def test_joan_persistent_gaze_regression_is_normalized_in_written_canonical_plan(tmp_path):
+    anchors = build_conversation_anchor_model("JOAN: Earlier later.", character_a="JOAN", character_b="CHAYTON")
+    proposal = {
+        "initial_states": {
+            "JOAN": {"affect": "Nervous-65", "gaze": "GAZE-CHAYTON", "head": "HEAD-NONE"},
+            "CHAYTON": {"affect": "Neutral-60", "gaze": "GAZE-JOAN", "head": "HEAD-NONE"},
+        },
+        "initial_reasons": {"JOAN": "Begins tense.", "CHAYTON": "Begins attentive."},
+        "events": [
+            _event("E001", "JOAN", "w0001", {"affect": "Nervous-75", "gaze": "GAZE-FARMHOUSE_ENTRANCE"}),
+            _event("E005", "JOAN", "w0002", {"affect": "Nervous-80", "gaze": "GAZE-FARMHOUSE_ENTRANCE"}),
+        ],
+        "diagnostics": {"errors": [], "warnings": []},
+    }
+    output = tmp_path / "performance_plan.json"
+    output.write_text(json.dumps(build_dual_performance_plan_v2(proposal, anchor_model=anchors, sequence_id="joan")), encoding="utf-8")
+    written = json.loads(output.read_text(encoding="utf-8"))
+    assert written["tracks"]["JOAN"] == [
+        {"event_id": "E001", "actor": "JOAN", "anchor_id": "w0001", "changes": {"affect": "Nervous-75", "gaze": "GAZE-FARMHOUSE_ENTRANCE"}, "reason": "E001 rationale."},
+        {"event_id": "E005", "actor": "JOAN", "anchor_id": "w0002", "changes": {"affect": "Nervous-80"}, "reason": "E005 rationale."},
+    ]
 
 
 def test_initial_state_requires_visible_affect_and_reason_and_rejects_blink():
