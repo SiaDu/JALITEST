@@ -334,6 +334,9 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "ACTING RATIONALE: Open natural language is allowed only in reason fields." in prompt
     assert "[CHANGES]" in prompt
     assert "GAZE-WILL" in prompt
+    assert "Acting Direction: NONE" in prompt
+    assert "Context: NONE" not in prompt
+    assert "AGNES becomes increasingly curious about WILL." not in prompt
     calls = []
 
     def runner(**kwargs):

@@ -1,7 +1,7 @@
 # Sparse Dual-Character Performance Proposal v2
 
 Characters: {{character_a}}, {{character_b}}
-Context: {{context}}
+Acting Direction: {{context}}
 
 [IMMUTABLE SCRIPT]
 {{immutable_script}}
@@ -33,7 +33,6 @@ Head is HEAD-UP/DOWN/TILT_LEFT/TILT_RIGHT with SUBTLE/MEDIUM/STRONG, or HEAD-NON
 ```text
 [GAZE_TARGETS]
 NONE
-{{character_a}} becomes increasingly curious about {{character_b}}.
 
 [INITIAL]
 {{character_a}}

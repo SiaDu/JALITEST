@@ -79,9 +79,15 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     if seen not in (["GAZE_TARGETS", "INITIAL", "CHANGES"], ["ANALYZE", "INITIAL", "CHANGES"]):
         raise ProposalValidationError("Sections must be [GAZE_TARGETS], [INITIAL], [CHANGES] (or legacy [ANALYZE]).")
     characters = tuple(anchor_model.aliases.values())
-    candidates = [line.strip().upper() for line in sections["GAZE_TARGETS"] if line.strip()]
-    if candidates == ["NONE"]:
+    raw_candidates = [line.strip().upper() for line in sections["GAZE_TARGETS"] if line.strip()]
+    if "GAZE_TARGETS" in seen and not raw_candidates:
+        raise ProposalValidationError("[GAZE_TARGETS] requires NONE or at least one candidate.")
+    if "NONE" in raw_candidates:
+        if raw_candidates != ["NONE"]:
+            raise ProposalValidationError("[GAZE_TARGETS] NONE must appear alone.")
         candidates = []
+    else:
+        candidates = raw_candidates
     if len(candidates) > 5 or len(set(candidates)) != len(candidates):
         raise ProposalValidationError("[GAZE_TARGETS] requires at most five unique candidates.")
     if any(not re.fullmatch(r"[A-Z][A-Z0-9_]*", item) or item in DIRECTION_TARGETS or item in {name.upper() for name in characters} for item in candidates):

@@ -3,7 +3,16 @@ import sys
 
 MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 sys.path.insert(0, str(MAYA_TOOLS))
-from dual_gaze_calibration import capture_target_pose_and_restore, calibration_key, display_target, dual_actor_row_index, required_calibration_pairs  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, calibration_key, display_target, dual_actor_row_index, optional_look_at_validation_error, required_calibration_pairs  # noqa: E402
+
+
+def test_optional_look_at_requires_a_physical_named_target():
+    assert optional_look_at_validation_error("", "LETTER")
+    assert optional_look_at_validation_error("ALICE", "")
+    for direction in ("UP", "DOWN", "LEFT", "RIGHT", "UP_LEFT", "UP_RIGHT", "DOWN_LEFT", "DOWN_RIGHT"):
+        assert optional_look_at_validation_error("ALICE", direction) == "Directional gaze targets do not require Look-at calibration."
+    assert optional_look_at_validation_error("ALICE", "NONE") == "NONE is not a physical Look-at calibration target."
+    assert optional_look_at_validation_error("ALICE", "letter") is None
 
 
 def test_calibration_pairs_are_actor_specific_and_display_real_names():

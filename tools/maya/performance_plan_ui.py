@@ -79,7 +79,7 @@ from authoring_requirements import (  # noqa: E402
     required_look_at_targets,
 )
 from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
-from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, dual_actor_row_index  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, dual_actor_row_index, optional_look_at_validation_error  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -209,7 +209,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addWidget(self.tabs, 1)
         self._build_authoring_tab()
         self._build_advanced_tab()
-        self.tabs.setTabVisible(self.tabs.indexOf(self.advanced_tab), False)
 
     def _build_authoring_tab(self) -> None:
         scroll = QtWidgets.QScrollArea()
@@ -255,7 +254,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.optional_gaze_actor = QtWidgets.QComboBox(); optional.addWidget(self.optional_gaze_actor)
         self.optional_gaze_target = QtWidgets.QComboBox(); self.optional_gaze_target.setEditable(True); optional.addWidget(self.optional_gaze_target, 1)
         capture_optional = QtWidgets.QPushButton("Capture Optional Look-at")
-        capture_optional.clicked.connect(lambda: self._capture_dual_look_at(self.optional_gaze_actor.currentText(), self.optional_gaze_target.currentText().strip().upper()))
+        capture_optional.clicked.connect(self._capture_optional_dual_look_at)
         optional.addWidget(capture_optional); layout.addLayout(optional)
         bottom = QtWidgets.QHBoxLayout()
         self.generate_animation_button = QtWidgets.QPushButton("Generate Animation")
@@ -513,7 +512,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 row.setVisible(not dual)
         if hasattr(self, "gaze_calibration_label"):
             self.gaze_calibration_label.setVisible(dual)
-        if dual:
+        if dual and hasattr(self, "validation_label"):
             self.validation_label.setText(
                 "Dual semantic authoring uses one shared conversation plan."
             )
@@ -964,6 +963,15 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         )
         names=(self.plan or {}).get("characters") or {}; self._append_backend_output(f"Captured look-at: {display_target(actor,names)} -> {display_target(target,names)}")
 
+    def _capture_optional_dual_look_at(self) -> None:
+        actor = self.optional_gaze_actor.currentText().strip()
+        target = self.optional_gaze_target.currentText().strip().upper()
+        error = optional_look_at_validation_error(actor, target)
+        if error:
+            QtWidgets.QMessageBox.warning(self, "Look-at Capture", error)
+            return
+        self._capture_dual_look_at(actor, target)
+
     def _capture_dual_baseline(self, actor: str) -> dict[str, object] | None:
         try:
             row_index = dual_actor_row_index(self.plan or {}, actor)
@@ -1210,6 +1218,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
         try:
             if loaded_plan.get("schema_version") == "dual_performance_plan_v2":
+                self.mode_combo.setCurrentIndex(1)
+                self._update_character_mode()
                 characters = loaded_plan.get("characters", [])
                 script_path = path.parent / "input_script.txt"
                 current_script = self.input_script.toPlainText()
@@ -1220,9 +1230,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     script_text, character_a=str(characters[0]), character_b=str(characters[1])
                 )
                 self.score_model = DualSparseScoreModel(loaded_plan, anchor_model)
-                if self.authoring_session is None:
-                    self.mode_combo.setCurrentIndex(1)
-                    self._update_character_mode()
             elif loaded_plan.get("schema_version") in {"dual_performance_plan_v0", "dual_performance_plan_v1"}:
                 self.score_model = DualPerformanceScoreModel(
                     loaded_plan, extra_targets=self._known_look_targets()

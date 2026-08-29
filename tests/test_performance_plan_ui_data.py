@@ -396,6 +396,26 @@ def test_dual_ui_removes_acting_interpretation_and_regenerate_placeholder():
     assert "Confirm Original Reason" not in source and "Replace Animator Reason" not in source
 
 
+def test_dual_mode_setup_does_not_access_validation_widgets_before_creation():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert 'if dual and hasattr(self, "validation_label"):' in source
+
+
+def test_loading_dual_v2_forces_hidden_mode_back_to_dual_after_session_restore():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    load = source.split('if loaded_plan.get("schema_version") == "dual_performance_plan_v2":', 1)[1].split(
+        'elif loaded_plan.get("schema_version")', 1
+    )[0]
+    assert "self.mode_combo.setCurrentIndex(1)" in load
+    assert "self._update_character_mode()" in load
+
+
+def test_debug_tab_remains_available_for_runtime_diagnostics():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert 'self.tabs.addTab(advanced, "Advanced / Debug")' in source
+    assert "self.tabs.setTabVisible" not in source
+
+
 def test_dual_ui_uses_performance_tag_wording_and_panel_relative_dialogue_roles():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     assert "SEMANTIC PERFORMANCE TAG" in source

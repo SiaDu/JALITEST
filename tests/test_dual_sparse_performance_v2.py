@@ -29,6 +29,13 @@ def test_gaze_target_candidates_accept_new_contract_and_reject_invalid_values():
             parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\n" + invalid + "\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
 
 
+@pytest.mark.parametrize("entries", ["NONE\nLETTER", "WINDOW\nNONE", ""])
+def test_gaze_target_none_must_be_alone_and_new_section_cannot_be_empty(entries):
+    base = "[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\nreason: Enters attentive.\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\nreason: Enters guarded.\n[CHANGES]\n"
+    with pytest.raises(ProposalValidationError):
+        parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\n" + entries + "\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+
+
 def test_sparse_independent_tracks_and_resets():
     proposal = parse("""E001
 actor: ALICE

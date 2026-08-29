@@ -3,6 +3,23 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 
+OPTIONAL_GAZE_DIRECTION_TARGETS = frozenset({
+    "UP", "DOWN", "LEFT", "RIGHT", "UP_LEFT", "UP_RIGHT", "DOWN_LEFT", "DOWN_RIGHT",
+})
+
+
+def optional_look_at_validation_error(actor: str, target: str) -> str | None:
+    """Return an animator-facing error for a non-physical optional calibration target."""
+    if not actor.strip() or not target.strip():
+        return "Choose both an actor and a scene target before capturing Look-at."
+    normalized_target = target.strip().upper()
+    if normalized_target in OPTIONAL_GAZE_DIRECTION_TARGETS:
+        return "Directional gaze targets do not require Look-at calibration."
+    if normalized_target == "NONE":
+        return "NONE is not a physical Look-at calibration target."
+    return None
+
+
 def display_target(target: str, characters: dict[str, str] | list[str]) -> str:
     raw = str(target).strip()
     if isinstance(characters, dict):
