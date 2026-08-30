@@ -57,7 +57,7 @@ INITIAL requires both actors. Initial attention must be `hold TARGET`. In [BEATS
 
 In later beats, use only `hold TARGET` when attention shifts and should remain there, or `brief_check TARGET` for a temporary check before returning. Omit attention when it does not meaningfully change.
 
-Affect is a strict closed vocabulary. Never invent, paraphrase, or substitute an affect label. If the desired emotion is not present, choose the closest AVAILABLE listed Mask state. Intensities are any positive integer percentage. Initial affect must be visible and not MASK-NONE. Head and blink use only the listed executable vocabulary; blink is forbidden in INITIAL.
+Affect is a strict closed vocabulary. Never invent, paraphrase, or substitute an affect label. If the desired emotion is not present, choose the closest AVAILABLE listed Mask state. Intensities are any positive integer percentage. Initial affect must be visible and not MASK-NONE. In [BEATS], affect may be MASK-NONE when the persistent semantic affect should end. Head and blink use only the listed executable vocabulary; blink is forbidden in INITIAL.
 
 TARGET may be either performance actor, a non-animated person, a physical object/location, or UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT. Use one identifier without spaces, such as FRONT_DOOR.
 
