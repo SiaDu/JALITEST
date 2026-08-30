@@ -1,0 +1,4 @@
+PITCH:	tmin	tmax	mean	fmin	fmax	stdev
+0.000000	107.999001	463.0184	-1.0000	-nan(ind)
+PITCH:	tmin	tmax	mean	fmin	fmax	stdev
+0.000000	107.999001	-169.8044	-300.0000	67.2868	-nan(ind)

@@ -15,7 +15,7 @@
       "state": {
         "head": "HEAD-NONE",
         "affect": "Afraid-68",
-        "gaze": "GLANCE-DOWN"
+        "gaze": "GAZE-AGNES"
       }
     },
     {
@@ -24,7 +24,7 @@
       "state": {
         "head": "HEAD-NONE",
         "affect": "Lost-76",
-        "gaze": "GLANCE-UP_RIGHT"
+        "gaze": "GAZE-AGNES"
       }
     },
     {
@@ -33,7 +33,7 @@
       "state": {
         "head": "HEAD-NONE",
         "affect": "Sad-78",
-        "gaze": "GLANCE-UP_RIGHT"
+        "gaze": "GAZE-AGNES"
       }
     },
     {
@@ -42,7 +42,7 @@
       "state": {
         "head": "HEAD-NONE",
         "affect": "Confused-62",
-        "gaze": "GLANCE-UP_RIGHT"
+        "gaze": "GAZE-AGNES"
       }
     },
     {
@@ -51,7 +51,7 @@
       "state": {
         "head": "HEAD-NONE",
         "affect": "Afraid-82",
-        "gaze": "GLANCE-DOWN"
+        "gaze": "GAZE-AGNES"
       }
     },
     {
@@ -60,7 +60,7 @@
       "state": {
         "head": "HEAD-DOWN-MEDIUM",
         "affect": "Sad-90",
-        "gaze": "GLANCE-DOWN"
+        "gaze": "GAZE-AGNES"
       }
     }
   ]

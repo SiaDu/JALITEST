@@ -1,0 +1,94 @@
+[GAZE_TARGETS]
+ORANGE_BALLS
+PACKAGING
+MARTY
+DION
+RACHEL
+
+[INITIAL]
+DION
+affect: Watchful-75
+gaze: GAZE-MARTY
+reason: Waits attentively for Marty to recognize the work and investment behind the product.
+
+MARTY
+affect: Curious-70
+gaze: GAZE-DION
+reason: Enters focused on discovering what Dion has produced.
+
+[CHANGES]
+E001
+actor: MARTY
+anchor: w0001
+affect: Surprised-85
+gaze: GAZE-ORANGE_BALLS
+reason: The orange balls immediately exceed his expectations and seize his attention.
+
+E002
+actor: MARTY
+anchor: w0024
+affect: Thinking-65
+reason: Hearing that money and family investment made the product possible, he reassesses Dion's commitment.
+
+E003
+actor: DION
+anchor: w0031
+affect: Nervous-55
+reason: His appeal that they believe in Marty reveals how much recognition he needs from him.
+
+E004
+actor: MARTY
+anchor: w0042
+gaze: GAZE-RACHEL
+reason: He seeks Rachel's agreement as a witness to the product's significance.
+
+E005
+actor: MARTY
+anchor: w0051
+affect: Happy-85
+gaze: GAZE-PACKAGING
+reason: The professional packaging transforms his curiosity into energized admiration.
+
+E006
+actor: DION
+anchor: w0071
+affect: Nervous-65
+reason: He tentatively asks whether Marty truly approves of the work.
+
+E007
+actor: DION
+anchor: w0075
+affect: Happy-85
+reason: Marty's emphatic praise finally gives Dion the recognition he has been waiting for.
+
+E008
+actor: MARTY
+anchor: w0078
+affect: Surprised-95
+reason: His reaction intensifies into genuine astonishment at the quality of Dion's work.
+
+E009
+actor: DION
+anchor: w0085
+affect: Proud-80
+gaze: GAZE-PACKAGING
+reason: He adds the hand-drawn detail, proudly presenting another personal contribution.
+
+E010
+actor: MARTY
+anchor: w0091
+affect: Happy-95
+gaze: GAZE-DION
+reason: Calling the design inspired, he redirects his admiration toward Dion personally.
+
+E011
+actor: DION
+anchor: w0096
+affect: Happy-90
+reason: Marty's recognition of his capability lands as deeply affirming.
+
+E012
+actor: MARTY
+anchor: w0105
+gaze: GAZE-PACKAGING
+reason: He returns to displaying the product, still absorbed in its promise.
