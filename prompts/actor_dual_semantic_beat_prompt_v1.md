@@ -55,6 +55,15 @@ eye_action: brief_check DOWN
 
 INITIAL requires both actors. Initial focus must be `focus: TARGET`. In [BEATS], affect, focus, eye_action, head, and blink are all optional. A beat may contain one or multiple changed semantic channels. Emit only channels that genuinely change at that beat. If multiple channels change at the same meaningful beat, combine them into the same beat rather than creating separate beats at the same anchor. Do not add affect, focus, eye_action, head, or blink merely to make a beat look complete. `focus` and `eye_action` cannot both appear in the same beat.
 
+CRITICAL GAZE FIELD EXCLUSIVITY: Never output both `focus:` and `eye_action:` in one beat, even when both seem actorly relevant. The final Performance Plan has only one executable gaze channel at an anchor. If persistent focus changes, use `focus: TARGET` and omit eye_action. If persistent focus does not change, use `eye_action: brief_check TARGET` and omit focus. Do not create a second beat at the same anchor to work around this rule. For example, this is INVALID:
+
+```text
+focus: NORA
+eye_action: brief_check DOWN
+```
+
+Choose one field for that beat; use a later distinct meaningful anchor only when a separate action is genuinely supported.
+
 `focus: TARGET` answers what person, object, or location the actor is persistently attending to. It changes the persistent focus. `eye_action: brief_check TARGET` answers whether the actor briefly moves their eyes away from that current focus. It is temporary and automatically returns to the persistent focus. Do not emit a later focus merely to return after an eye_action.
 
 Affect is a strict closed vocabulary. Never invent, paraphrase, or substitute an affect label. If the desired emotion is not present, choose the closest AVAILABLE listed Mask state. Intensities are any positive integer percentage. Initial affect must be visible and not MASK-NONE. In [BEATS], affect may be MASK-NONE when the persistent semantic affect should end. Head and blink use only the listed executable vocabulary; blink is forbidden in INITIAL.

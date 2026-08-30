@@ -339,6 +339,8 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "Directional gaze targets" not in prompt
     assert "affect, focus, eye_action, head, and blink are all optional" in prompt
     assert "A beat may contain one or multiple changed semantic channels" in prompt
+    assert "CRITICAL GAZE FIELD EXCLUSIVITY" in prompt
+    assert "Never output both `focus:` and `eye_action:` in one beat" in prompt
     assert "In [BEATS], affect may be MASK-NONE when the persistent semantic affect should end" in prompt
     assert "eye_action: brief_check WILL" in prompt
     assert "affect: Nervous-75" in prompt
