@@ -1,0 +1,337 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_073240_772547",
+  "characters": [
+    "WILL",
+    "AGNES"
+  ],
+  "gaze_target_candidates": [
+    "HOUSE"
+  ],
+  "initial_states": {
+    "WILL": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-70",
+      "gaze": "GAZE-AGNES"
+    },
+    "AGNES": {
+      "head": "HEAD-NONE",
+      "affect": "Sad-75",
+      "gaze": "GAZE-WILL"
+    }
+  },
+  "initial_reasons": {
+    "WILL": "Enters cautiously, trying to read Agnes's response to the new house.",
+    "AGNES": "Remains fixed on Will with grief and resentment already close beneath the surface."
+  },
+  "tracks": {
+    "WILL": [
+      {
+        "event_id": "E002",
+        "actor": "WILL",
+        "anchor_id": "w0026",
+        "changes": {
+          "affect": "Sad-78",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing Hamnet's death named in this house brings guilt forward and briefly breaks his eye contact."
+      },
+      {
+        "event_id": "E003",
+        "actor": "WILL",
+        "anchor_id": "w0035",
+        "changes": {
+          "affect": "Lost-72",
+          "gaze": "GLANCE-UP_LEFT"
+        },
+        "reason": "His admission that he is constantly wondering begins an active mental search for Hamnet."
+      },
+      {
+        "event_id": "E005",
+        "actor": "WILL",
+        "anchor_id": "w0050",
+        "changes": {
+          "affect": "Afraid-68",
+          "head": "HEAD-UP-SUBTLE"
+        },
+        "reason": "The repeated question of where Hamnet is exposes the frightening intensity of his fixation."
+      },
+      {
+        "event_id": "E007",
+        "actor": "WILL",
+        "anchor_id": "w0104",
+        "changes": {
+          "affect": "Sad-86",
+          "head": "HEAD-DOWN-MEDIUM"
+        },
+        "reason": "His apology is a direct attempt to acknowledge the harm his absence has caused."
+      },
+      {
+        "event_id": "E009",
+        "actor": "WILL",
+        "anchor_id": "w0116",
+        "changes": {
+          "affect": "Confused-58"
+        },
+        "reason": "Agnes's description of a place in his head forces him to confront how she sees his withdrawal."
+      },
+      {
+        "event_id": "E011",
+        "actor": "WILL",
+        "anchor_id": "w0131",
+        "changes": {
+          "affect": "Sad-90",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing that even Hamnet's death could not draw him back turns his guilt into visible shame."
+      },
+      {
+        "event_id": "E013",
+        "actor": "WILL",
+        "anchor_id": "w0148",
+        "changes": {
+          "affect": "Afraid-78",
+          "head": "HEAD-DOWN-STRONG"
+        },
+        "reason": "The accusation that he should have been present confronts him with the farewell he lost."
+      }
+    ],
+    "AGNES": [
+      {
+        "event_id": "E001",
+        "actor": "AGNES",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Provoked-65"
+        },
+        "reason": "The question of why Will withheld the house tour immediately exposes her suspicion of his motives."
+      },
+      {
+        "event_id": "E004",
+        "actor": "AGNES",
+        "anchor_id": "w0035",
+        "changes": {
+          "affect": "Sad-84"
+        },
+        "reason": "Hearing that Will is still searching reveals that his grief, though distant, has not ended."
+      },
+      {
+        "event_id": "E006",
+        "actor": "AGNES",
+        "anchor_id": "w0086",
+        "changes": {
+          "affect": "Angered-70",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "Will's measure of a year provokes her insistence that grief has been continuous from the moment of death."
+      },
+      {
+        "event_id": "E008",
+        "actor": "AGNES",
+        "anchor_id": "w0107",
+        "changes": {
+          "affect": "Provoked-72"
+        },
+        "reason": "Hearing the apology without an explanation makes her challenge what Will is actually sorry for."
+      },
+      {
+        "event_id": "E010",
+        "actor": "AGNES",
+        "anchor_id": "w0121",
+        "changes": {
+          "affect": "Angered-82"
+        },
+        "reason": "She asserts that Will's inner world has become more real to him than their shared life."
+      },
+      {
+        "event_id": "E012",
+        "actor": "AGNES",
+        "anchor_id": "w0143",
+        "changes": {
+          "affect": "Sad-92",
+          "head": "HEAD-DOWN-SUBTLE"
+        },
+        "reason": "Naming Hamnet's death strips away the argument and reveals the wound beneath her anger."
+      },
+      {
+        "event_id": "E014",
+        "actor": "AGNES",
+        "anchor_id": "w0154",
+        "changes": {
+          "affect": "Angered-88",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "She presses the final charge that Will was denied, and denied Hamnet, a last farewell."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_073240_772547\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008",
+      "E009",
+      "E010",
+      "E011",
+      "E012",
+      "E013",
+      "E014"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "WILL",
+        "AGNES"
+      ],
+      "initial_states": {
+        "WILL": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-70",
+          "gaze": "GAZE-AGNES"
+        },
+        "AGNES": {
+          "head": "HEAD-NONE",
+          "affect": "Sad-75",
+          "gaze": "GAZE-WILL"
+        }
+      },
+      "initial_reasons": {
+        "WILL": "Enters cautiously, trying to read Agnes's response to the new house.",
+        "AGNES": "Remains fixed on Will with grief and resentment already close beneath the surface."
+      },
+      "tracks": [
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Provoked-65"
+          },
+          "reason": "The question of why Will withheld the house tour immediately exposes her suspicion of his motives."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0035",
+          "changes": {
+            "affect": "Sad-84"
+          },
+          "reason": "Hearing that Will is still searching reveals that his grief, though distant, has not ended."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0086",
+          "changes": {
+            "affect": "Angered-70",
+            "head": "HEAD-UP-MEDIUM"
+          },
+          "reason": "Will's measure of a year provokes her insistence that grief has been continuous from the moment of death."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0107",
+          "changes": {
+            "affect": "Provoked-72"
+          },
+          "reason": "Hearing the apology without an explanation makes her challenge what Will is actually sorry for."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0121",
+          "changes": {
+            "affect": "Angered-82"
+          },
+          "reason": "She asserts that Will's inner world has become more real to him than their shared life."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0143",
+          "changes": {
+            "affect": "Sad-92",
+            "head": "HEAD-DOWN-SUBTLE"
+          },
+          "reason": "Naming Hamnet's death strips away the argument and reveals the wound beneath her anger."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0154",
+          "changes": {
+            "affect": "Angered-88",
+            "head": "HEAD-UP-MEDIUM"
+          },
+          "reason": "She presses the final charge that Will was denied, and denied Hamnet, a last farewell."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0026",
+          "changes": {
+            "affect": "Sad-78",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing Hamnet's death named in this house brings guilt forward and briefly breaks his eye contact."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0035",
+          "changes": {
+            "affect": "Lost-72",
+            "gaze": "GLANCE-UP_LEFT"
+          },
+          "reason": "His admission that he is constantly wondering begins an active mental search for Hamnet."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0050",
+          "changes": {
+            "affect": "Afraid-68",
+            "head": "HEAD-UP-SUBTLE"
+          },
+          "reason": "The repeated question of where Hamnet is exposes the frightening intensity of his fixation."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0104",
+          "changes": {
+            "affect": "Sad-86",
+            "head": "HEAD-DOWN-MEDIUM"
+          },
+          "reason": "His apology is a direct attempt to acknowledge the harm his absence has caused."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0116",
+          "changes": {
+            "affect": "Confused-58"
+          },
+          "reason": "Agnes's description of a place in his head forces him to confront how she sees his withdrawal."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0131",
+          "changes": {
+            "affect": "Sad-90",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing that even Hamnet's death could not draw him back turns his guilt into visible shame."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0148",
+          "changes": {
+            "affect": "Afraid-78",
+            "head": "HEAD-DOWN-STRONG"
+          },
+          "reason": "The accusation that he should have been present confronts him with the farewell he lost."
+        }
+      ]
+    }
+  }
+}

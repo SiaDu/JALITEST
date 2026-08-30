@@ -1,0 +1,23 @@
+{
+  "gaze_calibrations": {},
+  "jali_base_baseline": null,
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_073240_772547",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq2",
+  "input_script": "WILL: Did Bartholomew show you the new house?\nAGNES: Mm-hmm.\nWILL: Do you like it?\nAGNES: Why didn't you show me yourself? Were you afraid I wouldn't leave? 'Cause Hamnet died here in this house.\n\nWILL: You know, I'm constantly wondering where he is. Or where he has gone. Whatever I'm doing, I'm wondering, \"Where is he?\" I mean, he can't have just vanished. All he needs is for me to find him. He must be somewhere. I fear I may run mad with it, even now, a year on.\n\nAGNES: A year is nothing. It's every second... every minute, every day. We may never stop looking for him.\n\nWILL: I'm sorry, Agnes.\nAGNES: For what? You're caught by that place.\nWILL: What place?\nAGNES: That place in your head. It is now more real to you than anywhere else. Not even the death of our child can keep you from it. Hamnet died. A horrible death. And you should have been there. You could have bid him farewell.",
+  "input_context": "Scene:\nAbout a year after Hamnet's death, Will has returned to the family home. He has brought gifts and has acquired a large new house for the family. He asks Agnes what she thinks of it.\n\nStory:\nWill spends much of his life working in London while Agnes and the children remain in Stratford. Their son Hamnet died while Will was away. The loss has severely strained their marriage. They are both still grieving, but they have experienced that grief largely apart from one another.\n\nCharacter:\nWILL carries guilt over his absence and remains obsessively preoccupied with where Hamnet has gone after death. He is also deeply attached to his life and work away from home.\nAGNES remains immersed in the loss of Hamnet and resents the distance that has developed between herself and Will.\n\nPerformance Context:\nThe conversation begins with an apparently practical question about the new house but quickly exposes unresolved grief and marital resentment. Both characters are wounded rather than simply angry. Will attempts to express his own grief and apologize; Agnes partly recognizes their shared loss but continues to challenge the way he has withdrawn into another part of his life.",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "WILL",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "AGNES",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}
