@@ -1,0 +1,96 @@
+{
+  "initial_state": {
+    "actor": "JOAN",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-65",
+      "gaze": "GAZE-BOB"
+    },
+    "reason": "She approaches with controlled familiarity, watching Bob closely for any sign that he understands what his independence has cost."
+  },
+  "events": [
+    {
+      "event_id": "E002",
+      "actor": "JOAN",
+      "anchor_id": "w0006",
+      "anchor_text": "You",
+      "anchor_speaker": "JOAN",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 1.685625,
+      "raw_anchor_end": 1.815625,
+      "resolved_start": 1.685625,
+      "changes": {
+        "affect": "Sad-60"
+      },
+      "reason": "Saying that he won carries restrained hurt rather than celebration, as though she is naming the cost of his victory.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Sad-60",
+        "gaze": "GAZE-BOB"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "JOAN",
+      "anchor_id": "w0013",
+      "anchor_text": "Freedom.",
+      "anchor_speaker": "JOAN",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 8.711187,
+      "raw_anchor_end": 9.681188,
+      "resolved_start": 8.711187,
+      "changes": {
+        "affect": "Sassy-55"
+      },
+      "reason": "She gives freedom a pointed emphasis, offering his longed-for independence back to him as an uncomfortable truth.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Sassy-55",
+        "gaze": "GAZE-BOB"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "JOAN",
+      "anchor_id": "w0019",
+      "anchor_text": "our",
+      "anchor_speaker": "JOAN",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 10.841625,
+      "raw_anchor_end": 11.061625,
+      "resolved_start": 10.841625,
+      "changes": {
+        "affect": "Dislike-65"
+      },
+      "reason": "Referring to all of them and their mess exposes the resentment beneath her composure without turning the moment into another attack.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Dislike-65",
+        "gaze": "GAZE-BOB"
+      }
+    },
+    {
+      "event_id": "E009",
+      "actor": "JOAN",
+      "anchor_id": "w0028",
+      "anchor_text": "soon,",
+      "anchor_speaker": "BOB",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 22.477936,
+      "raw_anchor_end": 22.877934,
+      "resolved_start": 22.877934,
+      "changes": {
+        "affect": "Sad-75",
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "His promise of seeing her soon softens the hostility only slightly; she drops her gaze, holding on to the possibility while feeling the distance between them.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Sad-75",
+        "gaze": "GAZE-BOB"
+      }
+    }
+  ]
+}

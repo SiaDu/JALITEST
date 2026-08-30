@@ -1,0 +1,51 @@
+{
+  "schema_version": "dual_animation_manifest_v2",
+  "characters": [
+    "JOAN",
+    "BOB"
+  ],
+  "performance_plan_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\performance_plan.json",
+  "full_script_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\input_script.txt",
+  "fps": 30.0,
+  "character_runtime_mapping": {
+    "JOAN": {
+      "script_name": "JOAN",
+      "sound_file": "Seq4_Sub_JOAN",
+      "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq4\\Seq4_Sub_JOAN.txt"
+    },
+    "BOB": {
+      "script_name": "BOB",
+      "sound_file": "Seq4_Sub_BOB",
+      "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq4\\Seq4_Sub_BOB.txt"
+    }
+  },
+  "wav_durations": {
+    "JOAN": {
+      "path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq4\\Seq4_Sub_JOAN.wav",
+      "seconds": 24.0
+    },
+    "BOB": {
+      "path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq4\\Seq4_Sub_BOB.wav",
+      "seconds": 24.0
+    }
+  },
+  "shared_duration_seconds": 24.0,
+  "artifacts": {
+    "characters": {
+      "JOAN": {
+        "resolved_sparse_events": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\JOAN\\resolved_sparse_events.json",
+        "state_timeline": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\JOAN\\state_timeline.json",
+        "jali_speaker_annotated": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\JOAN\\jali_speaker_annotated.txt",
+        "jali_speaker_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\JOAN\\jali_speaker_annotation.json"
+      },
+      "BOB": {
+        "resolved_sparse_events": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\BOB\\resolved_sparse_events.json",
+        "state_timeline": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\BOB\\state_timeline.json",
+        "jali_speaker_annotated": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\BOB\\jali_speaker_annotated.txt",
+        "jali_speaker_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\characters\\BOB\\jali_speaker_annotation.json"
+      }
+    },
+    "conversation_anchor_timing": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\animation\\conversation_anchor_timing.json"
+  },
+  "warnings": []
+}

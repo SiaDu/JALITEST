@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from contextlib import redirect_stderr, redirect_stdout
 import io
+import math
 import os
 from pathlib import Path
 import sys
@@ -88,6 +89,8 @@ from backend_process_runner import AnimationProcessRunner, BackendProcessRunner 
 
 WINDOW_OBJECT_NAME = "jalitestPerformancePlanEditor"
 PERFORMANCE_PLAN_EDITOR: "PerformancePlanEditor | None" = None
+_SCORE_EDITOR_MIN_HEIGHT = 260
+_SCORE_EDITOR_MAX_HEIGHT = 650
 
 
 def maya_main_window() -> QtWidgets.QWidget:
@@ -123,6 +126,29 @@ def _configure_multiline_editor(
         editor.setFixedHeight(height)
     else:
         editor.setMinimumHeight(height)
+
+
+def _resize_semantic_score_editor(editor: QtWidgets.QPlainTextEdit) -> None:
+    """Fit a score editor to its wrapped document, within the Authoring page."""
+    document = editor.document()
+    document.setTextWidth(max(1, editor.viewport().width()))
+    document_height = document.documentLayout().documentSize().height()
+    contents = editor.contentsMargins()
+    chrome_height = (
+        (2 * editor.frameWidth())
+        + (2 * math.ceil(document.documentMargin()))
+        + contents.top()
+        + contents.bottom()
+        + 4
+    )
+    content_height = math.ceil(document_height) + chrome_height
+    target_height = max(_SCORE_EDITOR_MIN_HEIGHT, min(_SCORE_EDITOR_MAX_HEIGHT, content_height))
+    editor.setVerticalScrollBarPolicy(
+        QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        if content_height > _SCORE_EDITOR_MAX_HEIGHT
+        else QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+    )
+    editor.setFixedHeight(target_height)
 
 
 def panel_dialogue_role(panel_actor: str, speaker: str) -> str:
@@ -201,6 +227,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.jali_base_baseline: dict[str, Any] | None = None
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
+        self._score_resize_scheduled = False
 
         self._build_ui()
         self.backend_runner = BackendProcessRunner(self)
@@ -352,6 +379,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_editor_b.textChanged.connect(self._score_changed)
         self.score_title_b.hide()
         self.score_editor_b.hide()
+        self._semantic_score_editors = (self.score_editor, self.score_editor_b)
+        for editor in self._semantic_score_editors:
+            editor.installEventFilter(self)
+            editor.viewport().installEventFilter(self)
         layout.addWidget(self.score_title_b)
         layout.addWidget(self.score_editor_b)
         self.score_legend = QtWidgets.QLabel("Current panel character: speaking = yellow; listening = blue; semantic tags = magenta.")
@@ -1060,6 +1091,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         return session_path
 
     def _score_changed(self) -> None:
+        self._schedule_semantic_score_editor_resize()
         if self._suppress_score_dirty_tracking or self._building or self.score_model is None:
             return
         if score_text_matches_clean_baseline(
@@ -1082,6 +1114,25 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             editor.setPlainText(text)
         finally:
             self._suppress_score_dirty_tracking = False
+        _resize_semantic_score_editor(editor)
+        self._schedule_semantic_score_editor_resize()
+
+    def _schedule_semantic_score_editor_resize(self) -> None:
+        if self._score_resize_scheduled:
+            return
+        self._score_resize_scheduled = True
+        QtCore.QTimer.singleShot(0, self._resize_semantic_score_editors)
+
+    def _resize_semantic_score_editors(self) -> None:
+        self._score_resize_scheduled = False
+        for editor in self._semantic_score_editors:
+            _resize_semantic_score_editor(editor)
+
+    def eventFilter(self, watched: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        score_widgets = (*self._semantic_score_editors, *(editor.viewport() for editor in self._semantic_score_editors))
+        if watched in score_widgets and event.type() == QtCore.QEvent.Type.Resize:
+            self._schedule_semantic_score_editor_resize()
+        return super().eventFilter(watched, event)
 
     def _mark_score_editors_clean(self) -> None:
         """Record the currently rendered score as the accepted editor baseline."""
@@ -1301,6 +1352,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.score_title_b.show()
             self.score_editor_b.show()
             self.score_legend.show()
+            self._resize_semantic_score_editors()
+            self._schedule_semantic_score_editor_resize()
             self.reason_group.setTitle("RATIONALE BY CHANGE")
             self._score_highlighters = [
                 _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection, self.score_model.characters, panel_actor=first),

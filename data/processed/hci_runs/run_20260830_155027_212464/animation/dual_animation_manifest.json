@@ -1,0 +1,51 @@
+{
+  "schema_version": "dual_animation_manifest_v2",
+  "characters": [
+    "AGNES",
+    "WILL"
+  ],
+  "performance_plan_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\performance_plan.json",
+  "full_script_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\input_script.txt",
+  "fps": 30.0,
+  "character_runtime_mapping": {
+    "AGNES": {
+      "script_name": "AGNES",
+      "sound_file": "SeqT_AGNES",
+      "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.txt"
+    },
+    "WILL": {
+      "script_name": "WILL",
+      "sound_file": "SeqT_WILL",
+      "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.txt"
+    }
+  },
+  "wav_durations": {
+    "AGNES": {
+      "path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.wav",
+      "seconds": 41.92
+    },
+    "WILL": {
+      "path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.wav",
+      "seconds": 41.92
+    }
+  },
+  "shared_duration_seconds": 41.92,
+  "artifacts": {
+    "characters": {
+      "AGNES": {
+        "resolved_sparse_events": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\AGNES\\resolved_sparse_events.json",
+        "state_timeline": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\AGNES\\state_timeline.json",
+        "jali_speaker_annotated": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\AGNES\\jali_speaker_annotated.txt",
+        "jali_speaker_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\AGNES\\jali_speaker_annotation.json"
+      },
+      "WILL": {
+        "resolved_sparse_events": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\WILL\\resolved_sparse_events.json",
+        "state_timeline": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\WILL\\state_timeline.json",
+        "jali_speaker_annotated": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\WILL\\jali_speaker_annotated.txt",
+        "jali_speaker_annotation": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\characters\\WILL\\jali_speaker_annotation.json"
+      }
+    },
+    "conversation_anchor_timing": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\conversation_anchor_timing.json"
+  },
+  "warnings": []
+}

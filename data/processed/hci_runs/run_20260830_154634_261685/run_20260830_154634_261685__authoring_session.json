@@ -1,0 +1,134 @@
+{
+  "gaze_calibrations": {
+    "JOAN->BOB": {
+      "eye_stare_translate": [
+        12.444839284869046,
+        0.0,
+        32.381795979863
+      ],
+      "eye_stare_world_position": [
+        12.444565866692825,
+        165.33004760742188,
+        31.831275440579248
+      ]
+    },
+    "BOB->MOTORCYCLE": {
+      "eye_stare_translate": [
+        1.8127936403224683e-14,
+        -12.177038132664697,
+        39.17586217600944
+      ],
+      "eye_stare_world_position": [
+        -18.01777232274219,
+        151.1617832784681,
+        21.644469977465068
+      ]
+    },
+    "BOB->JOAN": {
+      "eye_stare_translate": [
+        -16.642169831724033,
+        7.152931675788454e-14,
+        39.17586217600942
+      ],
+      "eye_stare_world_position": [
+        -16.498841329666483,
+        163.3388214111329,
+        5.071761528143327
+      ]
+    }
+  },
+  "jali_base_baseline": {
+    "schema_version": "dual_jali_base_v2",
+    "actors": {
+      "JOAN": {
+        "script_name": "JOAN",
+        "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP",
+        "jsync": "|ValleyGirl_jRigMaya:JALI_GRP|ValleyGirl_jRigMaya:jRig_GRP|ValleyGirl_jRigMaya:masterGRP|ValleyGirl_jRigMaya:speechMaster|jSync2_parent|jSync2",
+        "sound_file": "Seq4_Sub_JOAN",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4/",
+        "transcript": "Let go of it, Bobby. You won.Freedom. From all of us and our shit.Isn't that what you wanted?",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1,
+        "gaze_reference": {
+          "eye_stare_node": "ValleyGirl_jRigMaya:eyeStare_world",
+          "baseline_translateZ": 32.381795979863,
+          "eye_stare_translate": [
+            0.0,
+            0.0,
+            32.381795979863
+          ],
+          "both_eyes_node": "ValleyGirl_jRigMaya:CNT_BOTH_EYES",
+          "both_eyes_translate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "BOB": {
+        "script_name": "BOB",
+        "maya_node": "|Angela_jRigMaya:JALI_GRP",
+        "jsync": "|Angela_jRigMaya:JALI_GRP|Angela_jRigMaya:jRig_GRP|Angela_jRigMaya:masterGRP|Angela_jRigMaya:speechMaster|jSync1_parent|jSync1",
+        "sound_file": "Seq4_Sub_BOB",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4/",
+        "transcript": "What did I win, Joan?See you soon, Joan.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1,
+        "gaze_reference": {
+          "eye_stare_node": "Angela_jRigMaya:eyeStare_world",
+          "baseline_translateZ": 39.17586217600944,
+          "eye_stare_translate": [
+            0.0,
+            0.0,
+            39.17586217600944
+          ],
+          "both_eyes_node": "Angela_jRigMaya:CNT_BOTH_EYES",
+          "both_eyes_translate": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_154634_261685",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq4",
+  "input_script": "JOAN: Let go of it, Bobby. You won.\nBOB: What did I win, Joan?\nJOAN: Freedom. From all of us and our shit.\nJOAN: Isn't that what you wanted?\nBOB: See you soon, Joan.",
+  "input_context": "At dawn after the Newport Folk Festival, Bob is preparing to leave on his motorcycle when Joan approaches him in the motel parking lot.\n\nStory:\nBob has just performed an electric set that openly broke with expectations placed on him by the folk community. The performance created conflict with people who had supported him, including Pete Seeger and others around the festival. Joan and Bob also have a complicated personal and artistic history.\n\nCharacter:\nBOB has been resisting other people's expectations and pushing toward independence, even when doing so damages relationships around him.\nJOAN understands why Bob wanted that independence, but she has also been personally affected by the way he has distanced himself from the people close to him.\n\nPerformance Context:\nThis is not another explosive confrontation. The central conflict has already happened. Joan frames Bob's break with the community as the freedom he wanted, while Bob responds with uncertainty rather than triumph. Their exchange carries unresolved hurt, familiarity, and the possibility of ending the encounter with less hostility than the events preceding it.",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "JOAN",
+      "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP"
+    },
+    {
+      "alias": "B",
+      "script_name": "BOB",
+      "maya_node": "|Angela_jRigMaya:JALI_GRP"
+    }
+  ],
+  "look_at_targets": []
+}

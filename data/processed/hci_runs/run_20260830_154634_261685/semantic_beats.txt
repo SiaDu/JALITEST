@@ -1,0 +1,67 @@
+[INITIAL]
+JOAN
+affect: Watchful-65
+attention: hold BOB
+acting: She approaches with controlled familiarity, watching Bob closely for any sign that he understands what his independence has cost.
+
+BOB
+affect: Thinking-65
+attention: hold MOTORCYCLE
+acting: He remains occupied with leaving, keeping his feelings contained until Joan's presence makes avoidance impossible.
+
+[BEATS]
+E001
+actor: BOB
+trigger: w0001
+attention: hold JOAN
+acting: Joan's opening reaches him, and he stops attending to the motorcycle to face the person who still knows him best.
+
+E002
+actor: JOAN
+trigger: w0006
+affect: Sad-60
+acting: Saying that he won carries restrained hurt rather than celebration, as though she is naming the cost of his victory.
+
+E003
+actor: BOB
+trigger: w0008
+affect: Confused-75
+acting: Her claim unsettles him; he asks what he has won without sounding ready to accept that there is an answer.
+
+E004
+actor: JOAN
+trigger: w0013
+affect: Sassy-55
+acting: She gives freedom a pointed emphasis, offering his longed-for independence back to him as an uncomfortable truth.
+
+E005
+actor: BOB
+trigger: w0013
+affect: Lost-70
+acting: The word lands as something less triumphant than expected, leaving him visibly unsure what freedom now requires of him.
+
+E006
+actor: JOAN
+trigger: w0019
+affect: Dislike-65
+acting: Referring to all of them and their mess exposes the resentment beneath her composure without turning the moment into another attack.
+
+E007
+actor: BOB
+trigger: w0021
+affect: Nervous-65
+attention: brief_check DOWN
+acting: Her direct question makes him look away for a moment, uncomfortable with the personal truth inside it.
+
+E008
+actor: BOB
+trigger: w0026
+affect: Polite-60
+acting: He answers with a familiar farewell instead of defending himself, leaving the door open without pretending the hurt is resolved.
+
+E009
+actor: JOAN
+trigger: w0028
+affect: Sad-75
+attention: brief_check DOWN
+acting: His promise of seeing her soon softens the hostility only slightly; she drops her gaze, holding on to the possibility while feeling the distance between them.

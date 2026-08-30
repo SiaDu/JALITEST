@@ -433,6 +433,20 @@ def test_multiline_editors_share_score_font_and_use_larger_sizes():
         )
 
 
+def test_semantic_score_editors_resize_from_wrapped_document_layout():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert "def _resize_semantic_score_editor(" in source
+    assert "document.setTextWidth(max(1, editor.viewport().width()))" in source
+    assert "document.documentLayout().documentSize().height()" in source
+    assert "_SCORE_EDITOR_MIN_HEIGHT = 260" in source
+    assert "_SCORE_EDITOR_MAX_HEIGHT = 650" in source
+    assert "ScrollBarAlwaysOff" in source and "ScrollBarAsNeeded" in source
+    assert "self._schedule_semantic_score_editor_resize()" in source
+    assert "editor.viewport().installEventFilter(self)" in source
+    assert "self.score_editor_b.show()" in source
+    assert "self._resize_semantic_score_editors()" in source
+
+
 def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path: Path):
     model = PerformanceScoreModel(_plan())
     edited_score = model.score_text.replace("<Friendly-50>", "<Angered-80>", 1)

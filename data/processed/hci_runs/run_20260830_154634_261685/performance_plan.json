@@ -1,0 +1,233 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_154634_261685",
+  "characters": [
+    "JOAN",
+    "BOB"
+  ],
+  "gaze_target_candidates": [
+    "MOTORCYCLE"
+  ],
+  "initial_states": {
+    "JOAN": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-65",
+      "gaze": "GAZE-BOB"
+    },
+    "BOB": {
+      "head": "HEAD-NONE",
+      "affect": "Thinking-65",
+      "gaze": "GAZE-MOTORCYCLE"
+    }
+  },
+  "initial_reasons": {
+    "JOAN": "She approaches with controlled familiarity, watching Bob closely for any sign that he understands what his independence has cost.",
+    "BOB": "He remains occupied with leaving, keeping his feelings contained until Joan's presence makes avoidance impossible."
+  },
+  "tracks": {
+    "JOAN": [
+      {
+        "event_id": "E002",
+        "actor": "JOAN",
+        "anchor_id": "w0006",
+        "changes": {
+          "affect": "Sad-60"
+        },
+        "reason": "Saying that he won carries restrained hurt rather than celebration, as though she is naming the cost of his victory."
+      },
+      {
+        "event_id": "E004",
+        "actor": "JOAN",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Sassy-55"
+        },
+        "reason": "She gives freedom a pointed emphasis, offering his longed-for independence back to him as an uncomfortable truth."
+      },
+      {
+        "event_id": "E006",
+        "actor": "JOAN",
+        "anchor_id": "w0019",
+        "changes": {
+          "affect": "Dislike-65"
+        },
+        "reason": "Referring to all of them and their mess exposes the resentment beneath her composure without turning the moment into another attack."
+      },
+      {
+        "event_id": "E009",
+        "actor": "JOAN",
+        "anchor_id": "w0028",
+        "changes": {
+          "affect": "Sad-75",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "His promise of seeing her soon softens the hostility only slightly; she drops her gaze, holding on to the possibility while feeling the distance between them."
+      }
+    ],
+    "BOB": [
+      {
+        "event_id": "E001",
+        "actor": "BOB",
+        "anchor_id": "w0001",
+        "changes": {
+          "gaze": "GAZE-JOAN"
+        },
+        "reason": "Joan's opening reaches him, and he stops attending to the motorcycle to face the person who still knows him best."
+      },
+      {
+        "event_id": "E003",
+        "actor": "BOB",
+        "anchor_id": "w0008",
+        "changes": {
+          "affect": "Confused-75"
+        },
+        "reason": "Her claim unsettles him; he asks what he has won without sounding ready to accept that there is an answer."
+      },
+      {
+        "event_id": "E005",
+        "actor": "BOB",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Lost-70"
+        },
+        "reason": "The word lands as something less triumphant than expected, leaving him visibly unsure what freedom now requires of him."
+      },
+      {
+        "event_id": "E007",
+        "actor": "BOB",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Nervous-65",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Her direct question makes him look away for a moment, uncomfortable with the personal truth inside it."
+      },
+      {
+        "event_id": "E008",
+        "actor": "BOB",
+        "anchor_id": "w0026",
+        "changes": {
+          "affect": "Polite-60"
+        },
+        "reason": "He answers with a familiar farewell instead of defending himself, leaving the door open without pretending the hurt is resolved."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_154634_261685\\performance_proposal.txt",
+    "event_ids": [
+      "E002",
+      "E004",
+      "E006",
+      "E009",
+      "E001",
+      "E003",
+      "E005",
+      "E007",
+      "E008"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "JOAN",
+        "BOB"
+      ],
+      "initial_states": {
+        "JOAN": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-65",
+          "gaze": "GAZE-BOB"
+        },
+        "BOB": {
+          "head": "HEAD-NONE",
+          "affect": "Thinking-65",
+          "gaze": "GAZE-MOTORCYCLE"
+        }
+      },
+      "initial_reasons": {
+        "JOAN": "She approaches with controlled familiarity, watching Bob closely for any sign that he understands what his independence has cost.",
+        "BOB": "He remains occupied with leaving, keeping his feelings contained until Joan's presence makes avoidance impossible."
+      },
+      "tracks": [
+        {
+          "actor": "BOB",
+          "anchor_id": "w0001",
+          "changes": {
+            "gaze": "GAZE-JOAN"
+          },
+          "reason": "Joan's opening reaches him, and he stops attending to the motorcycle to face the person who still knows him best."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0008",
+          "changes": {
+            "affect": "Confused-75"
+          },
+          "reason": "Her claim unsettles him; he asks what he has won without sounding ready to accept that there is an answer."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Lost-70"
+          },
+          "reason": "The word lands as something less triumphant than expected, leaving him visibly unsure what freedom now requires of him."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Nervous-65",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Her direct question makes him look away for a moment, uncomfortable with the personal truth inside it."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0026",
+          "changes": {
+            "affect": "Polite-60"
+          },
+          "reason": "He answers with a familiar farewell instead of defending himself, leaving the door open without pretending the hurt is resolved."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0006",
+          "changes": {
+            "affect": "Sad-60"
+          },
+          "reason": "Saying that he won carries restrained hurt rather than celebration, as though she is naming the cost of his victory."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Sassy-55"
+          },
+          "reason": "She gives freedom a pointed emphasis, offering his longed-for independence back to him as an uncomfortable truth."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0019",
+          "changes": {
+            "affect": "Dislike-65"
+          },
+          "reason": "Referring to all of them and their mess exposes the resentment beneath her composure without turning the moment into another attack."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0028",
+          "changes": {
+            "affect": "Sad-75",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "His promise of seeing her soon softens the hostility only slightly; she drops her gaze, holding on to the possibility while feeling the distance between them."
+        }
+      ]
+    }
+  }
+}

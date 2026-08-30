@@ -1,0 +1,146 @@
+{
+  "gaze_calibrations": {
+    "WILL->AGNES": {
+      "eye_stare_translate": [
+        -5.859992132572552,
+        7.152931675788454e-14,
+        19.36244424807851
+      ],
+      "eye_stare_world_position": [
+        2.247789547116998,
+        163.3388214111329,
+        17.617307219445937
+      ]
+    },
+    "WILL->HAWK": {
+      "eye_stare_translate": [
+        0.0,
+        0.0,
+        19.36244424807851
+      ],
+      "eye_stare_world_position": [
+        1.7129480114671942,
+        163.3388214111328,
+        23.452840813347695
+      ]
+    },
+    "AGNES->WILL": {
+      "eye_stare_translate": [
+        15.015935157228377,
+        0.0,
+        26.560896339854878
+      ],
+      "eye_stare_world_position": [
+        15.015661739052156,
+        165.33004760742188,
+        26.010375800571126
+      ]
+    },
+    "AGNES->HAWK": {
+      "eye_stare_translate": [
+        0.0,
+        -22.238704346573314,
+        70.43962328129237
+      ],
+      "eye_stare_world_position": [
+        -0.00027341817622072995,
+        143.09134326084856,
+        69.88910274200862
+      ]
+    }
+  },
+  "jali_base_baseline": {
+    "schema_version": "dual_jali_base_v2",
+    "actors": {
+      "AGNES": {
+        "script_name": "AGNES",
+        "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP",
+        "jsync": "|ValleyGirl_jRigMaya:JALI_GRP|ValleyGirl_jRigMaya:jRig_GRP|ValleyGirl_jRigMaya:masterGRP|ValleyGirl_jRigMaya:speechMaster|jSync2_parent|jSync2",
+        "sound_file": "SeqT_AGNES",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "transcript": "Good day, sir.What brings you to Hewlands?The Latin tutor. I've heard of you.What brought you into the garden?It's just a question, master tutor.It's a hawk.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1,
+        "gaze_reference": {
+          "eye_stare_node": "ValleyGirl_jRigMaya:eyeStare_world",
+          "baseline_translateZ": 26.560896339854878,
+          "eye_stare_translate": [
+            0.0,
+            0.0,
+            26.560896339854878
+          ],
+          "both_eyes_node": "ValleyGirl_jRigMaya:CNT_BOTH_EYES",
+          "both_eyes_translate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "WILL": {
+        "script_name": "WILL",
+        "maya_node": "|Angela_jRigMaya:JALI_GRP",
+        "jsync": "|Angela_jRigMaya:JALI_GRP|Angela_jRigMaya:jRig_GRP|Angela_jRigMaya:masterGRP|Angela_jRigMaya:speechMaster|jSync1_parent|jSync1",
+        "sound_file": "SeqT_WILL",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "transcript": "Good day to you.I'm tutoring the boys here.Uh...Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1,
+        "gaze_reference": {
+          "eye_stare_node": "Angela_jRigMaya:eyeStare_world",
+          "baseline_translateZ": 19.36244424807851,
+          "eye_stare_translate": [
+            0.0,
+            0.0,
+            19.36244424807851
+          ],
+          "both_eyes_node": "Angela_jRigMaya:CNT_BOTH_EYES",
+          "both_eyes_translate": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_155027_212464",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT",
+  "input_script": "AGNES: Good day, sir.\nWILL: Good day to you.\nAGNES: What brings you to Hewlands?\nWILL: I'm tutoring the boys here.\nAGNES: The Latin tutor. I've heard of you.\nAGNES: What brought you into the garden?\nWILL: Uh...\nAGNES: It's just a question, master tutor.\nWILL: Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.\nAGNES: It's a hawk.",
+  "input_context": "Scene:\nWill and Agnes meet for the first time in the garden at Hewlands. Will has just left the study where he is tutoring the boys after noticing Agnes outside with her hawk.\n\nStory:\nWill is working as a Latin tutor at Hewlands to help repay his father's debt. He feels trapped by his circumstances. Agnes lives at Hewlands and has an independent, unconventional relationship with the natural world.\n\nCharacter:\nWILL is educated, restless, curious, and somewhat socially uncertain around Agnes.\nAGNES is independent, intuitive, self-possessed, and cautious about this unfamiliar man.\n\nPerformance Context:\nThere is an immediate mutual attraction, but neither character knows the other yet. Their conversation is tentative and slightly awkward. Will is searching for a reason to remain near Agnes, while Agnes is curious about why he approached her. The hawk provides a safer subject through which they can continue the interaction.",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "AGNES",
+      "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP"
+    },
+    {
+      "alias": "B",
+      "script_name": "WILL",
+      "maya_node": "|Angela_jRigMaya:JALI_GRP"
+    }
+  ],
+  "look_at_targets": []
+}

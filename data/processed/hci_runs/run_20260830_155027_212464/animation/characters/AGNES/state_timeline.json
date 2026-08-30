@@ -1,0 +1,76 @@
+{
+  "initial_state": {
+    "head": "HEAD-NONE",
+    "affect": "Watchful-60",
+    "gaze": "GAZE-HAWK"
+  },
+  "initial_timing": {
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0
+  },
+  "timeline": [
+    {
+      "event_id": "E001",
+      "resolved_start": 0.0,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Polite-70",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E002",
+      "resolved_start": 5.648625,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Watchful-70",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E003",
+      "resolved_start": 9.673126,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Thinking-60",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E004",
+      "resolved_start": 13.261625,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Watchful-75",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E006",
+      "resolved_start": 27.379877,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sassy-55",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E010",
+      "resolved_start": 37.255123,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sassy-55",
+        "gaze": "GAZE-HAWK"
+      }
+    },
+    {
+      "event_id": "E012",
+      "resolved_start": 40.315872,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sassy-62",
+        "gaze": "GAZE-HAWK"
+      }
+    }
+  ]
+}

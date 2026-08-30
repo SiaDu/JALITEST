@@ -1,0 +1,93 @@
+[GAZE_TARGETS]
+HAWK
+
+[INITIAL]
+
+AGNES
+affect: Watchful-60
+gaze: GAZE-HAWK
+reason: She watches the hawk with quiet familiarity, alert to the unfamiliar man approaching but not yet inviting his attention.
+
+WILL
+affect: Nervous-55
+gaze: GAZE-AGNES
+reason: He tries to appear composed while looking for a natural reason to remain near her.
+
+[CHANGES]
+
+E001
+actor: AGNES
+anchor: w0001
+reason: She turns her attention from the hawk to acknowledge the stranger with measured courtesy.
+affect: Polite-70
+gaze: GAZE-WILL
+
+E002
+actor: AGNES
+anchor: w0008
+reason: Her question is direct but guarded as she studies what has brought him to Hewlands.
+affect: Watchful-70
+
+E003
+actor: AGNES
+anchor: w0018
+reason: Recognizing him as the Latin tutor, she quietly reassesses the unfamiliar man.
+affect: Thinking-60
+
+E004
+actor: AGNES
+anchor: w0025
+reason: She presses him for an explanation, curious about his presence in the garden.
+affect: Watchful-75
+
+E006
+actor: AGNES
+anchor: w0032
+reason: She lightly challenges his awkwardness, keeping her attention on him without becoming openly hostile.
+affect: Sassy-55
+
+E010
+actor: AGNES
+anchor: w0052
+reason: His mention of the bird draws her attention back to the hawk, the safer subject between them.
+gaze: GAZE-HAWK
+
+E012
+actor: AGNES
+anchor: w0057
+reason: She corrects him with restrained amusement, making clear that the distinction matters to her.
+affect: Sassy-62
+
+E005
+actor: WILL
+anchor: w0031
+reason: His hesitation exposes his uncertainty, and he briefly looks away while searching for an answer.
+affect: Nervous-72
+gaze: GLANCE-DOWN
+
+E007
+actor: WILL
+anchor: w0040
+reason: The broken explanation makes him visibly uncomfortable as he struggles to frame his real motive.
+affect: Nervous-82
+gaze: GLANCE-DOWN
+
+E008
+actor: WILL
+anchor: w0049
+reason: He searches for a plausible excuse, momentarily looking inward as he assembles the words.
+affect: Thinking-60
+gaze: GLANCE-UP
+
+E009
+actor: WILL
+anchor: w0050
+reason: Another hesitation betrays how self-conscious he feels under her scrutiny.
+affect: Nervous-86
+gaze: GLANCE-DOWN
+
+E011
+actor: WILL
+anchor: w0052
+reason: He shifts his attention to the hawk, relieved to have found a less personal subject.
+gaze: GAZE-HAWK
