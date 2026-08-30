@@ -39,10 +39,10 @@ def _semantic_reference(config_paths: Iterable[str | Path]) -> str:
     return "\n".join((
         "VISIBLE AFFECT — CLOSED VOCABULARY: " + " | ".join(vocabulary.affect_states.values()) + " | MASK-NONE",
         "Any other value is invalid in this executable field.",
-        "ACTING RATIONALE: Open natural language is allowed only in reason fields.",
+        "ACTING INTERPRETATION: Open natural language is allowed only in acting fields.",
         "Head values: " + ", ".join(sorted(HEAD_VALUES)),
         "Blink values: " + ", ".join(sorted(BLINK_VALUES)),
-        "Directional gaze targets: " + ", ".join(sorted(DIRECTION_TARGETS)),
+        "Built-in attention directions: " + ", ".join(sorted(DIRECTION_TARGETS)),
     ))
 def _render_dual_prompt(
     *, anchor_model: ConversationAnchorModel, context: str | None,

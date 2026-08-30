@@ -34,16 +34,21 @@ acting: natural-language acting interpretation
 
 [BEATS]
 E001
-actor: {{character_b}}
+actor: {{character_a}}
 trigger: w0001
-acting: natural-language explanation
-affect: MASK-INTENSITY
-attention: brief_check TARGET
-head: HEAD-*
-blink: SLOW_BLINK
+acting: A direct question makes the actor briefly check the other person's reaction.
+attention: brief_check {{character_b}}
+
+E002
+actor: {{character_b}}
+trigger: w0002
+acting: The heard disclosure raises visible anxiety without changing attention.
+affect: Nervous-75
 ```
 
-INITIAL requires both actors. Initial attention must be `hold TARGET`. In later beats, attention is optional: use only `hold TARGET` when attention shifts and should remain there, or `brief_check TARGET` for a temporary check before returning. Omit attention when it does not meaningfully change.
+INITIAL requires both actors. Initial attention must be `hold TARGET`. In [BEATS], affect, attention, head, and blink are all optional. Emit only fields that actually change at that beat. A beat may contain only one changed semantic channel. Do not add affect, attention, head, or blink merely to make a beat look complete.
+
+In later beats, use only `hold TARGET` when attention shifts and should remain there, or `brief_check TARGET` for a temporary check before returning. Omit attention when it does not meaningfully change.
 
 Affect is a strict closed vocabulary. Never invent, paraphrase, or substitute an affect label. If the desired emotion is not present, choose the closest AVAILABLE listed Mask state. Intensities are any positive integer percentage. Initial affect must be visible and not MASK-NONE. Head and blink use only the listed executable vocabulary; blink is forbidden in INITIAL.
 

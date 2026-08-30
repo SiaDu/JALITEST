@@ -36,6 +36,16 @@ def test_parser_accepts_small_attention_grammar_and_non_actor_target():
     assert ir["beats"][0]["head"] == "HEAD-DOWN-SUBTLE"
 
 
+def test_parser_allows_mask_none_only_for_later_beats():
+    beat_none = BASE.replace("attention: brief_check RACHEL", "affect: MASK-NONE")
+    ir = parse_dual_semantic_beats(beat_none, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+    assert ir["beats"][0]["affect"] == "MASK-NONE"
+
+    initial_none = BASE.replace("Watchful-80", "MASK-NONE", 1)
+    with pytest.raises(ProposalValidationError, match="MASK-NONE is not allowed"):
+        parse_dual_semantic_beats(initial_none, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+
+
 @pytest.mark.parametrize(("text", "match"), [
     (BASE.replace("actor: MARTY", "actor: RACHEL"), "Unknown performance actor"),
     (BASE.replace("MARTY\naffect", "RACHEL\naffect"), r"Unknown \[INITIAL\] performance actor"),

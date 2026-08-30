@@ -18,7 +18,13 @@ _AFFECT = re.compile(r"^(.+)-(\d+)$")
 _TARGET = re.compile(r"^[A-Za-z][A-Za-z0-9_'\-]*$")
 
 
-def _affect(value: str, *, label: str, vocabulary: SemanticVocabulary) -> str:
+def _affect(
+    value: str, *, label: str, vocabulary: SemanticVocabulary, allow_none: bool = False,
+) -> str:
+    if value.strip().upper() == "MASK-NONE":
+        if allow_none:
+            return "MASK-NONE"
+        raise ProposalValidationError(f"{label}: MASK-NONE is not allowed")
     match = _AFFECT.fullmatch(value.strip())
     if not match:
         raise ProposalValidationError(f'{label}: Invalid affect value "{value}"')
@@ -91,7 +97,7 @@ def parse_dual_semantic_beats(
         if attention["action"] != "hold": raise ProposalValidationError(f"{name} initial: attention must be hold TARGET")
         head = row.get("head", "HEAD-NONE").strip().upper()
         if head not in HEAD_VALUES: raise ProposalValidationError(f'{name} initial: Invalid head value "{head}"')
-        initial[name] = {"affect": _affect(row["affect"], label=f"{name} initial", vocabulary=vocabulary), "attention": attention, "acting": row["acting"].strip(), "head": head}
+        initial[name] = {"affect": _affect(row["affect"], label=f"{name} initial", vocabulary=vocabulary, allow_none=False), "attention": attention, "acting": row["acting"].strip(), "head": head}
     raw_beats: list[dict[str, str]] = []; beat: dict[str, str] | None = None
     for line in sections["BEATS"]:
         stripped = line.strip()
@@ -117,7 +123,7 @@ def parse_dual_semantic_beats(
         anchor_id = row["trigger"].strip().lower()
         if not _ANCHOR.fullmatch(anchor_id) or anchor_id not in anchors: raise ProposalValidationError(f'{event_id}: Unknown trigger anchor "{row["trigger"]}"')
         out: dict[str, Any] = {"event_id": event_id, "actor": event_actor, "anchor_id": anchor_id, "acting": row["acting"].strip()}
-        if "affect" in row: out["affect"] = _affect(row["affect"], label=event_id, vocabulary=vocabulary)
+        if "affect" in row: out["affect"] = _affect(row["affect"], label=event_id, vocabulary=vocabulary, allow_none=True)
         if "attention" in row: out["attention"] = _attention(row["attention"], label=event_id, characters=characters)
         if "head" in row:
             head = row["head"].strip().upper()

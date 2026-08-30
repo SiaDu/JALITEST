@@ -333,6 +333,13 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "HEART" not in prompt
     assert "[BEATS]" in prompt
     assert "GAZE-WILL" not in prompt and "GLANCE-WILL" not in prompt
+    assert "Open natural language is allowed only in acting fields" in prompt
+    assert "Open natural language is allowed only in reason fields" not in prompt
+    assert "Built-in attention directions" in prompt
+    assert "Directional gaze targets" not in prompt
+    assert "affect, attention, head, and blink are all optional" in prompt
+    assert "attention: brief_check WILL" in prompt
+    assert "affect: Nervous-75" in prompt
     assert "Acting Direction: NONE" in prompt
     assert "Context: NONE" not in prompt
     assert "AGNES becomes increasingly curious about WILL." not in prompt
