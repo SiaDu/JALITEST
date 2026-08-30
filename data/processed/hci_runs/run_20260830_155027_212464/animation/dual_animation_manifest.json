@@ -4,7 +4,7 @@
     "AGNES",
     "WILL"
   ],
-  "performance_plan_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\performance_plan.json",
+  "performance_plan_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\performance_plan_edited_01.json",
   "full_script_source": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_155027_212464\\animation\\input_script.txt",
   "fps": 30.0,
   "character_runtime_mapping": {
