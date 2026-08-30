@@ -1,0 +1,157 @@
+[GAZE_TARGETS]
+ORANGE_BALLS
+PACKAGING
+
+[INITIAL]
+MARTY
+affect: Happy-72
+gaze: GAZE-DION
+reason: Enters energized and ready to assess Dion's business reveal.
+
+DION
+affect: Nervous-62
+gaze: GAZE-MARTY
+reason: Waits tensely for Marty to recognize the work and investment behind the project.
+
+RACHEL
+affect: Nervous-68
+gaze: GAZE-MARTY
+reason: Remains unsettled but keeps her attention on Marty for social guidance.
+
+[CHANGES]
+E001
+actor: DION
+anchor: w0003
+affect: Happy-74
+gaze: GAZE-ORANGE_BALLS
+reason: Marty's recognition of the orange product brings visible pride and redirects Dion's attention to the balls.
+
+E002
+actor: MARTY
+anchor: w0024
+affect: Surprised-76
+reason: The mention of money makes Marty register the seriousness of Dion and his father's investment.
+
+E003
+actor: DION
+anchor: w0024
+affect: Nervous-72
+reason: The financial disclosure exposes the pressure behind his guarded explanation.
+
+E004
+actor: MARTY
+anchor: w0031
+affect: Happy-84
+reason: Hearing that Dion's family believes in him turns the investment into personal validation.
+
+E005
+actor: MARTY
+anchor: w0044
+gaze: GAZE-RACHEL
+reason: Marty's direct appeal shifts his attention from Dion to Rachel for confirmation.
+
+E006
+actor: RACHEL
+anchor: w0042
+affect: Polite-58
+reason: Marty's direct address draws her into the exchange despite her distracted emotional state.
+
+E007
+actor: MARTY
+anchor: w0046
+gaze: GAZE-PACKAGING
+reason: The packaging is presented as a concrete object for inspection.
+
+E008
+actor: DION
+anchor: w0046
+gaze: GAZE-PACKAGING
+reason: He directs attention to the packaging he created and wants Marty to evaluate.
+
+E009
+actor: RACHEL
+anchor: w0046
+gaze: GAZE-PACKAGING
+reason: The packaging handoff gives her a polite reason to look at the business materials.
+
+E010
+actor: MARTY
+anchor: w0051
+affect: Happy-90
+reason: Reading the branded championship packaging confirms the scale of his ambition.
+
+E011
+actor: DION
+anchor: w0051
+affect: Happy-80
+reason: Marty's engaged reading signals that the work is finally receiving the desired attention.
+
+E012
+actor: MARTY
+anchor: w0066
+affect: Surprised-86
+reason: The orange spheres reveal lands as an unexpectedly original contribution by Dion.
+
+E013
+actor: DION
+anchor: w0073
+affect: Happy-86
+gaze: GAZE-MARTY
+reason: Asking whether it is good turns Dion from presenting the object to seeking Marty's judgment.
+
+E014
+actor: MARTY
+anchor: w0075
+affect: Happy-96
+gaze: GAZE-DION
+reason: His praise re-engages Dion directly and surges into wholehearted excitement.
+
+E015
+actor: RACHEL
+anchor: w0075
+gaze: GAZE-MARTY
+reason: The intensity of Marty's praise pulls her attention back to his reaction, though she remains only politely engaged.
+
+E016
+actor: DION
+anchor: w0081
+affect: Happy-92
+reason: Marty's stunned response finally gives Dion unmistakable recognition.
+
+E017
+actor: DION
+anchor: w0085
+gaze: GAZE-PACKAGING
+reason: The hand-drawn detail redirects attention to another feature of the packaging.
+
+E018
+actor: MARTY
+anchor: w0088
+affect: Surprised-88
+gaze: GAZE-PACKAGING
+reason: Learning that Dion personally drew the design produces a fresh burst of admiration and inspection.
+
+E019
+actor: MARTY
+anchor: w0091
+affect: Happy-98
+gaze: GAZE-DION
+reason: Calling the work inspired shifts from examining the object to personally affirming Dion.
+
+E020
+actor: DION
+anchor: w0096
+affect: Happy-97
+reason: Marty's statement about Dion's capability deepens the validation Dion has been seeking.
+
+E021
+actor: MARTY
+anchor: w0106
+gaze: GAZE-PACKAGING
+reason: The final invitation returns his attention to the product he wants everyone to appreciate.
+
+E022
+actor: DION
+anchor: w0108
+gaze: GAZE-MARTY
+reason: Dion turns back to Marty for the social acknowledgment prompted by the final thanks.
