@@ -19,6 +19,7 @@ from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, ma
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAYA_CONFIG = REPO_ROOT / "configs" / "maya" / "valleygirl.yaml"
 DEFAULT_V2_AFFECT_TRANSITION_FRAMES = 12
+GLANCE_FRAME_EPSILON = 1e-6
 
 _FPS_BY_UNIT = {
     "game": 15.0,
@@ -1651,9 +1652,11 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
             speaker_glance = event.get("timing_role") == "SPEAK_ONSET"
             out = start if speaker_glance else start + transition
             back = end - transition
-            if back - out < minimum_hold:
+            available_hold = back - out
+            if available_hold + GLANCE_FRAME_EPSILON < minimum_hold:
+                required_frames = minimum_hold + transition + (0 if speaker_glance else transition)
                 raise ValueError(
-                    f"GLANCE interval is too short for {event.get('id') or event.get('phrase_id') or '<unknown>'} at semantic frame {start:.3f}: available {max(0.0, end - start):.3f} frames; required {transition + minimum_hold + transition if not speaker_glance else minimum_hold + transition} frames."
+                    f"GLANCE interval is too short for {event.get('id') or event.get('phrase_id') or '<unknown>'} at semantic frame {start:.6f}: available {max(0.0, end - start):.6f} frames; required {required_frames} frames; available hold {max(0.0, available_hold):.6f} frames; required hold {minimum_hold} frames."
                 )
             returned=state["return_state"]; keys.extend(({"frame":out,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":back,"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])},{"frame":end,"eye_stare":list(returned["eye_stare"]),"eyes":list(returned["eyes"])}))
             if speaker_glance:

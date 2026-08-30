@@ -1244,6 +1244,82 @@ def test_glance_too_short_for_transitions_and_half_second_hold_is_rejected():
         build_dual_gaze_key_schedule(schedule, fps=24, transition_frames=3, glance_min_hold_seconds=0.5)
 
 
+def test_listener_glance_exact_fit_at_non_integer_frame_accepts_float_roundoff():
+    start_seconds = 11.638749
+    fps = 30.0
+    previous = {"eye_stare": [0, 0, 9], "eyes": [0, 0]}
+    schedule = [{
+        "event": {"id": "E002", "mode": "GLANCE", "timing_role": "LISTEN_REACTION"},
+        "start": start_seconds,
+        "end": start_seconds + .5 + 3 / fps + 3 / fps,
+        "previous_state": previous,
+        "eye_stare": [1, 2, 3], "eyes": [0, 0], "return_state": previous,
+    }]
+
+    keys = build_dual_gaze_key_schedule(
+        schedule, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5
+    )
+
+    target_keys = [key for key in keys if key["eye_stare"] == [1, 2, 3]]
+    assert target_keys[1]["frame"] - target_keys[0]["frame"] >= 15 - 1e-6
+
+
+def test_speaker_glance_exact_fit_at_non_integer_frame_accepts_float_roundoff():
+    start_seconds = 11.638749
+    fps = 30.0
+    previous = {"eye_stare": [0, 0, 9], "eyes": [0, 0]}
+    schedule = [{
+        "event": {"id": "E003", "mode": "GLANCE", "timing_role": "SPEAK_ONSET"},
+        "start": start_seconds,
+        "end": start_seconds + .5 + 3 / fps,
+        "previous_state": previous,
+        "eye_stare": [1, 2, 3], "eyes": [0, 0], "return_state": previous,
+    }]
+
+    keys = build_dual_gaze_key_schedule(
+        schedule, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5
+    )
+
+    target_keys = [key for key in keys if key["eye_stare"] == [1, 2, 3]]
+    assert target_keys[1]["frame"] - target_keys[0]["frame"] >= 15 - 1e-6
+
+
+def test_listener_glance_short_by_a_tenth_frame_still_fails():
+    start_seconds = 11.638749
+    fps = 30.0
+    previous = {"eye_stare": [0, 0, 9], "eyes": [0, 0]}
+    schedule = [{
+        "event": {"id": "SHORT", "mode": "GLANCE", "timing_role": "LISTEN_REACTION"},
+        "start": start_seconds,
+        "end": start_seconds + (21 - .1) / fps,
+        "previous_state": previous,
+        "eye_stare": [1, 2, 3], "eyes": [0, 0], "return_state": previous,
+    }]
+
+    with pytest.raises(ValueError, match="available hold 14.900000"):
+        build_dual_gaze_key_schedule(
+            schedule, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5
+        )
+
+
+def test_visual_onset_collision_that_truncates_glance_below_minimum_still_fails():
+    start_seconds = 11.638749
+    fps = 30.0
+    events = [
+        {"id": "G1", "mode": "GLANCE", "target": "B", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": start_seconds, "end": start_seconds + .7}},
+        {"id": "G2", "mode": "GAZE", "target": "A", "timing_role": "SPEAK_ONSET", "visual_onset": start_seconds + 20.9 / fps, "resolved_time": {"start": start_seconds + 1, "end": start_seconds + 2}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0],
+        target_positions={"A": [1, 1, 1], "B": [2, 2, 2]},
+    )
+
+    with pytest.raises(ValueError, match="GLANCE interval is too short"):
+        build_dual_gaze_key_schedule(
+            schedule, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5
+        )
+
+
 def test_clear_character_gaze_animation_is_attribute_scoped():
     calls=[]
     class Cmds:

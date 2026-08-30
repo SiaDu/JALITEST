@@ -137,10 +137,12 @@ def _compile_v2(
         state = dict(initial_state)
         timeline: list[dict[str, Any]] = []
         for event in resolved:
-            for channel in ("affect", "gaze", "head"):
+            for channel in ("affect", "head"):
                 if channel in event["changes"]:
-                    value = event["changes"][channel]
-                    state[channel] = value
+                    state[channel] = event["changes"][channel]
+            gaze = event["changes"].get("gaze")
+            if isinstance(gaze, str) and gaze.startswith("GAZE-"):
+                state["gaze"] = gaze
             event["state_after"] = dict(state)
             timeline.append({"event_id": event["event_id"], "resolved_start": event["resolved_start"], "state": dict(state)})
             event.pop("_plan_index")

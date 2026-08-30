@@ -218,6 +218,44 @@ def test_v2_same_anchor_can_drive_independent_actor_times(tmp_path):
     assert rows[1]["resolved_start"] == .2
 
 
+def test_v2_glance_remains_transient_but_later_gaze_updates_persistent_state(tmp_path):
+    _legacy_plan, audio = _fixture(tmp_path)
+    plan = tmp_path / "v2_glance_state.json"
+    plan.write_text(json.dumps({
+        "schema_version": "dual_performance_plan_v2", "characters": ["AGNES", "WILL"],
+        "initial_states": {
+            "AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"},
+            "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"},
+        },
+        "initial_reasons": {"AGNES": "Ready.", "WILL": "Ready."},
+        "tracks": {
+            "AGNES": [],
+            "WILL": [
+                {"event_id": "E1", "actor": "WILL", "anchor_id": "w0001", "changes": {"gaze": "GLANCE-UP_RIGHT"}, "reason": "Looks inward while listening."},
+                {"event_id": "E2", "actor": "WILL", "anchor_id": "w0002", "changes": {"affect": "Sad-70"}, "reason": "The reply lands heavily."},
+                {"event_id": "E3", "actor": "WILL", "anchor_id": "w0003", "changes": {"gaze": "GAZE-DOWN"}, "reason": "Settles into a lowered focus."},
+            ],
+        },
+    }), encoding="utf-8")
+
+    result = compile_dual_performance_plan(
+        performance_plan_path=plan, script=SCRIPT, audio_folder=audio, fps=24,
+        runtime_mapping={"AGNES": MAPPING["A"], "WILL": MAPPING["B"]},
+        output_dir=tmp_path / "out",
+    )
+    events = json.loads(
+        Path(result["artifacts"]["characters"]["WILL"]["resolved_sparse_events"])
+        .read_text(encoding="utf-8")
+    )["events"]
+
+    assert events[0]["changes"]["gaze"] == "GLANCE-UP_RIGHT"
+    assert events[0]["state_after"]["gaze"] == "GAZE-AGNES"
+    assert events[1]["state_after"] == {
+        "affect": "Sad-70", "gaze": "GAZE-AGNES", "head": "HEAD-NONE"
+    }
+    assert events[2]["state_after"]["gaze"] == "GAZE-DOWN"
+
+
 def test_v2_hyphenated_anchor_consumes_split_timing_and_sparse_annotation_tokens(tmp_path):
     script = "WILL: Ready?\nAGNES: Mm-hmm.\nAGNES: Why?"
     audio = tmp_path / "audio"; audio.mkdir()
