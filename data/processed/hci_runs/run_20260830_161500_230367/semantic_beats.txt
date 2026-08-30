@@ -1,0 +1,86 @@
+[INITIAL]
+AGNES
+affect: Watchful-60
+attention: hold HAWK
+acting: Agnes studies the hawk with calm familiarity, alert to the unfamiliar man approaching.
+
+WILL
+affect: Nervous-45
+attention: hold AGNES
+acting: Will tries to appear composed while looking for a natural reason to remain near Agnes.
+
+[BEATS]
+E001
+actor: AGNES
+trigger: w0001
+affect: Polite-65
+attention: hold WILL
+acting: Agnes turns her attention from the hawk to acknowledge the unfamiliar man with measured courtesy.
+
+E002
+actor: AGNES
+trigger: w0008
+affect: Thinking-60
+acting: Agnes's greeting gives way to direct curiosity as she studies why he has come to Hewlands.
+
+E003
+actor: WILL
+trigger: w0021
+affect: Nervous-60
+acting: Being recognized as the Latin tutor makes Will more self-conscious under Agnes's scrutiny.
+
+E004
+actor: WILL
+trigger: w0031
+affect: Nervous-70
+attention: brief_check DOWN
+acting: Will's hesitation exposes his uncertainty, and he briefly drops his gaze while searching for an answer.
+
+E005
+actor: AGNES
+trigger: w0032
+affect: Sassy-60
+acting: Agnes lightly teases him to make clear that her question is harmless while still watching his reaction.
+
+E006
+actor: WILL
+trigger: w0038
+attention: hold AGNES
+acting: Will re-engages with Agnes after his moment of avoidance and tries to explain himself.
+
+E007
+actor: WILL
+trigger: w0040
+affect: Nervous-78
+acting: The repeated hesitation makes Will's discomfort more visible as he struggles to frame an acceptable excuse.
+
+E008
+actor: WILL
+trigger: w0042
+attention: brief_check UP
+acting: Will searches inwardly for a plausible explanation before continuing.
+
+E009
+actor: WILL
+trigger: w0052
+affect: Thinking-60
+attention: hold HAWK
+acting: Mentioning the bird gives Will safer ground, and his attention settles on the hawk.
+
+E010
+actor: AGNES
+trigger: w0052
+attention: hold HAWK
+acting: Agnes follows his reference to the bird, briefly checking that he has noticed the hawk.
+
+E011
+actor: AGNES
+trigger: w0058
+affect: Sassy-65
+acting: Agnes corrects him with quiet confidence, claiming the distinction without hostility.
+
+E012
+actor: WILL
+trigger: w0058
+affect: Surprised-55
+acting: The correction catches Will off guard, and he focuses on the hawk as he absorbs it.

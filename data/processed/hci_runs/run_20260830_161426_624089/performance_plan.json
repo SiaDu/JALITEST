@@ -1,0 +1,294 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_161426_624089",
+  "characters": [
+    "AGNES",
+    "WILL"
+  ],
+  "gaze_target_candidates": [
+    "HAWK"
+  ],
+  "initial_states": {
+    "AGNES": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-65",
+      "gaze": "GAZE-WILL"
+    },
+    "WILL": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-60",
+      "gaze": "GAZE-AGNES"
+    }
+  },
+  "initial_reasons": {
+    "AGNES": "She studies the unfamiliar tutor with guarded curiosity, composed but alert to his intentions.",
+    "WILL": "He tries to appear at ease, but his attraction and uncertainty make him carefully watch her reaction."
+  },
+  "tracks": {
+    "AGNES": [
+      {
+        "event_id": "E001",
+        "actor": "AGNES",
+        "anchor_id": "w0019",
+        "changes": {
+          "affect": "Thinking-55"
+        },
+        "reason": "Identifying him as the Latin tutor makes her assess him more deliberately."
+      },
+      {
+        "event_id": "E005",
+        "actor": "AGNES",
+        "anchor_id": "w0035",
+        "changes": {
+          "affect": "Sassy-55"
+        },
+        "reason": "Her reassurance carries a lightly teasing edge as she tests his composure."
+      },
+      {
+        "event_id": "E010",
+        "actor": "AGNES",
+        "anchor_id": "w0052",
+        "changes": {
+          "affect": "Surprised-70"
+        },
+        "reason": "Realizing that he noticed her personally makes her momentarily surprised and more guarded."
+      },
+      {
+        "event_id": "E011",
+        "actor": "AGNES",
+        "anchor_id": "w0056",
+        "changes": {
+          "gaze": "GAZE-HAWK"
+        },
+        "reason": "At the mention of the bird, she turns her attention to the hawk."
+      },
+      {
+        "event_id": "E013",
+        "actor": "AGNES",
+        "anchor_id": "w0057",
+        "changes": {
+          "affect": "Sassy-65"
+        },
+        "reason": "She corrects him with quiet confidence, reclaiming the subject on familiar ground."
+      }
+    ],
+    "WILL": [
+      {
+        "event_id": "E002",
+        "actor": "WILL",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Nervous-70",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing that she has already heard of him makes him briefly self-conscious."
+      },
+      {
+        "event_id": "E003",
+        "actor": "WILL",
+        "anchor_id": "w0025",
+        "changes": {
+          "gaze": "GLANCE-UP"
+        },
+        "reason": "Her direct question sends him inward for a safe explanation."
+      },
+      {
+        "event_id": "E004",
+        "actor": "WILL",
+        "anchor_id": "w0031",
+        "changes": {
+          "affect": "Nervous-80",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The hesitation exposes his discomfort under her scrutiny."
+      },
+      {
+        "event_id": "E007",
+        "actor": "WILL",
+        "anchor_id": "w0040",
+        "changes": {
+          "affect": "Nervous-85",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Another hesitation makes his embarrassment visible."
+      },
+      {
+        "event_id": "E009",
+        "actor": "WILL",
+        "anchor_id": "w0049",
+        "changes": {
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The unfinished thought reveals that his real reason is harder to admit."
+      },
+      {
+        "event_id": "E012",
+        "actor": "WILL",
+        "anchor_id": "w0056",
+        "changes": {
+          "gaze": "GAZE-HAWK"
+        },
+        "reason": "Naming the bird shifts his attention toward the creature she has been watching."
+      },
+      {
+        "event_id": "E014",
+        "actor": "WILL",
+        "anchor_id": "w0057",
+        "changes": {
+          "affect": "Surprised-55"
+        },
+        "reason": "The precise correction catches him off guard, and he studies the hawk with renewed interest."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": [
+      "E006: removed no-op attention hold",
+      "E006: dropped after no semantic changes remained",
+      "E008: removed no-op attention hold",
+      "E008: dropped after no semantic changes remained"
+    ]
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_161426_624089\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E005",
+      "E010",
+      "E011",
+      "E013",
+      "E002",
+      "E003",
+      "E004",
+      "E007",
+      "E009",
+      "E012",
+      "E014"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "AGNES",
+        "WILL"
+      ],
+      "initial_states": {
+        "AGNES": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-65",
+          "gaze": "GAZE-WILL"
+        },
+        "WILL": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-60",
+          "gaze": "GAZE-AGNES"
+        }
+      },
+      "initial_reasons": {
+        "AGNES": "She studies the unfamiliar tutor with guarded curiosity, composed but alert to his intentions.",
+        "WILL": "He tries to appear at ease, but his attraction and uncertainty make him carefully watch her reaction."
+      },
+      "tracks": [
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0019",
+          "changes": {
+            "affect": "Thinking-55"
+          },
+          "reason": "Identifying him as the Latin tutor makes her assess him more deliberately."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0035",
+          "changes": {
+            "affect": "Sassy-55"
+          },
+          "reason": "Her reassurance carries a lightly teasing edge as she tests his composure."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0052",
+          "changes": {
+            "affect": "Surprised-70"
+          },
+          "reason": "Realizing that he noticed her personally makes her momentarily surprised and more guarded."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0056",
+          "changes": {
+            "gaze": "GAZE-HAWK"
+          },
+          "reason": "At the mention of the bird, she turns her attention to the hawk."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0057",
+          "changes": {
+            "affect": "Sassy-65"
+          },
+          "reason": "She corrects him with quiet confidence, reclaiming the subject on familiar ground."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Nervous-70",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing that she has already heard of him makes him briefly self-conscious."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0025",
+          "changes": {
+            "gaze": "GLANCE-UP"
+          },
+          "reason": "Her direct question sends him inward for a safe explanation."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0031",
+          "changes": {
+            "affect": "Nervous-80",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The hesitation exposes his discomfort under her scrutiny."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0040",
+          "changes": {
+            "affect": "Nervous-85",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Another hesitation makes his embarrassment visible."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0049",
+          "changes": {
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The unfinished thought reveals that his real reason is harder to admit."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0056",
+          "changes": {
+            "gaze": "GAZE-HAWK"
+          },
+          "reason": "Naming the bird shifts his attention toward the creature she has been watching."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0057",
+          "changes": {
+            "affect": "Surprised-55"
+          },
+          "reason": "The precise correction catches him off guard, and he studies the hawk with renewed interest."
+        }
+      ]
+    }
+  }
+}

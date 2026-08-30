@@ -1,0 +1,98 @@
+[INITIAL]
+AGNES
+affect: Watchful-65
+attention: hold WILL
+acting: She studies the unfamiliar tutor with guarded curiosity, composed but alert to his intentions.
+
+WILL
+affect: Nervous-60
+attention: hold AGNES
+acting: He tries to appear at ease, but his attraction and uncertainty make him carefully watch her reaction.
+
+[BEATS]
+E001
+actor: AGNES
+trigger: w0019
+acting: Identifying him as the Latin tutor makes her assess him more deliberately.
+affect: Thinking-55
+
+E002
+actor: WILL
+trigger: w0021
+acting: Hearing that she has already heard of him makes him briefly self-conscious.
+affect: Nervous-70
+attention: brief_check DOWN
+
+E003
+actor: WILL
+trigger: w0025
+acting: Her direct question sends him inward for a safe explanation.
+attention: brief_check UP
+
+E004
+actor: WILL
+trigger: w0031
+acting: The hesitation exposes his discomfort under her scrutiny.
+affect: Nervous-80
+attention: brief_check DOWN
+
+E005
+actor: AGNES
+trigger: w0035
+acting: Her reassurance carries a lightly teasing edge as she tests his composure.
+affect: Sassy-55
+
+E006
+actor: WILL
+trigger: w0038
+acting: He gathers himself and returns his attention fully to her.
+attention: hold AGNES
+
+E007
+actor: WILL
+trigger: w0040
+acting: Another hesitation makes his embarrassment visible.
+affect: Nervous-85
+attention: brief_check DOWN
+
+E008
+actor: WILL
+trigger: w0046
+acting: He offers the fresh air as a plausible excuse and cautiously re-engages her.
+attention: hold AGNES
+
+E009
+actor: WILL
+trigger: w0049
+acting: The unfinished thought reveals that his real reason is harder to admit.
+attention: brief_check DOWN
+
+E010
+actor: AGNES
+trigger: w0052
+acting: Realizing that he noticed her personally makes her momentarily surprised and more guarded.
+affect: Surprised-70
+
+E011
+actor: AGNES
+trigger: w0056
+acting: At the mention of the bird, she turns her attention to the hawk.
+attention: hold HAWK
+
+E012
+actor: WILL
+trigger: w0056
+acting: Naming the bird shifts his attention toward the creature she has been watching.
+attention: hold HAWK
+
+E013
+actor: AGNES
+trigger: w0057
+acting: She corrects him with quiet confidence, reclaiming the subject on familiar ground.
+affect: Sassy-65
+
+E014
+actor: WILL
+trigger: w0057
+acting: The precise correction catches him off guard, and he studies the hawk with renewed interest.
+affect: Surprised-55

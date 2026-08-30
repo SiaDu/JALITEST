@@ -1,0 +1,156 @@
+{
+  "initial": {
+    "AGNES": {
+      "affect": "Watchful-65",
+      "attention": {
+        "action": "hold",
+        "target": "WILL"
+      },
+      "acting": "She studies the unfamiliar tutor with guarded curiosity, composed but alert to his intentions.",
+      "head": "HEAD-NONE"
+    },
+    "WILL": {
+      "affect": "Nervous-60",
+      "attention": {
+        "action": "hold",
+        "target": "AGNES"
+      },
+      "acting": "He tries to appear at ease, but his attraction and uncertainty make him carefully watch her reaction.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "AGNES",
+      "anchor_id": "w0019",
+      "acting": "Identifying him as the Latin tutor makes her assess him more deliberately.",
+      "affect": "Thinking-55"
+    },
+    {
+      "event_id": "E002",
+      "actor": "WILL",
+      "anchor_id": "w0021",
+      "acting": "Hearing that she has already heard of him makes him briefly self-conscious.",
+      "affect": "Nervous-70",
+      "attention": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E003",
+      "actor": "WILL",
+      "anchor_id": "w0025",
+      "acting": "Her direct question sends him inward for a safe explanation.",
+      "attention": {
+        "action": "brief_check",
+        "target": "UP"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "WILL",
+      "anchor_id": "w0031",
+      "acting": "The hesitation exposes his discomfort under her scrutiny.",
+      "affect": "Nervous-80",
+      "attention": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "AGNES",
+      "anchor_id": "w0035",
+      "acting": "Her reassurance carries a lightly teasing edge as she tests his composure.",
+      "affect": "Sassy-55"
+    },
+    {
+      "event_id": "E006",
+      "actor": "WILL",
+      "anchor_id": "w0038",
+      "acting": "He gathers himself and returns his attention fully to her.",
+      "attention": {
+        "action": "hold",
+        "target": "AGNES"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "WILL",
+      "anchor_id": "w0040",
+      "acting": "Another hesitation makes his embarrassment visible.",
+      "affect": "Nervous-85",
+      "attention": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E008",
+      "actor": "WILL",
+      "anchor_id": "w0046",
+      "acting": "He offers the fresh air as a plausible excuse and cautiously re-engages her.",
+      "attention": {
+        "action": "hold",
+        "target": "AGNES"
+      }
+    },
+    {
+      "event_id": "E009",
+      "actor": "WILL",
+      "anchor_id": "w0049",
+      "acting": "The unfinished thought reveals that his real reason is harder to admit.",
+      "attention": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E010",
+      "actor": "AGNES",
+      "anchor_id": "w0052",
+      "acting": "Realizing that he noticed her personally makes her momentarily surprised and more guarded.",
+      "affect": "Surprised-70"
+    },
+    {
+      "event_id": "E011",
+      "actor": "AGNES",
+      "anchor_id": "w0056",
+      "acting": "At the mention of the bird, she turns her attention to the hawk.",
+      "attention": {
+        "action": "hold",
+        "target": "HAWK"
+      }
+    },
+    {
+      "event_id": "E012",
+      "actor": "WILL",
+      "anchor_id": "w0056",
+      "acting": "Naming the bird shifts his attention toward the creature she has been watching.",
+      "attention": {
+        "action": "hold",
+        "target": "HAWK"
+      }
+    },
+    {
+      "event_id": "E013",
+      "actor": "AGNES",
+      "anchor_id": "w0057",
+      "acting": "She corrects him with quiet confidence, reclaiming the subject on familiar ground.",
+      "affect": "Sassy-65"
+    },
+    {
+      "event_id": "E014",
+      "actor": "WILL",
+      "anchor_id": "w0057",
+      "acting": "The precise correction catches him off guard, and he studies the hawk with renewed interest.",
+      "affect": "Surprised-55"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

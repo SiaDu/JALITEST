@@ -1,0 +1,91 @@
+[GAZE_TARGETS]
+HAWK
+
+[INITIAL]
+
+AGNES
+affect: Watchful-65
+gaze: GAZE-WILL
+reason: She studies the unfamiliar tutor with guarded curiosity, composed but alert to his intentions.
+
+WILL
+affect: Nervous-60
+gaze: GAZE-AGNES
+reason: He tries to appear at ease, but his attraction and uncertainty make him carefully watch her reaction.
+
+[CHANGES]
+
+E001
+actor: AGNES
+anchor: w0019
+reason: Identifying him as the Latin tutor makes her assess him more deliberately.
+affect: Thinking-55
+
+E005
+actor: AGNES
+anchor: w0035
+reason: Her reassurance carries a lightly teasing edge as she tests his composure.
+affect: Sassy-55
+
+E010
+actor: AGNES
+anchor: w0052
+reason: Realizing that he noticed her personally makes her momentarily surprised and more guarded.
+affect: Surprised-70
+
+E011
+actor: AGNES
+anchor: w0056
+reason: At the mention of the bird, she turns her attention to the hawk.
+gaze: GAZE-HAWK
+
+E013
+actor: AGNES
+anchor: w0057
+reason: She corrects him with quiet confidence, reclaiming the subject on familiar ground.
+affect: Sassy-65
+
+E002
+actor: WILL
+anchor: w0021
+reason: Hearing that she has already heard of him makes him briefly self-conscious.
+affect: Nervous-70
+gaze: GLANCE-DOWN
+
+E003
+actor: WILL
+anchor: w0025
+reason: Her direct question sends him inward for a safe explanation.
+gaze: GLANCE-UP
+
+E004
+actor: WILL
+anchor: w0031
+reason: The hesitation exposes his discomfort under her scrutiny.
+affect: Nervous-80
+gaze: GLANCE-DOWN
+
+E007
+actor: WILL
+anchor: w0040
+reason: Another hesitation makes his embarrassment visible.
+affect: Nervous-85
+gaze: GLANCE-DOWN
+
+E009
+actor: WILL
+anchor: w0049
+reason: The unfinished thought reveals that his real reason is harder to admit.
+gaze: GLANCE-DOWN
+
+E012
+actor: WILL
+anchor: w0056
+reason: Naming the bird shifts his attention toward the creature she has been watching.
+gaze: GAZE-HAWK
+
+E014
+actor: WILL
+anchor: w0057
+reason: The precise correction catches him off guard, and he studies the hawk with renewed interest.
+affect: Surprised-55

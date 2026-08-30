@@ -1,0 +1,133 @@
+{
+  "initial": {
+    "AGNES": {
+      "affect": "Watchful-60",
+      "attention": {
+        "action": "hold",
+        "target": "HAWK"
+      },
+      "acting": "Agnes studies the hawk with calm familiarity, alert to the unfamiliar man approaching.",
+      "head": "HEAD-NONE"
+    },
+    "WILL": {
+      "affect": "Nervous-45",
+      "attention": {
+        "action": "hold",
+        "target": "AGNES"
+      },
+      "acting": "Will tries to appear composed while looking for a natural reason to remain near Agnes.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "AGNES",
+      "anchor_id": "w0001",
+      "acting": "Agnes turns her attention from the hawk to acknowledge the unfamiliar man with measured courtesy.",
+      "affect": "Polite-65",
+      "attention": {
+        "action": "hold",
+        "target": "WILL"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "AGNES",
+      "anchor_id": "w0008",
+      "acting": "Agnes's greeting gives way to direct curiosity as she studies why he has come to Hewlands.",
+      "affect": "Thinking-60"
+    },
+    {
+      "event_id": "E003",
+      "actor": "WILL",
+      "anchor_id": "w0021",
+      "acting": "Being recognized as the Latin tutor makes Will more self-conscious under Agnes's scrutiny.",
+      "affect": "Nervous-60"
+    },
+    {
+      "event_id": "E004",
+      "actor": "WILL",
+      "anchor_id": "w0031",
+      "acting": "Will's hesitation exposes his uncertainty, and he briefly drops his gaze while searching for an answer.",
+      "affect": "Nervous-70",
+      "attention": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "AGNES",
+      "anchor_id": "w0032",
+      "acting": "Agnes lightly teases him to make clear that her question is harmless while still watching his reaction.",
+      "affect": "Sassy-60"
+    },
+    {
+      "event_id": "E006",
+      "actor": "WILL",
+      "anchor_id": "w0038",
+      "acting": "Will re-engages with Agnes after his moment of avoidance and tries to explain himself.",
+      "attention": {
+        "action": "hold",
+        "target": "AGNES"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "WILL",
+      "anchor_id": "w0040",
+      "acting": "The repeated hesitation makes Will's discomfort more visible as he struggles to frame an acceptable excuse.",
+      "affect": "Nervous-78"
+    },
+    {
+      "event_id": "E008",
+      "actor": "WILL",
+      "anchor_id": "w0042",
+      "acting": "Will searches inwardly for a plausible explanation before continuing.",
+      "attention": {
+        "action": "brief_check",
+        "target": "UP"
+      }
+    },
+    {
+      "event_id": "E009",
+      "actor": "WILL",
+      "anchor_id": "w0052",
+      "acting": "Mentioning the bird gives Will safer ground, and his attention settles on the hawk.",
+      "affect": "Thinking-60",
+      "attention": {
+        "action": "hold",
+        "target": "HAWK"
+      }
+    },
+    {
+      "event_id": "E010",
+      "actor": "AGNES",
+      "anchor_id": "w0052",
+      "acting": "Agnes follows his reference to the bird, briefly checking that he has noticed the hawk.",
+      "attention": {
+        "action": "hold",
+        "target": "HAWK"
+      }
+    },
+    {
+      "event_id": "E011",
+      "actor": "AGNES",
+      "anchor_id": "w0058",
+      "acting": "Agnes corrects him with quiet confidence, claiming the distinction without hostility.",
+      "affect": "Sassy-65"
+    },
+    {
+      "event_id": "E012",
+      "actor": "WILL",
+      "anchor_id": "w0058",
+      "acting": "The correction catches Will off guard, and he focuses on the hawk as he absorbs it.",
+      "affect": "Surprised-55"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

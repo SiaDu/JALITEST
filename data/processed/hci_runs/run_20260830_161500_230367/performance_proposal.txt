@@ -1,0 +1,85 @@
+[GAZE_TARGETS]
+HAWK
+
+[INITIAL]
+
+AGNES
+affect: Watchful-60
+gaze: GAZE-HAWK
+reason: Agnes studies the hawk with calm familiarity, alert to the unfamiliar man approaching.
+
+WILL
+affect: Nervous-45
+gaze: GAZE-AGNES
+reason: Will tries to appear composed while looking for a natural reason to remain near Agnes.
+
+[CHANGES]
+
+E001
+actor: AGNES
+anchor: w0001
+reason: Agnes turns her attention from the hawk to acknowledge the unfamiliar man with measured courtesy.
+affect: Polite-65
+gaze: GAZE-WILL
+
+E002
+actor: AGNES
+anchor: w0008
+reason: Agnes's greeting gives way to direct curiosity as she studies why he has come to Hewlands.
+affect: Thinking-60
+
+E005
+actor: AGNES
+anchor: w0032
+reason: Agnes lightly teases him to make clear that her question is harmless while still watching his reaction.
+affect: Sassy-60
+
+E010
+actor: AGNES
+anchor: w0052
+reason: Agnes follows his reference to the bird, briefly checking that he has noticed the hawk.
+gaze: GAZE-HAWK
+
+E011
+actor: AGNES
+anchor: w0058
+reason: Agnes corrects him with quiet confidence, claiming the distinction without hostility.
+affect: Sassy-65
+
+E003
+actor: WILL
+anchor: w0021
+reason: Being recognized as the Latin tutor makes Will more self-conscious under Agnes's scrutiny.
+affect: Nervous-60
+
+E004
+actor: WILL
+anchor: w0031
+reason: Will's hesitation exposes his uncertainty, and he briefly drops his gaze while searching for an answer.
+affect: Nervous-70
+gaze: GLANCE-DOWN
+
+E007
+actor: WILL
+anchor: w0040
+reason: The repeated hesitation makes Will's discomfort more visible as he struggles to frame an acceptable excuse.
+affect: Nervous-78
+
+E008
+actor: WILL
+anchor: w0042
+reason: Will searches inwardly for a plausible explanation before continuing.
+gaze: GLANCE-UP
+
+E009
+actor: WILL
+anchor: w0052
+reason: Mentioning the bird gives Will safer ground, and his attention settles on the hawk.
+affect: Thinking-60
+gaze: GAZE-HAWK
+
+E012
+actor: WILL
+anchor: w0058
+reason: The correction catches Will off guard, and he focuses on the hawk as he absorbs it.
+affect: Surprised-55

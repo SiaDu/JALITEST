@@ -1,0 +1,76 @@
+[GAZE_TARGETS]
+HAWK
+
+[INITIAL]
+
+AGNES
+affect: Watchful-60
+gaze: GAZE-WILL
+reason: Agnes regards the unfamiliar tutor with guarded curiosity, remaining composed as she opens the exchange.
+
+WILL
+affect: Nervous-45
+gaze: GAZE-AGNES
+reason: Will tries to appear polite and self-possessed, though his attraction and uncertainty make him slightly restless.
+
+[CHANGES]
+
+E004
+actor: AGNES
+anchor: w0032
+reason: Agnes lightly teases him to ease the awkwardness while testing whether he will retreat.
+affect: Sassy-45
+
+E007
+actor: AGNES
+anchor: w0052
+reason: At the mention of her bird, Agnes's attention moves to the hawk before she corrects his imprecise description.
+gaze: GAZE-HAWK
+
+E008
+actor: AGNES
+anchor: w0057
+reason: Agnes turns her attention back to Will and crisply corrects him, amused by his lack of knowledge.
+affect: Sassy-55
+gaze: GAZE-WILL
+
+E001
+actor: WILL
+anchor: w0008
+reason: Agnes's direct question puts Will briefly on the defensive as he searches for a suitable answer.
+affect: Nervous-60
+gaze: GLANCE-DOWN
+
+E002
+actor: WILL
+anchor: w0021
+reason: Hearing that Agnes has already heard of him makes Will self-conscious about the impression he has made.
+affect: Nervous-68
+gaze: GLANCE-DOWN
+
+E003
+actor: WILL
+anchor: w0031
+reason: The hesitation sends Will inward as he searches for a less revealing explanation.
+affect: Thinking-55
+gaze: GLANCE-UP
+
+E005
+actor: WILL
+anchor: w0032
+reason: The teasing increases Will's embarrassment, but he makes himself continue.
+affect: Nervous-72
+gaze: GLANCE-DOWN
+
+E006
+actor: WILL
+anchor: w0052
+reason: Mentioning the bird shifts Will's attention toward the hawk, giving him a safer subject than his real reason for approaching Agnes.
+gaze: GAZE-HAWK
+
+E009
+actor: WILL
+anchor: w0057
+reason: The correction brings Will's attention back to Agnes and leaves him visibly more self-conscious.
+affect: Nervous-78
+gaze: GAZE-AGNES
