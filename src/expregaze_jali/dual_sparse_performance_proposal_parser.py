@@ -82,16 +82,47 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     raw_candidates = [line.strip().upper() for line in sections["GAZE_TARGETS"] if line.strip()]
     if "GAZE_TARGETS" in seen and not raw_candidates:
         raise ProposalValidationError("[GAZE_TARGETS] requires NONE or at least one candidate.")
+    warnings: list[str] = []
     if "NONE" in raw_candidates:
         if raw_candidates != ["NONE"]:
             raise ProposalValidationError("[GAZE_TARGETS] NONE must appear alone.")
         candidates = []
     else:
-        candidates = raw_candidates
+        character_targets = {name.upper() for name in characters}
+        ignored_directions = sorted(
+            item for item in raw_candidates if item in DIRECTION_TARGETS
+        )
+        ignored_characters = sorted(
+            item for item in raw_candidates if item in character_targets
+        )
+        candidates = [
+            item
+            for item in raw_candidates
+            if item not in DIRECTION_TARGETS and item not in character_targets
+        ]
+        invalid = [item for item in candidates if not re.fullmatch(r"[A-Z][A-Z0-9_]*", item)]
+        if invalid:
+            raise ProposalValidationError(
+                "[GAZE_TARGETS] contains invalid candidate(s): "
+                + ", ".join(sorted(invalid))
+            )
+        if ignored_directions:
+            noun = "target" if len(ignored_directions) == 1 else "targets"
+            warnings.append(
+                f"[GAZE_TARGETS] ignored built-in non-calibration {noun}: "
+                + ", ".join(ignored_directions)
+            )
+        if ignored_characters:
+            noun = (
+                "target that requires" if len(ignored_characters) == 1
+                else "targets that require"
+            )
+            warnings.append(
+                f"[GAZE_TARGETS] ignored character {noun} no calibration: "
+                + ", ".join(ignored_characters)
+            )
     if len(candidates) > 5 or len(set(candidates)) != len(candidates):
         raise ProposalValidationError("[GAZE_TARGETS] requires at most five unique candidates.")
-    if any(not re.fullmatch(r"[A-Z][A-Z0-9_]*", item) or item in DIRECTION_TARGETS or item in {name.upper() for name in characters} for item in candidates):
-        raise ProposalValidationError("[GAZE_TARGETS] contains an invalid, directional, or character target.")
     raw_initial: dict[str, dict[str, str]] = {}
     current_actor: str | None = None
     for line in sections["INITIAL"]:
@@ -200,4 +231,4 @@ def parse_dual_sparse_performance_proposal(source: str | Path, *, vocabulary: Se
     identities = [(event["actor"], event["anchor_id"]) for event in events]
     if len(identities) != len(set(identities)):
         raise ProposalValidationError("Each actor may have at most one v2 event at the same anchor")
-    return {"gaze_target_candidates": candidates, "initial_states": initial_states, "initial_reasons": initial_reasons, "events": events, "diagnostics": {"errors": [], "warnings": []}}
+    return {"gaze_target_candidates": candidates, "initial_states": initial_states, "initial_reasons": initial_reasons, "events": events, "diagnostics": {"errors": [], "warnings": warnings}}

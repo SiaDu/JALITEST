@@ -14,7 +14,18 @@ Acting Direction: {{context}}
 
 {{identity_contract}}
 
-Reason internally about dialogue, Acting Direction, social interaction, motivation, and scene-grounded gaze opportunities; do not output that analysis. Return exactly `[GAZE_TARGETS]`, `[INITIAL]`, then `[CHANGES]`. `[GAZE_TARGETS]` contains at most five uppercase physical scene target identifiers (or `NONE`), never characters, directions, or `GAZE-*` tags. Both actors enter the scene already performing: `[INITIAL]` must contain one block for each actor with a visible `affect`, a persistent `GAZE-*`, and a meaningful `reason`. Initial affect may not be `MASK-NONE`; use a real visible Mask such as `Neutral-60` when appropriate. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. Initial gaze may not be GLANCE or GAZE-NONE; head is optional and blink is not allowed.
+Reason internally about dialogue, Acting Direction, social interaction, motivation, and scene-grounded gaze opportunities; do not output that analysis. Return exactly `[GAZE_TARGETS]`, `[INITIAL]`, then `[CHANGES]`.
+
+[GAZE_TARGETS] is calibration metadata only. It lists at most five uppercase physical non-character scene objects or locations that may need an optional Maya look-at capture, such as `WINDOW`, `FIREPLACE`, or `NEW_HOUSE`. It does NOT list every gaze used in the Performance Plan.
+
+Never place character names, built-in directions (`UP`, `DOWN`, `LEFT`, `RIGHT`, `UP_LEFT`, `UP_RIGHT`, `DOWN_LEFT`, `DOWN_RIGHT`), or executable `GAZE-*` / `GLANCE-*` values under `[GAZE_TARGETS]`. Character gaze and built-in directional gaze require no scene-target calibration and therefore never belong in this section.
+
+If the plan uses only character gaze and/or built-in directional gaze and has no physical non-character scene target requiring calibration, output exactly:
+
+`[GAZE_TARGETS]`
+`NONE`
+
+Both actors enter the scene already performing: `[INITIAL]` must contain one block for each actor with a visible `affect`, a persistent `GAZE-*`, and a meaningful `reason`. Initial affect may not be `MASK-NONE`; use a real visible Mask such as `Neutral-60` when appropriate. Initial state is not a word-anchored change or a SPEAK/LISTEN reaction. Initial gaze may not be GLANCE or GAZE-NONE; head is optional and blink is not allowed.
 
 For each actor independently, analyze both speaking behavior and listening behavior. Listeners may react during another actor's utterance: anchor a meaningful listener change to the earliest semantically sufficient heard cue word. Do not automatically wait for sentence completion, dialogue-turn completion, or the listener's next spoken line. Phrase and clause comprehension matter more than punctuation. Do not over-segment; create a listener event only when heard information meaningfully changes the acting state.
 
@@ -30,13 +41,25 @@ GAZE and GLANCE have different temporal semantics. `GAZE-target` establishes a n
 
 INTERNAL ATTENTION AND DIRECTIONAL GAZE
 
-Directional gaze targets may express internal attention when the actor is not attending to a physical scene target. Consider a brief directional GLANCE when the dialogue implies active remembering, mental search, visual imagery, working something out, hesitation, self-conscious withdrawal, or emotionally loaded recollection.
+Built-in directional gaze values may express internal attention when the actor is not attending to a physical scene target. These built-in directions are executable gaze choices, not [GAZE_TARGETS] calibration candidates. Use them only inside an event gaze field, for example `gaze: GLANCE-UP_RIGHT` or `gaze: GLANCE-DOWN`.
+
+Consider a brief directional GLANCE when the dialogue implies active remembering, mental search, visual imagery, working something out, hesitation, self-conscious withdrawal, or emotionally loaded recollection.
 
 For internal memory search or imagery, an upward or upward-diagonal aversion (`GLANCE-UP`, `GLANCE-UP_LEFT`, or `GLANCE-UP_RIGHT`) is often readable as thinking or remembering. For guilt, shame, embarrassment, discomfort, or avoidance of eye contact, a brief downward aversion (`GLANCE-DOWN` or a downward diagonal) may be appropriate when supported by the social context.
 
 These are expressive acting priors, not fixed psychological codes. Never assign a deterministic meaning such as remembered=LEFT or imagined=RIGHT. Choose among plausible directions based on the scene, character, previous gaze motion, and visual variety, and avoid repeatedly using the same direction.
 
 Do not omit gaze merely because there is no physical gaze target. If a meaningful beat involves a clear shift from external social attention to internal attention, consider whether a directional GLANCE makes that shift visible.
+
+Example:
+
+`gaze: GLANCE-UP_RIGHT`
+is a valid executable event gaze.
+
+But UP_RIGHT must NOT appear as a bare line under [GAZE_TARGETS].
+
+Likewise, `gaze: GAZE-{{character_b}}` is valid executable character gaze, but `{{character_b}}`
+must NOT appear under `[GAZE_TARGETS]`.
 
 Before emitting a gaze channel, track the actor's current persistent gaze from `[INITIAL]` and prior `GAZE-*` events. Never repeat the same active `GAZE-*` value. If the persistent gaze is unchanged and only another channel changes, omit `gaze` from that event. A prior `GLANCE-*` does not change the persistent gaze.
 

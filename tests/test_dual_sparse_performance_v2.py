@@ -22,21 +22,63 @@ def parse(body: str):
     )
 
 
-def test_gaze_target_candidates_accept_new_contract_and_reject_invalid_values():
+def test_gaze_target_candidates_keep_only_physical_calibration_metadata():
     base = "[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\nreason: Enters attentive.\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\nreason: Enters guarded.\n[CHANGES]\n"
     proposal = parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\nletter\nWINDOW\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     assert proposal["gaze_target_candidates"] == ["LETTER", "WINDOW"]
     assert parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\nNONE\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)["gaze_target_candidates"] == []
-    for invalid in ("BOB", "UP", "LETTER\nLETTER", "A\nB\nC\nD\nE\nF"):
-        with pytest.raises(ProposalValidationError):
+    cases = [
+        ("UP_RIGHT", [], "ignored built-in non-calibration target: UP_RIGHT"),
+        ("BOB", [], "ignored character target that requires no calibration: BOB"),
+        ("UP_RIGHT\nNEW_HOUSE", ["NEW_HOUSE"], "UP_RIGHT"),
+        ("ALICE\nWINDOW", ["WINDOW"], "ALICE"),
+        ("UP\nDOWN\nBOB\nWINDOW", ["WINDOW"], "DOWN, UP"),
+        (
+            "UP\nDOWN\nLEFT\nRIGHT\nUP_LEFT\nWINDOW\nDOOR\nFIREPLACE\nTABLE\nFLOOR",
+            ["WINDOW", "DOOR", "FIREPLACE", "TABLE", "FLOOR"],
+            "DOWN, LEFT, RIGHT, UP, UP_LEFT",
+        ),
+    ]
+    for entries, expected, warning in cases:
+        parsed = parse_dual_sparse_performance_proposal(
+            "[GAZE_TARGETS]\n" + entries + "\n" + base,
+            vocabulary=load_semantic_vocabulary(), anchor_model=MODEL,
+        )
+        assert parsed["gaze_target_candidates"] == expected
+        assert any(warning in item for item in parsed["diagnostics"]["warnings"])
+    for invalid in ("LETTER\nLETTER", "A\nB\nC\nD\nE\nF", "FRONT DOOR", "LOOK AT WINDOW", "GAZE-WINDOW", "GLANCE-UP", "@WINDOW"):
+        with pytest.raises(ProposalValidationError, match=r"candidate|unique"):
             parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\n" + invalid + "\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
 
 
-@pytest.mark.parametrize("entries", ["NONE\nLETTER", "WINDOW\nNONE", ""])
+@pytest.mark.parametrize("entries", ["NONE\nLETTER", "WINDOW\nNONE", "NONE\nUP_RIGHT", ""])
 def test_gaze_target_none_must_be_alone_and_new_section_cannot_be_empty(entries):
     base = "[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\nreason: Enters attentive.\n\nBOB\naffect: Nervous-60\ngaze: GAZE-ALICE\nreason: Enters guarded.\n[CHANGES]\n"
     with pytest.raises(ProposalValidationError):
         parse_dual_sparse_performance_proposal("[GAZE_TARGETS]\n" + entries + "\n" + base, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
+
+
+def test_directional_metadata_is_tolerated_without_changing_executable_glance():
+    proposal = parse_dual_sparse_performance_proposal(
+        "[GAZE_TARGETS]\nUP_RIGHT\n"
+        "[INITIAL]\nALICE\naffect: Watchful-80\ngaze: GAZE-BOB\nreason: Enters attentive.\n\n"
+        "BOB\naffect: Nervous-60\ngaze: GAZE-ALICE\nreason: Enters guarded.\n"
+        "[CHANGES]\nE001\nactor: ALICE\nanchor: w0001\ngaze: GLANCE-UP_RIGHT\nreason: Searches for the memory.\n\n"
+        "E002\nactor: ALICE\nanchor: w0002\ngaze: GAZE-BOB\nreason: Returns attention to BOB.\n",
+        vocabulary=load_semantic_vocabulary(), anchor_model=MODEL,
+    )
+    assert proposal["gaze_target_candidates"] == []
+    assert proposal["events"][0]["changes"]["gaze"] == "GLANCE-UP_RIGHT"
+    assert proposal["events"][1]["changes"]["gaze"] == "GAZE-BOB"
+    assert proposal["diagnostics"]["warnings"] == [
+        "[GAZE_TARGETS] ignored built-in non-calibration target: UP_RIGHT"
+    ]
+    plan = build_dual_performance_plan_v2(
+        proposal, anchor_model=MODEL, sequence_id="directional-metadata"
+    )
+    assert plan["gaze_target_candidates"] == []
+    assert plan["tracks"]["ALICE"][0]["changes"]["gaze"] == "GLANCE-UP_RIGHT"
+    assert proposal["diagnostics"]["warnings"][0] in plan["diagnostics"]["warnings"]
 
 
 def test_sparse_independent_tracks_and_resets():
@@ -124,6 +166,9 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     assert "GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes" in prompt
     assert "GAZE and GLANCE have different temporal semantics" in prompt
     assert "INTERNAL ATTENTION AND DIRECTIONAL GAZE" in prompt
+    assert "[GAZE_TARGETS] is calibration metadata only" in prompt
+    assert "built-in directions are executable gaze choices, not [GAZE_TARGETS] calibration candidates" in prompt
+    assert "UP_RIGHT must NOT appear as a bare line under [GAZE_TARGETS]" in prompt
     assert "These are expressive acting priors, not fixed psychological codes" in prompt
     assert "GLANCE does not replace that persistent gaze" in prompt
     assert "Never repeat the same active `GAZE-*` value" in prompt
