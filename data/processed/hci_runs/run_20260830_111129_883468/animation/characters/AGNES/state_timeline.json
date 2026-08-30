@@ -1,0 +1,67 @@
+{
+  "initial_state": {
+    "head": "HEAD-NONE",
+    "affect": "Watchful-80",
+    "gaze": "GAZE-WILL"
+  },
+  "initial_timing": {
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0
+  },
+  "timeline": [
+    {
+      "event_id": "E001",
+      "resolved_start": 11.44875,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Provoked-72",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E003",
+      "resolved_start": 20.220123,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sad-86",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E005",
+      "resolved_start": 66.655312,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sad-92",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E007",
+      "resolved_start": 86.560875,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Angered-76",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E009",
+      "resolved_start": 92.550873,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Disgust-68",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E011",
+      "resolved_start": 102.780876,
+      "state": {
+        "head": "HEAD-UP-MEDIUM",
+        "affect": "Angered-84",
+        "gaze": "GAZE-WILL"
+      }
+    }
+  ]
+}

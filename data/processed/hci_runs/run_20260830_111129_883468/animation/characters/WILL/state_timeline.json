@@ -1,0 +1,67 @@
+{
+  "initial_state": {
+    "head": "HEAD-NONE",
+    "affect": "Nervous-65",
+    "gaze": "GAZE-AGNES"
+  },
+  "initial_timing": {
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0
+  },
+  "timeline": [
+    {
+      "event_id": "E002",
+      "resolved_start": 11.638749,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Afraid-68",
+        "gaze": "GLANCE-DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "resolved_start": 32.572754,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Lost-76",
+        "gaze": "GLANCE-UP_RIGHT"
+      }
+    },
+    {
+      "event_id": "E006",
+      "resolved_start": 79.110184,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sad-78",
+        "gaze": "GLANCE-UP_RIGHT"
+      }
+    },
+    {
+      "event_id": "E008",
+      "resolved_start": 88.470879,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Confused-62",
+        "gaze": "GLANCE-UP_RIGHT"
+      }
+    },
+    {
+      "event_id": "E010",
+      "resolved_start": 93.30088,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Afraid-82",
+        "gaze": "GLANCE-DOWN"
+      }
+    },
+    {
+      "event_id": "E012",
+      "resolved_start": 102.920876,
+      "state": {
+        "head": "HEAD-DOWN-MEDIUM",
+        "affect": "Sad-90",
+        "gaze": "GLANCE-DOWN"
+      }
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "initial_state": {
+    "actor": "WILL",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-AGNES"
+    },
+    "reason": "Enters cautiously, hoping the new house can bridge the distance between them."
+  },
+  "events": [
+    {
+      "event_id": "E002",
+      "actor": "WILL",
+      "anchor_id": "w0013",
+      "anchor_text": "Why",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 11.44875,
+      "raw_anchor_end": 11.638749,
+      "resolved_start": 11.638749,
+      "changes": {
+        "affect": "Afraid-68",
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "Her question immediately touches his guilt and makes him briefly avoid her eyes.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Afraid-68",
+        "gaze": "GLANCE-DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "WILL",
+      "anchor_id": "w0037",
+      "anchor_text": "where",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 32.572754,
+      "raw_anchor_end": 32.702751,
+      "resolved_start": 32.572754,
+      "changes": {
+        "affect": "Lost-76",
+        "gaze": "GLANCE-UP_RIGHT"
+      },
+      "reason": "His admission about wondering where Hamnet is turns his attention inward toward an imagined search.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Lost-76",
+        "gaze": "GLANCE-UP_RIGHT"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "WILL",
+      "anchor_id": "w0105",
+      "anchor_text": "sorry,",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 79.110184,
+      "raw_anchor_end": 79.470184,
+      "resolved_start": 79.110184,
+      "changes": {
+        "affect": "Sad-78"
+      },
+      "reason": "The apology is a direct attempt to acknowledge the shared wound.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Sad-78",
+        "gaze": "GLANCE-UP_RIGHT"
+      }
+    },
+    {
+      "event_id": "E008",
+      "actor": "WILL",
+      "anchor_id": "w0116",
+      "anchor_text": "That",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 88.240875,
+      "raw_anchor_end": 88.470879,
+      "resolved_start": 88.470879,
+      "changes": {
+        "affect": "Confused-62"
+      },
+      "reason": "Her description of a place in his head forces him to confront how she experiences his withdrawal.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Confused-62",
+        "gaze": "GLANCE-UP_RIGHT"
+      }
+    },
+    {
+      "event_id": "E010",
+      "actor": "WILL",
+      "anchor_id": "w0137",
+      "anchor_text": "child",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 92.550873,
+      "raw_anchor_end": 93.30088,
+      "resolved_start": 93.30088,
+      "changes": {
+        "affect": "Afraid-82",
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "Hearing the death of their child framed as evidence against him makes his guilt visible.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Afraid-82",
+        "gaze": "GLANCE-DOWN"
+      }
+    },
+    {
+      "event_id": "E012",
+      "actor": "WILL",
+      "anchor_id": "w0151",
+      "anchor_text": "have",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 102.780876,
+      "raw_anchor_end": 102.920876,
+      "resolved_start": 102.920876,
+      "changes": {
+        "affect": "Sad-90",
+        "head": "HEAD-DOWN-MEDIUM"
+      },
+      "reason": "Her accusation lands on the farewell he was absent for and overwhelms his defensive posture.",
+      "state_after": {
+        "head": "HEAD-DOWN-MEDIUM",
+        "affect": "Sad-90",
+        "gaze": "GLANCE-DOWN"
+      }
+    }
+  ]
+}

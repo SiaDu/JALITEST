@@ -1,0 +1,12 @@
+{
+  "AGNES": {
+    "script_name": "AGNES",
+    "sound_file": "Seq2_Sub_AGNES",
+    "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq2\\Seq2_Sub_AGNES.txt"
+  },
+  "WILL": {
+    "script_name": "WILL",
+    "sound_file": "Seq2_Sub_WILL",
+    "transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq2\\Seq2_Sub_WILL.txt"
+  }
+}
