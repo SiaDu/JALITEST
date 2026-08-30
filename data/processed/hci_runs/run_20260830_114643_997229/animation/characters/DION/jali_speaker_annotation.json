@@ -1,0 +1,344 @@
+{
+  "actor": "DION",
+  "script_name": "DION",
+  "mask_tag_count": 9,
+  "spoken_anchor_ids": [
+    "w0006",
+    "w0012",
+    "w0013",
+    "w0014",
+    "w0015",
+    "w0016",
+    "w0017",
+    "w0018",
+    "w0019",
+    "w0020",
+    "w0021",
+    "w0022",
+    "w0024",
+    "w0025",
+    "w0026",
+    "w0027",
+    "w0028",
+    "w0029",
+    "w0030",
+    "w0031",
+    "w0032",
+    "w0033",
+    "w0034",
+    "w0035",
+    "w0036",
+    "w0037",
+    "w0038",
+    "w0039",
+    "w0040",
+    "w0041",
+    "w0046",
+    "w0047",
+    "w0048",
+    "w0049",
+    "w0050",
+    "w0071",
+    "w0072",
+    "w0073",
+    "w0074",
+    "w0085",
+    "w0086",
+    "w0090",
+    "w0093",
+    "w0094",
+    "w0095",
+    "w0108",
+    "w0109",
+    "w0110"
+  ],
+  "anchor_token_spans": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      19,
+      20
+    ],
+    [
+      20,
+      21
+    ],
+    [
+      21,
+      22
+    ],
+    [
+      22,
+      23
+    ],
+    [
+      23,
+      24
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      25,
+      26
+    ],
+    [
+      26,
+      27
+    ],
+    [
+      27,
+      28
+    ],
+    [
+      28,
+      29
+    ],
+    [
+      29,
+      30
+    ],
+    [
+      30,
+      31
+    ],
+    [
+      31,
+      32
+    ],
+    [
+      32,
+      33
+    ],
+    [
+      33,
+      34
+    ],
+    [
+      34,
+      35
+    ],
+    [
+      35,
+      36
+    ],
+    [
+      36,
+      37
+    ],
+    [
+      37,
+      38
+    ],
+    [
+      38,
+      39
+    ],
+    [
+      39,
+      41
+    ],
+    [
+      41,
+      42
+    ],
+    [
+      42,
+      43
+    ],
+    [
+      43,
+      44
+    ],
+    [
+      44,
+      45
+    ],
+    [
+      45,
+      46
+    ],
+    [
+      46,
+      47
+    ],
+    [
+      47,
+      48
+    ],
+    [
+      48,
+      49
+    ]
+  ],
+  "events": [
+    {
+      "type": "mask",
+      "value": "Nervous-65",
+      "span": {
+        "start": 0,
+        "end": 3
+      },
+      "order": 0,
+      "anchor_id": "w0006"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-65",
+      "span": {
+        "start": 5,
+        "end": 68
+      },
+      "order": 1,
+      "anchor_id": "w0012"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-65",
+      "span": {
+        "start": 70,
+        "end": 160
+      },
+      "order": 2,
+      "anchor_id": "w0024"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-65",
+      "span": {
+        "start": 162,
+        "end": 191
+      },
+      "order": 3,
+      "anchor_id": "w0046"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-65",
+      "span": {
+        "start": 193,
+        "end": 217
+      },
+      "order": 4,
+      "anchor_id": "w0071"
+    },
+    {
+      "type": "mask",
+      "value": "Happy-82",
+      "span": {
+        "start": 219,
+        "end": 233
+      },
+      "order": 5,
+      "anchor_id": "w0085"
+    },
+    {
+      "type": "mask",
+      "value": "Happy-82",
+      "span": {
+        "start": 235,
+        "end": 239
+      },
+      "order": 6,
+      "anchor_id": "w0090"
+    },
+    {
+      "type": "mask",
+      "value": "Happy-82",
+      "span": {
+        "start": 241,
+        "end": 256
+      },
+      "order": 7,
+      "anchor_id": "w0093"
+    },
+    {
+      "type": "mask",
+      "value": "Happy-88",
+      "span": {
+        "start": 258,
+        "end": 270
+      },
+      "order": 8,
+      "anchor_id": "w0108"
+    }
+  ],
+  "sound_file": "Seq3_Sub_DION",
+  "source_transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\Seq3\\Seq3_Sub_DION.txt",
+  "annotated_transcript_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_114643_997229\\animation\\characters\\DION\\jali_speaker_annotated.txt"
+}

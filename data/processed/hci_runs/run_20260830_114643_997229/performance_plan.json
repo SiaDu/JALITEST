@@ -1,0 +1,220 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_114643_997229",
+  "characters": [
+    "MARTY",
+    "DION"
+  ],
+  "gaze_target_candidates": [
+    "ORANGE_BALLS",
+    "PACKAGING"
+  ],
+  "initial_states": {
+    "MARTY": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-80",
+      "gaze": "GAZE-DION"
+    },
+    "DION": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-65",
+      "gaze": "GAZE-MARTY"
+    }
+  },
+  "initial_reasons": {
+    "MARTY": "Enters energized and ready to assess the business situation.",
+    "DION": "Waits tensely for Marty to recognize the work he and his father invested."
+  },
+  "tracks": {
+    "MARTY": [
+      {
+        "event_id": "E001",
+        "actor": "MARTY",
+        "anchor_id": "w0001",
+        "changes": {
+          "affect": "Surprised-85",
+          "gaze": "GAZE-ORANGE_BALLS"
+        },
+        "reason": "The orange balls immediately validate his expectations and seize his attention."
+      },
+      {
+        "event_id": "E002",
+        "actor": "MARTY",
+        "anchor_id": "w0031",
+        "changes": {
+          "affect": "Happy-78"
+        },
+        "reason": "Hearing that Dion and his father believe in him confirms that his business still has committed support."
+      },
+      {
+        "event_id": "E003",
+        "actor": "MARTY",
+        "anchor_id": "w0046",
+        "changes": {
+          "gaze": "GAZE-PACKAGING"
+        },
+        "reason": "Dion directs his attention to the packaging, shifting Marty from the balls to the larger product presentation."
+      },
+      {
+        "event_id": "E004",
+        "actor": "MARTY",
+        "anchor_id": "w0064",
+        "changes": {
+          "affect": "Surprised-92",
+          "head": "HEAD-UP-MEDIUM"
+        },
+        "reason": "The orange-spheres concept registers as an unexpectedly inspired extension of his identity."
+      },
+      {
+        "event_id": "E006",
+        "actor": "MARTY",
+        "anchor_id": "w0078",
+        "changes": {
+          "affect": "Surprised-96"
+        },
+        "reason": "His excitement peaks as the quality and originality of the project overwhelm him."
+      },
+      {
+        "event_id": "E007",
+        "actor": "MARTY",
+        "anchor_id": "w0091",
+        "changes": {
+          "affect": "Happy-90"
+        },
+        "reason": "Calling Dion's drawing inspired turns his astonishment into direct admiration."
+      }
+    ],
+    "DION": [
+      {
+        "event_id": "E005",
+        "actor": "DION",
+        "anchor_id": "w0075",
+        "changes": {
+          "affect": "Happy-82",
+          "head": "HEAD-UP-SUBTLE"
+        },
+        "reason": "Marty's emphatic praise finally gives Dion the recognition he has been seeking."
+      },
+      {
+        "event_id": "E008",
+        "actor": "DION",
+        "anchor_id": "w0096",
+        "changes": {
+          "affect": "Happy-88",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Marty's claim about Dion's untapped capability lands as deeply affirming, prompting a brief modest withdrawal before returning to Marty."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_114643_997229\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "MARTY",
+        "DION"
+      ],
+      "initial_states": {
+        "MARTY": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-80",
+          "gaze": "GAZE-DION"
+        },
+        "DION": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-65",
+          "gaze": "GAZE-MARTY"
+        }
+      },
+      "initial_reasons": {
+        "MARTY": "Enters energized and ready to assess the business situation.",
+        "DION": "Waits tensely for Marty to recognize the work he and his father invested."
+      },
+      "tracks": [
+        {
+          "actor": "DION",
+          "anchor_id": "w0075",
+          "changes": {
+            "affect": "Happy-82",
+            "head": "HEAD-UP-SUBTLE"
+          },
+          "reason": "Marty's emphatic praise finally gives Dion the recognition he has been seeking."
+        },
+        {
+          "actor": "DION",
+          "anchor_id": "w0096",
+          "changes": {
+            "affect": "Happy-88",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Marty's claim about Dion's untapped capability lands as deeply affirming, prompting a brief modest withdrawal before returning to Marty."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0001",
+          "changes": {
+            "affect": "Surprised-85",
+            "gaze": "GAZE-ORANGE_BALLS"
+          },
+          "reason": "The orange balls immediately validate his expectations and seize his attention."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0031",
+          "changes": {
+            "affect": "Happy-78"
+          },
+          "reason": "Hearing that Dion and his father believe in him confirms that his business still has committed support."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0046",
+          "changes": {
+            "gaze": "GAZE-PACKAGING"
+          },
+          "reason": "Dion directs his attention to the packaging, shifting Marty from the balls to the larger product presentation."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0064",
+          "changes": {
+            "affect": "Surprised-92",
+            "head": "HEAD-UP-MEDIUM"
+          },
+          "reason": "The orange-spheres concept registers as an unexpectedly inspired extension of his identity."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0078",
+          "changes": {
+            "affect": "Surprised-96"
+          },
+          "reason": "His excitement peaks as the quality and originality of the project overwhelm him."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0091",
+          "changes": {
+            "affect": "Happy-90"
+          },
+          "reason": "Calling Dion's drawing inspired turns his astonishment into direct admiration."
+        }
+      ]
+    }
+  }
+}

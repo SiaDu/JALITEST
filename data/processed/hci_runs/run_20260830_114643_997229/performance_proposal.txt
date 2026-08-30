@@ -1,0 +1,67 @@
+[GAZE_TARGETS]
+ORANGE_BALLS
+PACKAGING
+
+[INITIAL]
+MARTY
+affect: Watchful-80
+gaze: GAZE-DION
+reason: Enters energized and ready to assess the business situation.
+
+DION
+affect: Nervous-65
+gaze: GAZE-MARTY
+reason: Waits tensely for Marty to recognize the work he and his father invested.
+
+[CHANGES]
+E001
+actor: MARTY
+anchor: w0001
+affect: Surprised-85
+gaze: GAZE-ORANGE_BALLS
+reason: The orange balls immediately validate his expectations and seize his attention.
+
+E002
+actor: MARTY
+anchor: w0031
+affect: Happy-78
+reason: Hearing that Dion and his father believe in him confirms that his business still has committed support.
+
+E003
+actor: MARTY
+anchor: w0046
+gaze: GAZE-PACKAGING
+reason: Dion directs his attention to the packaging, shifting Marty from the balls to the larger product presentation.
+
+E004
+actor: MARTY
+anchor: w0064
+affect: Surprised-92
+head: HEAD-UP-MEDIUM
+reason: The orange-spheres concept registers as an unexpectedly inspired extension of his identity.
+
+E005
+actor: DION
+anchor: w0075
+affect: Happy-82
+head: HEAD-UP-SUBTLE
+reason: Marty's emphatic praise finally gives Dion the recognition he has been seeking.
+
+E006
+actor: MARTY
+anchor: w0078
+affect: Surprised-96
+reason: His excitement peaks as the quality and originality of the project overwhelm him.
+
+E007
+actor: MARTY
+anchor: w0091
+affect: Happy-90
+reason: Calling Dion's drawing inspired turns his astonishment into direct admiration.
+
+E008
+actor: DION
+anchor: w0096
+affect: Happy-88
+gaze: GLANCE-DOWN
+reason: Marty's claim about Dion's untapped capability lands as deeply affirming, prompting a brief modest withdrawal before returning to Marty.

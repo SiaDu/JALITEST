@@ -1,0 +1,67 @@
+{
+  "initial_state": {
+    "head": "HEAD-NONE",
+    "affect": "Watchful-80",
+    "gaze": "GAZE-DION"
+  },
+  "initial_timing": {
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0
+  },
+  "timeline": [
+    {
+      "event_id": "E001",
+      "resolved_start": 0.1,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-85",
+        "gaze": "GAZE-ORANGE_BALLS"
+      }
+    },
+    {
+      "event_id": "E002",
+      "resolved_start": 10.034249,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-78",
+        "gaze": "GAZE-ORANGE_BALLS"
+      }
+    },
+    {
+      "event_id": "E003",
+      "resolved_start": 16.264626,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-78",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E004",
+      "resolved_start": 24.1485,
+      "state": {
+        "head": "HEAD-UP-MEDIUM",
+        "affect": "Surprised-92",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E006",
+      "resolved_start": 27.96475,
+      "state": {
+        "head": "HEAD-UP-MEDIUM",
+        "affect": "Surprised-96",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E007",
+      "resolved_start": 33.960186,
+      "state": {
+        "head": "HEAD-UP-MEDIUM",
+        "affect": "Happy-90",
+        "gaze": "GAZE-PACKAGING"
+      }
+    }
+  ]
+}
