@@ -160,17 +160,17 @@ reason: Independently reacts.""")
     assert proposal["events"][0]["changes"] == {"gaze": "GAZE-BOB", "head": "HEAD-DOWN-SUBTLE"}
 
 
-def test_semantic_beat_prompt_treats_aversion_and_thinking_as_attention_intent():
+def test_semantic_beat_prompt_treats_aversion_and_thinking_as_transient_eye_actions():
     prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
-    assert "brief_check UP or upward diagonal" in prompt
-    assert "brief_check DOWN or downward diagonal" in prompt
+    assert "eye_action: brief_check UP" in prompt
+    assert "eye_action: brief_check DOWN" in prompt
     assert "There is no minimum beat count" in prompt
     assert "Do not output analysis, [GAZE_TARGETS], gaze, GAZE-*, GLANCE-*" in prompt
     assert "Initial affect must be visible and not MASK-NONE" in prompt
     assert "listener reactions" in prompt.lower()
     assert "earliest semantically sufficient heard cue" in prompt
     assert "These are acting priors, not fixed psychological codes" in prompt
-    assert "gaze: GLANCE" not in prompt
+    assert "attention: hold" not in prompt and "attention: brief_check" not in prompt
 
 
 def _normalization_proposal(events, *, alice_initial=None, bob_initial=None):

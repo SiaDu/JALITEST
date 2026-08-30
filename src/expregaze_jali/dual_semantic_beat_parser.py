@@ -37,17 +37,25 @@ def _affect(
     return f"{canonical}-{intensity}"
 
 
-def _attention(value: str, *, label: str, characters: tuple[str, str]) -> dict[str, str]:
+def _focus(value: str, *, label: str, characters: tuple[str, str]) -> str:
+    target = value.strip()
+    if not _TARGET.fullmatch(target):
+        raise ProposalValidationError(f'{label}: Invalid focus target "{target}"')
+    actor = next((name for name in characters if speaker_key(name) == speaker_key(target)), None)
+    return actor or target.upper()
+
+
+def _eye_action(value: str, *, label: str, characters: tuple[str, str]) -> dict[str, str]:
     parts = value.strip().split()
-    if not parts or parts[0] not in {"hold", "brief_check"}:
-        raise ProposalValidationError(f'{label}: attention must be "hold TARGET" or "brief_check TARGET"')
+    if not parts or parts[0] != "brief_check":
+        raise ProposalValidationError(f'{label}: eye_action must be "brief_check TARGET"')
     if len(parts) != 2:
-        raise ProposalValidationError(f'{label}: Invalid attention target "{" ".join(parts[1:])}"')
+        raise ProposalValidationError(f'{label}: Invalid eye_action target "{" ".join(parts[1:])}"')
     target = parts[1]
     if not _TARGET.fullmatch(target):
-        raise ProposalValidationError(f'{label}: Invalid attention target "{target}"')
+        raise ProposalValidationError(f'{label}: Invalid eye_action target "{target}"')
     actor = next((name for name in characters if speaker_key(name) == speaker_key(target)), None)
-    return {"action": parts[0], "target": actor or target.upper()}
+    return {"action": "brief_check", "target": actor or target.upper()}
 
 
 def parse_dual_semantic_beats(
@@ -81,7 +89,7 @@ def parse_dual_semantic_beats(
         match = _FIELD.fullmatch(stripped)
         if actor is None or not match: raise ProposalValidationError(f"Malformed [INITIAL] line: {stripped}")
         field, value = match.group(1).lower(), match.group(2)
-        if field not in {"affect", "attention", "acting", "head"}:
+        if field not in {"affect", "focus", "acting", "head"}:
             raise ProposalValidationError(f"{actor}: Unknown initial field {field}")
         if field in initial_raw[actor]: raise ProposalValidationError(f"{actor}: Duplicate initial field {field}")
         initial_raw[actor][field] = value
@@ -91,13 +99,11 @@ def parse_dual_semantic_beats(
     for name in characters:
         row = initial_raw[name]
         if not row.get("affect"): raise ProposalValidationError(f"{name} initial: affect is required")
-        if not row.get("attention"): raise ProposalValidationError(f"{name} initial: attention is required")
+        if not row.get("focus"): raise ProposalValidationError(f"{name} initial: focus is required")
         if not row.get("acting", "").strip(): raise ProposalValidationError(f"{name} initial: acting is required")
-        attention = _attention(row["attention"], label=f"{name} initial", characters=characters)
-        if attention["action"] != "hold": raise ProposalValidationError(f"{name} initial: attention must be hold TARGET")
         head = row.get("head", "HEAD-NONE").strip().upper()
         if head not in HEAD_VALUES: raise ProposalValidationError(f'{name} initial: Invalid head value "{head}"')
-        initial[name] = {"affect": _affect(row["affect"], label=f"{name} initial", vocabulary=vocabulary, allow_none=False), "attention": attention, "acting": row["acting"].strip(), "head": head}
+        initial[name] = {"affect": _affect(row["affect"], label=f"{name} initial", vocabulary=vocabulary, allow_none=False), "focus": _focus(row["focus"], label=f"{name} initial", characters=characters), "acting": row["acting"].strip(), "head": head}
     raw_beats: list[dict[str, str]] = []; beat: dict[str, str] | None = None
     for line in sections["BEATS"]:
         stripped = line.strip()
@@ -107,7 +113,7 @@ def parse_dual_semantic_beats(
         match = _FIELD.fullmatch(stripped)
         if beat is None or not match: raise ProposalValidationError(f"Malformed [BEATS] line: {stripped}")
         field, value = match.group(1).lower(), match.group(2)
-        if field not in {"actor", "trigger", "acting", "affect", "attention", "head", "blink"}:
+        if field not in {"actor", "trigger", "acting", "affect", "focus", "eye_action", "head", "blink"}:
             raise ProposalValidationError(f"{beat['event_id']}: Unknown field {field}")
         if field in beat: raise ProposalValidationError(f"{beat['event_id']}: Duplicate field {field}")
         beat[field] = value
@@ -124,7 +130,10 @@ def parse_dual_semantic_beats(
         if not _ANCHOR.fullmatch(anchor_id) or anchor_id not in anchors: raise ProposalValidationError(f'{event_id}: Unknown trigger anchor "{row["trigger"]}"')
         out: dict[str, Any] = {"event_id": event_id, "actor": event_actor, "anchor_id": anchor_id, "acting": row["acting"].strip()}
         if "affect" in row: out["affect"] = _affect(row["affect"], label=event_id, vocabulary=vocabulary, allow_none=True)
-        if "attention" in row: out["attention"] = _attention(row["attention"], label=event_id, characters=characters)
+        if "focus" in row: out["focus"] = _focus(row["focus"], label=event_id, characters=characters)
+        if "eye_action" in row: out["eye_action"] = _eye_action(row["eye_action"], label=event_id, characters=characters)
+        if "focus" in out and "eye_action" in out:
+            raise ProposalValidationError(f"{event_id}: focus and eye_action cannot both be authored in the same Semantic Beat")
         if "head" in row:
             head = row["head"].strip().upper()
             if head not in HEAD_VALUES: raise ProposalValidationError(f'{event_id}: Invalid head value "{head}"')

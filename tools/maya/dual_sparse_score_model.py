@@ -120,27 +120,21 @@ def render_actor_score(plan: dict[str, Any], projection: DialogueProjection, act
     text = projection.display_text
     for offset in sorted(insertions, reverse=True):
         text = text[:offset] + "".join(insertions[offset]) + text[offset:]
+    return text
+
+
+def render_initial_score(plan: dict[str, Any], actor: str) -> str:
     initial = {**INITIAL_DEFAULTS, **((plan.get("initial_states") or {}).get(actor) or {})}
-    initial_tags = "".join(
+    return "".join(
         _format_tag(channel, initial[channel])
         for channel in PERSISTENT_CHANNELS
         if initial[channel] not in {"NONE", INITIAL_DEFAULTS[channel]}
     )
-    # The newline is display structure: it keeps INITIAL distinct from a
-    # legitimate event placed directly on the global first dialogue token.
-    return initial_tags + "\n" + text
 
 
 def projection_offset_from_score_plain_offset(score_text: str, plain_offset: int) -> int:
-    """Map tag-stripped editor offsets to canonical dialogue offsets.
-
-    A generated dual-v2 score begins with an INITIAL tag cluster followed by
-    one display-only newline.  That newline is not dialogue projection text.
-    """
-    initial_cluster = _TAG_CLUSTER.match(score_text)
-    separator_offset = initial_cluster.end() if initial_cluster else -1
-    if separator_offset >= 0 and score_text[separator_offset:separator_offset + 1] == "\n" and plain_offset > 0:
-        return plain_offset - 1
+    """Dialogue score offsets map directly to the canonical projection."""
+    del score_text
     return plain_offset
 
 
@@ -180,6 +174,7 @@ class DualSparseScoreModel:
         }
         self.projection = build_dialogue_projection(anchor_model)
         self.score_texts = {actor: render_actor_score(self.plan, self.projection, actor) for actor in self.characters}
+        self.initial_score_texts = {actor: render_initial_score(self.plan, actor) for actor in self.characters}
         self.score_text = self.score_texts[self.characters[0]]
         self.phrases = [event for actor in self.characters for event in self.plan["tracks"][actor]]
         vocabulary = load_semantic_vocabulary()
@@ -208,10 +203,39 @@ class DualSparseScoreModel:
             return "blink", upper
         return f'Unknown or invalid v2 tag <{value}>'
 
-    def validate_actor(self, actor: str, text: str) -> ScoreValidation:
+    def validate_initial_actor(self, actor: str, text: str) -> tuple[dict[str, str], list[ScoreIssue]]:
+        errors: list[ScoreIssue] = []
+        cluster = text.strip()
+        changes: dict[str, str] = {}
+        if not _TAG_CLUSTER.fullmatch(cluster):
+            errors.append(ScoreIssue(actor, "Initial performance must contain only semantic tags"))
+            return changes, errors
+        for tag in _TAG.finditer(cluster):
+            parsed = self._tag(actor, tag.group(1).strip())
+            if isinstance(parsed, str):
+                errors.append(ScoreIssue(actor, parsed)); continue
+            channel, value = parsed
+            if channel in changes:
+                errors.append(ScoreIssue(actor, f"Duplicate initial {channel} tag"))
+            changes[channel] = value
+        if "blink" in changes:
+            errors.append(ScoreIssue(actor, "Initial state tag cluster cannot contain blink"))
+        if str(changes.get("gaze", "")).startswith("GLANCE-"):
+            errors.append(ScoreIssue(actor, "Initial gaze must be persistent GAZE, not GLANCE"))
+        if "affect" not in changes:
+            errors.append(ScoreIssue(actor, "Initial performance must include a visible affect tag"))
+        elif changes["affect"] == "MASK-NONE":
+            errors.append(ScoreIssue(actor, "Initial affect cannot be MASK-NONE"))
+        if "gaze" not in changes:
+            errors.append(ScoreIssue(actor, "Initial performance must include a persistent GAZE tag"))
+        if not str(self.plan.get("initial_reasons", {}).get(actor) or "").strip():
+            errors.append(ScoreIssue(actor, "Initial performance requires a meaningful reason"))
+        return changes, errors
+
+    def validate_actor(self, actor: str, text: str, initial_text: str | None = None) -> ScoreValidation:
         if actor not in self.characters:
             return ScoreValidation((), (ScoreIssue(actor, "Unknown actor editor"),))
-        errors: list[ScoreIssue] = []
+        initial_changes, errors = self.validate_initial_actor(actor, initial_text if initial_text is not None else self.initial_score_texts[actor])
         placements: list[tuple[re.Match[str], int, dict[str, str]]] = []
         stripped: list[str] = []
         cursor = 0
@@ -240,8 +264,6 @@ class DualSparseScoreModel:
         if [match.group(0) for match in edited_tokens] != [anchor.text for anchor in canonical_tokens]:
             errors.append(ScoreIssue(actor, "Dialogue tokens and punctuation are immutable and must preserve the canonical anchor sequence"))
         grouped: dict[str, dict[str, str]] = {}
-        initial_changes: dict[str, str] = {}
-        initial_cluster_seen = False
         for cluster, offset, changes in placements:
             prior_indices = [index for index, token in enumerate(edited_tokens) if token.end() == offset]
             next_indices = [index for index, token in enumerate(edited_tokens) if token.start() == offset]
@@ -250,20 +272,11 @@ class DualSparseScoreModel:
             direct_previous = cluster.start() > 0 and not text[cluster.start() - 1].isspace()
             direct_next = cluster.end() < len(text) and not text[cluster.end()].isspace()
             placement_key: str | None = None
-            if before_first_token and not initial_cluster_seen:
-                initial_cluster_seen = True
-                if "blink" in changes:
-                    errors.append(ScoreIssue(actor, "Initial state tag cluster cannot contain blink"))
-                    changes = {key: value for key, value in changes.items() if key != "blink"}
-                if str(changes.get("gaze", "")).startswith("GLANCE-"):
-                    errors.append(ScoreIssue(actor, "Initial gaze must be persistent GAZE, not GLANCE"))
-                    changes = {key: value for key, value in changes.items() if key != "gaze"}
-                placement_key = "__INITIAL__"
-            elif before_first_token:
+            if before_first_token:
                 if direct_next and next_indices == [0] and speaker_key(canonical_tokens[0].speaker) == speaker_key(actor):
                     placement_key = canonical_tokens[0].anchor_id
                 else:
-                    errors.append(ScoreIssue(actor, "Leading tag cluster after INITIAL must attach directly before this actor's first dialogue token"))
+                    errors.append(ScoreIssue(actor, "Leading tag cluster must attach directly before this actor's first dialogue token"))
             elif embedded:
                 errors.append(ScoreIssue(actor, "Tag cluster cannot split a dialogue token"))
             elif direct_next and next_indices and next_indices[0] < len(canonical_tokens) and speaker_key(canonical_tokens[next_indices[0]].speaker) == speaker_key(actor):
@@ -276,20 +289,12 @@ class DualSparseScoreModel:
                 errors.append(ScoreIssue(actor, "Tag cluster is not role-appropriately before an own spoken token or after a heard token"))
             if placement_key is None or not changes:
                 continue
-            destination = initial_changes if placement_key == "__INITIAL__" else grouped.setdefault(placement_key, {})
+            destination = grouped.setdefault(placement_key, {})
             for channel, value in changes.items():
                 if channel in destination:
-                    errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {'initial state' if placement_key == '__INITIAL__' else placement_key}"))
+                    errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {placement_key}"))
                 destination[channel] = value
         events = tuple({"actor": actor, "anchor_id": anchor_id, "changes": changes} for anchor_id, changes in grouped.items())
-        if "affect" not in initial_changes:
-            errors.append(ScoreIssue(actor, "Initial performance must include a visible affect tag"))
-        elif initial_changes["affect"] == "MASK-NONE":
-            errors.append(ScoreIssue(actor, "Initial affect cannot be MASK-NONE"))
-        if "gaze" not in initial_changes:
-            errors.append(ScoreIssue(actor, "Initial performance must include a persistent GAZE tag"))
-        if not str(self.plan.get("initial_reasons", {}).get(actor) or "").strip():
-            errors.append(ScoreIssue(actor, "Initial performance requires a meaningful reason"))
         if initial_changes:
             events = ({"actor": actor, "initial": True, "changes": initial_changes}, *events)
         hold_active = False
@@ -307,14 +312,21 @@ class DualSparseScoreModel:
                 errors.append(ScoreIssue(actor, f"{blink} is invalid while an authored eye hold is active"))
         return ScoreValidation(events, tuple(errors))
 
-    def validate(self, value: str | dict[str, str]) -> ScoreValidation:
-        texts = value if isinstance(value, dict) else {self.characters[0]: value, self.characters[1]: self.score_texts[self.characters[1]]}
-        results = [self.validate_actor(actor, texts.get(actor, "")) for actor in self.characters]
+    def _actor_payload(self, value: str | dict[str, Any], actor: str) -> tuple[str, str]:
+        if not isinstance(value, dict):
+            return (str(value) if actor == self.characters[0] else self.score_texts[actor], self.initial_score_texts[actor])
+        row = value.get(actor)
+        if isinstance(row, dict):
+            return str(row.get("dialogue", "")), str(row.get("initial", ""))
+        return str(row if row is not None else self.score_texts[actor]), self.initial_score_texts[actor]
+
+    def validate(self, value: str | dict[str, Any]) -> ScoreValidation:
+        results = [self.validate_actor(actor, *self._actor_payload(value, actor)) for actor in self.characters]
         return ScoreValidation(tuple(event for result in results for event in result.events), tuple(error for result in results for error in result.errors))
 
-    def apply(self, value: str | dict[str, str]) -> dict[str, Any]:
-        texts = value if isinstance(value, dict) else {self.characters[0]: value, self.characters[1]: self.score_texts[self.characters[1]]}
-        result = self.validate(texts)
+    def apply(self, value: str | dict[str, Any]) -> dict[str, Any]:
+        payloads = {actor: self._actor_payload(value, actor) for actor in self.characters}
+        result = self.validate(value)
         if not result.valid:
             raise ValueError("\n".join(str(error) for error in result.errors))
         old = {(actor, event["anchor_id"]): event for actor in self.characters for event in self.plan["tracks"][actor]}
@@ -347,7 +359,8 @@ class DualSparseScoreModel:
         self.plan["tracks"] = tracks
         self.plan["initial_states"] = initial_states
         self._refresh_initial_provenance()
-        self.score_texts = dict(texts)
+        self.score_texts = {actor: payloads[actor][0] for actor in self.characters}
+        self.initial_score_texts = {actor: payloads[actor][1] for actor in self.characters}
         self.score_text = self.score_texts[self.characters[0]]
         self.phrases = [event for actor in self.characters for event in tracks[actor]]
         return self.plan

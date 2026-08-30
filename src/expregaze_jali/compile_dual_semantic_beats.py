@@ -1,4 +1,4 @@
-"""Deterministically compile Semantic Beat attention into v2 executable changes."""
+"""Deterministically compile Semantic Beat focus and eye actions into v2 changes."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from expregaze_jali.performance_proposal_parser import ProposalValidationError
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 
 
-def _gaze(action: dict[str, str]) -> str:
-    return ("GAZE-" if action["action"] == "hold" else "GLANCE-") + action["target"]
+def _gaze(target: str, *, transient: bool = False) -> str:
+    return ("GLANCE-" if transient else "GAZE-") + target
 
 
 def compile_dual_semantic_beats(semantic_ir: dict[str, Any], *, anchor_model: ConversationAnchorModel) -> dict[str, Any]:
@@ -31,14 +31,12 @@ def compile_dual_semantic_beats(semantic_ir: dict[str, Any], *, anchor_model: Co
 
     for actor in characters:
         row = semantic_ir["initial"][actor]
-        attention = row["attention"]
-        if attention["action"] != "hold":
-            raise ProposalValidationError(f"{actor} initial: attention must be hold TARGET")
-        gaze = _gaze(attention)
+        focus = row["focus"]
+        gaze = _gaze(focus)
         initial_states[actor] = {"affect": row["affect"], "gaze": gaze, "head": row.get("head", "HEAD-NONE")}
         initial_reasons[actor] = row["acting"]
-        persistent[actor] = attention["target"]
-        record_target(attention["target"])
+        persistent[actor] = focus
+        record_target(focus)
     anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(anchor_model.anchors)}
     tracks = {actor: [] for actor in characters}
     indexed = list(enumerate(semantic_ir.get("beats") or []))
@@ -46,16 +44,18 @@ def compile_dual_semantic_beats(semantic_ir: dict[str, Any], *, anchor_model: Co
         actor = beat["actor"]; changes: dict[str, str] = {}
         for channel in ("affect", "head", "blink"):
             if channel in beat: changes[channel] = beat[channel]
-        attention = beat.get("attention")
-        if attention:
-            record_target(attention["target"])
-            if attention["action"] == "brief_check":
-                changes["gaze"] = _gaze(attention)
-            elif attention["target"] != persistent[actor]:
-                changes["gaze"] = _gaze(attention)
-                persistent[actor] = attention["target"]
+        if "eye_action" in beat:
+            target = beat["eye_action"]["target"]
+            record_target(target)
+            changes["gaze"] = _gaze(target, transient=True)
+        elif "focus" in beat:
+            target = beat["focus"]
+            record_target(target)
+            if target != persistent[actor]:
+                changes["gaze"] = _gaze(target)
+                persistent[actor] = target
             else:
-                warnings.append(f"{beat['event_id']}: removed no-op attention hold")
+                warnings.append(f"{beat['event_id']}: removed no-op focus")
         if not changes:
             warnings.append(f"{beat['event_id']}: dropped after no semantic changes remained")
             continue

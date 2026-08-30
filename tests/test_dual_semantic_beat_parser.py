@@ -11,33 +11,33 @@ MODEL = build_conversation_anchor_model("MARTY: Look.\nDION: Yes.", character_a=
 BASE = """[INITIAL]
 MARTY
 affect: Watchful-80
-attention: hold DION
+focus: DION
 acting: He assesses DION.
 
 DION
 affect: Nervous-65
-attention: hold MARTY
+focus: MARTY
 acting: She remains guarded.
 [BEATS]
 E001
 actor: MARTY
 trigger: w0001
 acting: He checks Rachel's reaction.
-attention: brief_check RACHEL
+eye_action: brief_check RACHEL
 head: HEAD-DOWN-SUBTLE
 blink: SLOW_BLINK
 """
 
 
-def test_parser_accepts_small_attention_grammar_and_non_actor_target():
+def test_parser_accepts_focus_and_transient_eye_action_grammar():
     ir = parse_dual_semantic_beats(BASE, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
-    assert ir["initial"]["MARTY"]["attention"] == {"action": "hold", "target": "DION"}
-    assert ir["beats"][0]["attention"] == {"action": "brief_check", "target": "RACHEL"}
+    assert ir["initial"]["MARTY"]["focus"] == "DION"
+    assert ir["beats"][0]["eye_action"] == {"action": "brief_check", "target": "RACHEL"}
     assert ir["beats"][0]["head"] == "HEAD-DOWN-SUBTLE"
 
 
 def test_parser_allows_mask_none_only_for_later_beats():
-    beat_none = BASE.replace("attention: brief_check RACHEL", "affect: MASK-NONE")
+    beat_none = BASE.replace("eye_action: brief_check RACHEL", "affect: MASK-NONE")
     ir = parse_dual_semantic_beats(beat_none, vocabulary=load_semantic_vocabulary(), anchor_model=MODEL)
     assert ir["beats"][0]["affect"] == "MASK-NONE"
 
@@ -51,8 +51,12 @@ def test_parser_allows_mask_none_only_for_later_beats():
     (BASE.replace("MARTY\naffect", "RACHEL\naffect"), r"Unknown \[INITIAL\] performance actor"),
     (BASE.replace("trigger: w0001", "trigger: w9999"), "Unknown trigger anchor"),
     (BASE.replace("Watchful-80", "Proud-80"), "Unknown Mask state"),
-    (BASE.replace("brief_check RACHEL", "inspect RACHEL"), "attention must"),
-    (BASE.replace("brief_check RACHEL", "brief_check FRONT DOOR"), "Invalid attention target"),
+    (BASE.replace("brief_check RACHEL", "inspect RACHEL"), "eye_action must"),
+    (BASE.replace("brief_check RACHEL", "brief_check FRONT DOOR"), "Invalid eye_action target"),
+    (BASE.replace("focus: DION", "attention: hold DION"), "Unknown initial field attention"),
+    (BASE.replace("focus: DION\n", ""), "focus is required"),
+    (BASE.replace("focus: DION", "eye_action: brief_check DOWN"), "Unknown initial field eye_action"),
+    (BASE.replace("eye_action: brief_check RACHEL", "focus: WILL\neye_action: brief_check DOWN"), "focus and eye_action cannot both"),
     (BASE.replace("acting: He checks Rachel's reaction.", "acting: "), "acting are required"),
 ])
 def test_parser_keeps_structure_and_vocabularies_strict(text, match):

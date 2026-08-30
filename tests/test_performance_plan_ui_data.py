@@ -529,6 +529,15 @@ def test_dual_ui_uses_performance_tag_wording_and_panel_relative_dialogue_roles(
     assert "first character = yellow" not in source
 
 
+def test_dual_ui_separates_editable_initial_and_dialogue_performance():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert 'QLabel("INITIAL PERFORMANCE")' in source
+    assert 'QLabel("DIALOGUE PERFORMANCE")' in source
+    assert "self.initial_score_editor" in source and "self.initial_score_editor_b" in source
+    assert '"initial": self.initial_score_editor.toPlainText()' in source
+    assert '"dialogue": self.score_editor.toPlainText()' in source
+
+
 def test_v2_runtime_plan_saves_edited_semantics_without_reason_confirmation(tmp_path: Path):
     from tools.maya.dual_sparse_score_model import DualSparseScoreModel
     from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model

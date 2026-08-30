@@ -36,10 +36,12 @@ def test_projection_omits_prefixes_and_preserves_speaker_ranges():
 
 def test_two_actor_scores_render_role_aware_sparse_tags():
     model = DualSparseScoreModel(PLAN, ANCHORS)
-    assert model.score_texts["ALICE"].startswith("<Watchful-80><GAZE-BOB>\nWe're")
+    assert model.initial_score_texts["ALICE"] == "<Watchful-80><GAZE-BOB>"
+    assert model.score_texts["ALICE"].startswith("We're")
     assert "No.<Watchful-100>" in model.score_texts["ALICE"]
     assert "dangerous.<Nervous-60><GAZE-DOWN>" in model.score_texts["BOB"]
     assert "<Watchful" not in model.score_texts["BOB"]
+    assert model.initial_score_texts["BOB"] == "<Neutral-60><GAZE-ALICE>"
     assert all(model.validate_actor(actor, text).valid for actor, text in model.score_texts.items())
 
 
@@ -55,10 +57,11 @@ def _first_word_plan(changes: dict[str, str] | None = None) -> dict:
     }
 
 
-def test_first_word_head_renders_after_initial_separator_and_roundtrips():
+def test_first_word_head_renders_in_dialogue_and_roundtrips():
     model = DualSparseScoreModel(_first_word_plan({"head": "HEAD-UP-SUBTLE"}), ANCHORS)
     score = model.score_texts["ALICE"]
-    assert score.startswith("<Watchful-80><GAZE-BOB>\n<HEAD-UP-SUBTLE>We're")
+    assert model.initial_score_texts["ALICE"] == "<Watchful-80><GAZE-BOB>"
+    assert score.startswith("<HEAD-UP-SUBTLE>We're")
     assert model.validate_actor("ALICE", score).valid
     applied = model.apply(dict(model.score_texts))
     assert applied["initial_states"]["ALICE"]["gaze"] == "GAZE-BOB"
@@ -83,36 +86,34 @@ def test_first_word_same_channel_affect_blink_and_glance_are_sparse_not_initial(
 def test_animator_can_add_first_word_event_and_listener_cannot_claim_global_first_token():
     model = DualSparseScoreModel(_first_word_plan(), ANCHORS)
     texts = dict(model.score_texts)
-    texts["ALICE"] = texts["ALICE"].replace("\nWe're", "\n<HEAD-UP-SUBTLE>We're")
+    texts["ALICE"] = texts["ALICE"].replace("We're", "<HEAD-UP-SUBTLE>We're")
     applied = model.apply(texts)
     assert applied["tracks"]["ALICE"][0]["anchor_id"] == "w0001"
     assert applied["tracks"]["ALICE"][0]["changes"] == {"head": "HEAD-UP-SUBTLE"}
 
-    listener_text = model.score_texts["BOB"].replace("\nWe're", "\n<HEAD-UP-SUBTLE>We're")
+    listener_text = model.score_texts["BOB"].replace("We're", "<HEAD-UP-SUBTLE>We're")
     assert not model.validate_actor("BOB", listener_text).valid
 
 
-def test_initial_separator_is_not_a_canonical_projection_character():
+def test_dialogue_score_offsets_are_canonical_projection_offsets():
     score = DualSparseScoreModel(_first_word_plan(), ANCHORS).score_texts["ALICE"]
-    plain_offset_before_first_dialogue = 1  # only the display-only separator remains after tags are stripped
-    assert projection_offset_from_score_plain_offset(score, plain_offset_before_first_dialogue) == 0
+    assert projection_offset_from_score_plain_offset(score, 0) == 0
 
 
-def test_true_initial_cluster_still_rejects_blink_and_glance():
+def test_dedicated_initial_score_rejects_blink_and_glance():
     model = DualSparseScoreModel(_first_word_plan(), ANCHORS)
     score = model.score_texts["ALICE"]
-    blink_at_initial = score.replace("\nWe're", "<SLOW_BLINK>\nWe're")
-    assert not model.validate_actor("ALICE", blink_at_initial).valid
-    glance_at_initial = score.replace("<GAZE-BOB>", "<GLANCE-DOWN>", 1)
-    assert not model.validate_actor("ALICE", glance_at_initial).valid
+    initial = model.initial_score_texts["ALICE"]
+    assert not model.validate_actor("ALICE", score, initial + "<SLOW_BLINK>").valid
+    assert not model.validate_actor("ALICE", score, initial.replace("<GAZE-BOB>", "<GLANCE-DOWN>")).valid
 
 
 def test_score_rejects_dialogue_edits_and_wrong_side_or_whitespace_tags():
     model = DualSparseScoreModel(PLAN, ANCHORS)
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("dangerous", "safe")).valid
     assert not model.validate_actor("BOB", model.score_texts["BOB"].replace("dangerous.<Nervous-60>", "<Nervous-60>dangerous.")).valid
-    assert model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<GAZE-BOB>We're", "<GAZE-BOB>\n  We're")).valid
-    assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<GAZE-BOB>", "<GLANCE-NONE>", 1)).valid
+    assert model.validate_actor("ALICE", model.score_texts["ALICE"].replace("We're", "\n  We're")).valid
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("<GAZE-BOB>", "<GLANCE-NONE>")).valid
 
 
 def test_editing_tags_updates_only_sparse_track_and_reason_view():
@@ -202,8 +203,8 @@ def test_user_added_event_rationale_identifies_absent_llm_reason():
 
 def test_initial_edit_has_separate_reason_provenance():
     model = DualSparseScoreModel(PLAN, ANCHORS)
-    texts = dict(model.score_texts)
-    texts["ALICE"] = texts["ALICE"].replace("<Watchful-80>", "<Happy-80>", 1)
+    texts = {actor: {"dialogue": model.score_texts[actor], "initial": model.initial_score_texts[actor]} for actor in model.characters}
+    texts["ALICE"]["initial"] = texts["ALICE"]["initial"].replace("<Watchful-80>", "<Happy-80>", 1)
     plan = model.apply(texts)
     row = plan["initial_provenance"]["ALICE"]
     assert row["source_event_id"] == "INITIAL:ALICE"
@@ -214,8 +215,8 @@ def test_initial_edit_has_separate_reason_provenance():
 
 def test_score_requires_visible_initial_affect_and_initial_reason():
     model = DualSparseScoreModel(PLAN, ANCHORS)
-    assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<Watchful-80>", "", 1)).valid
-    assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("<Watchful-80>", "<MASK-NONE>", 1)).valid
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("<Watchful-80>", "", 1)).valid
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("<Watchful-80>", "<MASK-NONE>", 1)).valid
     model.plan["initial_reasons"]["ALICE"] = ""
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"]).valid
 
@@ -257,7 +258,8 @@ def test_real_listener_initial_state_and_token_adjacent_changes():
     }
     model = DualSparseScoreModel(plan, anchors)
     score = model.score_texts["BOB"]
-    assert score.startswith("<Watchful-85><GAZE-ALICE>\nEvening,")
+    assert model.initial_score_texts["BOB"] == "<Watchful-85><GAZE-ALICE>"
+    assert score.startswith("Evening,")
     assert "dangerous.<GAZE-DOWN>" in score
     assert "<HEAD-DOWN-SUBTLE>No." in score
     assert "<GAZE-RIGHT><HEAD-UP-MEDIUM>Bert!" in score

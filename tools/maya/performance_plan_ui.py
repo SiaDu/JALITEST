@@ -368,6 +368,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout(group)
         self.score_title_a = QtWidgets.QLabel("PERFORMANCE")
         layout.addWidget(self.score_title_a)
+        self.initial_score_title_a = QtWidgets.QLabel("INITIAL PERFORMANCE")
+        layout.addWidget(self.initial_score_title_a)
+        self.initial_score_editor = QtWidgets.QPlainTextEdit()
+        _configure_multiline_editor(self.initial_score_editor, height=42, fixed_height=True)
+        self.initial_score_editor.textChanged.connect(self._score_changed)
+        layout.addWidget(self.initial_score_editor)
+        self.dialogue_score_title_a = QtWidgets.QLabel("DIALOGUE PERFORMANCE")
+        layout.addWidget(self.dialogue_score_title_a)
         self.score_editor = QtWidgets.QPlainTextEdit()
         self.score_editor.setPlaceholderText("Generate or load a performance plan to begin editing.")
         _configure_multiline_editor(self.score_editor, height=260)
@@ -379,11 +387,22 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_editor_b.textChanged.connect(self._score_changed)
         self.score_title_b.hide()
         self.score_editor_b.hide()
+        self.initial_score_title_b = QtWidgets.QLabel("INITIAL PERFORMANCE")
+        self.initial_score_title_b.hide()
+        self.initial_score_editor_b = QtWidgets.QPlainTextEdit()
+        _configure_multiline_editor(self.initial_score_editor_b, height=42, fixed_height=True)
+        self.initial_score_editor_b.textChanged.connect(self._score_changed)
+        self.initial_score_editor_b.hide()
+        self.dialogue_score_title_b = QtWidgets.QLabel("DIALOGUE PERFORMANCE")
+        self.dialogue_score_title_b.hide()
         self._semantic_score_editors = (self.score_editor, self.score_editor_b)
         for editor in self._semantic_score_editors:
             editor.installEventFilter(self)
             editor.viewport().installEventFilter(self)
         layout.addWidget(self.score_title_b)
+        layout.addWidget(self.initial_score_title_b)
+        layout.addWidget(self.initial_score_editor_b)
+        layout.addWidget(self.dialogue_score_title_b)
         layout.addWidget(self.score_editor_b)
         self.score_legend = QtWidgets.QLabel("Current panel character: speaking = yellow; listening = blue; semantic tags = magenta.")
         self.score_legend.hide()
@@ -587,8 +606,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.current_event_index = None
         self.score_editor.clear()
         self.score_editor_b.clear()
+        self.initial_score_editor.clear()
+        self.initial_score_editor_b.clear()
         self.score_editor_b.hide()
         self.score_title_b.hide()
+        self.initial_score_title_b.hide()
+        self.initial_score_editor_b.hide()
+        self.dialogue_score_title_b.hide()
         self.score_legend.hide()
         self.phrase_reason.clear()
         self.validation_details.clear()
@@ -1114,8 +1138,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             editor.setPlainText(text)
         finally:
             self._suppress_score_dirty_tracking = False
-        _resize_semantic_score_editor(editor)
-        self._schedule_semantic_score_editor_resize()
+        if editor in self._semantic_score_editors:
+            _resize_semantic_score_editor(editor)
+            self._schedule_semantic_score_editor_resize()
 
     def _schedule_semantic_score_editor_resize(self) -> None:
         if self._score_resize_scheduled:
@@ -1184,8 +1209,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _score_payload(self) -> str | dict[str, str]:
         if isinstance(self.score_model, DualSparseScoreModel):
             return {
-                self.score_model.characters[0]: self.score_editor.toPlainText(),
-                self.score_model.characters[1]: self.score_editor_b.toPlainText(),
+                self.score_model.characters[0]: {"initial": self.initial_score_editor.toPlainText(), "dialogue": self.score_editor.toPlainText()},
+                self.score_model.characters[1]: {"initial": self.initial_score_editor_b.toPlainText(), "dialogue": self.score_editor_b.toPlainText()},
             }
         return self.score_editor.toPlainText()
 
@@ -1347,9 +1372,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.optional_gaze_actor.clear(); self.optional_gaze_actor.addItems([first, second])
             self.optional_gaze_target.clear(); self.optional_gaze_target.addItems(list(self.plan.get("gaze_target_candidates") or []))
             self.score_title_a.setText(f"{first} PERFORMANCE")
+            self.initial_score_title_a.show()
+            self.initial_score_editor.show()
+            self.dialogue_score_title_a.show()
             self.score_title_b.setText(f"{second} PERFORMANCE")
+            self._set_score_editor_text(self.initial_score_editor, self.score_model.initial_score_texts[first])
             self._set_score_editor_text(self.score_editor_b, self.score_model.score_texts[second])
+            self._set_score_editor_text(self.initial_score_editor_b, self.score_model.initial_score_texts[second])
             self.score_title_b.show()
+            self.initial_score_title_b.show()
+            self.initial_score_editor_b.show()
+            self.dialogue_score_title_b.show()
             self.score_editor_b.show()
             self.score_legend.show()
             self._resize_semantic_score_editors()
@@ -1361,8 +1394,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             ]
         else:
             self.score_title_a.setText("PERFORMANCE")
+            self.initial_score_title_a.hide()
+            self.initial_score_editor.hide()
+            self.dialogue_score_title_a.hide()
             self.score_title_b.hide()
             self.score_editor_b.hide()
+            self.initial_score_title_b.hide()
+            self.initial_score_editor_b.hide()
+            self.dialogue_score_title_b.hide()
             self.score_legend.hide()
             self.reason_group.setTitle("REASON BY PHRASE")
         target_character = str(self.plan.get("target_character") or "")

@@ -337,12 +337,12 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "Open natural language is allowed only in reason fields" not in prompt
     assert "Built-in attention directions" in prompt
     assert "Directional gaze targets" not in prompt
-    assert "affect, attention, head, and blink are all optional" in prompt
+    assert "affect, focus, eye_action, head, and blink are all optional" in prompt
     assert "A beat may contain one or multiple changed semantic channels" in prompt
     assert "In [BEATS], affect may be MASK-NONE when the persistent semantic affect should end" in prompt
-    assert "attention: brief_check WILL" in prompt
+    assert "eye_action: brief_check WILL" in prompt
     assert "affect: Nervous-75" in prompt
-    assert "affect: Nervous-80\nattention: brief_check DOWN" in prompt
+    assert "affect: Nervous-80\neye_action: brief_check DOWN" in prompt
     assert "Acting Direction: NONE" in prompt
     assert "Context: NONE" not in prompt
     assert "AGNES becomes increasingly curious about WILL." not in prompt
@@ -350,7 +350,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
 
     def runner(**kwargs):
         calls.append(kwargs)
-        proposal_text = "[INITIAL]\nAGNES\naffect: Watchful-80\nattention: hold WILL\nacting: Enters watchful.\n\nWILL\naffect: Nervous-60\nattention: hold AGNES\nacting: Enters guarded.\n[BEATS]\nE001\nactor: AGNES\ntrigger: w0001\nacting: He becomes more alert.\naffect: Watchful-100"
+        proposal_text = "[INITIAL]\nAGNES\naffect: Watchful-80\nfocus: WILL\nacting: Enters watchful.\n\nWILL\naffect: Nervous-60\nfocus: AGNES\nacting: Enters guarded.\n[BEATS]\nE001\nactor: AGNES\ntrigger: w0001\nacting: He becomes more alert.\naffect: Watchful-100"
         Path(kwargs["output_text"]).write_text(proposal_text, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
         return proposal_text, {"status": "completed"}
@@ -388,12 +388,12 @@ def test_semantic_beat_generation_preserves_raw_and_compiles_chayton_joan_fixtur
     raw = """[INITIAL]
 CHAYTON
 affect: Watchful-80
-attention: hold JOAN
+focus: JOAN
 acting: He begins focused on assessing her response.
 
 JOAN
 affect: Nervous-65
-attention: hold CHAYTON
+focus: CHAYTON
 acting: She begins guarded while concealing what she knows.
 [BEATS]
 E001
@@ -401,7 +401,7 @@ actor: JOAN
 trigger: w0004
 acting: The danger cue makes her briefly check the hidden entrance.
 affect: Nervous-75
-attention: brief_check FARMHOUSE_ENTRANCE
+eye_action: brief_check FARMHOUSE_ENTRANCE
 """
 
     def runner(**kwargs):
