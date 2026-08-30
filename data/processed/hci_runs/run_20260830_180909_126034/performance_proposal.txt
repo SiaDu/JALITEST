@@ -1,0 +1,41 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+SOL
+affect: Neutral-40
+gaze: GAZE-DANA
+reason: Sol stays oriented toward Dana, cautiously hopeful after repairing the prototype.
+
+DANA
+affect: Neutral-45
+gaze: GAZE-SOL
+reason: Dana remains attentive and supportive while listening to Sol assess the result.
+
+[CHANGES]
+
+E001
+actor: SOL
+anchor: w0007
+reason: Mentioning another possible failure briefly brings back the week's anxiety.
+affect: Nervous-55
+gaze: GLANCE-DOWN
+
+E004
+actor: SOL
+anchor: w0020
+reason: Dana's praise brings clear relief and satisfaction.
+affect: Happy-80
+
+E002
+actor: DANA
+anchor: w0009
+reason: Dana's concise reassurance visibly settles the concern.
+affect: Friendly-65
+
+E003
+actor: DANA
+anchor: w0015
+reason: Dana answers with confident reassurance.
+affect: Friendly-75

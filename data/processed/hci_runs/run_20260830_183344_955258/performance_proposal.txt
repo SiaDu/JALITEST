@@ -1,0 +1,54 @@
+[GAZE_TARGETS]
+BOXES
+
+[INITIAL]
+
+ELI
+affect: Neutral-45
+gaze: GAZE-NORA
+reason: He remains composed but hesitates slightly, watching NORA for a reason to stay.
+
+NORA
+affect: Neutral-45
+gaze: GAZE-ELI
+reason: She listens quietly, attentive to whether ELI is actually leaving.
+
+[CHANGES]
+
+E001
+actor: ELI
+anchor: w0003
+reason: The tentative qualification makes him visibly uneasy as he checks whether NORA is affected.
+affect: Nervous-65
+gaze: GLANCE-NORA
+
+E003
+actor: ELI
+anchor: w0009
+reason: As he offers help, his attention settles on the boxes rather than on leaving.
+gaze: GAZE-BOXES
+
+E005
+actor: ELI
+anchor: w0016
+reason: He accepts the refusal with a subdued acknowledgment and briefly drops his eyes.
+gaze: GLANCE-DOWN
+
+E002
+actor: NORA
+anchor: w0005
+reason: She echoes the uncertainty with a dry, lightly teasing restraint.
+affect: Sassy-60
+
+E004
+actor: NORA
+anchor: w0010
+reason: The mention of the boxes redirects her attention to them as she prepares to dismiss the offer.
+gaze: GAZE-BOXES
+
+E006
+actor: NORA
+anchor: w0017
+reason: Her invitation softens the exchange and brings her attention back to ELI.
+affect: Friendly-70
+gaze: GAZE-ELI

@@ -1,0 +1,433 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "ELI",
+    "B": "NORA"
+  },
+  "aliases": {
+    "A": "ELI",
+    "B": "NORA"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "ELI",
+      "char_start": 0,
+      "char_end": 26,
+      "utterance_start": 5,
+      "utterance_end": 26,
+      "utterance_text": "I should probably go.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "ELI",
+          "text": "I",
+          "char_start": 5,
+          "char_end": 6
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "ELI",
+          "text": "should",
+          "char_start": 7,
+          "char_end": 13
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "ELI",
+          "text": "probably",
+          "char_start": 14,
+          "char_end": 22
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "ELI",
+          "text": "go.",
+          "char_start": 23,
+          "char_end": 26
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "NORA",
+      "char_start": 27,
+      "char_end": 42,
+      "utterance_start": 33,
+      "utterance_end": 42,
+      "utterance_text": "Probably.",
+      "anchors": [
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T02",
+          "speaker": "NORA",
+          "text": "Probably.",
+          "char_start": 33,
+          "char_end": 42
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "char_start": 43,
+      "char_end": 86,
+      "utterance_start": 48,
+      "utterance_end": 86,
+      "utterance_text": "Unless you need help with those boxes.",
+      "anchors": [
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "Unless",
+          "char_start": 48,
+          "char_end": 54
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "you",
+          "char_start": 55,
+          "char_end": 58
+        },
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "need",
+          "char_start": 59,
+          "char_end": 63
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "help",
+          "char_start": 64,
+          "char_end": 68
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "with",
+          "char_start": 69,
+          "char_end": 73
+        },
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "those",
+          "char_start": 74,
+          "char_end": 79
+        },
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T03",
+          "speaker": "ELI",
+          "text": "boxes.",
+          "char_start": 80,
+          "char_end": 86
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "NORA",
+      "char_start": 87,
+      "char_end": 106,
+      "utterance_start": 93,
+      "utterance_end": 106,
+      "utterance_text": "I can manage.",
+      "anchors": [
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T04",
+          "speaker": "NORA",
+          "text": "I",
+          "char_start": 93,
+          "char_end": 94
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T04",
+          "speaker": "NORA",
+          "text": "can",
+          "char_start": 95,
+          "char_end": 98
+        },
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T04",
+          "speaker": "NORA",
+          "text": "manage.",
+          "char_start": 99,
+          "char_end": 106
+        }
+      ]
+    },
+    {
+      "turn_id": "T05",
+      "speaker": "ELI",
+      "char_start": 107,
+      "char_end": 118,
+      "utterance_start": 112,
+      "utterance_end": 118,
+      "utterance_text": "Right.",
+      "anchors": [
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T05",
+          "speaker": "ELI",
+          "text": "Right.",
+          "char_start": 112,
+          "char_end": 118
+        }
+      ]
+    },
+    {
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "char_start": 119,
+      "char_end": 155,
+      "utterance_start": 125,
+      "utterance_end": 155,
+      "utterance_text": "You can stay a minute, though.",
+      "anchors": [
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T06",
+          "speaker": "NORA",
+          "text": "You",
+          "char_start": 125,
+          "char_end": 128
+        },
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T06",
+          "speaker": "NORA",
+          "text": "can",
+          "char_start": 129,
+          "char_end": 132
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T06",
+          "speaker": "NORA",
+          "text": "stay",
+          "char_start": 133,
+          "char_end": 137
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T06",
+          "speaker": "NORA",
+          "text": "a",
+          "char_start": 138,
+          "char_end": 139
+        },
+        {
+          "anchor_id": "w0021",
+          "turn_id": "T06",
+          "speaker": "NORA",
+          "text": "minute,",
+          "char_start": 140,
+          "char_end": 147
+        },
+        {
+          "anchor_id": "w0022",
+          "turn_id": "T06",
+          "speaker": "NORA",
+          "text": "though.",
+          "char_start": 148,
+          "char_end": 155
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "ELI",
+      "text": "I",
+      "char_start": 5,
+      "char_end": 6
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "ELI",
+      "text": "should",
+      "char_start": 7,
+      "char_end": 13
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "ELI",
+      "text": "probably",
+      "char_start": 14,
+      "char_end": 22
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "ELI",
+      "text": "go.",
+      "char_start": 23,
+      "char_end": 26
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T02",
+      "speaker": "NORA",
+      "text": "Probably.",
+      "char_start": 33,
+      "char_end": 42
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "Unless",
+      "char_start": 48,
+      "char_end": 54
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "you",
+      "char_start": 55,
+      "char_end": 58
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "need",
+      "char_start": 59,
+      "char_end": 63
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "help",
+      "char_start": 64,
+      "char_end": 68
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "with",
+      "char_start": 69,
+      "char_end": 73
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "those",
+      "char_start": 74,
+      "char_end": 79
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T03",
+      "speaker": "ELI",
+      "text": "boxes.",
+      "char_start": 80,
+      "char_end": 86
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T04",
+      "speaker": "NORA",
+      "text": "I",
+      "char_start": 93,
+      "char_end": 94
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T04",
+      "speaker": "NORA",
+      "text": "can",
+      "char_start": 95,
+      "char_end": 98
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T04",
+      "speaker": "NORA",
+      "text": "manage.",
+      "char_start": 99,
+      "char_end": 106
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T05",
+      "speaker": "ELI",
+      "text": "Right.",
+      "char_start": 112,
+      "char_end": 118
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "text": "You",
+      "char_start": 125,
+      "char_end": 128
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "text": "can",
+      "char_start": 129,
+      "char_end": 132
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "text": "stay",
+      "char_start": 133,
+      "char_end": 137
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "text": "a",
+      "char_start": 138,
+      "char_end": 139
+    },
+    {
+      "anchor_id": "w0021",
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "text": "minute,",
+      "char_start": 140,
+      "char_end": 147
+    },
+    {
+      "anchor_id": "w0022",
+      "turn_id": "T06",
+      "speaker": "NORA",
+      "text": "though.",
+      "char_start": 148,
+      "char_end": 155
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+T01 SOL:
+[w0001 I] [w0002 thought] [w0003 it] [w0004 was] [w0005 going] [w0006 to] [w0007 fail] [w0008 again.]
+
+T02 DANA:
+[w0009 It] [w0010 didn't.]
+
+T03 SOL:
+[w0011 You] [w0012 think] [w0013 it's] [w0014 ready?]
+
+T04 DANA:
+[w0015 Yes.] [w0016 You] [w0017 did] [w0018 a] [w0019 good] [w0020 job.]

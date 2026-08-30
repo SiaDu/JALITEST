@@ -1,0 +1,52 @@
+[GAZE_TARGETS]
+TARGET
+
+[INITIAL]
+
+ERIN
+affect: Neutral-45
+gaze: GAZE-TARGET
+reason: Holds steady attention on Kai, ready to address the unresolved issue.
+
+KAI
+affect: Neutral-40
+gaze: GAZE-TARGET
+reason: Maintains attention on Erin, guarded but listening.
+
+[CHANGES]
+
+E001
+actor: ERIN
+anchor: w0001
+reason: The direct accusation immediately sharpens Erin's visible displeasure.
+affect: Provoked-65
+
+E003
+actor: ERIN
+anchor: w0012
+reason: The reminder that Kai should have asked intensifies Erin's anger.
+affect: Angered-75
+
+E006
+actor: ERIN
+anchor: w0018
+reason: The final warning hardens into a firm, unmistakable boundary.
+affect: Angered-85
+
+E002
+actor: KAI
+anchor: w0002
+reason: Hearing the accusation makes Kai visibly uneasy while keeping attention on Erin.
+affect: Nervous-70
+
+E004
+actor: KAI
+anchor: w0012
+reason: The pointed reminder prompts a brief, uncomfortable drop of eye contact.
+gaze: GLANCE-DOWN
+
+E005
+actor: KAI
+anchor: w0016
+reason: Kai's admission carries subdued acceptance and regret.
+affect: Sad-60

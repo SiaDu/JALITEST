@@ -1,0 +1,72 @@
+{
+  "initial": {
+    "SOL": {
+      "affect": "Nervous-60",
+      "focus": "DANA",
+      "acting": "SOL watches DANA with restrained worry, waiting for reassurance.",
+      "head": "HEAD-NONE"
+    },
+    "DANA": {
+      "affect": "Polite-55",
+      "focus": "SOL",
+      "acting": "DANA listens attentively, calm and receptive.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "SOL",
+      "anchor_id": "w0007",
+      "acting": "The mention of failing again briefly deepens SOL's worry and lowers their gaze.",
+      "affect": "Nervous-75",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "DANA",
+      "anchor_id": "w0009",
+      "acting": "DANA answers with immediate reassurance, softening into a friendly expression.",
+      "affect": "Friendly-70"
+    },
+    {
+      "event_id": "E003",
+      "actor": "SOL",
+      "anchor_id": "w0009",
+      "acting": "The reassurance brings visible relief.",
+      "affect": "Happy-55"
+    },
+    {
+      "event_id": "E004",
+      "actor": "SOL",
+      "anchor_id": "w0013",
+      "acting": "Asking whether it is ready brings back a moment of uncertainty as SOL searches DANA's face.",
+      "affect": "Thinking-60",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DANA"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "DANA",
+      "anchor_id": "w0019",
+      "acting": "The compliment becomes warmly encouraging.",
+      "affect": "Friendly-85"
+    },
+    {
+      "event_id": "E006",
+      "actor": "SOL",
+      "anchor_id": "w0020",
+      "acting": "The praise settles SOL's remaining doubt into genuine happiness.",
+      "affect": "Happy-80"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

@@ -1,0 +1,47 @@
+[GAZE_TARGETS]
+TARGET
+
+[INITIAL]
+
+BEN
+affect: Nervous-50
+gaze: GAZE-TARGET
+reason: He is trying to sound composed while bracing for Ari's reaction.
+
+ARI
+affect: Polite-60
+gaze: GAZE-TARGET
+reason: She maintains a professional social mask, though the news is unwelcome.
+
+[CHANGES]
+
+E003
+actor: BEN
+anchor: w0009
+reason: Naming the promotion lets a moment of pleased accomplishment show through.
+affect: Happy-65
+
+E004
+actor: BEN
+anchor: w0012
+reason: His direct question reveals growing anxiety as he checks whether their working relationship is intact.
+affect: Nervous-80
+gaze: GLANCE-ARI
+
+E001
+actor: ARI
+anchor: w0007
+reason: Hearing that Ben received the lead brings a restrained flash of disappointment beneath her polite composure.
+affect: Sad-55
+
+E002
+actor: ARI
+anchor: w0010
+reason: She briefly looks down to contain the disappointment before answering.
+gaze: GLANCE-DOWN
+
+E005
+actor: ARI
+anchor: w0015
+reason: She restores her professional mask and answers reassuringly despite the unresolved disappointment.
+affect: Polite-75

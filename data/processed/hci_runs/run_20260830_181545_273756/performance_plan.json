@@ -1,0 +1,195 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_181545_273756",
+  "characters": [
+    "ERIN",
+    "KAI"
+  ],
+  "gaze_target_candidates": [
+    "TARGET"
+  ],
+  "initial_states": {
+    "ERIN": {
+      "head": "HEAD-NONE",
+      "affect": "Angered-65",
+      "gaze": "GAZE-TARGET"
+    },
+    "KAI": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-70",
+      "gaze": "GAZE-TARGET"
+    }
+  },
+  "initial_reasons": {
+    "ERIN": "Erin is visibly upset but remains composed enough to continue the collaboration.",
+    "KAI": "Kai anticipates Erin's disapproval and tries to stay engaged rather than withdraw."
+  },
+  "tracks": {
+    "ERIN": [
+      {
+        "event_id": "E001",
+        "actor": "ERIN",
+        "anchor_id": "w0001",
+        "changes": {
+          "gaze": "GAZE-KAI"
+        },
+        "reason": "Erin opens the confrontation with controlled anger and settles her attention directly on Kai."
+      },
+      {
+        "event_id": "E003",
+        "actor": "ERIN",
+        "anchor_id": "w0006",
+        "changes": {
+          "affect": "Provoked-75"
+        },
+        "reason": "Kai's explanation sounds like an excuse, increasing Erin's visible irritation."
+      },
+      {
+        "event_id": "E006",
+        "actor": "ERIN",
+        "anchor_id": "w0018",
+        "changes": {
+          "affect": "Intimidating-85"
+        },
+        "reason": "Erin turns the reprimand into a firm boundary, making the warning visibly intimidating."
+      }
+    ],
+    "KAI": [
+      {
+        "event_id": "E002",
+        "actor": "KAI",
+        "anchor_id": "w0001",
+        "changes": {
+          "gaze": "GAZE-ERIN"
+        },
+        "reason": "The accusation makes Kai fully attend to Erin while bracing for criticism."
+      },
+      {
+        "event_id": "E004",
+        "actor": "KAI",
+        "anchor_id": "w0014",
+        "changes": {
+          "affect": "Nervous-85",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing that he should have asked Erin brings a guilty, uncomfortable reaction."
+      },
+      {
+        "event_id": "E005",
+        "actor": "KAI",
+        "anchor_id": "w0017",
+        "changes": {
+          "affect": "Sad-65"
+        },
+        "reason": "Admitting that he knows softens his defensiveness into subdued acceptance."
+      },
+      {
+        "event_id": "E007",
+        "actor": "KAI",
+        "anchor_id": "w0018",
+        "changes": {
+          "affect": "Afraid-65"
+        },
+        "reason": "The explicit warning makes Kai tense and wary, but he remains present for the work."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_181545_273756\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E006",
+      "E002",
+      "E004",
+      "E005",
+      "E007"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "ERIN",
+        "KAI"
+      ],
+      "initial_states": {
+        "ERIN": {
+          "head": "HEAD-NONE",
+          "affect": "Angered-65",
+          "gaze": "GAZE-TARGET"
+        },
+        "KAI": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-70",
+          "gaze": "GAZE-TARGET"
+        }
+      },
+      "initial_reasons": {
+        "ERIN": "Erin is visibly upset but remains composed enough to continue the collaboration.",
+        "KAI": "Kai anticipates Erin's disapproval and tries to stay engaged rather than withdraw."
+      },
+      "tracks": [
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0001",
+          "changes": {
+            "gaze": "GAZE-KAI"
+          },
+          "reason": "Erin opens the confrontation with controlled anger and settles her attention directly on Kai."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0006",
+          "changes": {
+            "affect": "Provoked-75"
+          },
+          "reason": "Kai's explanation sounds like an excuse, increasing Erin's visible irritation."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0018",
+          "changes": {
+            "affect": "Intimidating-85"
+          },
+          "reason": "Erin turns the reprimand into a firm boundary, making the warning visibly intimidating."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0001",
+          "changes": {
+            "gaze": "GAZE-ERIN"
+          },
+          "reason": "The accusation makes Kai fully attend to Erin while bracing for criticism."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0014",
+          "changes": {
+            "affect": "Nervous-85",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing that he should have asked Erin brings a guilty, uncomfortable reaction."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0017",
+          "changes": {
+            "affect": "Sad-65"
+          },
+          "reason": "Admitting that he knows softens his defensiveness into subdued acceptance."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0018",
+          "changes": {
+            "affect": "Afraid-65"
+          },
+          "reason": "The explicit warning makes Kai tense and wary, but he remains present for the work."
+        }
+      ]
+    }
+  }
+}

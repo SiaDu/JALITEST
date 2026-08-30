@@ -1,0 +1,22 @@
+{
+  "response_id": "resp_06a46ab38c46ae3e006a9466f0604087d0935454fb1fb0c4a6",
+  "model": "gpt-5.6-luna",
+  "prompt_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_182253_314578\\actor_prompt.txt",
+  "usage": {
+    "input_tokens": 1302,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 1299
+    },
+    "output_tokens": 705,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 2007
+  },
+  "status": "completed",
+  "incomplete_details": null,
+  "created_at": 1788110576.0,
+  "output_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_182253_314578\\semantic_beats.txt",
+  "semantic beats_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_182253_314578\\semantic_beats.txt"
+}

@@ -1,0 +1,36 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+LEO
+affect: Intimidating-55
+gaze: GAZE-MARA
+reason: He calmly presses for information while holding Mara's attention.
+
+MARA
+affect: Neutral-40
+gaze: GAZE-LEO
+reason: She listens with a guarded stillness, keeping her attention on Leo.
+
+[CHANGES]
+
+E002
+actor: LEO
+anchor: w0010
+reason: Her denial makes him scrutinize the answer more carefully.
+affect: Thinking-60
+
+E001
+actor: MARA
+anchor: w0004
+reason: Hearing Evan's name makes her more alert and briefly unsettled.
+affect: Watchful-65
+gaze: GLANCE-DOWN
+
+E003
+actor: MARA
+anchor: w0011
+reason: The repeated challenge raises her visible discomfort as she avoids Leo's eyes for a moment.
+affect: Nervous-60
+gaze: GLANCE-DOWN

@@ -1,0 +1,67 @@
+[INITIAL]
+ERIN
+affect: Angered-65
+focus: KAI
+acting: Erin holds Kai's gaze with controlled anger, making clear that the breach is serious.
+
+KAI
+affect: Nervous-55
+focus: ERIN
+acting: Kai stays focused on Erin, visibly uneasy and aware that sending the draft crossed a boundary.
+
+[BEATS]
+E001
+actor: ERIN
+trigger: w0002
+acting: The confirmation that Kai sent the draft sharpens Erin's controlled anger.
+affect: Angered-75
+
+E002
+actor: KAI
+trigger: w0002
+acting: Hearing the accusation makes Kai visibly more anxious while remaining focused on Erin.
+affect: Nervous-72
+
+E003
+actor: ERIN
+trigger: w0009
+acting: Kai's deadline explanation briefly makes Erin look down as she weighs the excuse without accepting it.
+eye_action: brief_check DOWN
+
+E004
+actor: KAI
+trigger: w0012
+acting: The reproach raises Kai's anxiety and prompts a brief avoidance of eye contact.
+affect: Nervous-82
+eye_action: brief_check DOWN
+
+E005
+actor: ERIN
+trigger: w0014
+acting: The insistence that Kai should have asked makes Erin's anger more pronounced.
+affect: Angered-82
+
+E006
+actor: KAI
+trigger: w0017
+acting: Kai's admission of fault shifts the visible reaction toward remorse and briefly drops their gaze.
+affect: Sad-62
+eye_action: brief_check DOWN
+
+E007
+actor: ERIN
+trigger: w0017
+acting: Kai's admission slightly tempers Erin's anger into firm disapproval.
+affect: Dislike-58
+
+E008
+actor: ERIN
+trigger: w0018
+acting: The explicit prohibition restores Erin's full anger as a firm boundary.
+affect: Angered-88
+
+E009
+actor: KAI
+trigger: w0021
+acting: The final warning leaves Kai subdued and remorseful, still facing Erin.
+affect: Sad-72

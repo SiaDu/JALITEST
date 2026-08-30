@@ -1,0 +1,68 @@
+{
+  "initial": {
+    "ERIN": {
+      "affect": "Provoked-65",
+      "focus": "KAI",
+      "acting": "Erin is controlled but visibly upset, holding Kai's attention while confronting the breach of trust.",
+      "head": "HEAD-NONE"
+    },
+    "KAI": {
+      "affect": "Nervous-55",
+      "focus": "ERIN",
+      "acting": "Kai stays engaged with Erin, uneasy because the unfinished draft was sent without permission.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "KAI",
+      "anchor_id": "w0002",
+      "acting": "Hearing the accusation makes Kai's anxiety visibly increase while remaining focused on Erin.",
+      "affect": "Nervous-70"
+    },
+    {
+      "event_id": "E002",
+      "actor": "ERIN",
+      "anchor_id": "w0007",
+      "acting": "Kai's explanation about the deadline does not excuse the decision; Erin's restrained anger becomes more pronounced.",
+      "affect": "Angered-75"
+    },
+    {
+      "event_id": "E003",
+      "actor": "KAI",
+      "anchor_id": "w0012",
+      "acting": "The direct reminder that permission was required brings a visible flash of guilt, and Kai briefly avoids eye contact.",
+      "affect": "Sad-65",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "ERIN",
+      "anchor_id": "w0014",
+      "acting": "Erin emphasizes the missed consultation with a pointed, disappointed look.",
+      "affect": "Dislike-75"
+    },
+    {
+      "event_id": "E005",
+      "actor": "KAI",
+      "anchor_id": "w0016",
+      "acting": "Kai acknowledges the mistake, accepting responsibility without looking away.",
+      "affect": "Sad-70"
+    },
+    {
+      "event_id": "E006",
+      "actor": "ERIN",
+      "anchor_id": "w0018",
+      "acting": "Erin delivers a firm boundary, keeping Kai's attention and making the warning unmistakable.",
+      "affect": "Intimidating-70"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

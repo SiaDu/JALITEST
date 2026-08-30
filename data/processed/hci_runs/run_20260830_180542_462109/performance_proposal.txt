@@ -1,0 +1,53 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+SOL
+affect: Nervous-50
+gaze: GAZE-DANA
+reason: Sol cautiously confides the fear of another failure while staying oriented toward Dana.
+
+DANA
+affect: Polite-60
+gaze: GAZE-SOL
+reason: Dana listens attentively, ready to reassure Sol.
+
+[CHANGES]
+
+E001
+actor: SOL
+anchor: w0001
+reason: The admission begins with visible uncertainty as Sol prepares to disclose the fear of failure.
+affect: Nervous-65
+
+E003
+actor: SOL
+anchor: w0009
+reason: Dana's reassurance eases Sol's anxiety, and Sol briefly checks Dana's face for confirmation.
+affect: Happy-45
+gaze: GLANCE-DANA
+
+E005
+actor: SOL
+anchor: w0015
+reason: Sol receives the affirmative answer with growing relief and renewed confidence.
+affect: Happy-65
+
+E002
+actor: DANA
+anchor: w0007
+reason: Hearing that Sol feared failure, Dana becomes more openly reassuring while maintaining attention on Sol.
+affect: Friendly-70
+
+E004
+actor: DANA
+anchor: w0012
+reason: Dana considers Sol's question before answering with calm confidence.
+affect: Thinking-55
+
+E006
+actor: DANA
+anchor: w0019
+reason: Dana delivers the praise warmly, making the approval unmistakable.
+affect: Friendly-85

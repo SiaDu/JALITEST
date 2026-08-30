@@ -1,0 +1,17 @@
+T01 ELI:
+[w0001 I] [w0002 should] [w0003 probably] [w0004 go.]
+
+T02 NORA:
+[w0005 Probably.]
+
+T03 ELI:
+[w0006 Unless] [w0007 you] [w0008 need] [w0009 help] [w0010 with] [w0011 those] [w0012 boxes.]
+
+T04 NORA:
+[w0013 I] [w0014 can] [w0015 manage.]
+
+T05 ELI:
+[w0016 Right.]
+
+T06 NORA:
+[w0017 You] [w0018 can] [w0019 stay] [w0020 a] [w0021 minute,] [w0022 though.]

@@ -1,0 +1,30 @@
+[INITIAL]
+LEO
+affect: Watchful-65
+focus: MARA
+acting: Carefully questioning Mara while assessing whether she is withholding information.
+
+MARA
+affect: Scheming-70
+focus: LEO
+acting: Calmly concealing Evan's hiding place while monitoring Leo's suspicion.
+
+[BEATS]
+E001
+actor: MARA
+trigger: w0004
+acting: Hearing Evan's name makes Mara's concealed anxiety briefly surface while she maintains her composure.
+affect: Nervous-65
+
+E002
+actor: LEO
+trigger: w0010
+acting: Mara's denial heightens Leo's suspicion, and his questioning becomes more intimidating.
+affect: Intimidating-60
+
+E003
+actor: MARA
+trigger: w0011
+acting: Leo's challenge increases the pressure, and Mara briefly avoids his eyes before answering.
+affect: Nervous-75
+eye_action: brief_check DOWN

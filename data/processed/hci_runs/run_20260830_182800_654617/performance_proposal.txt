@@ -1,0 +1,43 @@
+[GAZE_TARGETS]
+TARGET
+
+[INITIAL]
+
+BEN
+affect: Neutral-50
+gaze: GAZE-TARGET
+reason: He is composed but eager to share important news.
+
+ARI
+affect: Neutral-50
+gaze: GAZE-TARGET
+reason: She listens with a controlled, unreadable expression.
+
+[CHANGES]
+
+E001
+actor: BEN
+anchor: w0009
+reason: He reveals the achievement and looks to Ari for her reaction.
+affect: Happy-70
+gaze: GAZE-ARI
+
+E003
+actor: BEN
+anchor: w0012
+reason: Her restrained response makes him uncertain, and he briefly looks away before asking for reassurance.
+affect: Nervous-70
+gaze: GLANCE-DOWN
+
+E002
+actor: ARI
+anchor: w0009
+reason: The announcement registers as a meaningful surprise, though she keeps her response contained.
+affect: Surprised-55
+gaze: GAZE-BEN
+
+E004
+actor: ARI
+anchor: w0016
+reason: She smooths over the tension with a courteous reassurance.
+affect: Polite-70

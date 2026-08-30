@@ -1,0 +1,56 @@
+{
+  "initial": {
+    "BEN": {
+      "affect": "Neutral-50",
+      "focus": "TARGET",
+      "acting": "He is composed but eager to share important news.",
+      "head": "HEAD-NONE"
+    },
+    "ARI": {
+      "affect": "Neutral-50",
+      "focus": "TARGET",
+      "acting": "She listens with a controlled, unreadable expression.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "BEN",
+      "anchor_id": "w0009",
+      "acting": "He reveals the achievement and looks to Ari for her reaction.",
+      "affect": "Happy-70",
+      "focus": "ARI"
+    },
+    {
+      "event_id": "E002",
+      "actor": "ARI",
+      "anchor_id": "w0009",
+      "acting": "The announcement registers as a meaningful surprise, though she keeps her response contained.",
+      "affect": "Surprised-55",
+      "focus": "BEN"
+    },
+    {
+      "event_id": "E003",
+      "actor": "BEN",
+      "anchor_id": "w0012",
+      "acting": "Her restrained response makes him uncertain, and he briefly looks away before asking for reassurance.",
+      "affect": "Nervous-70",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "ARI",
+      "anchor_id": "w0016",
+      "acting": "She smooths over the tension with a courteous reassurance.",
+      "affect": "Polite-70"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

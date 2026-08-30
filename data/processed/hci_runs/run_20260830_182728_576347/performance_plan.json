@@ -1,0 +1,139 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_182728_576347",
+  "characters": [
+    "BEN",
+    "ARI"
+  ],
+  "gaze_target_candidates": [],
+  "initial_states": {
+    "BEN": {
+      "head": "HEAD-NONE",
+      "affect": "Neutral-50",
+      "gaze": "GAZE-ARI"
+    },
+    "ARI": {
+      "head": "HEAD-NONE",
+      "affect": "Neutral-50",
+      "gaze": "GAZE-BEN"
+    }
+  },
+  "initial_reasons": {
+    "BEN": "Attentive and composed, keeping his attention on Ari as he prepares to share important news.",
+    "ARI": "Quietly attentive, watching Ben with a reserved but open expression."
+  },
+  "tracks": {
+    "BEN": [
+      {
+        "event_id": "E001",
+        "actor": "BEN",
+        "anchor_id": "w0007",
+        "changes": {
+          "affect": "Happy-70"
+        },
+        "reason": "Sharing the lead brings a brief, visible lift of pride and excitement."
+      },
+      {
+        "event_id": "E003",
+        "actor": "BEN",
+        "anchor_id": "w0012",
+        "changes": {
+          "affect": "Nervous-75",
+          "gaze": "GLANCE-ARI"
+        },
+        "reason": "Asking whether they are okay reveals sudden uncertainty as he searches Ari's reaction."
+      }
+    ],
+    "ARI": [
+      {
+        "event_id": "E002",
+        "actor": "ARI",
+        "anchor_id": "w0010",
+        "changes": {
+          "affect": "Polite-65"
+        },
+        "reason": "Her acknowledgment is controlled and courteous, masking any deeper reaction to the news."
+      },
+      {
+        "event_id": "E004",
+        "actor": "ARI",
+        "anchor_id": "w0017",
+        "changes": {
+          "affect": "Friendly-70"
+        },
+        "reason": "The congratulations become deliberately warmer as she reassures Ben that their relationship is intact."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_182728_576347\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E002",
+      "E004"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "BEN",
+        "ARI"
+      ],
+      "initial_states": {
+        "BEN": {
+          "head": "HEAD-NONE",
+          "affect": "Neutral-50",
+          "gaze": "GAZE-ARI"
+        },
+        "ARI": {
+          "head": "HEAD-NONE",
+          "affect": "Neutral-50",
+          "gaze": "GAZE-BEN"
+        }
+      },
+      "initial_reasons": {
+        "BEN": "Attentive and composed, keeping his attention on Ari as he prepares to share important news.",
+        "ARI": "Quietly attentive, watching Ben with a reserved but open expression."
+      },
+      "tracks": [
+        {
+          "actor": "ARI",
+          "anchor_id": "w0010",
+          "changes": {
+            "affect": "Polite-65"
+          },
+          "reason": "Her acknowledgment is controlled and courteous, masking any deeper reaction to the news."
+        },
+        {
+          "actor": "ARI",
+          "anchor_id": "w0017",
+          "changes": {
+            "affect": "Friendly-70"
+          },
+          "reason": "The congratulations become deliberately warmer as she reassures Ben that their relationship is intact."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0007",
+          "changes": {
+            "affect": "Happy-70"
+          },
+          "reason": "Sharing the lead brings a brief, visible lift of pride and excitement."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0012",
+          "changes": {
+            "affect": "Nervous-75",
+            "gaze": "GLANCE-ARI"
+          },
+          "reason": "Asking whether they are okay reveals sudden uncertainty as he searches Ari's reaction."
+        }
+      ]
+    }
+  }
+}

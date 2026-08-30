@@ -1,0 +1,64 @@
+{
+  "initial": {
+    "BEN": {
+      "affect": "Nervous-50",
+      "focus": "TARGET",
+      "acting": "He is trying to sound composed while bracing for Ari's reaction.",
+      "head": "HEAD-NONE"
+    },
+    "ARI": {
+      "affect": "Polite-60",
+      "focus": "TARGET",
+      "acting": "She maintains a professional social mask, though the news is unwelcome.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "ARI",
+      "anchor_id": "w0007",
+      "acting": "Hearing that Ben received the lead brings a restrained flash of disappointment beneath her polite composure.",
+      "affect": "Sad-55"
+    },
+    {
+      "event_id": "E002",
+      "actor": "ARI",
+      "anchor_id": "w0010",
+      "acting": "She briefly looks down to contain the disappointment before answering.",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E003",
+      "actor": "BEN",
+      "anchor_id": "w0009",
+      "acting": "Naming the promotion lets a moment of pleased accomplishment show through.",
+      "affect": "Happy-65"
+    },
+    {
+      "event_id": "E004",
+      "actor": "BEN",
+      "anchor_id": "w0012",
+      "acting": "His direct question reveals growing anxiety as he checks whether their working relationship is intact.",
+      "affect": "Nervous-80",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "ARI"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "ARI",
+      "anchor_id": "w0015",
+      "acting": "She restores her professional mask and answers reassuringly despite the unresolved disappointment.",
+      "affect": "Polite-75"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

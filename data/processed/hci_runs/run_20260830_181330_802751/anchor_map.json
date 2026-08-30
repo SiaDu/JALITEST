@@ -1,0 +1,406 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "ERIN",
+    "B": "KAI"
+  },
+  "aliases": {
+    "A": "ERIN",
+    "B": "KAI"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "ERIN",
+      "char_start": 0,
+      "char_end": 25,
+      "utterance_start": 6,
+      "utterance_end": 25,
+      "utterance_text": "You sent the draft.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "ERIN",
+          "text": "You",
+          "char_start": 6,
+          "char_end": 9
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "ERIN",
+          "text": "sent",
+          "char_start": 10,
+          "char_end": 14
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "ERIN",
+          "text": "the",
+          "char_start": 15,
+          "char_end": 18
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "ERIN",
+          "text": "draft.",
+          "char_start": 19,
+          "char_end": 25
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "char_start": 26,
+      "char_end": 59,
+      "utterance_start": 31,
+      "utterance_end": 59,
+      "utterance_text": "We were running out of time.",
+      "anchors": [
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T02",
+          "speaker": "KAI",
+          "text": "We",
+          "char_start": 31,
+          "char_end": 33
+        },
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T02",
+          "speaker": "KAI",
+          "text": "were",
+          "char_start": 34,
+          "char_end": 38
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T02",
+          "speaker": "KAI",
+          "text": "running",
+          "char_start": 39,
+          "char_end": 46
+        },
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T02",
+          "speaker": "KAI",
+          "text": "out",
+          "char_start": 47,
+          "char_end": 50
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T02",
+          "speaker": "KAI",
+          "text": "of",
+          "char_start": 51,
+          "char_end": 53
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T02",
+          "speaker": "KAI",
+          "text": "time.",
+          "char_start": 54,
+          "char_end": 59
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "ERIN",
+      "char_start": 60,
+      "char_end": 91,
+      "utterance_start": 66,
+      "utterance_end": 91,
+      "utterance_text": "You should have asked me.",
+      "anchors": [
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T03",
+          "speaker": "ERIN",
+          "text": "You",
+          "char_start": 66,
+          "char_end": 69
+        },
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T03",
+          "speaker": "ERIN",
+          "text": "should",
+          "char_start": 70,
+          "char_end": 76
+        },
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T03",
+          "speaker": "ERIN",
+          "text": "have",
+          "char_start": 77,
+          "char_end": 81
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T03",
+          "speaker": "ERIN",
+          "text": "asked",
+          "char_start": 82,
+          "char_end": 87
+        },
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T03",
+          "speaker": "ERIN",
+          "text": "me.",
+          "char_start": 88,
+          "char_end": 91
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "KAI",
+      "char_start": 92,
+      "char_end": 104,
+      "utterance_start": 97,
+      "utterance_end": 104,
+      "utterance_text": "I know.",
+      "anchors": [
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T04",
+          "speaker": "KAI",
+          "text": "I",
+          "char_start": 97,
+          "char_end": 98
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T04",
+          "speaker": "KAI",
+          "text": "know.",
+          "char_start": 99,
+          "char_end": 104
+        }
+      ]
+    },
+    {
+      "turn_id": "T05",
+      "speaker": "ERIN",
+      "char_start": 105,
+      "char_end": 129,
+      "utterance_start": 111,
+      "utterance_end": 129,
+      "utterance_text": "Don't do it again.",
+      "anchors": [
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T05",
+          "speaker": "ERIN",
+          "text": "Don't",
+          "char_start": 111,
+          "char_end": 116
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T05",
+          "speaker": "ERIN",
+          "text": "do",
+          "char_start": 117,
+          "char_end": 119
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T05",
+          "speaker": "ERIN",
+          "text": "it",
+          "char_start": 120,
+          "char_end": 122
+        },
+        {
+          "anchor_id": "w0021",
+          "turn_id": "T05",
+          "speaker": "ERIN",
+          "text": "again.",
+          "char_start": 123,
+          "char_end": 129
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "ERIN",
+      "text": "You",
+      "char_start": 6,
+      "char_end": 9
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "ERIN",
+      "text": "sent",
+      "char_start": 10,
+      "char_end": 14
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "ERIN",
+      "text": "the",
+      "char_start": 15,
+      "char_end": 18
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "ERIN",
+      "text": "draft.",
+      "char_start": 19,
+      "char_end": 25
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "text": "We",
+      "char_start": 31,
+      "char_end": 33
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "text": "were",
+      "char_start": 34,
+      "char_end": 38
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "text": "running",
+      "char_start": 39,
+      "char_end": 46
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "text": "out",
+      "char_start": 47,
+      "char_end": 50
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "text": "of",
+      "char_start": 51,
+      "char_end": 53
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T02",
+      "speaker": "KAI",
+      "text": "time.",
+      "char_start": 54,
+      "char_end": 59
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T03",
+      "speaker": "ERIN",
+      "text": "You",
+      "char_start": 66,
+      "char_end": 69
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T03",
+      "speaker": "ERIN",
+      "text": "should",
+      "char_start": 70,
+      "char_end": 76
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T03",
+      "speaker": "ERIN",
+      "text": "have",
+      "char_start": 77,
+      "char_end": 81
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T03",
+      "speaker": "ERIN",
+      "text": "asked",
+      "char_start": 82,
+      "char_end": 87
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T03",
+      "speaker": "ERIN",
+      "text": "me.",
+      "char_start": 88,
+      "char_end": 91
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T04",
+      "speaker": "KAI",
+      "text": "I",
+      "char_start": 97,
+      "char_end": 98
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T04",
+      "speaker": "KAI",
+      "text": "know.",
+      "char_start": 99,
+      "char_end": 104
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T05",
+      "speaker": "ERIN",
+      "text": "Don't",
+      "char_start": 111,
+      "char_end": 116
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T05",
+      "speaker": "ERIN",
+      "text": "do",
+      "char_start": 117,
+      "char_end": 119
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T05",
+      "speaker": "ERIN",
+      "text": "it",
+      "char_start": 120,
+      "char_end": 122
+    },
+    {
+      "anchor_id": "w0021",
+      "turn_id": "T05",
+      "speaker": "ERIN",
+      "text": "again.",
+      "char_start": 123,
+      "char_end": 129
+    }
+  ]
+}

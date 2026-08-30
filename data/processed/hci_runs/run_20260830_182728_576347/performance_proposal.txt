@@ -1,0 +1,41 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+BEN
+affect: Neutral-50
+gaze: GAZE-ARI
+reason: Attentive and composed, keeping his attention on Ari as he prepares to share important news.
+
+ARI
+affect: Neutral-50
+gaze: GAZE-BEN
+reason: Quietly attentive, watching Ben with a reserved but open expression.
+
+[CHANGES]
+
+E001
+actor: BEN
+anchor: w0007
+reason: Sharing the lead brings a brief, visible lift of pride and excitement.
+affect: Happy-70
+
+E003
+actor: BEN
+anchor: w0012
+reason: Asking whether they are okay reveals sudden uncertainty as he searches Ari's reaction.
+affect: Nervous-75
+gaze: GLANCE-ARI
+
+E002
+actor: ARI
+anchor: w0010
+reason: Her acknowledgment is controlled and courteous, masking any deeper reaction to the news.
+affect: Polite-65
+
+E004
+actor: ARI
+anchor: w0017
+reason: The congratulations become deliberately warmer as she reassures Ben that their relationship is intact.
+affect: Friendly-70

@@ -1,0 +1,237 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_183259_509505",
+  "characters": [
+    "ELI",
+    "NORA"
+  ],
+  "gaze_target_candidates": [
+    "BOXES"
+  ],
+  "initial_states": {
+    "ELI": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-45",
+      "gaze": "GAZE-NORA"
+    },
+    "NORA": {
+      "head": "HEAD-NONE",
+      "affect": "Neutral-45",
+      "gaze": "GAZE-BOXES"
+    }
+  },
+  "initial_reasons": {
+    "ELI": "He is poised to leave, but his hesitation suggests he is waiting to see whether she wants him to stay.",
+    "NORA": "She remains occupied with the boxes, listening without immediately encouraging him to go."
+  },
+  "tracks": {
+    "ELI": [
+      {
+        "event_id": "E001",
+        "actor": "ELI",
+        "anchor_id": "w0003",
+        "changes": {
+          "affect": "Nervous-65",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "His hesitation becomes visible as he briefly looks down before finishing the thought."
+      },
+      {
+        "event_id": "E004",
+        "actor": "ELI",
+        "anchor_id": "w0005",
+        "changes": {
+          "gaze": "GLANCE-NORA"
+        },
+        "reason": "Her pointed reply makes him briefly check her reaction."
+      },
+      {
+        "event_id": "E007",
+        "actor": "ELI",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Sad-50",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The refusal lands as a small disappointment, and he avoids her eyes."
+      },
+      {
+        "event_id": "E009",
+        "actor": "ELI",
+        "anchor_id": "w0017",
+        "changes": {
+          "affect": "Surprised-65"
+        },
+        "reason": "The unexpected invitation visibly surprises him as he looks back to her."
+      }
+    ],
+    "NORA": [
+      {
+        "event_id": "E002",
+        "actor": "NORA",
+        "anchor_id": "w0003",
+        "changes": {
+          "gaze": "GLANCE-ELI"
+        },
+        "reason": "She notices his hesitation and briefly checks his face to gauge whether he truly intends to leave."
+      },
+      {
+        "event_id": "E003",
+        "actor": "NORA",
+        "anchor_id": "w0005",
+        "changes": {
+          "affect": "Sassy-60"
+        },
+        "reason": "She echoes his uncertainty with a pointed, lightly teasing response."
+      },
+      {
+        "event_id": "E005",
+        "actor": "NORA",
+        "anchor_id": "w0009",
+        "changes": {
+          "gaze": "GAZE-ELI"
+        },
+        "reason": "The offer of help redirects her attention from the boxes to him."
+      },
+      {
+        "event_id": "E006",
+        "actor": "NORA",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Polite-60",
+          "gaze": "GAZE-BOXES"
+        },
+        "reason": "She politely but firmly turns down the offer and settles her attention back on the boxes."
+      },
+      {
+        "event_id": "E008",
+        "actor": "NORA",
+        "anchor_id": "w0017",
+        "changes": {
+          "affect": "Friendly-70",
+          "gaze": "GAZE-ELI"
+        },
+        "reason": "Her invitation softens her expression as she openly makes room for him to remain."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_183259_509505\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E004",
+      "E007",
+      "E009",
+      "E002",
+      "E003",
+      "E005",
+      "E006",
+      "E008"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "ELI",
+        "NORA"
+      ],
+      "initial_states": {
+        "ELI": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-45",
+          "gaze": "GAZE-NORA"
+        },
+        "NORA": {
+          "head": "HEAD-NONE",
+          "affect": "Neutral-45",
+          "gaze": "GAZE-BOXES"
+        }
+      },
+      "initial_reasons": {
+        "ELI": "He is poised to leave, but his hesitation suggests he is waiting to see whether she wants him to stay.",
+        "NORA": "She remains occupied with the boxes, listening without immediately encouraging him to go."
+      },
+      "tracks": [
+        {
+          "actor": "ELI",
+          "anchor_id": "w0003",
+          "changes": {
+            "affect": "Nervous-65",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "His hesitation becomes visible as he briefly looks down before finishing the thought."
+        },
+        {
+          "actor": "ELI",
+          "anchor_id": "w0005",
+          "changes": {
+            "gaze": "GLANCE-NORA"
+          },
+          "reason": "Her pointed reply makes him briefly check her reaction."
+        },
+        {
+          "actor": "ELI",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Sad-50",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The refusal lands as a small disappointment, and he avoids her eyes."
+        },
+        {
+          "actor": "ELI",
+          "anchor_id": "w0017",
+          "changes": {
+            "affect": "Surprised-65"
+          },
+          "reason": "The unexpected invitation visibly surprises him as he looks back to her."
+        },
+        {
+          "actor": "NORA",
+          "anchor_id": "w0003",
+          "changes": {
+            "gaze": "GLANCE-ELI"
+          },
+          "reason": "She notices his hesitation and briefly checks his face to gauge whether he truly intends to leave."
+        },
+        {
+          "actor": "NORA",
+          "anchor_id": "w0005",
+          "changes": {
+            "affect": "Sassy-60"
+          },
+          "reason": "She echoes his uncertainty with a pointed, lightly teasing response."
+        },
+        {
+          "actor": "NORA",
+          "anchor_id": "w0009",
+          "changes": {
+            "gaze": "GAZE-ELI"
+          },
+          "reason": "The offer of help redirects her attention from the boxes to him."
+        },
+        {
+          "actor": "NORA",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Polite-60",
+            "gaze": "GAZE-BOXES"
+          },
+          "reason": "She politely but firmly turns down the offer and settles her attention back on the boxes."
+        },
+        {
+          "actor": "NORA",
+          "anchor_id": "w0017",
+          "changes": {
+            "affect": "Friendly-70",
+            "gaze": "GAZE-ELI"
+          },
+          "reason": "Her invitation softens her expression as she openly makes room for him to remain."
+        }
+      ]
+    }
+  }
+}

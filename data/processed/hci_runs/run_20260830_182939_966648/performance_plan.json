@@ -1,0 +1,159 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_182939_966648",
+  "characters": [
+    "BEN",
+    "ARI"
+  ],
+  "gaze_target_candidates": [
+    "TARGET"
+  ],
+  "initial_states": {
+    "BEN": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-50",
+      "gaze": "GAZE-TARGET"
+    },
+    "ARI": {
+      "head": "HEAD-NONE",
+      "affect": "Polite-60",
+      "gaze": "GAZE-TARGET"
+    }
+  },
+  "initial_reasons": {
+    "BEN": "He is trying to sound composed while bracing for Ari's reaction.",
+    "ARI": "She maintains a professional social mask, though the news is unwelcome."
+  },
+  "tracks": {
+    "BEN": [
+      {
+        "event_id": "E003",
+        "actor": "BEN",
+        "anchor_id": "w0009",
+        "changes": {
+          "affect": "Happy-65"
+        },
+        "reason": "Naming the promotion lets a moment of pleased accomplishment show through."
+      },
+      {
+        "event_id": "E004",
+        "actor": "BEN",
+        "anchor_id": "w0012",
+        "changes": {
+          "affect": "Nervous-80",
+          "gaze": "GLANCE-ARI"
+        },
+        "reason": "His direct question reveals growing anxiety as he checks whether their working relationship is intact."
+      }
+    ],
+    "ARI": [
+      {
+        "event_id": "E001",
+        "actor": "ARI",
+        "anchor_id": "w0007",
+        "changes": {
+          "affect": "Sad-55"
+        },
+        "reason": "Hearing that Ben received the lead brings a restrained flash of disappointment beneath her polite composure."
+      },
+      {
+        "event_id": "E002",
+        "actor": "ARI",
+        "anchor_id": "w0010",
+        "changes": {
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "She briefly looks down to contain the disappointment before answering."
+      },
+      {
+        "event_id": "E005",
+        "actor": "ARI",
+        "anchor_id": "w0015",
+        "changes": {
+          "affect": "Polite-75"
+        },
+        "reason": "She restores her professional mask and answers reassuringly despite the unresolved disappointment."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_182939_966648\\performance_proposal.txt",
+    "event_ids": [
+      "E003",
+      "E004",
+      "E001",
+      "E002",
+      "E005"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "BEN",
+        "ARI"
+      ],
+      "initial_states": {
+        "BEN": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-50",
+          "gaze": "GAZE-TARGET"
+        },
+        "ARI": {
+          "head": "HEAD-NONE",
+          "affect": "Polite-60",
+          "gaze": "GAZE-TARGET"
+        }
+      },
+      "initial_reasons": {
+        "BEN": "He is trying to sound composed while bracing for Ari's reaction.",
+        "ARI": "She maintains a professional social mask, though the news is unwelcome."
+      },
+      "tracks": [
+        {
+          "actor": "ARI",
+          "anchor_id": "w0007",
+          "changes": {
+            "affect": "Sad-55"
+          },
+          "reason": "Hearing that Ben received the lead brings a restrained flash of disappointment beneath her polite composure."
+        },
+        {
+          "actor": "ARI",
+          "anchor_id": "w0010",
+          "changes": {
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "She briefly looks down to contain the disappointment before answering."
+        },
+        {
+          "actor": "ARI",
+          "anchor_id": "w0015",
+          "changes": {
+            "affect": "Polite-75"
+          },
+          "reason": "She restores her professional mask and answers reassuringly despite the unresolved disappointment."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0009",
+          "changes": {
+            "affect": "Happy-65"
+          },
+          "reason": "Naming the promotion lets a moment of pleased accomplishment show through."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0012",
+          "changes": {
+            "affect": "Nervous-80",
+            "gaze": "GLANCE-ARI"
+          },
+          "reason": "His direct question reveals growing anxiety as he checks whether their working relationship is intact."
+        }
+      ]
+    }
+  }
+}

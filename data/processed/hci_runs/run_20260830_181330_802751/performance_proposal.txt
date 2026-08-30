@@ -1,0 +1,59 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+ERIN
+affect: Watchful-65
+gaze: GAZE-KAI
+reason: Erin holds Kai in a steady, expectant gaze, already prepared to challenge the decision.
+
+KAI
+affect: Nervous-55
+gaze: GAZE-ERIN
+reason: Kai faces Erin but looks uneasy, bracing for her reaction.
+
+[CHANGES]
+
+E002
+actor: ERIN
+anchor: w0008
+reason: Hearing the excuse makes Erin visibly more provoked while she keeps her attention on Kai.
+affect: Provoked-72
+
+E004
+actor: ERIN
+anchor: w0012
+reason: The reminder of what Kai should have done sharpens Erin's anger.
+affect: Angered-78
+
+E006
+actor: ERIN
+anchor: w0018
+reason: Erin delivers the prohibition with firm, unmistakable anger.
+affect: Angry-86
+
+E001
+actor: KAI
+anchor: w0001
+reason: The accusation immediately heightens Kai's visible anxiety.
+affect: Nervous-72
+
+E003
+actor: KAI
+anchor: w0011
+reason: Being directly blamed makes Kai more nervous and briefly avoid eye contact.
+affect: Nervous-84
+gaze: GLANCE-DOWN
+
+E005
+actor: KAI
+anchor: w0016
+reason: Kai's admission replaces defensive anxiety with subdued guilt.
+affect: Sad-65
+
+E007
+actor: KAI
+anchor: w0021
+reason: The final warning lands, leaving Kai visibly chastened and afraid of repeating the mistake.
+affect: Afraid-62

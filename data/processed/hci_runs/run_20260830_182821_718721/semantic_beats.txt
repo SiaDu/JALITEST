@@ -1,0 +1,36 @@
+[INITIAL]
+BEN
+affect: Neutral-50
+focus: ARI
+acting: BEN stays attentive to ARI, cautiously sharing the news and watching for a reaction.
+
+ARI
+affect: Neutral-50
+focus: BEN
+acting: ARI listens closely, keeping a composed expression as BEN begins speaking.
+
+[BEATS]
+E001
+actor: ARI
+trigger: w0007
+acting: Hearing that BEN got the lead, ARI settles into a courteous, controlled response.
+affect: Polite-70
+
+E002
+actor: BEN
+trigger: w0009
+acting: BEN finishes the announcement with visible pride and pleasure at the achievement.
+affect: Happy-80
+
+E003
+actor: BEN
+trigger: w0012
+acting: Asking whether they are okay makes BEN visibly uneasy, and he briefly looks down.
+affect: Nervous-70
+eye_action: brief_check DOWN
+
+E004
+actor: ARI
+trigger: w0015
+acting: ARI immediately offers reassurance, softening into a friendly expression.
+affect: Friendly-70

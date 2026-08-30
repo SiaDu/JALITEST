@@ -1,0 +1,62 @@
+[GAZE_TARGETS]
+TARGET
+
+[INITIAL]
+
+ERIN
+affect: Watchful-60
+gaze: GAZE-TARGET
+reason: She holds steady eye contact, alert and controlled, with restrained disapproval.
+
+KAI
+affect: Neutral-45
+gaze: GAZE-TARGET
+reason: He faces Erin with a guarded, uncertain readiness.
+
+[CHANGES]
+
+E001
+actor: ERIN
+anchor: w0002
+reason: The confirmation that Kai sent the draft turns her watchfulness into visible provocation.
+affect: Provoked-70
+
+E003
+actor: ERIN
+anchor: w0007
+reason: Hearing that they were running out of time sharpens her reaction into anger.
+affect: Angry-75
+gaze: GLANCE-DOWN
+
+E006
+actor: ERIN
+anchor: w0018
+reason: The final warning settles into a firm, unmistakable intimidation.
+affect: Intimidating-85
+
+E002
+actor: KAI
+anchor: w0002
+reason: The accusation makes him briefly look down before returning his attention to Erin.
+affect: Nervous-70
+gaze: GLANCE-DOWN
+
+E004
+actor: KAI
+anchor: w0012
+reason: The reminder that he should have asked Erin intensifies his discomfort and makes him avoid her eyes.
+affect: Nervous-80
+gaze: GLANCE-DOWN
+
+E005
+actor: KAI
+anchor: w0016
+reason: His admission carries visible remorse as he briefly drops his gaze.
+affect: Sad-60
+gaze: GLANCE-DOWN
+
+E007
+actor: KAI
+anchor: w0018
+reason: The warning makes him visibly afraid while he keeps facing Erin.
+affect: Afraid-75

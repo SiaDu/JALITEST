@@ -1,0 +1,91 @@
+{
+  "initial": {
+    "ERIN": {
+      "affect": "Watchful-55",
+      "focus": "TARGET",
+      "acting": "Erin holds steady attention on Kai, visibly guarded and waiting for an explanation.",
+      "head": "HEAD-NONE"
+    },
+    "KAI": {
+      "affect": "Nervous-45",
+      "focus": "TARGET",
+      "acting": "Kai keeps attention on Erin while bracing for confrontation and trying to explain.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "ERIN",
+      "anchor_id": "w0002",
+      "acting": "The confirmation that Kai sent the draft sharpens Erin's restrained irritation.",
+      "affect": "Provoked-70"
+    },
+    {
+      "event_id": "E002",
+      "actor": "KAI",
+      "anchor_id": "w0002",
+      "acting": "Saying that he sent the draft makes Kai visibly uneasy.",
+      "affect": "Nervous-70"
+    },
+    {
+      "event_id": "E003",
+      "actor": "KAI",
+      "anchor_id": "w0006",
+      "acting": "As Kai begins the excuse, he briefly avoids Erin's eyes.",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "ERIN",
+      "anchor_id": "w0008",
+      "acting": "Hearing that Kai was running out of time makes Erin's anger more visible.",
+      "affect": "Angered-78"
+    },
+    {
+      "event_id": "E005",
+      "actor": "KAI",
+      "anchor_id": "w0012",
+      "acting": "Erin's reproach makes Kai visibly more tense.",
+      "affect": "Nervous-82"
+    },
+    {
+      "event_id": "E006",
+      "actor": "KAI",
+      "anchor_id": "w0014",
+      "acting": "The accusation that he should have asked makes Kai drop his gaze in guilt.",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "KAI",
+      "anchor_id": "w0016",
+      "acting": "Kai's acknowledgment eases his visible defensiveness while leaving him uneasy.",
+      "affect": "Nervous-65"
+    },
+    {
+      "event_id": "E008",
+      "actor": "KAI",
+      "anchor_id": "w0018",
+      "acting": "Erin's final warning makes Kai visibly apprehensive.",
+      "affect": "Afraid-72"
+    },
+    {
+      "event_id": "E009",
+      "actor": "ERIN",
+      "anchor_id": "w0021",
+      "acting": "The final word hardens Erin's anger into a firm warning.",
+      "affect": "Angry-88"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

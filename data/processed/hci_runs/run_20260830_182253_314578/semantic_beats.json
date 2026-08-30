@@ -1,0 +1,50 @@
+{
+  "initial": {
+    "LEO": {
+      "affect": "Neutral-50",
+      "focus": "MARA",
+      "acting": "Calmly questions Mara while watching her for a straightforward answer.",
+      "head": "HEAD-NONE"
+    },
+    "MARA": {
+      "affect": "Neutral-50",
+      "focus": "LEO",
+      "acting": "Maintains a composed, attentive posture while listening to Leo.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "MARA",
+      "anchor_id": "w0004",
+      "acting": "Hearing Evan's name briefly draws her attention toward the person being discussed.",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "UP"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "LEO",
+      "anchor_id": "w0011",
+      "acting": "Leo's repeated question sharpens his scrutiny of Mara.",
+      "affect": "Watchful-65"
+    },
+    {
+      "event_id": "E003",
+      "actor": "MARA",
+      "anchor_id": "w0011",
+      "acting": "The pressure of Leo's question creates a brief moment of discomfort before she answers.",
+      "affect": "Nervous-45",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

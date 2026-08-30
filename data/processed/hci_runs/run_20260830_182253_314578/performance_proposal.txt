@@ -1,0 +1,35 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+LEO
+affect: Neutral-50
+gaze: GAZE-MARA
+reason: Calmly questions Mara while watching her for a straightforward answer.
+
+MARA
+affect: Neutral-50
+gaze: GAZE-LEO
+reason: Maintains a composed, attentive posture while listening to Leo.
+
+[CHANGES]
+
+E002
+actor: LEO
+anchor: w0011
+reason: Leo's repeated question sharpens his scrutiny of Mara.
+affect: Watchful-65
+
+E001
+actor: MARA
+anchor: w0004
+reason: Hearing Evan's name briefly draws her attention toward the person being discussed.
+gaze: GLANCE-UP
+
+E003
+actor: MARA
+anchor: w0011
+reason: The pressure of Leo's question creates a brief moment of discomfort before she answers.
+affect: Nervous-45
+gaze: GLANCE-DOWN

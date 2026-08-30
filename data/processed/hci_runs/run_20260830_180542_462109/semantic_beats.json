@@ -1,0 +1,68 @@
+{
+  "initial": {
+    "SOL": {
+      "affect": "Nervous-50",
+      "focus": "DANA",
+      "acting": "Sol cautiously confides the fear of another failure while staying oriented toward Dana.",
+      "head": "HEAD-NONE"
+    },
+    "DANA": {
+      "affect": "Polite-60",
+      "focus": "SOL",
+      "acting": "Dana listens attentively, ready to reassure Sol.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "SOL",
+      "anchor_id": "w0001",
+      "acting": "The admission begins with visible uncertainty as Sol prepares to disclose the fear of failure.",
+      "affect": "Nervous-65"
+    },
+    {
+      "event_id": "E002",
+      "actor": "DANA",
+      "anchor_id": "w0007",
+      "acting": "Hearing that Sol feared failure, Dana becomes more openly reassuring while maintaining attention on Sol.",
+      "affect": "Friendly-70"
+    },
+    {
+      "event_id": "E003",
+      "actor": "SOL",
+      "anchor_id": "w0009",
+      "acting": "Dana's reassurance eases Sol's anxiety, and Sol briefly checks Dana's face for confirmation.",
+      "affect": "Happy-45",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DANA"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "DANA",
+      "anchor_id": "w0012",
+      "acting": "Dana considers Sol's question before answering with calm confidence.",
+      "affect": "Thinking-55"
+    },
+    {
+      "event_id": "E005",
+      "actor": "SOL",
+      "anchor_id": "w0015",
+      "acting": "Sol receives the affirmative answer with growing relief and renewed confidence.",
+      "affect": "Happy-65"
+    },
+    {
+      "event_id": "E006",
+      "actor": "DANA",
+      "anchor_id": "w0019",
+      "acting": "Dana delivers the praise warmly, making the approval unmistakable.",
+      "affect": "Friendly-85"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

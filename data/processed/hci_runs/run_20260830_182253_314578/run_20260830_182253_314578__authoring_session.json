@@ -1,0 +1,23 @@
+{
+  "gaze_calibrations": {},
+  "jali_base_baseline": null,
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_182253_314578",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/test",
+  "input_script": "LEO: We're looking for Evan. Have you seen him tonight?\nMARA: No.\nLEO: You're sure?\nMARA: Yes.",
+  "input_context": "",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "LEO",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "MARA",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}

@@ -1,0 +1,61 @@
+{
+  "initial": {
+    "BEN": {
+      "affect": "Nervous-45",
+      "focus": "ARI",
+      "acting": "He is trying to sound composed while watching Ari carefully, pleased but uneasy about how the news will land.",
+      "head": "HEAD-NONE"
+    },
+    "ARI": {
+      "affect": "Neutral-60",
+      "focus": "BEN",
+      "acting": "She listens with professional composure, bracing herself to conceal that she expected the position.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "BEN",
+      "anchor_id": "w0009",
+      "acting": "Revealing the promotion brings a restrained flash of satisfaction as he watches Ari's reaction.",
+      "affect": "Happy-60"
+    },
+    {
+      "event_id": "E002",
+      "actor": "ARI",
+      "anchor_id": "w0009",
+      "acting": "The completed disclosure confirms her disappointment, which briefly shows before she reins it in.",
+      "affect": "Sad-70",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E003",
+      "actor": "BEN",
+      "anchor_id": "w0012",
+      "acting": "Asking whether they are okay exposes his concern about damaging their working relationship.",
+      "affect": "Nervous-75"
+    },
+    {
+      "event_id": "E004",
+      "actor": "ARI",
+      "anchor_id": "w0014",
+      "acting": "She deliberately restores a professional mask as she assures him that everything is fine.",
+      "affect": "Polite-80"
+    },
+    {
+      "event_id": "E005",
+      "actor": "BEN",
+      "anchor_id": "w0016",
+      "acting": "Her reassurance eases his concern, and he settles into a warmer, more open expression.",
+      "affect": "Friendly-70"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

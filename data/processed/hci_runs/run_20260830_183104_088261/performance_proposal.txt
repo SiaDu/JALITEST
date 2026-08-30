@@ -1,0 +1,41 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+BEN
+affect: Nervous-55
+gaze: GAZE-ARI
+reason: Ben tries to contain his pride and watches Ari carefully, aware that the news may be difficult for her.
+
+ARI
+affect: Polite-70
+gaze: GAZE-BEN
+reason: Ari maintains a professional expression and steady attention, masking her disappointment.
+
+[CHANGES]
+
+E002
+actor: BEN
+anchor: w0012
+reason: Asking whether they are okay reveals Ben's concern about the effect of the promotion on their relationship.
+affect: Nervous-75
+
+E001
+actor: ARI
+anchor: w0007
+reason: Hearing that Ben received the position briefly unsettles Ari beneath her professional mask.
+affect: Sad-60
+gaze: GLANCE-DOWN
+
+E003
+actor: ARI
+anchor: w0015
+reason: Ari quickly restores her polite composure and reassures Ben despite the disappointment she is concealing.
+affect: Polite-80
+
+E004
+actor: ARI
+anchor: w0017
+reason: Ari offers the congratulations with controlled professionalism, keeping the underlying hurt contained.
+affect: Friendly-55

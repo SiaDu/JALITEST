@@ -1,0 +1,23 @@
+{
+  "gaze_calibrations": {},
+  "jali_base_baseline": null,
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_182728_576347",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/test",
+  "input_script": "BEN: They told me this morning. I got the lead.\nARI: I heard.\nBEN: Are we okay?\nARI: Of course. Congratulations.",
+  "input_context": "",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "BEN",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "ARI",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}

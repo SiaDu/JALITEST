@@ -1,0 +1,157 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_183015_259142",
+  "characters": [
+    "BEN",
+    "ARI"
+  ],
+  "gaze_target_candidates": [],
+  "initial_states": {
+    "BEN": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-45",
+      "gaze": "GAZE-ARI"
+    },
+    "ARI": {
+      "head": "HEAD-NONE",
+      "affect": "Neutral-60",
+      "gaze": "GAZE-BEN"
+    }
+  },
+  "initial_reasons": {
+    "BEN": "He is trying to sound composed while watching Ari carefully, pleased but uneasy about how the news will land.",
+    "ARI": "She listens with professional composure, bracing herself to conceal that she expected the position."
+  },
+  "tracks": {
+    "BEN": [
+      {
+        "event_id": "E001",
+        "actor": "BEN",
+        "anchor_id": "w0009",
+        "changes": {
+          "affect": "Happy-60"
+        },
+        "reason": "Revealing the promotion brings a restrained flash of satisfaction as he watches Ari's reaction."
+      },
+      {
+        "event_id": "E003",
+        "actor": "BEN",
+        "anchor_id": "w0012",
+        "changes": {
+          "affect": "Nervous-75"
+        },
+        "reason": "Asking whether they are okay exposes his concern about damaging their working relationship."
+      },
+      {
+        "event_id": "E005",
+        "actor": "BEN",
+        "anchor_id": "w0016",
+        "changes": {
+          "affect": "Friendly-70"
+        },
+        "reason": "Her reassurance eases his concern, and he settles into a warmer, more open expression."
+      }
+    ],
+    "ARI": [
+      {
+        "event_id": "E002",
+        "actor": "ARI",
+        "anchor_id": "w0009",
+        "changes": {
+          "affect": "Sad-70",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The completed disclosure confirms her disappointment, which briefly shows before she reins it in."
+      },
+      {
+        "event_id": "E004",
+        "actor": "ARI",
+        "anchor_id": "w0014",
+        "changes": {
+          "affect": "Polite-80"
+        },
+        "reason": "She deliberately restores a professional mask as she assures him that everything is fine."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_183015_259142\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E005",
+      "E002",
+      "E004"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "BEN",
+        "ARI"
+      ],
+      "initial_states": {
+        "BEN": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-45",
+          "gaze": "GAZE-ARI"
+        },
+        "ARI": {
+          "head": "HEAD-NONE",
+          "affect": "Neutral-60",
+          "gaze": "GAZE-BEN"
+        }
+      },
+      "initial_reasons": {
+        "BEN": "He is trying to sound composed while watching Ari carefully, pleased but uneasy about how the news will land.",
+        "ARI": "She listens with professional composure, bracing herself to conceal that she expected the position."
+      },
+      "tracks": [
+        {
+          "actor": "ARI",
+          "anchor_id": "w0009",
+          "changes": {
+            "affect": "Sad-70",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The completed disclosure confirms her disappointment, which briefly shows before she reins it in."
+        },
+        {
+          "actor": "ARI",
+          "anchor_id": "w0014",
+          "changes": {
+            "affect": "Polite-80"
+          },
+          "reason": "She deliberately restores a professional mask as she assures him that everything is fine."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0009",
+          "changes": {
+            "affect": "Happy-60"
+          },
+          "reason": "Revealing the promotion brings a restrained flash of satisfaction as he watches Ari's reaction."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0012",
+          "changes": {
+            "affect": "Nervous-75"
+          },
+          "reason": "Asking whether they are okay exposes his concern about damaging their working relationship."
+        },
+        {
+          "actor": "BEN",
+          "anchor_id": "w0016",
+          "changes": {
+            "affect": "Friendly-70"
+          },
+          "reason": "Her reassurance eases his concern, and he settles into a warmer, more open expression."
+        }
+      ]
+    }
+  }
+}

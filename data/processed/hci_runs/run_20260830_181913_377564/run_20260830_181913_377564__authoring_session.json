@@ -1,0 +1,23 @@
+{
+  "gaze_calibrations": {},
+  "jali_base_baseline": null,
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_181913_377564",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/test",
+  "input_script": "ERIN: You sent the draft.\nKAI: We were running out of time.\nERIN: You should have asked me.\nKAI: I know.\nERIN: Don't do it again.",
+  "input_context": "Erin and Kai are collaborating on the same project. Erin had explicitly asked Kai not to send their unfinished draft before they reviewed it together. Kai sent it anyway because the deadline was approaching. They still need to continue working together.",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "ERIN",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "KAI",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}

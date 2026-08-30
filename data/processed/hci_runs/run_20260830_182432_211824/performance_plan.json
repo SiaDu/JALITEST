@@ -1,0 +1,139 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_182432_211824",
+  "characters": [
+    "LEO",
+    "MARA"
+  ],
+  "gaze_target_candidates": [],
+  "initial_states": {
+    "LEO": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-65",
+      "gaze": "GAZE-MARA"
+    },
+    "MARA": {
+      "head": "HEAD-NONE",
+      "affect": "Scheming-65",
+      "gaze": "GAZE-LEO"
+    }
+  },
+  "initial_reasons": {
+    "LEO": "He searches the building with controlled suspicion, keeping Mara under steady observation.",
+    "MARA": "She maintains a composed front while carefully concealing that Evan is nearby."
+  },
+  "tracks": {
+    "LEO": [
+      {
+        "event_id": "E003",
+        "actor": "LEO",
+        "anchor_id": "w0011",
+        "changes": {
+          "affect": "Intimidating-75"
+        },
+        "reason": "Her denial does not satisfy him, so he presses her with a more intimidating challenge."
+      }
+    ],
+    "MARA": [
+      {
+        "event_id": "E001",
+        "actor": "MARA",
+        "anchor_id": "w0004",
+        "changes": {
+          "affect": "Nervous-75",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing Evan's name briefly unsettles her, and she tries not to reveal that she knows where he is."
+      },
+      {
+        "event_id": "E002",
+        "actor": "MARA",
+        "anchor_id": "w0010",
+        "changes": {
+          "affect": "Devious-75"
+        },
+        "reason": "She gives the denial with deliberate deception, tightening her control over the lie."
+      },
+      {
+        "event_id": "E004",
+        "actor": "MARA",
+        "anchor_id": "w0011",
+        "changes": {
+          "affect": "Nervous-85"
+        },
+        "reason": "The added pressure raises her anxiety, though she keeps her attention fixed on Leo."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_182432_211824\\performance_proposal.txt",
+    "event_ids": [
+      "E003",
+      "E001",
+      "E002",
+      "E004"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "LEO",
+        "MARA"
+      ],
+      "initial_states": {
+        "LEO": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-65",
+          "gaze": "GAZE-MARA"
+        },
+        "MARA": {
+          "head": "HEAD-NONE",
+          "affect": "Scheming-65",
+          "gaze": "GAZE-LEO"
+        }
+      },
+      "initial_reasons": {
+        "LEO": "He searches the building with controlled suspicion, keeping Mara under steady observation.",
+        "MARA": "She maintains a composed front while carefully concealing that Evan is nearby."
+      },
+      "tracks": [
+        {
+          "actor": "LEO",
+          "anchor_id": "w0011",
+          "changes": {
+            "affect": "Intimidating-75"
+          },
+          "reason": "Her denial does not satisfy him, so he presses her with a more intimidating challenge."
+        },
+        {
+          "actor": "MARA",
+          "anchor_id": "w0004",
+          "changes": {
+            "affect": "Nervous-75",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing Evan's name briefly unsettles her, and she tries not to reveal that she knows where he is."
+        },
+        {
+          "actor": "MARA",
+          "anchor_id": "w0010",
+          "changes": {
+            "affect": "Devious-75"
+          },
+          "reason": "She gives the denial with deliberate deception, tightening her control over the lie."
+        },
+        {
+          "actor": "MARA",
+          "anchor_id": "w0011",
+          "changes": {
+            "affect": "Nervous-85"
+          },
+          "reason": "The added pressure raises her anxiety, though she keeps her attention fixed on Leo."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,70 @@
+[GAZE_TARGETS]
+TARGET
+
+[INITIAL]
+
+ERIN
+affect: Watchful-55
+gaze: GAZE-TARGET
+reason: Erin holds steady attention on Kai, visibly guarded and waiting for an explanation.
+
+KAI
+affect: Nervous-45
+gaze: GAZE-TARGET
+reason: Kai keeps attention on Erin while bracing for confrontation and trying to explain.
+
+[CHANGES]
+
+E001
+actor: ERIN
+anchor: w0002
+reason: The confirmation that Kai sent the draft sharpens Erin's restrained irritation.
+affect: Provoked-70
+
+E004
+actor: ERIN
+anchor: w0008
+reason: Hearing that Kai was running out of time makes Erin's anger more visible.
+affect: Angered-78
+
+E009
+actor: ERIN
+anchor: w0021
+reason: The final word hardens Erin's anger into a firm warning.
+affect: Angry-88
+
+E002
+actor: KAI
+anchor: w0002
+reason: Saying that he sent the draft makes Kai visibly uneasy.
+affect: Nervous-70
+
+E003
+actor: KAI
+anchor: w0006
+reason: As Kai begins the excuse, he briefly avoids Erin's eyes.
+gaze: GLANCE-DOWN
+
+E005
+actor: KAI
+anchor: w0012
+reason: Erin's reproach makes Kai visibly more tense.
+affect: Nervous-82
+
+E006
+actor: KAI
+anchor: w0014
+reason: The accusation that he should have asked makes Kai drop his gaze in guilt.
+gaze: GLANCE-DOWN
+
+E007
+actor: KAI
+anchor: w0016
+reason: Kai's acknowledgment eases his visible defensiveness while leaving him uneasy.
+affect: Nervous-65
+
+E008
+actor: KAI
+anchor: w0018
+reason: Erin's final warning makes Kai visibly apprehensive.
+affect: Afraid-72

@@ -1,0 +1,193 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_181330_802751",
+  "characters": [
+    "ERIN",
+    "KAI"
+  ],
+  "gaze_target_candidates": [],
+  "initial_states": {
+    "ERIN": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-65",
+      "gaze": "GAZE-KAI"
+    },
+    "KAI": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-55",
+      "gaze": "GAZE-ERIN"
+    }
+  },
+  "initial_reasons": {
+    "ERIN": "Erin holds Kai in a steady, expectant gaze, already prepared to challenge the decision.",
+    "KAI": "Kai faces Erin but looks uneasy, bracing for her reaction."
+  },
+  "tracks": {
+    "ERIN": [
+      {
+        "event_id": "E002",
+        "actor": "ERIN",
+        "anchor_id": "w0008",
+        "changes": {
+          "affect": "Provoked-72"
+        },
+        "reason": "Hearing the excuse makes Erin visibly more provoked while she keeps her attention on Kai."
+      },
+      {
+        "event_id": "E004",
+        "actor": "ERIN",
+        "anchor_id": "w0012",
+        "changes": {
+          "affect": "Angered-78"
+        },
+        "reason": "The reminder of what Kai should have done sharpens Erin's anger."
+      },
+      {
+        "event_id": "E006",
+        "actor": "ERIN",
+        "anchor_id": "w0018",
+        "changes": {
+          "affect": "Angry-86"
+        },
+        "reason": "Erin delivers the prohibition with firm, unmistakable anger."
+      }
+    ],
+    "KAI": [
+      {
+        "event_id": "E001",
+        "actor": "KAI",
+        "anchor_id": "w0001",
+        "changes": {
+          "affect": "Nervous-72"
+        },
+        "reason": "The accusation immediately heightens Kai's visible anxiety."
+      },
+      {
+        "event_id": "E003",
+        "actor": "KAI",
+        "anchor_id": "w0011",
+        "changes": {
+          "affect": "Nervous-84",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Being directly blamed makes Kai more nervous and briefly avoid eye contact."
+      },
+      {
+        "event_id": "E005",
+        "actor": "KAI",
+        "anchor_id": "w0016",
+        "changes": {
+          "affect": "Sad-65"
+        },
+        "reason": "Kai's admission replaces defensive anxiety with subdued guilt."
+      },
+      {
+        "event_id": "E007",
+        "actor": "KAI",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Afraid-62"
+        },
+        "reason": "The final warning lands, leaving Kai visibly chastened and afraid of repeating the mistake."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_181330_802751\\performance_proposal.txt",
+    "event_ids": [
+      "E002",
+      "E004",
+      "E006",
+      "E001",
+      "E003",
+      "E005",
+      "E007"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "ERIN",
+        "KAI"
+      ],
+      "initial_states": {
+        "ERIN": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-65",
+          "gaze": "GAZE-KAI"
+        },
+        "KAI": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-55",
+          "gaze": "GAZE-ERIN"
+        }
+      },
+      "initial_reasons": {
+        "ERIN": "Erin holds Kai in a steady, expectant gaze, already prepared to challenge the decision.",
+        "KAI": "Kai faces Erin but looks uneasy, bracing for her reaction."
+      },
+      "tracks": [
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0008",
+          "changes": {
+            "affect": "Provoked-72"
+          },
+          "reason": "Hearing the excuse makes Erin visibly more provoked while she keeps her attention on Kai."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0012",
+          "changes": {
+            "affect": "Angered-78"
+          },
+          "reason": "The reminder of what Kai should have done sharpens Erin's anger."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0018",
+          "changes": {
+            "affect": "Angry-86"
+          },
+          "reason": "Erin delivers the prohibition with firm, unmistakable anger."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0001",
+          "changes": {
+            "affect": "Nervous-72"
+          },
+          "reason": "The accusation immediately heightens Kai's visible anxiety."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0011",
+          "changes": {
+            "affect": "Nervous-84",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Being directly blamed makes Kai more nervous and briefly avoid eye contact."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0016",
+          "changes": {
+            "affect": "Sad-65"
+          },
+          "reason": "Kai's admission replaces defensive anxiety with subdued guilt."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Afraid-62"
+          },
+          "reason": "The final warning lands, leaving Kai visibly chastened and afraid of repeating the mistake."
+        }
+      ]
+    }
+  }
+}

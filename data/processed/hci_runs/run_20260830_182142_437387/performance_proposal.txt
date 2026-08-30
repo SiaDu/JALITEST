@@ -1,0 +1,40 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+LEO
+affect: Watchful-55
+gaze: GAZE-MARA
+reason: He stays alert and studies Mara for a direct answer.
+
+MARA
+affect: Neutral-60
+gaze: GAZE-LEO
+reason: She listens calmly, keeping her attention on Leo.
+
+[CHANGES]
+
+E002
+actor: LEO
+anchor: w0010
+reason: Her denial briefly catches him off guard as he reassesses her answer.
+affect: Confused-55
+
+E003
+actor: LEO
+anchor: w0011
+reason: He presses the point, becoming more challenging as he holds Mara's gaze.
+affect: Intimidating-60
+
+E001
+actor: MARA
+anchor: w0008
+reason: The question about having seen Evan makes her visibly uneasy while she continues facing Leo.
+affect: Nervous-60
+
+E004
+actor: MARA
+anchor: w0011
+reason: The challenge makes her briefly avoid eye contact before answering.
+gaze: GLANCE-DOWN

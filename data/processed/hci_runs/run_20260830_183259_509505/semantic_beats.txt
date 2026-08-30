@@ -1,0 +1,69 @@
+[INITIAL]
+ELI
+affect: Nervous-45
+focus: NORA
+acting: He is poised to leave, but his hesitation suggests he is waiting to see whether she wants him to stay.
+
+NORA
+affect: Neutral-45
+focus: BOXES
+acting: She remains occupied with the boxes, listening without immediately encouraging him to go.
+
+[BEATS]
+E001
+actor: ELI
+trigger: w0003
+acting: His hesitation becomes visible as he briefly looks down before finishing the thought.
+affect: Nervous-65
+eye_action: brief_check DOWN
+
+E002
+actor: NORA
+trigger: w0003
+acting: She notices his hesitation and briefly checks his face to gauge whether he truly intends to leave.
+eye_action: brief_check ELI
+
+E003
+actor: NORA
+trigger: w0005
+acting: She echoes his uncertainty with a pointed, lightly teasing response.
+affect: Sassy-60
+
+E004
+actor: ELI
+trigger: w0005
+acting: Her pointed reply makes him briefly check her reaction.
+eye_action: brief_check NORA
+
+E005
+actor: NORA
+trigger: w0009
+acting: The offer of help redirects her attention from the boxes to him.
+focus: ELI
+
+E006
+actor: NORA
+trigger: w0013
+acting: She politely but firmly turns down the offer and settles her attention back on the boxes.
+affect: Polite-60
+focus: BOXES
+
+E007
+actor: ELI
+trigger: w0013
+acting: The refusal lands as a small disappointment, and he avoids her eyes.
+affect: Sad-50
+eye_action: brief_check DOWN
+
+E008
+actor: NORA
+trigger: w0017
+acting: Her invitation softens her expression as she openly makes room for him to remain.
+affect: Friendly-70
+focus: ELI
+
+E009
+actor: ELI
+trigger: w0017
+acting: The unexpected invitation visibly surprises him as he looks back to her.
+affect: Surprised-65

@@ -1,0 +1,71 @@
+{
+  "initial": {
+    "SOL": {
+      "affect": "Nervous-60",
+      "focus": "TARGET",
+      "acting": "Sol remains attentive but visibly uneasy, still carrying the memory of the prototype's earlier failures.",
+      "head": "HEAD-NONE"
+    },
+    "DANA": {
+      "affect": "Neutral-50",
+      "focus": "TARGET",
+      "acting": "Dana listens calmly, prepared to reassure Sol about the repaired prototype.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "DANA",
+      "anchor_id": "w0002",
+      "acting": "Hearing Sol's worry makes Dana visibly more watchful and attentive.",
+      "affect": "Watchful-55"
+    },
+    {
+      "event_id": "E002",
+      "actor": "DANA",
+      "anchor_id": "w0009",
+      "acting": "Dana gives a calm reassurance, warming into a friendly, confident expression.",
+      "affect": "Friendly-65"
+    },
+    {
+      "event_id": "E003",
+      "actor": "SOL",
+      "anchor_id": "w0009",
+      "acting": "Dana's reassurance visibly eases Sol's anxiety.",
+      "affect": "Happy-55"
+    },
+    {
+      "event_id": "E004",
+      "actor": "SOL",
+      "anchor_id": "w0011",
+      "acting": "Seeking confirmation, Sol briefly returns to a thoughtful uncertainty.",
+      "affect": "Thinking-60"
+    },
+    {
+      "event_id": "E005",
+      "actor": "SOL",
+      "anchor_id": "w0015",
+      "acting": "Dana's confirmation restores Sol's confidence in the repair.",
+      "affect": "Happy-65"
+    },
+    {
+      "event_id": "E006",
+      "actor": "DANA",
+      "anchor_id": "w0019",
+      "acting": "As Dana praises Sol's work, her expression becomes warmly approving.",
+      "affect": "Friendly-75"
+    },
+    {
+      "event_id": "E007",
+      "actor": "SOL",
+      "anchor_id": "w0020",
+      "acting": "The praise lands clearly, leaving Sol openly pleased with the successful repair.",
+      "affect": "Happy-80"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

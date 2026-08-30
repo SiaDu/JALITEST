@@ -1,0 +1,54 @@
+{
+  "initial": {
+    "SOL": {
+      "affect": "Neutral-40",
+      "focus": "DANA",
+      "acting": "Sol stays oriented toward Dana, cautiously hopeful after repairing the prototype.",
+      "head": "HEAD-NONE"
+    },
+    "DANA": {
+      "affect": "Neutral-45",
+      "focus": "SOL",
+      "acting": "Dana remains attentive and supportive while listening to Sol assess the result.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "SOL",
+      "anchor_id": "w0007",
+      "acting": "Mentioning another possible failure briefly brings back the week's anxiety.",
+      "affect": "Nervous-55",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "DANA",
+      "anchor_id": "w0009",
+      "acting": "Dana's concise reassurance visibly settles the concern.",
+      "affect": "Friendly-65"
+    },
+    {
+      "event_id": "E003",
+      "actor": "DANA",
+      "anchor_id": "w0015",
+      "acting": "Dana answers with confident reassurance.",
+      "affect": "Friendly-75"
+    },
+    {
+      "event_id": "E004",
+      "actor": "SOL",
+      "anchor_id": "w0020",
+      "acting": "Dana's praise brings clear relief and satisfaction.",
+      "affect": "Happy-80"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "gaze_calibrations": {},
+  "jali_base_baseline": null,
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260830_180713_450931",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/test",
+  "input_script": "SOL: I thought it was going to fail again.\nDANA: It didn't.\nSOL: You think it's ready?\nDANA: Yes. You did a good job.",
+  "input_context": "Dana and Sol are colleagues working on a prototype. The prototype has failed several times during the week, but Sol has now repaired the problem. There is no unresolved disagreement between them.",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "SOL",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "DANA",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}

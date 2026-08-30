@@ -1,0 +1,35 @@
+[INITIAL]
+LEO
+affect: Neutral-50
+focus: MARA
+acting: Calmly seeking information while watching Mara for a useful reaction.
+
+MARA
+affect: Neutral-50
+focus: LEO
+acting: Listening attentively, composed and guarded.
+
+[BEATS]
+E001
+actor: LEO
+trigger: w0001
+acting: A direct question makes the actor briefly check Mara's reaction.
+eye_action: brief_check MARA
+
+E002
+actor: MARA
+trigger: w0004
+acting: Hearing Evan's name prompts a brief memory check before answering.
+eye_action: brief_check UP
+
+E003
+actor: LEO
+trigger: w0010
+acting: Mara's denial makes the actor reconsider the answer while maintaining attention on her.
+affect: Thinking-45
+
+E004
+actor: LEO
+trigger: w0011
+acting: The actor follows up with a quiet challenge, checking whether Mara will hold her answer.
+eye_action: brief_check MARA

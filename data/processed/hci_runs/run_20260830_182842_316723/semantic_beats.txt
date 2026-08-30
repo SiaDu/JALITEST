@@ -1,0 +1,43 @@
+[INITIAL]
+BEN
+affect: Neutral-40
+focus: TARGET
+acting: He is composed and attentive, ready to share important news.
+
+ARI
+affect: Neutral-45
+focus: TARGET
+acting: She listens with a controlled, unreadable expression.
+
+[BEATS]
+E001
+actor: BEN
+trigger: w0007
+acting: Reaching the point of his announcement, his pride becomes visibly apparent.
+affect: Happy-80
+
+E002
+actor: ARI
+trigger: w0007
+acting: Hearing that Ben got the lead, she briefly suppresses a disappointed reaction and avoids his eyes.
+affect: Sad-45
+eye_action: brief_check DOWN
+
+E003
+actor: ARI
+trigger: w0010
+acting: She covers the reaction with a courteous acknowledgment, keeping her attention on Ben.
+affect: Polite-65
+
+E004
+actor: BEN
+trigger: w0012
+acting: The direct question reveals his uncertainty as he checks whether the news has affected their relationship.
+affect: Nervous-70
+eye_action: brief_check ARI
+
+E005
+actor: ARI
+trigger: w0017
+acting: Her congratulations become warmer as she reassures him that everything is fine.
+affect: Friendly-65

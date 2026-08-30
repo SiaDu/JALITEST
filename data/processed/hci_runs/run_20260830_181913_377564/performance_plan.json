@@ -1,0 +1,231 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260830_181913_377564",
+  "characters": [
+    "ERIN",
+    "KAI"
+  ],
+  "gaze_target_candidates": [],
+  "initial_states": {
+    "ERIN": {
+      "head": "HEAD-NONE",
+      "affect": "Angered-65",
+      "gaze": "GAZE-KAI"
+    },
+    "KAI": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-55",
+      "gaze": "GAZE-ERIN"
+    }
+  },
+  "initial_reasons": {
+    "ERIN": "Erin holds Kai's gaze with controlled anger, making clear that the breach is serious.",
+    "KAI": "Kai stays focused on Erin, visibly uneasy and aware that sending the draft crossed a boundary."
+  },
+  "tracks": {
+    "ERIN": [
+      {
+        "event_id": "E001",
+        "actor": "ERIN",
+        "anchor_id": "w0002",
+        "changes": {
+          "affect": "Angered-75"
+        },
+        "reason": "The confirmation that Kai sent the draft sharpens Erin's controlled anger."
+      },
+      {
+        "event_id": "E003",
+        "actor": "ERIN",
+        "anchor_id": "w0009",
+        "changes": {
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Kai's deadline explanation briefly makes Erin look down as she weighs the excuse without accepting it."
+      },
+      {
+        "event_id": "E005",
+        "actor": "ERIN",
+        "anchor_id": "w0014",
+        "changes": {
+          "affect": "Angered-82"
+        },
+        "reason": "The insistence that Kai should have asked makes Erin's anger more pronounced."
+      },
+      {
+        "event_id": "E007",
+        "actor": "ERIN",
+        "anchor_id": "w0017",
+        "changes": {
+          "affect": "Dislike-58"
+        },
+        "reason": "Kai's admission slightly tempers Erin's anger into firm disapproval."
+      },
+      {
+        "event_id": "E008",
+        "actor": "ERIN",
+        "anchor_id": "w0018",
+        "changes": {
+          "affect": "Angered-88"
+        },
+        "reason": "The explicit prohibition restores Erin's full anger as a firm boundary."
+      }
+    ],
+    "KAI": [
+      {
+        "event_id": "E002",
+        "actor": "KAI",
+        "anchor_id": "w0002",
+        "changes": {
+          "affect": "Nervous-72"
+        },
+        "reason": "Hearing the accusation makes Kai visibly more anxious while remaining focused on Erin."
+      },
+      {
+        "event_id": "E004",
+        "actor": "KAI",
+        "anchor_id": "w0012",
+        "changes": {
+          "affect": "Nervous-82",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The reproach raises Kai's anxiety and prompts a brief avoidance of eye contact."
+      },
+      {
+        "event_id": "E006",
+        "actor": "KAI",
+        "anchor_id": "w0017",
+        "changes": {
+          "affect": "Sad-62",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Kai's admission of fault shifts the visible reaction toward remorse and briefly drops their gaze."
+      },
+      {
+        "event_id": "E009",
+        "actor": "KAI",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Sad-72"
+        },
+        "reason": "The final warning leaves Kai subdued and remorseful, still facing Erin."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260830_181913_377564\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E005",
+      "E007",
+      "E008",
+      "E002",
+      "E004",
+      "E006",
+      "E009"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "ERIN",
+        "KAI"
+      ],
+      "initial_states": {
+        "ERIN": {
+          "head": "HEAD-NONE",
+          "affect": "Angered-65",
+          "gaze": "GAZE-KAI"
+        },
+        "KAI": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-55",
+          "gaze": "GAZE-ERIN"
+        }
+      },
+      "initial_reasons": {
+        "ERIN": "Erin holds Kai's gaze with controlled anger, making clear that the breach is serious.",
+        "KAI": "Kai stays focused on Erin, visibly uneasy and aware that sending the draft crossed a boundary."
+      },
+      "tracks": [
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0002",
+          "changes": {
+            "affect": "Angered-75"
+          },
+          "reason": "The confirmation that Kai sent the draft sharpens Erin's controlled anger."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0009",
+          "changes": {
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Kai's deadline explanation briefly makes Erin look down as she weighs the excuse without accepting it."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0014",
+          "changes": {
+            "affect": "Angered-82"
+          },
+          "reason": "The insistence that Kai should have asked makes Erin's anger more pronounced."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0017",
+          "changes": {
+            "affect": "Dislike-58"
+          },
+          "reason": "Kai's admission slightly tempers Erin's anger into firm disapproval."
+        },
+        {
+          "actor": "ERIN",
+          "anchor_id": "w0018",
+          "changes": {
+            "affect": "Angered-88"
+          },
+          "reason": "The explicit prohibition restores Erin's full anger as a firm boundary."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0002",
+          "changes": {
+            "affect": "Nervous-72"
+          },
+          "reason": "Hearing the accusation makes Kai visibly more anxious while remaining focused on Erin."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0012",
+          "changes": {
+            "affect": "Nervous-82",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The reproach raises Kai's anxiety and prompts a brief avoidance of eye contact."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0017",
+          "changes": {
+            "affect": "Sad-62",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Kai's admission of fault shifts the visible reaction toward remorse and briefly drops their gaze."
+        },
+        {
+          "actor": "KAI",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Sad-72"
+          },
+          "reason": "The final warning leaves Kai subdued and remorseful, still facing Erin."
+        }
+      ]
+    }
+  }
+}

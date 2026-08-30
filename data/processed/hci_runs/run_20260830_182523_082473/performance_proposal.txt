@@ -1,0 +1,35 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+LEO
+affect: Watchful-65
+gaze: GAZE-MARA
+reason: Carefully questioning Mara while assessing whether she is withholding information.
+
+MARA
+affect: Scheming-70
+gaze: GAZE-LEO
+reason: Calmly concealing Evan's hiding place while monitoring Leo's suspicion.
+
+[CHANGES]
+
+E002
+actor: LEO
+anchor: w0010
+reason: Mara's denial heightens Leo's suspicion, and his questioning becomes more intimidating.
+affect: Intimidating-60
+
+E001
+actor: MARA
+anchor: w0004
+reason: Hearing Evan's name makes Mara's concealed anxiety briefly surface while she maintains her composure.
+affect: Nervous-65
+
+E003
+actor: MARA
+anchor: w0011
+reason: Leo's challenge increases the pressure, and Mara briefly avoids his eyes before answering.
+affect: Nervous-75
+gaze: GLANCE-DOWN

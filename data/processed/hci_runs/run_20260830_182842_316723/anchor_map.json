@@ -1,0 +1,331 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "BEN",
+    "B": "ARI"
+  },
+  "aliases": {
+    "A": "BEN",
+    "B": "ARI"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "char_start": 0,
+      "char_end": 47,
+      "utterance_start": 5,
+      "utterance_end": 47,
+      "utterance_text": "They told me this morning. I got the lead.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "They",
+          "char_start": 5,
+          "char_end": 9
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "told",
+          "char_start": 10,
+          "char_end": 14
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "me",
+          "char_start": 15,
+          "char_end": 17
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "this",
+          "char_start": 18,
+          "char_end": 22
+        },
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "morning.",
+          "char_start": 23,
+          "char_end": 31
+        },
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "I",
+          "char_start": 32,
+          "char_end": 33
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "got",
+          "char_start": 34,
+          "char_end": 37
+        },
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "the",
+          "char_start": 38,
+          "char_end": 41
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T01",
+          "speaker": "BEN",
+          "text": "lead.",
+          "char_start": 42,
+          "char_end": 47
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "ARI",
+      "char_start": 48,
+      "char_end": 61,
+      "utterance_start": 53,
+      "utterance_end": 61,
+      "utterance_text": "I heard.",
+      "anchors": [
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T02",
+          "speaker": "ARI",
+          "text": "I",
+          "char_start": 53,
+          "char_end": 54
+        },
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T02",
+          "speaker": "ARI",
+          "text": "heard.",
+          "char_start": 55,
+          "char_end": 61
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "BEN",
+      "char_start": 62,
+      "char_end": 79,
+      "utterance_start": 67,
+      "utterance_end": 79,
+      "utterance_text": "Are we okay?",
+      "anchors": [
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T03",
+          "speaker": "BEN",
+          "text": "Are",
+          "char_start": 67,
+          "char_end": 70
+        },
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T03",
+          "speaker": "BEN",
+          "text": "we",
+          "char_start": 71,
+          "char_end": 73
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T03",
+          "speaker": "BEN",
+          "text": "okay?",
+          "char_start": 74,
+          "char_end": 79
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "ARI",
+      "char_start": 80,
+      "char_end": 112,
+      "utterance_start": 85,
+      "utterance_end": 112,
+      "utterance_text": "Of course. Congratulations.",
+      "anchors": [
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T04",
+          "speaker": "ARI",
+          "text": "Of",
+          "char_start": 85,
+          "char_end": 87
+        },
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T04",
+          "speaker": "ARI",
+          "text": "course.",
+          "char_start": 88,
+          "char_end": 95
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T04",
+          "speaker": "ARI",
+          "text": "Congratulations.",
+          "char_start": 96,
+          "char_end": 112
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "They",
+      "char_start": 5,
+      "char_end": 9
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "told",
+      "char_start": 10,
+      "char_end": 14
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "me",
+      "char_start": 15,
+      "char_end": 17
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "this",
+      "char_start": 18,
+      "char_end": 22
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "morning.",
+      "char_start": 23,
+      "char_end": 31
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "I",
+      "char_start": 32,
+      "char_end": 33
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "got",
+      "char_start": 34,
+      "char_end": 37
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "the",
+      "char_start": 38,
+      "char_end": 41
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T01",
+      "speaker": "BEN",
+      "text": "lead.",
+      "char_start": 42,
+      "char_end": 47
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T02",
+      "speaker": "ARI",
+      "text": "I",
+      "char_start": 53,
+      "char_end": 54
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T02",
+      "speaker": "ARI",
+      "text": "heard.",
+      "char_start": 55,
+      "char_end": 61
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T03",
+      "speaker": "BEN",
+      "text": "Are",
+      "char_start": 67,
+      "char_end": 70
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T03",
+      "speaker": "BEN",
+      "text": "we",
+      "char_start": 71,
+      "char_end": 73
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T03",
+      "speaker": "BEN",
+      "text": "okay?",
+      "char_start": 74,
+      "char_end": 79
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T04",
+      "speaker": "ARI",
+      "text": "Of",
+      "char_start": 85,
+      "char_end": 87
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T04",
+      "speaker": "ARI",
+      "text": "course.",
+      "char_start": 88,
+      "char_end": 95
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T04",
+      "speaker": "ARI",
+      "text": "Congratulations.",
+      "char_start": 96,
+      "char_end": 112
+    }
+  ]
+}

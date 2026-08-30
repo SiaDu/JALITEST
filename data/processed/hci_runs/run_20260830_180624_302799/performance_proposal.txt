@@ -1,0 +1,54 @@
+[GAZE_TARGETS]
+NONE
+
+[INITIAL]
+
+SOL
+affect: Nervous-60
+gaze: GAZE-DANA
+reason: SOL watches DANA with restrained worry, waiting for reassurance.
+
+DANA
+affect: Polite-55
+gaze: GAZE-SOL
+reason: DANA listens attentively, calm and receptive.
+
+[CHANGES]
+
+E001
+actor: SOL
+anchor: w0007
+reason: The mention of failing again briefly deepens SOL's worry and lowers their gaze.
+affect: Nervous-75
+gaze: GLANCE-DOWN
+
+E003
+actor: SOL
+anchor: w0009
+reason: The reassurance brings visible relief.
+affect: Happy-55
+
+E004
+actor: SOL
+anchor: w0013
+reason: Asking whether it is ready brings back a moment of uncertainty as SOL searches DANA's face.
+affect: Thinking-60
+gaze: GLANCE-DANA
+
+E006
+actor: SOL
+anchor: w0020
+reason: The praise settles SOL's remaining doubt into genuine happiness.
+affect: Happy-80
+
+E002
+actor: DANA
+anchor: w0009
+reason: DANA answers with immediate reassurance, softening into a friendly expression.
+affect: Friendly-70
+
+E005
+actor: DANA
+anchor: w0019
+reason: The compliment becomes warmly encouraging.
+affect: Friendly-85

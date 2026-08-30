@@ -1,0 +1,35 @@
+[INITIAL]
+LEO
+affect: Watchful-65
+focus: MARA
+acting: He searches the building with controlled suspicion, now studying Mara for any sign that she knows where Evan is.
+
+MARA
+affect: Scheming-70
+focus: LEO
+acting: She maintains a cooperative appearance while concealing that Evan is hidden nearby.
+
+[BEATS]
+E001
+actor: MARA
+trigger: w0004
+acting: Hearing Evan's name briefly draws her attention toward the locked storage room before she composes herself.
+eye_action: brief_check STORAGE_ROOM
+
+E002
+actor: MARA
+trigger: w0010
+acting: As she gives the lie, she briefly avoids eye contact to conceal her knowledge.
+eye_action: brief_check DOWN
+
+E003
+actor: LEO
+trigger: w0011
+acting: Her denial makes him more imposing and visibly skeptical as he presses for certainty.
+affect: Intimidating-70
+
+E004
+actor: MARA
+trigger: w0011
+acting: The pointed challenge increases the strain of maintaining her deception.
+affect: Nervous-70

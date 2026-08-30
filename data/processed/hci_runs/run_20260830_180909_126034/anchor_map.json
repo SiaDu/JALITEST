@@ -1,0 +1,379 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "SOL",
+    "B": "DANA"
+  },
+  "aliases": {
+    "A": "SOL",
+    "B": "DANA"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "char_start": 0,
+      "char_end": 42,
+      "utterance_start": 5,
+      "utterance_end": 42,
+      "utterance_text": "I thought it was going to fail again.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "I",
+          "char_start": 5,
+          "char_end": 6
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "thought",
+          "char_start": 7,
+          "char_end": 14
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "it",
+          "char_start": 15,
+          "char_end": 17
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "was",
+          "char_start": 18,
+          "char_end": 21
+        },
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "going",
+          "char_start": 22,
+          "char_end": 27
+        },
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "to",
+          "char_start": 28,
+          "char_end": 30
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "fail",
+          "char_start": 31,
+          "char_end": 35
+        },
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T01",
+          "speaker": "SOL",
+          "text": "again.",
+          "char_start": 36,
+          "char_end": 42
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "DANA",
+      "char_start": 43,
+      "char_end": 59,
+      "utterance_start": 49,
+      "utterance_end": 59,
+      "utterance_text": "It didn't.",
+      "anchors": [
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T02",
+          "speaker": "DANA",
+          "text": "It",
+          "char_start": 49,
+          "char_end": 51
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T02",
+          "speaker": "DANA",
+          "text": "didn't.",
+          "char_start": 52,
+          "char_end": 59
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "SOL",
+      "char_start": 60,
+      "char_end": 86,
+      "utterance_start": 65,
+      "utterance_end": 86,
+      "utterance_text": "You think it's ready?",
+      "anchors": [
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T03",
+          "speaker": "SOL",
+          "text": "You",
+          "char_start": 65,
+          "char_end": 68
+        },
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T03",
+          "speaker": "SOL",
+          "text": "think",
+          "char_start": 69,
+          "char_end": 74
+        },
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T03",
+          "speaker": "SOL",
+          "text": "it's",
+          "char_start": 75,
+          "char_end": 79
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T03",
+          "speaker": "SOL",
+          "text": "ready?",
+          "char_start": 80,
+          "char_end": 86
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "char_start": 87,
+      "char_end": 117,
+      "utterance_start": 93,
+      "utterance_end": 117,
+      "utterance_text": "Yes. You did a good job.",
+      "anchors": [
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T04",
+          "speaker": "DANA",
+          "text": "Yes.",
+          "char_start": 93,
+          "char_end": 97
+        },
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T04",
+          "speaker": "DANA",
+          "text": "You",
+          "char_start": 98,
+          "char_end": 101
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T04",
+          "speaker": "DANA",
+          "text": "did",
+          "char_start": 102,
+          "char_end": 105
+        },
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T04",
+          "speaker": "DANA",
+          "text": "a",
+          "char_start": 106,
+          "char_end": 107
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T04",
+          "speaker": "DANA",
+          "text": "good",
+          "char_start": 108,
+          "char_end": 112
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T04",
+          "speaker": "DANA",
+          "text": "job.",
+          "char_start": 113,
+          "char_end": 117
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "I",
+      "char_start": 5,
+      "char_end": 6
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "thought",
+      "char_start": 7,
+      "char_end": 14
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "it",
+      "char_start": 15,
+      "char_end": 17
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "was",
+      "char_start": 18,
+      "char_end": 21
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "going",
+      "char_start": 22,
+      "char_end": 27
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "to",
+      "char_start": 28,
+      "char_end": 30
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "fail",
+      "char_start": 31,
+      "char_end": 35
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T01",
+      "speaker": "SOL",
+      "text": "again.",
+      "char_start": 36,
+      "char_end": 42
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T02",
+      "speaker": "DANA",
+      "text": "It",
+      "char_start": 49,
+      "char_end": 51
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T02",
+      "speaker": "DANA",
+      "text": "didn't.",
+      "char_start": 52,
+      "char_end": 59
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T03",
+      "speaker": "SOL",
+      "text": "You",
+      "char_start": 65,
+      "char_end": 68
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T03",
+      "speaker": "SOL",
+      "text": "think",
+      "char_start": 69,
+      "char_end": 74
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T03",
+      "speaker": "SOL",
+      "text": "it's",
+      "char_start": 75,
+      "char_end": 79
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T03",
+      "speaker": "SOL",
+      "text": "ready?",
+      "char_start": 80,
+      "char_end": 86
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "text": "Yes.",
+      "char_start": 93,
+      "char_end": 97
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "text": "You",
+      "char_start": 98,
+      "char_end": 101
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "text": "did",
+      "char_start": 102,
+      "char_end": 105
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "text": "a",
+      "char_start": 106,
+      "char_end": 107
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "text": "good",
+      "char_start": 108,
+      "char_end": 112
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T04",
+      "speaker": "DANA",
+      "text": "job.",
+      "char_start": 113,
+      "char_end": 117
+    }
+  ]
+}

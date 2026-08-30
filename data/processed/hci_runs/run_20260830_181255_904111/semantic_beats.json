@@ -1,0 +1,87 @@
+{
+  "initial": {
+    "ERIN": {
+      "affect": "Watchful-60",
+      "focus": "TARGET",
+      "acting": "She holds steady eye contact, alert and controlled, with restrained disapproval.",
+      "head": "HEAD-NONE"
+    },
+    "KAI": {
+      "affect": "Neutral-45",
+      "focus": "TARGET",
+      "acting": "He faces Erin with a guarded, uncertain readiness.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "ERIN",
+      "anchor_id": "w0002",
+      "acting": "The confirmation that Kai sent the draft turns her watchfulness into visible provocation.",
+      "affect": "Provoked-70"
+    },
+    {
+      "event_id": "E002",
+      "actor": "KAI",
+      "anchor_id": "w0002",
+      "acting": "The accusation makes him briefly look down before returning his attention to Erin.",
+      "affect": "Nervous-70",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E003",
+      "actor": "ERIN",
+      "anchor_id": "w0007",
+      "acting": "Hearing that they were running out of time sharpens her reaction into anger.",
+      "affect": "Angry-75",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "KAI",
+      "anchor_id": "w0012",
+      "acting": "The reminder that he should have asked Erin intensifies his discomfort and makes him avoid her eyes.",
+      "affect": "Nervous-80",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "KAI",
+      "anchor_id": "w0016",
+      "acting": "His admission carries visible remorse as he briefly drops his gaze.",
+      "affect": "Sad-60",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "ERIN",
+      "anchor_id": "w0018",
+      "acting": "The final warning settles into a firm, unmistakable intimidation.",
+      "affect": "Intimidating-85"
+    },
+    {
+      "event_id": "E007",
+      "actor": "KAI",
+      "anchor_id": "w0018",
+      "acting": "The warning makes him visibly afraid while he keeps facing Erin.",
+      "affect": "Afraid-75"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

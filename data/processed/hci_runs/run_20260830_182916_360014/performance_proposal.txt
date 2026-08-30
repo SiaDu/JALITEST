@@ -1,0 +1,41 @@
+[GAZE_TARGETS]
+TARGET
+
+[INITIAL]
+
+BEN
+affect: Friendly-55
+gaze: GAZE-TARGET
+reason: Ben is pleased but cautious, aware that the announcement may affect Ari.
+
+ARI
+affect: Neutral-45
+gaze: GAZE-TARGET
+reason: Ari maintains a composed professional exterior while listening closely to Ben.
+
+[CHANGES]
+
+E002
+actor: BEN
+anchor: w0011
+reason: Ari's terse acknowledgment makes Ben more aware of the tension and visibly uneasy about her reaction.
+affect: Nervous-65
+
+E001
+actor: ARI
+anchor: w0009
+reason: The confirmation that Ben received the lead breaks through Ari's composure, revealing restrained disappointment.
+affect: Sad-65
+gaze: GLANCE-DOWN
+
+E003
+actor: ARI
+anchor: w0012
+reason: Ben's direct question about their relationship makes Ari briefly avoid eye contact while gathering herself.
+gaze: GLANCE-DOWN
+
+E004
+actor: ARI
+anchor: w0015
+reason: Ari answers with controlled professional warmth, masking the disappointment beneath her congratulations.
+affect: Polite-70

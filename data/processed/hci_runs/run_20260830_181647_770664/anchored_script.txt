@@ -1,0 +1,14 @@
+T01 ERIN:
+[w0001 You] [w0002 sent] [w0003 the] [w0004 draft.]
+
+T02 KAI:
+[w0005 We] [w0006 were] [w0007 running] [w0008 out] [w0009 of] [w0010 time.]
+
+T03 ERIN:
+[w0011 You] [w0012 should] [w0013 have] [w0014 asked] [w0015 me.]
+
+T04 KAI:
+[w0016 I] [w0017 know.]
+
+T05 ERIN:
+[w0018 Don't] [w0019 do] [w0020 it] [w0021 again.]
