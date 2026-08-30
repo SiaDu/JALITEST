@@ -31,6 +31,7 @@ from performance_plan_ui_data import (  # noqa: E402
     load_performance_plan,
     save_animation_runtime_plan,
     save_performance_plan,
+    score_text_matches_clean_baseline,
     set_event_intent,
     set_event_locks,
     update_affect_span,
@@ -188,6 +189,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.source_path: Path | None = None
         self._loaded_v2_snapshot_content: dict[str, Any] | None = None
         self._generation_had_active_plan = False
+        self._suppress_score_dirty_tracking = False
+        self._clean_score_baseline: str | dict[str, str] | None = None
         self.current_event_index: int | None = None
         self._building = False
         self.character_rows: list[tuple[QtWidgets.QLineEdit, QtWidgets.QLineEdit, QtWidgets.QWidget]] = []
@@ -360,6 +363,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         controls.addWidget(self.validate_score_button)
         self.apply_score_button = QtWidgets.QPushButton("Apply Tag Edits")
         self.apply_score_button.clicked.connect(self.apply_score_edits)
+        self.validate_score_button.setEnabled(False)
+        self.apply_score_button.setEnabled(False)
         controls.addWidget(self.apply_score_button)
         self.validation_label = QtWidgets.QLabel("No plan loaded")
         controls.addWidget(self.validation_label, 1)
@@ -419,48 +424,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.backend_log.setMaximumBlockCount(500)
         layout.addWidget(self.backend_log)
 
-        self.diagnostics = QtWidgets.QPlainTextEdit()
-        _configure_multiline_editor(
-            self.diagnostics, height=160, read_only=True, fixed_height=True
-        )
-        self.diagnostics.setMaximumBlockCount(200)
-        layout.addWidget(self.diagnostics)
-
-        splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
-        self.event_list = QtWidgets.QListWidget()
-        self.event_list.setMinimumWidth(260)
-        self.event_list.currentRowChanged.connect(self._select_event)
-        splitter.addWidget(self.event_list)
-
-        self.right_content = QtWidgets.QWidget()
-        self.right_layout = QtWidgets.QVBoxLayout(self.right_content)
-        self.right_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
-        self._build_event_metadata()
-
-        self.visible_affect = self._create_table(
-            "Visible Affect", ["State", "Intensity", "Start", "End", "Source Tag"]
-        )
-        self.hidden_affect = self._create_table(
-            "Hidden Affect", ["State", "Intensity", "Start", "End", "Source Tag"]
-        )
-        self.gaze = self._create_table("Gaze", ["Mode", "Target", "Start", "End", "Source Tag"])
-        self.head = self._create_table("Head", ["Involvement", "Start", "End", "Source Tag"])
-        self.lid_state = self._create_table("Lid State", ["Lid State", "Start", "End", "Source Tag"])
-        self.performative_blink = self._create_table(
-            "Performative Blink", ["Value", "Start", "End", "Source Tag"]
-        )
-        self.blink_suppression = self._create_table(
-            "Blink Suppression", ["Value", "Start", "End", "Source Tag"]
-        )
-        self._build_rationale()
-        self._build_locks()
-
-        scroll = QtWidgets.QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(self.right_content)
-        splitter.addWidget(scroll)
-        splitter.setStretchFactor(1, 1)
-        layout.addWidget(splitter, 1)
+        layout.addStretch(1)
         self.tabs.addTab(advanced, "Advanced / Debug")
 
     def _select_audio_folder(self) -> None:
@@ -596,9 +560,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_title_b.hide()
         self.score_legend.hide()
         self.phrase_reason.clear()
-        self.rationale.clear()
-        self.event_list.clear()
-        self.diagnostics.clear()
         self.validation_details.clear()
         self.validation_details.hide()
         self.validation_label.setText("Generating a new plan; previous output invalidated.")
@@ -1095,9 +1056,38 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         return session_path
 
     def _score_changed(self) -> None:
-        if not self._building and self.score_model is not None:
+        if self._suppress_score_dirty_tracking or self._building or self.score_model is None:
+            return
+        if score_text_matches_clean_baseline(
+            self._score_payload(), self._clean_score_baseline
+        ):
+            self.validation_label.setText("No pending tag edits.")
+            self.validation_label.setStyleSheet("color: #166534;")
+            self.validation_details.clear()
+            self.validation_details.hide()
+            self.apply_score_button.setEnabled(False)
+            return
+        if self.score_model is not None:
             self.validation_label.setText("Tag changed — validate before saving.")
             self.validation_label.setStyleSheet("color: #92400e;")
+            self.apply_score_button.setEnabled(True)
+
+    def _set_score_editor_text(self, editor: QtWidgets.QPlainTextEdit, text: str) -> None:
+        self._suppress_score_dirty_tracking = True
+        try:
+            editor.setPlainText(text)
+        finally:
+            self._suppress_score_dirty_tracking = False
+
+    def _mark_score_editors_clean(self) -> None:
+        """Record the currently rendered score as the accepted editor baseline."""
+        self._clean_score_baseline = self._score_payload()
+        self.validation_label.setText("No pending tag edits.")
+        self.validation_label.setStyleSheet("color: #166534;")
+        self.validation_details.clear()
+        self.validation_details.hide()
+        self.validate_score_button.setEnabled(self.score_model is not None)
+        self.apply_score_button.setEnabled(False)
 
     def validate_score(self, *, show_dialog: bool = False) -> bool:
         if self.score_model is None:
@@ -1129,6 +1119,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._refresh_required_look_at_targets()
         self._refresh_phrase_reason()
         self._refresh_metadata_and_diagnostics()
+        self._mark_score_editors_clean()
         if show_success:
             QtWidgets.QMessageBox.information(
                 self, "Tag Applied", "Valid semantic tag edits were applied to the canonical Performance Plan."
@@ -1268,7 +1259,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     loaded_plan, extra_targets=self._known_look_targets()
                 )
             self.plan = self.score_model.plan
-            self.hidden_affect.parentWidget().setVisible(loaded_plan.get("schema_version") not in {"dual_performance_plan_v1", "dual_performance_plan_v2"})
         except Exception as exc:
             self._append_backend_output(f"Could Not Load Plan: {exc}")
             QtWidgets.QMessageBox.critical(self, "Could Not Load Plan", str(exc))
@@ -1296,14 +1286,14 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self.input_script.setPlainText(" ".join(
                     str(row.get("span", {}).get("text") or "") for row in source_rows
                 ).strip())
-        self.score_editor.setPlainText(self.score_model.score_text)
+        self._set_score_editor_text(self.score_editor, self.score_model.score_text)
         if isinstance(self.score_model, DualSparseScoreModel):
             first, second = self.score_model.characters
             self.optional_gaze_actor.clear(); self.optional_gaze_actor.addItems([first, second])
             self.optional_gaze_target.clear(); self.optional_gaze_target.addItems(list(self.plan.get("gaze_target_candidates") or []))
             self.score_title_a.setText(f"{first} PERFORMANCE")
             self.score_title_b.setText(f"{second} PERFORMANCE")
-            self.score_editor_b.setPlainText(self.score_model.score_texts[second])
+            self._set_score_editor_text(self.score_editor_b, self.score_model.score_texts[second])
             self.score_title_b.show()
             self.score_editor_b.show()
             self.score_legend.show()
@@ -1339,17 +1329,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._refresh_required_look_at_targets()
         self._refresh_phrase_reason()
         self._refresh_metadata_and_diagnostics()
-        self._building = True
-        self.event_list.clear()
-        for event in self.plan.get("events", []):
-            event_id = event.get("event_id", "?")
-            intent = event.get("intent") or "(no intent)"
-            self.event_list.addItem(f"{event_id} — {intent}")
-        self._building = False
-        if self.event_list.count():
-            self.event_list.setCurrentRow(0)
-        else:
-            self._clear_event_panel()
+        self._mark_score_editors_clean()
         return True
 
     def _refresh_phrase_reason(self) -> None:
@@ -1368,7 +1348,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _refresh_metadata_and_diagnostics(self) -> None:
         if self.plan is None:
             self.metadata_label.setText("No plan loaded")
-            self.diagnostics.clear()
             return
         characters = self.plan.get("characters")
         character_label = (
@@ -1381,17 +1360,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 sequence=self.plan.get("sequence_id", ""),
                 character=character_label,
             )
-        )
-        diagnostics = self.plan.get("diagnostics", {})
-        errors = diagnostics.get("errors", []) if isinstance(diagnostics, dict) else []
-        warnings = diagnostics.get("warnings", []) if isinstance(diagnostics, dict) else []
-        lines = ["Errors:"] + ([f"- {item}" for item in errors] or ["- none"])
-        lines += ["", "Warnings:"] + ([f"- {item}" for item in warnings] or ["- none"])
-        self.diagnostics.setPlainText("\n".join(lines))
-        self.diagnostics.setStyleSheet(
-            "QPlainTextEdit { color: #9b1c1c; background: #fff5f5; }"
-            if errors
-            else "QPlainTextEdit { color: #1f2937; }"
         )
 
     def _select_event(self, row: int) -> None:

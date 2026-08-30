@@ -93,6 +93,15 @@ def is_v2_plan_changed_from_loaded_snapshot(
     )
 
 
+def score_text_matches_clean_baseline(
+    current: str | dict[str, str], baseline: str | dict[str, str] | None,
+) -> bool:
+    """Return whether the displayed score is exactly the last accepted score."""
+    if baseline is None:
+        return False
+    return current == baseline
+
+
 def _is_canonical_v2_snapshot(path: Path) -> bool:
     return bool(re.fullmatch(r"performance_plan(?:_edited_\d+)?\.json", path.name))
 

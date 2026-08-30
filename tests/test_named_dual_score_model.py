@@ -73,7 +73,9 @@ def test_mask_intensity_display_never_quantizes_custom_values():
     assert mask_intensity_display(73) == "Custom (73%)"
 
 
-def test_ui_gates_hidden_affect_for_v1_dual_plans():
+def test_ui_no_longer_builds_the_removed_hidden_affect_debug_inspector():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
-    assert '"dual_performance_plan_v1"' in source
-    assert "self.hidden_affect.parentWidget().setVisible" in source
+    advanced = source.split("    def _build_advanced_tab", 1)[1].split(
+        "    def _select_audio_folder", 1
+    )[0]
+    assert "self.hidden_affect = self._create_table" not in advanced

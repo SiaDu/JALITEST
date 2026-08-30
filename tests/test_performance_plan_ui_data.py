@@ -21,6 +21,7 @@ from performance_plan_ui_data import (  # noqa: E402
     load_performance_plan,
     save_animation_runtime_plan,
     save_performance_plan,
+    score_text_matches_clean_baseline,
     set_event_intent,
     set_event_locks,
     update_affect_span,
@@ -238,7 +239,37 @@ def test_advanced_debug_retains_canonical_json_load_and_save_controls():
     assert 'QPushButton("Save Performance Plan")' in advanced
     assert 'QPushButton("Save Performance Plan As...")' in advanced
     assert 'QLabel("Backend Generation Log")' in advanced
+    assert "Event Metadata" not in advanced
+    assert "self.diagnostics" not in advanced
+    assert "QSplitter" not in advanced
     assert '"Performance Plan JSON (*.json)"' in source
+
+
+def test_score_clean_baseline_tracks_only_real_text_changes():
+    baseline = {"ALICE": "Hello <Happy-60>", "BOB": "No <Neutral-60>"}
+    assert score_text_matches_clean_baseline(dict(baseline), baseline)
+    assert not score_text_matches_clean_baseline(
+        {**baseline, "ALICE": "Hello <Angered-60>"}, baseline
+    )
+    assert score_text_matches_clean_baseline(dict(baseline), baseline)
+    assert not score_text_matches_clean_baseline(baseline, None)
+
+
+def test_ui_suppresses_programmatic_score_updates_and_resets_clean_baseline():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    load = source.split("    def load_plan(", 1)[1].split(
+        "    def _refresh_phrase_reason", 1
+    )[0]
+    apply = source.split("    def apply_score_edits", 1)[1].split(
+        "    def _score_payload", 1
+    )[0]
+
+    assert "self._suppress_score_dirty_tracking = True" in source
+    assert "finally:\n            self._suppress_score_dirty_tracking = False" in source
+    assert "score_text_matches_clean_baseline(" in source
+    assert "self._set_score_editor_text(self.score_editor" in load
+    assert "self._mark_score_editors_clean()" in load
+    assert "self._mark_score_editors_clean()" in apply
 
 
 def test_setup_exposes_optional_context_and_real_generation_action():
@@ -391,11 +422,10 @@ def test_multiline_editors_share_score_font_and_use_larger_sizes():
     for editor, height in (
         ("input_script", 240),
         ("input_context", 200),
-        ("score_editor", 260),
-        ("phrase_reason", 240),
-        ("backend_log", 180),
-        ("diagnostics", 160),
-        ("validation_details", 120),
+            ("score_editor", 260),
+            ("phrase_reason", 240),
+            ("backend_log", 180),
+            ("validation_details", 120),
     ):
         assert re.search(
             rf"_configure_multiline_editor\(\s*self\.{editor},\s*height={height}",
