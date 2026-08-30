@@ -1,4 +1,0 @@
-<mask=Watchful-80> Evening, ma'am </mask=Watchful-80> .
-<mask=Watchful-80> We're in pursuit of someone very dangerous. He might've come onto your property. Have you seen anyone recently </mask=Watchful-80> ?
-<mask=Watchful-90> Is he in there with you, ma'am </mask=Watchful-90> ?
-<mask=Watchful-90> He's not what he seems. God forbid you let him into your home. And if so, we </mask=Watchful-90> <mask=Intimidating-75> need to act </mask=Intimidating-75> .

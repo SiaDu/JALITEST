@@ -1,2 +1,0 @@
-<mask=Confused-75> What did I win, Joan </mask=Confused-75> ?
-<mask=Polite-60> See you soon, Joan </mask=Polite-60> .

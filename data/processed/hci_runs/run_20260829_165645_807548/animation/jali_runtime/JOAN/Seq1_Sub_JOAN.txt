@@ -1,2 +1,0 @@
-<mask=Nervous-30> No </mask=Nervous-30> .
-<mask=Nervous-65> Bert </mask=Nervous-65> !

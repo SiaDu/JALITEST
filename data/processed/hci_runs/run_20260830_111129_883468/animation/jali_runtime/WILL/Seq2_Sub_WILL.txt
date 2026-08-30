@@ -1,5 +1,0 @@
-<mask=Nervous-65> Did Bartholomew show you the new house </mask=Nervous-65> ?
-<mask=Nervous-65> Do you like it </mask=Nervous-65> ?
-<mask=Afraid-68> You know, I'm constantly wondering </mask=Afraid-68> <mask=Lost-76> where he is. Or where he has gone. Whatever I'm doing, I'm wondering, "Where is he?" I mean, he can't have just vanished. All he needs is for me to find him. He must be somewhere. I fear I may run mad with it, even now, a year on </mask=Lost-76> .
-<mask=Lost-76> I'm </mask=Lost-76> <mask=Sad-78> sorry, Agnes </mask=Sad-78> .
-<mask=Sad-78> What place </mask=Sad-78> ?

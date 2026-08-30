@@ -1,4 +1,0 @@
-<mask=Nervous-25> Good day to you </mask=Nervous-25> .
-<mask=Polite-35> I'm tutoring the boys here </mask=Polite-35> .
-<mask=Nervous-60> <heart=Afraid-20> Uh </mask=Nervous-60> </heart=Afraid-20> ...
-<mask=Thinking-45> Yes, I, uh... I suppose the air was fresh out here </mask=Thinking-45> , <mask=Friendly-30> <heart=Happy-15> and... uh, I saw you with your bird </mask=Friendly-30> </heart=Happy-15> .

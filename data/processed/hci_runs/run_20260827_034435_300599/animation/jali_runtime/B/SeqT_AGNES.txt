@@ -1,6 +1,0 @@
-<mask=Polite-40> Good day, sir </mask=Polite-40> .
-<mask=Thinking-30> <heart=Surprised-15> What brings you to Hewlands </mask=Thinking-30> </heart=Surprised-15> ?
-<mask=Nervous-45> <heart=Surprised-20> The Latin tutor. I've heard of you </mask=Nervous-45> </heart=Surprised-20> .
-<mask=Nervous-50> What brought you into the garden </mask=Nervous-50> ?
-<mask=Nervous-50> It's just a question, master tutor </mask=Nervous-50> .
-<mask=Nervous-40> <heart=Surprised-15> It's a hawk </mask=Nervous-40> </heart=Surprised-15> .

@@ -1,5 +1,0 @@
-<mask=Watchful-80> Mm-hmm </mask=Watchful-80> .
-<mask=Provoked-72> Why didn't you show me yourself? Were you afraid I wouldn't leave? 'Cause Hamnet </mask=Provoked-72> <mask=Sad-86> died here in this house </mask=Sad-86> .
-<mask=Sad-86> A year is nothing. It's every </mask=Sad-86> <mask=Sad-92> second... every minute, every day. We may never stop looking for him </mask=Sad-92> .
-<mask=Sad-92> For what? You're </mask=Sad-92> <mask=Angered-76> caught by that place </mask=Angered-76> .
-<mask=Angered-76> That place in your head. It is now more real to you than anywhere else. Not even the death of our </mask=Angered-76> <mask=Disgust-68> child can keep you from it. Hamnet died. A horrible death. And you should </mask=Disgust-68> <mask=Angered-84> have been there. You could have bid him farewell </mask=Angered-84> .

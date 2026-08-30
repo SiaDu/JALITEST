@@ -1,4 +1,0 @@
-<mask=Watchful-30> Good day to you </mask=Watchful-30> .
-<mask=Watchful-35> I'm tutoring the boys here </mask=Watchful-35> .
-<mask=Watchful-55> Uh </mask=Watchful-55> ...
-<mask=Watchful-45> Yes, I, uh... I </mask=Watchful-45> <mask=Watchful-50> suppose the air was fresh out here </mask=Watchful-50> , <mask=Watchful-60> and... uh, I saw you with your bird </mask=Watchful-60> .
