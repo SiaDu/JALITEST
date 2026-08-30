@@ -1159,6 +1159,70 @@ def test_first_gaze_after_timeline_start_keeps_neutral_then_uses_transition():
     assert keys == [{"frame": 2.0, "eye_stare": [9, 9, 9], "eyes": [4, 5]}, {"frame": 5.0, "eye_stare": [1, 2, 3], "eyes": [0.0, 0.0]}]
 
 
+def test_time_zero_persistent_gaze_transition_preserves_initial_state_before_arrival():
+    events = [
+        {"id": "INITIAL:AGNES", "mode": "GAZE", "target": "HAWK", "timing_role": "INITIAL_STATE", "resolved_time": {"start": 0.0, "end": 1.0}},
+        {"id": "E001", "mode": "GAZE", "target": "WILL", "timing_role": "SPEAK_ONSET", "resolved_time": {"start": 0.0, "end": 1.0}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0],
+        target_positions={"HAWK": [1, 2, 3], "WILL": [4, 5, 6]},
+    )
+    assert [state["start"] for state in schedule] == [0.0, 0.0]
+    keys = build_dual_gaze_key_schedule(schedule, fps=30, transition_frames=3)
+    assert keys == [
+        {"frame": 0.0, "eye_stare": [1, 2, 3], "eyes": [0.0, 0.0]},
+        {"frame": 3.0, "eye_stare": [4, 5, 6], "eyes": [0.0, 0.0]},
+    ]
+
+
+def test_time_zero_persistent_gaze_matching_initial_remains_a_noop():
+    events = [
+        {"id": "INITIAL:AGNES", "mode": "GAZE", "target": "WILL", "timing_role": "INITIAL_STATE", "resolved_time": {"start": 0.0, "end": 1.0}},
+        {"id": "E001", "mode": "GAZE", "target": "WILL", "timing_role": "SPEAK_ONSET", "resolved_time": {"start": 0.0, "end": 1.0}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0], target_positions={"WILL": [4, 5, 6]},
+    )
+    assert build_dual_gaze_key_schedule(schedule, fps=30, transition_frames=3) == [
+        {"frame": 0.0, "eye_stare": [4, 5, 6], "eyes": [0.0, 0.0]},
+    ]
+
+
+def test_later_persistent_gaze_keeps_existing_speaker_preroll_schedule():
+    events = [
+        {"id": "INITIAL:AGNES", "mode": "GAZE", "target": "HAWK", "timing_role": "INITIAL_STATE", "resolved_time": {"start": 0.0, "end": 4.0}},
+        {"id": "E001", "mode": "GAZE", "target": "WILL", "timing_role": "SPEAK_ONSET", "resolved_time": {"start": 4.0, "end": 5.0}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0],
+        target_positions={"HAWK": [1, 2, 3], "WILL": [4, 5, 6]},
+    )
+    assert [key["frame"] for key in build_dual_gaze_key_schedule(schedule, fps=30, transition_frames=3)] == [0.0, 117.0, 120.0]
+
+
+def test_time_zero_glance_keeps_initial_persistent_return_state():
+    events = [
+        {"id": "INITIAL:AGNES", "mode": "GAZE", "target": "HAWK", "timing_role": "INITIAL_STATE", "resolved_time": {"start": 0.0, "end": 1.0}},
+        {"id": "E001", "mode": "GLANCE", "target": "DOWN", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": 0.0, "end": 1.0}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 0], neutral_eyes=[0, 0], target_positions={"HAWK": [1, 2, 3]},
+    )
+    keys = build_dual_gaze_key_schedule(schedule, fps=30, transition_frames=3, glance_hold_seconds=.5)
+    assert schedule[1]["return_state"] == {"eye_stare": [1, 2, 3], "eyes": [0.0, 0.0]}
+    assert keys[-1] == {"frame": 30.0, "eye_stare": [1, 2, 3], "eyes": [0.0, 0.0]}
+
+
+def test_genuine_non_boundary_conflicting_gaze_keys_still_fail():
+    schedule = [
+        {"event": {"mode": "GAZE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [0, 0, 0], "eyes": [0, 0]}, "eye_stare": [1, 0, 0], "eyes": [0, 0]},
+        {"event": {"mode": "GAZE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [2, 0, 0], "eyes": [0, 0]}, "eye_stare": [3, 0, 0], "eyes": [0, 0]},
+    ]
+    with pytest.raises(ValueError, match="Conflicting gaze keys at frame 60.0"):
+        build_dual_gaze_key_schedule(schedule, fps=30, transition_frames=3)
+
+
 def test_v2_gaze_role_aware_key_realization_keeps_semantic_boundary_exact():
     speaker = [{"event": {"mode": "GAZE", "timing_role": "SPEAK_ONSET"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [0, 0, 9], "eyes": [0, 0]}, "eye_stare": [1, 2, 3], "eyes": [0, 0]}]
     listener = [{"event": {"mode": "GAZE", "timing_role": "LISTEN_REACTION"}, "start": 2.0, "end": 5.0, "previous_state": {"eye_stare": [0, 0, 9], "eyes": [0, 0]}, "eye_stare": [1, 2, 3], "eyes": [0, 0]}]

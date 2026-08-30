@@ -1636,6 +1636,30 @@ def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: flo
         if index == 0 and event["mode"] != "GLANCE" and state["start"] <= timeline_start + initialization_epsilon:
             keys.append({"frame": start, "eye_stare": list(state["eye_stare"]), "eyes": list(state["eyes"])})
             continue
+        # A later persistent GAZE can share the semantic timeline boundary
+        # with an authored INITIAL GAZE.  Its normal speaker pre-roll would
+        # clamp to the INITIAL key at frame zero, creating two incompatible
+        # states there.  Keep INITIAL observable at the boundary and realize
+        # the new target after the configured transition instead.
+        initial = ordered[0]
+        starts_with_initial_gaze = (
+            index > 0
+            and initial["event"]["mode"] == "GAZE"
+            and initial["start"] <= timeline_start + initialization_epsilon
+        )
+        at_timeline_boundary = state["start"] <= timeline_start + initialization_epsilon
+        if starts_with_initial_gaze and at_timeline_boundary and event["mode"] == "GAZE":
+            if (
+                state["eye_stare"] == initial["eye_stare"]
+                and state["eyes"] == initial["eyes"]
+            ):
+                continue
+            keys.append({
+                "frame": timeline_start * fps + transition_frames,
+                "eye_stare": list(state["eye_stare"]),
+                "eyes": list(state["eyes"]),
+            })
+            continue
         # Semantic time remains exact. A speaker's target may be visually
         # approached beforehand, while a listener must not move until after
         # the heard anchor boundary.
