@@ -165,6 +165,10 @@ def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
     assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
     assert "GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes" in prompt
     assert "GAZE and GLANCE have different temporal semantics" in prompt
+    assert "ATTENTION TRACKING AND GAZE COVERAGE" in prompt
+    assert "A gaze-only event is valid and desirable when attention changes" in prompt
+    assert "There is still no fixed gaze-event count" in prompt
+    assert "Use at least 8 gaze events" not in prompt
     assert "INTERNAL ATTENTION AND DIRECTIONAL GAZE" in prompt
     assert "[GAZE_TARGETS] is calibration metadata only" in prompt
     assert "built-in directions are executable gaze choices, not [GAZE_TARGETS] calibration candidates" in prompt

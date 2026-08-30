@@ -29,7 +29,14 @@ Both actors enter the scene already performing: `[INITIAL]` must contain one blo
 
 For each actor independently, analyze both speaking behavior and listening behavior. Listeners may react during another actor's utterance: anchor a meaningful listener change to the earliest semantically sufficient heard cue word. Do not automatically wait for sentence completion, dialogue-turn completion, or the listener's next spoken line. Phrase and clause comprehension matter more than punctuation. Do not over-segment; create a listener event only when heard information meaningfully changes the acting state.
 
-Choose later sparse change points by acting meaning: threat-relevant keyword, realization, suspicion increase, hesitation, disclosure, accusation, direct question, eye-contact decision, affect transition, deliberate head pose, or meaningful performative blink. Do not create an event merely because punctuation occurred, a dialogue turn began, or N words elapsed.
+Choose later sparse change points by acting meaning: threat-relevant keyword,
+realization, suspicion increase, hesitation, disclosure, accusation,
+direct question, direct address, attentional shift, object reveal or handoff,
+social re-engagement after object inspection, eye-contact decision,
+affect transition, deliberate head pose, or meaningful performative blink.
+A change point may contain only gaze when gaze is the only semantic channel
+that changes. Do not create an event merely because punctuation occurred, a
+dialogue turn began, or N words elapsed.
 
 Each event has a unique E-number, one actor, an existing word anchor, at least one changed semantic channel, and one concise event-level reason. For one actor, never emit more than one event at the same anchor: combine simultaneous channel changes into one event with one reason. A listener reason should identify the meaningful heard stimulus rather than restating the visible action. Do not create per-channel boilerplate reasons. Emit only changed channels. There is no fixed event count, no event is required at each turn, and one actor changing never implies an event for the other actor.
 
@@ -38,6 +45,37 @@ Allowed channels are affect, gaze, head, and blink. Never output Heart, Lid, bli
 Affect is a valid Mask state plus any positive integer percentage, or MASK-NONE. Neutral is not NONE. Executable gaze is only GAZE-target or GLANCE-target. Targets may be characters, objects, or RIGHT/LEFT/DOWN/DOWN_LEFT/DOWN_RIGHT/UP/UP_LEFT/UP_RIGHT. GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes.
 
 GAZE and GLANCE have different temporal semantics. `GAZE-target` establishes a new persistent fixation and remains the actor's active gaze until a later persistent `GAZE-*` change. Use GAZE only when the actor should keep attending to that target. `GLANCE-target` is a brief temporary shift to a target and automatically returns to the actor's currently active persistent gaze; GLANCE does not replace that persistent gaze. Use GLANCE for a quick check, an involuntary look, a brief reaction, or a momentary break of eye contact when attention should return afterward.
+
+ATTENTION TRACKING AND GAZE COVERAGE
+
+Treat gaze as a continuously tracked attention state, not as an occasional accessory to affect. For each actor, silently track the current persistent `GAZE-*` throughout the scene and reconsider it whenever the actor's attention meaningfully shifts.
+
+At each meaningful beat, ask: what is this actor attending to now — the interlocutor, a physical object or location, another available scene target, or an internal thought? If the answer differs from the actor's current persistent gaze, emit a gaze change even when affect, head, and blink do not change. A gaze-only event is valid and desirable when attention changes.
+
+Strong gaze-change opportunities include:
+- a direct question or direct address that re-engages the interlocutor;
+- an object being shown, handed over, inspected, or explicitly referenced;
+- returning from object inspection to the interlocutor;
+- praise, accusation, persuasion, confession, challenge, or another socially important statement where eye contact becomes meaningful;
+- checking another person's reaction;
+- shifting between multiple scene objects or people;
+- briefly disengaging from social attention for thought, memory, hesitation, guilt, or self-consciousness.
+
+Persistent object gaze must not accidentally continue through later social interaction. If an actor is currently in `GAZE-OBJECT` and later directly questions, praises, confronts, appeals to, or meaningfully responds to another person, reconsider the gaze. Usually use `GAZE-PERSON` when social attention should remain there, or `GLANCE-PERSON` when the actor only checks that person briefly before returning to the object.
+
+Likewise, when an actor looks at a person and a concrete object becomes the new focus of inspection, demonstration, or discussion, consider whether the gaze should move to that object.
+
+Use `GLANCE-*` for temporary checks that return automatically to the current persistent gaze. Use `GAZE-*` when the new attentional target should remain active.
+
+Sparsity means avoiding redundant or unmotivated gaze changes; it does not mean minimizing the number of gaze decisions. Do not omit a meaningful gaze-only event merely because affect remains unchanged.
+
+Before producing the final answer, perform a silent gaze-coverage pass for each actor:
+1. track the persistent gaze from `[INITIAL]` through every `GAZE-*` event;
+2. inspect direct questions, direct addresses, object reveals or handoffs, social re-engagement, listener reactions, and internal-attention beats;
+3. add a gaze event where the attentional target genuinely changes;
+4. remove redundant gaze events where the target has not changed.
+
+There is still no fixed gaze-event count. Do not create gaze changes merely because a dialogue turn starts or because time has passed.
 
 INTERNAL ATTENTION AND DIRECTIONAL GAZE
 
