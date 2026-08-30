@@ -326,14 +326,13 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     prompt = build_dual_generation_prompt(
         script=SCRIPT, character_a="AGNES", character_b="WILL"
     )
-    assert "sparse change points" in prompt
+    assert "Dual Semantic Beat IR v1" in prompt
     assert "[INITIAL]\nAGNES" in prompt
     assert "MASK-NONE" in prompt
     assert "VISIBLE AFFECT — CLOSED VOCABULARY:" in prompt
     assert "HEART" not in prompt
-    assert "ACTING RATIONALE: Open natural language is allowed only in reason fields." in prompt
-    assert "[CHANGES]" in prompt
-    assert "GAZE-WILL" in prompt
+    assert "[BEATS]" in prompt
+    assert "GAZE-WILL" not in prompt and "GLANCE-WILL" not in prompt
     assert "Acting Direction: NONE" in prompt
     assert "Context: NONE" not in prompt
     assert "AGNES becomes increasingly curious about WILL." not in prompt
@@ -341,7 +340,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
 
     def runner(**kwargs):
         calls.append(kwargs)
-        proposal_text = "[ANALYZE]\nx\n[INITIAL]\nAGNES\naffect: Watchful-80\ngaze: GAZE-WILL\nreason: Enters watchful.\n\nWILL\naffect: Nervous-60\ngaze: GAZE-AGNES\nreason: Enters guarded.\n[CHANGES]\nE001\nactor: AGNES\nanchor: w0001\naffect: Watchful-100\nreason: x"
+        proposal_text = "[INITIAL]\nAGNES\naffect: Watchful-80\nattention: hold WILL\nacting: Enters watchful.\n\nWILL\naffect: Nervous-60\nattention: hold AGNES\nacting: Enters guarded.\n[BEATS]\nE001\nactor: AGNES\ntrigger: w0001\nacting: He becomes more alert.\naffect: Watchful-100"
         Path(kwargs["output_text"]).write_text(proposal_text, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
         return proposal_text, {"status": "completed"}
@@ -353,7 +352,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert len(calls) == 1 and plan["schema_version"] == "dual_performance_plan_v2"
     for name in (
         "input_script.txt", "input_context.txt", "actor_prompt.txt", "anchored_script.txt",
-        "anchor_map.json", "performance_proposal.txt", "llm_response_meta.json", "performance_plan.json",
+        "anchor_map.json", "semantic_beats.txt", "semantic_beats.json", "performance_proposal.txt", "llm_response_meta.json", "performance_plan.json",
     ):
         assert (tmp_path / "dual_run" / name).exists()
 
@@ -363,7 +362,7 @@ def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scen
         script="WILL: Look there.\nAGNES: I see it.", character_a="WILL", character_b="AGNES"
     )
     assert "WILL and AGNES are immutable script identities." in reversed_prompt
-    assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly `[GAZE_TARGETS]`")
+    assert reversed_prompt.index("IDENTITY CONTRACT") < reversed_prompt.index("Return exactly [INITIAL], then [BEATS]")
     assert "[INITIAL]\nWILL" in reversed_prompt
     assert "Agnes may become increasingly curious about Will" not in reversed_prompt
     assert "GROWING_CURIOSITY_ABOUT_WILL" not in reversed_prompt
@@ -373,6 +372,46 @@ def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scen
     )
     assert "ALICE and BOB are immutable script identities." in generic_prompt
     assert "AGNES" not in generic_prompt and "WILL" not in generic_prompt
+
+
+def test_semantic_beat_generation_preserves_raw_and_compiles_chayton_joan_fixture(tmp_path: Path):
+    raw = """[INITIAL]
+CHAYTON
+affect: Watchful-80
+attention: hold JOAN
+acting: He begins focused on assessing her response.
+
+JOAN
+affect: Nervous-65
+attention: hold CHAYTON
+acting: She begins guarded while concealing what she knows.
+[BEATS]
+E001
+actor: JOAN
+trigger: w0004
+acting: The danger cue makes her briefly check the hidden entrance.
+affect: Nervous-75
+attention: brief_check FARMHOUSE_ENTRANCE
+"""
+
+    def runner(**kwargs):
+        Path(kwargs["output_text"]).write_text(raw, encoding="utf-8")
+        Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
+        return raw, {"status": "completed"}
+
+    run_dir = tmp_path / "semantic_run"
+    plan = generate_dual_performance_plan(
+        script="CHAYTON: Have you seen anyone?\nJOAN: No.",
+        character_a="CHAYTON", character_b="JOAN", run_id="semantic_run",
+        output_dir=run_dir, proposal_runner=runner,
+    )
+    assert (run_dir / "semantic_beats.txt").read_text(encoding="utf-8") == raw
+    assert (run_dir / "semantic_beats.json").is_file()
+    assert plan["initial_states"]["JOAN"]["gaze"] == "GAZE-CHAYTON"
+    assert plan["tracks"]["JOAN"][0]["changes"] == {
+        "affect": "Nervous-75", "gaze": "GLANCE-FARMHOUSE_ENTRANCE"
+    }
+    assert plan["gaze_target_candidates"] == ["FARMHOUSE_ENTRANCE"]
 
 
 def test_backend_runner_keeps_single_command_and_builds_dual_command(tmp_path: Path):

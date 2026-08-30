@@ -160,31 +160,17 @@ reason: Independently reacts.""")
     assert proposal["events"][0]["changes"] == {"gaze": "GAZE-BOB", "head": "HEAD-DOWN-SUBTLE"}
 
 
-def test_v2_prompt_treats_aversion_and_thinking_as_motivation_only():
+def test_semantic_beat_prompt_treats_aversion_and_thinking_as_attention_intent():
     prompt = build_dual_generation_prompt(script="ALICE: Hello there.\nBOB: No.", character_a="ALICE", character_b="BOB")
-    assert "avoiding eye contact" in prompt and "thinking" in prompt and "recalling" in prompt
-    assert "GAZE-NONE, GLANCE-NONE, and AVERT are never executable authored gaze modes" in prompt
-    assert "GAZE and GLANCE have different temporal semantics" in prompt
-    assert "ATTENTION TRACKING AND GAZE COVERAGE" in prompt
-    assert "A gaze-only event is valid and desirable when attention changes" in prompt
-    assert "There is still no fixed gaze-event count" in prompt
-    assert "Use at least 8 gaze events" not in prompt
-    assert "INTERNAL ATTENTION AND DIRECTIONAL GAZE" in prompt
-    assert "[GAZE_TARGETS] is calibration metadata only" in prompt
-    assert "built-in directions are executable gaze choices, not [GAZE_TARGETS] calibration candidates" in prompt
-    assert "UP_RIGHT must NOT appear as a bare line under [GAZE_TARGETS]" in prompt
-    assert "These are expressive acting priors, not fixed psychological codes" in prompt
-    assert "GLANCE does not replace that persistent gaze" in prompt
-    assert "Never repeat the same active `GAZE-*` value" in prompt
-    assert "A prior `GLANCE-*` does not change the persistent gaze" in prompt
-    assert "gaze: GLANCE-DOWN" in prompt and "gaze: GLANCE-UP_LEFT" in prompt
-    assert "Do not map an emotion or motivation to a fixed direction" in prompt
-    assert not __import__("re").search(r"gaze:\s*AVERT-", prompt)
-    assert "Listeners may react during another actor's utterance" in prompt
-    assert "earliest semantically sufficient heard cue word" in prompt
-    assert "Do not automatically wait for sentence completion, dialogue-turn completion" in prompt
-    assert "Both actors enter the scene already performing" in prompt and "Initial affect may not be `MASK-NONE`" in prompt
-    assert "There is no fixed event count" in prompt
+    assert "brief_check UP or upward diagonal" in prompt
+    assert "brief_check DOWN or downward diagonal" in prompt
+    assert "There is no minimum beat count" in prompt
+    assert "Do not output analysis, [GAZE_TARGETS], gaze, GAZE-*, GLANCE-*" in prompt
+    assert "Initial affect must be visible and not MASK-NONE" in prompt
+    assert "listener reactions" in prompt.lower()
+    assert "earliest semantically sufficient heard cue" in prompt
+    assert "These are acting priors, not fixed psychological codes" in prompt
+    assert "gaze: GLANCE" not in prompt
 
 
 def _normalization_proposal(events, *, alice_initial=None, bob_initial=None):

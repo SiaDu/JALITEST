@@ -10,10 +10,9 @@ from typing import Any, Callable, Iterable
 
 from expregaze_jali.actor_prompt_builder import load_prompt_template
 from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
-from expregaze_jali.dual_sparse_performance_proposal_parser import (
-    BLINK_VALUES, DIRECTION_TARGETS, HEAD_VALUES,
-    parse_dual_sparse_performance_proposal,
-)
+from expregaze_jali.dual_sparse_performance_proposal_parser import BLINK_VALUES, DIRECTION_TARGETS, HEAD_VALUES
+from expregaze_jali.dual_semantic_beat_parser import parse_dual_semantic_beats
+from expregaze_jali.compile_dual_semantic_beats import compile_dual_semantic_beats, render_compiled_dual_performance_proposal
 from expregaze_jali.generate_performance_plan import (
     DEFAULT_EXTRA_CONFIG_FILES,
     DEFAULT_HCI_RUNS_DIR,
@@ -28,7 +27,7 @@ from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, buil
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_dual_performance_proposal_prompt_v1.md"
+DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_dual_semantic_beat_prompt_v1.md"
 ProposalRunner = Callable[..., tuple[str, dict[str, Any]]]
 
 
@@ -110,9 +109,11 @@ def generate_dual_performance_plan(
         anchor_model=model, context=context, prompt_template_path=prompt_template_path,
         extra_config_paths=extras,
     )
+    semantic_beats = run_dir / "semantic_beats.txt"
+    semantic_beats_json = run_dir / "semantic_beats.json"
     artifacts = (
         run_dir / "input_script.txt", run_dir / "input_context.txt", paths.prompt,
-        paths.anchored_script, paths.anchor_map, paths.proposal, paths.response_meta,
+        paths.anchored_script, paths.anchor_map, semantic_beats, semantic_beats_json, paths.proposal, paths.response_meta,
         paths.performance_plan,
     )
     for path in artifacts:
@@ -126,16 +127,17 @@ def generate_dual_performance_plan(
     print(f"Run ID: {resolved_run_id}", flush=True)
     print("LLM calls: 1", flush=True)
     runner = proposal_runner or generate_text_artifacts
-    proposal_text, _meta = runner(
+    semantic_beat_text, _meta = runner(
         prompt=prompt, llm_config_path=llm_config_path, prompt_path=paths.prompt,
-        output_text=paths.proposal, output_meta=paths.response_meta,
-        required_sections=("[GAZE_TARGETS]", "[INITIAL]", "[CHANGES]"),
-        artifact_name="proposal", overwrite=overwrite,
+        output_text=semantic_beats, output_meta=paths.response_meta,
+        required_sections=("[INITIAL]", "[BEATS]"),
+        artifact_name="semantic beats", overwrite=overwrite,
     )
     vocabulary = load_semantic_vocabulary(extras[0])
-    proposal = parse_dual_sparse_performance_proposal(
-        proposal_text, vocabulary=vocabulary, anchor_model=model
-    )
+    semantic_ir = parse_dual_semantic_beats(semantic_beat_text, vocabulary=vocabulary, anchor_model=model)
+    semantic_beats_json.write_text(json.dumps(semantic_ir, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    proposal = compile_dual_semantic_beats(semantic_ir, anchor_model=model)
+    paths.proposal.write_text(render_compiled_dual_performance_proposal(proposal, characters=(character_a, character_b)), encoding="utf-8")
     plan = build_dual_performance_plan_v2(
         proposal, anchor_model=model, sequence_id=resolved_run_id,
         proposal_path=str(paths.proposal),
