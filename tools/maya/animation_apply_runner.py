@@ -298,6 +298,7 @@ def restore_dual_jali_base(
     prepared = _validate_dual_jali_base(baseline, character_mappings, cmds_module=cmds_module, mel_module=mel_module)
     selection = cmds_module.ls(selection=True, long=True) or []
     removed: list[str] = []
+    warnings: list[str] = []
     try:
         for alias in prepared:
             for layer in prepared[alias]["layers"]:
@@ -345,10 +346,10 @@ def restore_dual_jali_base(
                 cmds_module.getAttr(f"{reference['both_eyes_node']}.translateY"),
             ]
             if any(abs(float(current) - float(wanted)) > 1e-5 for current, wanted in zip(actual, expected)):
-                raise RuntimeError(f"{alias}: JALI Base final gaze neutral validation failed.")
+                warnings.append(f"{alias}: JALI Base final gaze neutral validation failed.")
         if any(cmds_module.objExists(layer) for layer in item["layers"]):
             raise RuntimeError(f"{alias}: JALITEST overlay layers remain after restore.")
-    return {"restored": {alias: str(prepared[alias]["baseline"]["script_name"]) for alias in prepared}, "removed_layers": removed, "jsync_preserved": True}
+    return {"restored": {alias: str(prepared[alias]["baseline"]["script_name"]) for alias in prepared}, "removed_layers": removed, "jsync_preserved": True, "warnings": warnings}
 
 
 def _listener_affect_by_phrase(events: Iterable[dict[str, Any]]) -> dict[str, object]:

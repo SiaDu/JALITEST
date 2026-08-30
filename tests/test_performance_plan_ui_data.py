@@ -495,6 +495,15 @@ def test_debug_tab_remains_available_for_runtime_diagnostics():
     assert "self.tabs.setTabVisible" not in source
 
 
+def test_restore_jali_base_surfaces_neutral_mismatch_as_a_non_blocking_warning():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    restore = source.split("    def _restore_jali_base", 1)[1].split(
+        "    def _known_look_targets", 1
+    )[0]
+    assert "Restore warning:" in restore
+    assert "restored with gaze-neutral warning" in restore
+
+
 def test_dual_ui_uses_performance_tag_wording_and_panel_relative_dialogue_roles():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     assert "SEMANTIC PERFORMANCE TAG" in source

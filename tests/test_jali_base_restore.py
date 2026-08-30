@@ -103,6 +103,37 @@ def test_generate_restore_generate_can_repeat_without_replacing_baseline(tmp_pat
     assert len([call for call in mel.calls if call.startswith("realign_node ")]) == 4
 
 
+def test_restore_reports_final_gaze_neutral_mismatch_as_a_warning(tmp_path):
+    cmds, baseline = _baseline(tmp_path); mel = _Mel()
+    for alias in ("A", "B"):
+        eye = f"{alias}:eyeStare"; both = f"{alias}:bothEyes"
+        baseline["actors"][alias]["gaze_reference"] = {
+            "eye_stare_node": eye,
+            "eye_stare_translate": [0.0, 0.0, 0.0],
+            "both_eyes_node": both,
+            "both_eyes_translate": [0.0, 0.0],
+        }
+        cmds.values.update({
+            f"{eye}.translateX": 0.0, f"{eye}.translateY": 0.0, f"{eye}.translateZ": 0.0,
+            f"{both}.translateX": 0.0, f"{both}.translateY": 0.0,
+        })
+    cmds.values["A:eyeStare.translateX"] = 5.0
+    original_set_attr = cmds.setAttr
+
+    def leave_a_gaze_x_unchanged(plug, value, **kwargs):
+        if plug == "A:eyeStare.translateX":
+            return
+        original_set_attr(plug, value, **kwargs)
+
+    cmds.setAttr = leave_a_gaze_x_unchanged
+    result = restore_dual_jali_base(
+        baseline=baseline, character_mappings=_mappings(), cmds_module=cmds, mel_module=mel
+    )
+
+    assert result["restored"] == {"A": "AGNES", "B": "WILL"}
+    assert result["warnings"] == ["A: JALI Base final gaze neutral validation failed."]
+
+
 def test_named_restore_reasserts_gaze_neutral_after_realign(tmp_path, monkeypatch):
     import animation_apply_runner as runner
 

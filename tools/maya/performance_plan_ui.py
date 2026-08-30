@@ -884,11 +884,15 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._append_backend_output(stream.getvalue())
         self._append_backend_output("Restored JALI Base")
         for actor in result["restored"]: self._append_backend_output(f"{actor}: restored")
+        for warning in result.get("warnings", []): self._append_backend_output(f"Restore warning: {warning}")
         overlay_label = "listener/gaze/head/blink" if (self.plan or {}).get("schema_version") == "dual_performance_plan_v2" else "listener/gaze"
         self._append_backend_output(f"Removed JALITEST {overlay_label} overlays")
         self._append_backend_output("jSync preserved: yes")
         self.generate_animation_button.setEnabled(True); self.restore_jali_base_button.setEnabled(True)
-        self.animation_status.setText("JALI Base restored."); self.animation_status.setStyleSheet("color: #166534;")
+        if result.get("warnings"):
+            self.animation_status.setText("JALI Base restored with gaze-neutral warning; see Backend Generation Log."); self.animation_status.setStyleSheet("color: #92400e;")
+        else:
+            self.animation_status.setText("JALI Base restored."); self.animation_status.setStyleSheet("color: #166534;")
         QtWidgets.QMessageBox.information(self, "Restored JALI Base", "The captured JALI base was restored for both actors.")
 
     def _known_look_targets(self) -> list[str]:
