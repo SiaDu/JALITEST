@@ -44,9 +44,16 @@ actor: {{character_b}}
 trigger: w0002
 acting: The heard disclosure raises visible anxiety without changing attention.
 affect: Nervous-75
+
+E003
+actor: {{character_a}}
+trigger: w0003
+acting: The threat raises visible anxiety and briefly breaks eye contact.
+affect: Nervous-80
+attention: brief_check DOWN
 ```
 
-INITIAL requires both actors. Initial attention must be `hold TARGET`. In [BEATS], affect, attention, head, and blink are all optional. Emit only fields that actually change at that beat. A beat may contain only one changed semantic channel. Do not add affect, attention, head, or blink merely to make a beat look complete.
+INITIAL requires both actors. Initial attention must be `hold TARGET`. In [BEATS], affect, attention, head, and blink are all optional. A beat may contain one or multiple changed semantic channels. Emit only channels that genuinely change at that beat. If multiple channels change at the same meaningful beat, combine them into the same beat rather than creating separate beats at the same anchor. Do not add affect, attention, head, or blink merely to make a beat look complete.
 
 In later beats, use only `hold TARGET` when attention shifts and should remain there, or `brief_check TARGET` for a temporary check before returning. Omit attention when it does not meaningfully change.
 

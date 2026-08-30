@@ -338,8 +338,10 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "Built-in attention directions" in prompt
     assert "Directional gaze targets" not in prompt
     assert "affect, attention, head, and blink are all optional" in prompt
+    assert "A beat may contain one or multiple changed semantic channels" in prompt
     assert "attention: brief_check WILL" in prompt
     assert "affect: Nervous-75" in prompt
+    assert "affect: Nervous-80\nattention: brief_check DOWN" in prompt
     assert "Acting Direction: NONE" in prompt
     assert "Context: NONE" not in prompt
     assert "AGNES becomes increasingly curious about WILL." not in prompt
