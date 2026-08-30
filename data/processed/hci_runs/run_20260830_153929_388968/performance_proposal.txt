@@ -1,0 +1,141 @@
+[GAZE_TARGETS]
+ORANGE_BALLS
+RACHEL
+PACKAGING
+
+[INITIAL]
+
+MARTY
+affect: Happy-70
+gaze: GAZE-ORANGE_BALLS
+reason: He is already energized by the business display, leaning into the discovery with eager curiosity.
+
+DION
+affect: Happy-55
+gaze: GAZE-MARTY
+reason: He presents the product with restrained pride, watching Marty closely for the recognition he has been waiting for.
+
+[CHANGES]
+
+E001
+actor: MARTY
+anchor: w0001
+reason: The unexpected orange color produces an immediate burst of delighted surprise.
+affect: Surprised-80
+
+E002
+actor: MARTY
+anchor: w0002
+reason: He connects the discovery to Dion's effort and turns his excitement toward him.
+affect: Happy-82
+gaze: GAZE-DION
+
+E005
+actor: MARTY
+anchor: w0033
+reason: Hearing that Dion and his father believe in him touches the ambition beneath his excitement.
+affect: Happy-88
+
+E006
+actor: MARTY
+anchor: w0042
+reason: He excitedly recruits Rachel as a witness, checking whether she can share the significance of what he is seeing.
+gaze: GLANCE-RACHEL
+
+E007
+actor: MARTY
+anchor: w0046
+reason: When Dion directs him to the packaging, he returns his attention to the physical product.
+gaze: GAZE-PACKAGING
+
+E009
+actor: MARTY
+anchor: w0064
+reason: The originality of the orange-sphere concept lands on him with renewed amazement.
+affect: Surprised-88
+
+E011
+actor: MARTY
+anchor: w0075
+reason: He rejects Dion's modest description and swells into emphatic admiration.
+affect: Happy-96
+
+E012
+actor: MARTY
+anchor: w0078
+reason: His amazement becomes almost overwhelming as he takes in the professional result.
+affect: Surprised-92
+
+E014
+actor: MARTY
+anchor: w0087
+reason: Discovering that Dion personally drew the design shifts his attention from the package to Dion.
+gaze: GAZE-DION
+
+E016
+actor: MARTY
+anchor: w0091
+reason: He treats Dion's design as genuinely visionary rather than merely competent.
+affect: Happy-98
+
+E019
+actor: MARTY
+anchor: w0105
+reason: He swings back to the packaging, eager to keep displaying the achievement.
+gaze: GAZE-PACKAGING
+
+E003
+actor: DION
+anchor: w0002
+reason: Marty's recognition briefly relieves Dion's accumulated frustration and confirms that the work mattered.
+affect: Happy-72
+
+E004
+actor: DION
+anchor: w0024
+reason: He reveals the financial commitment with proud insistence, making clear that his family has backed Marty.
+affect: Nervous-58
+
+E008
+actor: DION
+anchor: w0046
+reason: He eagerly redirects Marty to the packaging, proud to reveal the full scope of what he made.
+gaze: GAZE-PACKAGING
+
+E010
+actor: DION
+anchor: w0071
+reason: He cautiously asks for confirmation, exposing how much he needs Marty to validate the design.
+affect: Nervous-48
+gaze: GAZE-MARTY
+
+E013
+actor: DION
+anchor: w0085
+reason: He adds the hand-drawn detail with a small, pleased flourish, offering another piece of himself for Marty to appreciate.
+affect: Happy-68
+gaze: GAZE-PACKAGING
+
+E015
+actor: DION
+anchor: w0090
+reason: Marty's astonishment confirms that the personal labor behind the package has finally been seen.
+affect: Happy-82
+
+E017
+actor: DION
+anchor: w0093
+reason: He accepts the praise modestly, pleased but still slightly guarded after months of being overlooked.
+affect: Happy-88
+
+E018
+actor: DION
+anchor: w0096
+reason: Marty's deeper affirmation lands as meaningful recognition of Dion's creative potential.
+affect: Happy-96
+
+E020
+actor: DION
+anchor: w0108
+reason: He answers with sincere gratitude, allowing himself to enjoy the recognition.
+affect: Happy-100

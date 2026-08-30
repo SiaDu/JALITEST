@@ -1,0 +1,236 @@
+{
+  "initial_state": {
+    "actor": "MARTY",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Happy-70",
+      "gaze": "GAZE-ORANGE_BALLS"
+    },
+    "reason": "He is already energized by the business display, leaning into the discovery with eager curiosity."
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "actor": "MARTY",
+      "anchor_id": "w0001",
+      "anchor_text": "Whoa.",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 0.1,
+      "raw_anchor_end": 0.55,
+      "resolved_start": 0.1,
+      "changes": {
+        "affect": "Surprised-80"
+      },
+      "reason": "The unexpected orange color produces an immediate burst of delighted surprise.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-80",
+        "gaze": "GAZE-ORANGE_BALLS"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "MARTY",
+      "anchor_id": "w0002",
+      "anchor_text": "You",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 1.170438,
+      "raw_anchor_end": 1.270438,
+      "resolved_start": 1.170438,
+      "changes": {
+        "affect": "Happy-82",
+        "gaze": "GAZE-DION"
+      },
+      "reason": "He connects the discovery to Dion's effort and turns his excitement toward him.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-82",
+        "gaze": "GAZE-DION"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "MARTY",
+      "anchor_id": "w0033",
+      "anchor_text": "you.",
+      "anchor_speaker": "DION",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 10.09425,
+      "raw_anchor_end": 10.374249,
+      "resolved_start": 10.374249,
+      "changes": {
+        "affect": "Happy-88"
+      },
+      "reason": "Hearing that Dion and his father believe in him touches the ambition beneath his excitement.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-88",
+        "gaze": "GAZE-DION"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "MARTY",
+      "anchor_id": "w0042",
+      "anchor_text": "Check",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 14.454187,
+      "raw_anchor_end": 14.604187,
+      "resolved_start": 14.454187,
+      "changes": {
+        "gaze": "GLANCE-RACHEL"
+      },
+      "reason": "He excitedly recruits Rachel as a witness, checking whether she can share the significance of what he is seeing.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-88",
+        "gaze": "GAZE-DION"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "MARTY",
+      "anchor_id": "w0046",
+      "anchor_text": "Here,",
+      "anchor_speaker": "DION",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 16.104626,
+      "raw_anchor_end": 16.264626,
+      "resolved_start": 16.264626,
+      "changes": {
+        "gaze": "GAZE-PACKAGING"
+      },
+      "reason": "When Dion directs him to the packaging, he returns his attention to the physical product.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-88",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E009",
+      "actor": "MARTY",
+      "anchor_id": "w0064",
+      "anchor_text": "Orange",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 24.1485,
+      "raw_anchor_end": 24.5485,
+      "resolved_start": 24.1485,
+      "changes": {
+        "affect": "Surprised-88"
+      },
+      "reason": "The originality of the orange-sphere concept lands on him with renewed amazement.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-88",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E011",
+      "actor": "MARTY",
+      "anchor_id": "w0075",
+      "anchor_text": "That's",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 26.984751,
+      "raw_anchor_end": 27.394751,
+      "resolved_start": 26.984751,
+      "changes": {
+        "affect": "Happy-96"
+      },
+      "reason": "He rejects Dion's modest description and swells into emphatic admiration.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-96",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E012",
+      "actor": "MARTY",
+      "anchor_id": "w0078",
+      "anchor_text": "Damn,",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 27.96475,
+      "raw_anchor_end": 28.254751,
+      "resolved_start": 27.96475,
+      "changes": {
+        "affect": "Surprised-92"
+      },
+      "reason": "His amazement becomes almost overwhelming as he takes in the professional result.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-92",
+        "gaze": "GAZE-PACKAGING"
+      }
+    },
+    {
+      "event_id": "E014",
+      "actor": "MARTY",
+      "anchor_id": "w0087",
+      "anchor_text": "You",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 32.630192,
+      "raw_anchor_end": 32.760189,
+      "resolved_start": 32.630192,
+      "changes": {
+        "gaze": "GAZE-DION"
+      },
+      "reason": "Discovering that Dion personally drew the design shifts his attention from the package to Dion.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-92",
+        "gaze": "GAZE-DION"
+      }
+    },
+    {
+      "event_id": "E016",
+      "actor": "MARTY",
+      "anchor_id": "w0091",
+      "anchor_text": "It's",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 33.960186,
+      "raw_anchor_end": 34.160191,
+      "resolved_start": 33.960186,
+      "changes": {
+        "affect": "Happy-98"
+      },
+      "reason": "He treats Dion's design as genuinely visionary rather than merely competent.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-98",
+        "gaze": "GAZE-DION"
+      }
+    },
+    {
+      "event_id": "E019",
+      "actor": "MARTY",
+      "anchor_id": "w0105",
+      "anchor_text": "Check",
+      "anchor_speaker": "MARTY",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 37.672123,
+      "raw_anchor_end": 37.812122,
+      "resolved_start": 37.672123,
+      "changes": {
+        "gaze": "GAZE-PACKAGING"
+      },
+      "reason": "He swings back to the packaging, eager to keep displaying the achievement.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Happy-98",
+        "gaze": "GAZE-PACKAGING"
+      }
+    }
+  ]
+}
