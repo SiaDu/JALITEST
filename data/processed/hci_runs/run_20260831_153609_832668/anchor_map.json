@@ -1,0 +1,534 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "JOAN",
+    "B": "BOB"
+  },
+  "aliases": {
+    "A": "JOAN",
+    "B": "BOB"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "char_start": 0,
+      "char_end": 35,
+      "utterance_start": 6,
+      "utterance_end": 35,
+      "utterance_text": "Let go of it, Bobby. You won.",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "Let",
+          "char_start": 6,
+          "char_end": 9
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "go",
+          "char_start": 10,
+          "char_end": 12
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "of",
+          "char_start": 13,
+          "char_end": 15
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "it,",
+          "char_start": 16,
+          "char_end": 19
+        },
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "Bobby.",
+          "char_start": 20,
+          "char_end": 26
+        },
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "You",
+          "char_start": 27,
+          "char_end": 30
+        },
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T01",
+          "speaker": "JOAN",
+          "text": "won.",
+          "char_start": 31,
+          "char_end": 35
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "BOB",
+      "char_start": 36,
+      "char_end": 62,
+      "utterance_start": 41,
+      "utterance_end": 62,
+      "utterance_text": "What did I win, Joan?",
+      "anchors": [
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T02",
+          "speaker": "BOB",
+          "text": "What",
+          "char_start": 41,
+          "char_end": 45
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T02",
+          "speaker": "BOB",
+          "text": "did",
+          "char_start": 46,
+          "char_end": 49
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T02",
+          "speaker": "BOB",
+          "text": "I",
+          "char_start": 50,
+          "char_end": 51
+        },
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T02",
+          "speaker": "BOB",
+          "text": "win,",
+          "char_start": 52,
+          "char_end": 56
+        },
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T02",
+          "speaker": "BOB",
+          "text": "Joan?",
+          "char_start": 57,
+          "char_end": 62
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "char_start": 63,
+      "char_end": 106,
+      "utterance_start": 69,
+      "utterance_end": 106,
+      "utterance_text": "Freedom. From all of us and our shit.",
+      "anchors": [
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "Freedom.",
+          "char_start": 69,
+          "char_end": 77
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "From",
+          "char_start": 78,
+          "char_end": 82
+        },
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "all",
+          "char_start": 83,
+          "char_end": 86
+        },
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "of",
+          "char_start": 87,
+          "char_end": 89
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "us",
+          "char_start": 90,
+          "char_end": 92
+        },
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "and",
+          "char_start": 93,
+          "char_end": 96
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "our",
+          "char_start": 97,
+          "char_end": 100
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T03",
+          "speaker": "JOAN",
+          "text": "shit.",
+          "char_start": 101,
+          "char_end": 106
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "JOAN",
+      "char_start": 107,
+      "char_end": 140,
+      "utterance_start": 113,
+      "utterance_end": 140,
+      "utterance_text": "Isn't that what you wanted?",
+      "anchors": [
+        {
+          "anchor_id": "w0021",
+          "turn_id": "T04",
+          "speaker": "JOAN",
+          "text": "Isn't",
+          "char_start": 113,
+          "char_end": 118
+        },
+        {
+          "anchor_id": "w0022",
+          "turn_id": "T04",
+          "speaker": "JOAN",
+          "text": "that",
+          "char_start": 119,
+          "char_end": 123
+        },
+        {
+          "anchor_id": "w0023",
+          "turn_id": "T04",
+          "speaker": "JOAN",
+          "text": "what",
+          "char_start": 124,
+          "char_end": 128
+        },
+        {
+          "anchor_id": "w0024",
+          "turn_id": "T04",
+          "speaker": "JOAN",
+          "text": "you",
+          "char_start": 129,
+          "char_end": 132
+        },
+        {
+          "anchor_id": "w0025",
+          "turn_id": "T04",
+          "speaker": "JOAN",
+          "text": "wanted?",
+          "char_start": 133,
+          "char_end": 140
+        }
+      ]
+    },
+    {
+      "turn_id": "T05",
+      "speaker": "BOB",
+      "char_start": 141,
+      "char_end": 165,
+      "utterance_start": 146,
+      "utterance_end": 165,
+      "utterance_text": "See you soon, Joan.",
+      "anchors": [
+        {
+          "anchor_id": "w0026",
+          "turn_id": "T05",
+          "speaker": "BOB",
+          "text": "See",
+          "char_start": 146,
+          "char_end": 149
+        },
+        {
+          "anchor_id": "w0027",
+          "turn_id": "T05",
+          "speaker": "BOB",
+          "text": "you",
+          "char_start": 150,
+          "char_end": 153
+        },
+        {
+          "anchor_id": "w0028",
+          "turn_id": "T05",
+          "speaker": "BOB",
+          "text": "soon,",
+          "char_start": 154,
+          "char_end": 159
+        },
+        {
+          "anchor_id": "w0029",
+          "turn_id": "T05",
+          "speaker": "BOB",
+          "text": "Joan.",
+          "char_start": 160,
+          "char_end": 165
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "Let",
+      "char_start": 6,
+      "char_end": 9
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "go",
+      "char_start": 10,
+      "char_end": 12
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "of",
+      "char_start": 13,
+      "char_end": 15
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "it,",
+      "char_start": 16,
+      "char_end": 19
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "Bobby.",
+      "char_start": 20,
+      "char_end": 26
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "You",
+      "char_start": 27,
+      "char_end": 30
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T01",
+      "speaker": "JOAN",
+      "text": "won.",
+      "char_start": 31,
+      "char_end": 35
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T02",
+      "speaker": "BOB",
+      "text": "What",
+      "char_start": 41,
+      "char_end": 45
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T02",
+      "speaker": "BOB",
+      "text": "did",
+      "char_start": 46,
+      "char_end": 49
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T02",
+      "speaker": "BOB",
+      "text": "I",
+      "char_start": 50,
+      "char_end": 51
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T02",
+      "speaker": "BOB",
+      "text": "win,",
+      "char_start": 52,
+      "char_end": 56
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T02",
+      "speaker": "BOB",
+      "text": "Joan?",
+      "char_start": 57,
+      "char_end": 62
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "Freedom.",
+      "char_start": 69,
+      "char_end": 77
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "From",
+      "char_start": 78,
+      "char_end": 82
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "all",
+      "char_start": 83,
+      "char_end": 86
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "of",
+      "char_start": 87,
+      "char_end": 89
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "us",
+      "char_start": 90,
+      "char_end": 92
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "and",
+      "char_start": 93,
+      "char_end": 96
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "our",
+      "char_start": 97,
+      "char_end": 100
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T03",
+      "speaker": "JOAN",
+      "text": "shit.",
+      "char_start": 101,
+      "char_end": 106
+    },
+    {
+      "anchor_id": "w0021",
+      "turn_id": "T04",
+      "speaker": "JOAN",
+      "text": "Isn't",
+      "char_start": 113,
+      "char_end": 118
+    },
+    {
+      "anchor_id": "w0022",
+      "turn_id": "T04",
+      "speaker": "JOAN",
+      "text": "that",
+      "char_start": 119,
+      "char_end": 123
+    },
+    {
+      "anchor_id": "w0023",
+      "turn_id": "T04",
+      "speaker": "JOAN",
+      "text": "what",
+      "char_start": 124,
+      "char_end": 128
+    },
+    {
+      "anchor_id": "w0024",
+      "turn_id": "T04",
+      "speaker": "JOAN",
+      "text": "you",
+      "char_start": 129,
+      "char_end": 132
+    },
+    {
+      "anchor_id": "w0025",
+      "turn_id": "T04",
+      "speaker": "JOAN",
+      "text": "wanted?",
+      "char_start": 133,
+      "char_end": 140
+    },
+    {
+      "anchor_id": "w0026",
+      "turn_id": "T05",
+      "speaker": "BOB",
+      "text": "See",
+      "char_start": 146,
+      "char_end": 149
+    },
+    {
+      "anchor_id": "w0027",
+      "turn_id": "T05",
+      "speaker": "BOB",
+      "text": "you",
+      "char_start": 150,
+      "char_end": 153
+    },
+    {
+      "anchor_id": "w0028",
+      "turn_id": "T05",
+      "speaker": "BOB",
+      "text": "soon,",
+      "char_start": 154,
+      "char_end": 159
+    },
+    {
+      "anchor_id": "w0029",
+      "turn_id": "T05",
+      "speaker": "BOB",
+      "text": "Joan.",
+      "char_start": 160,
+      "char_end": 165
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "initial_state": {
+    "actor": "BOB",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-50",
+      "gaze": "GAZE-MOTORCYCLE"
+    },
+    "reason": "Bob stays half-occupied with preparing to leave, guarded and uncertain about facing Joan."
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "actor": "BOB",
+      "anchor_id": "w0002",
+      "anchor_text": "go",
+      "anchor_speaker": "JOAN",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 0.915625,
+      "raw_anchor_end": 1.115625,
+      "resolved_start": 1.115625,
+      "changes": {
+        "gaze": "GLANCE-JOAN"
+      },
+      "reason": "Joan's command makes Bob briefly check her reaction without yet abandoning the motorcycle.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-50",
+        "gaze": "GAZE-MOTORCYCLE"
+      }
+    },
+    {
+      "event_id": "E002",
+      "actor": "BOB",
+      "anchor_id": "w0008",
+      "anchor_text": "What",
+      "anchor_speaker": "BOB",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 4.740313,
+      "raw_anchor_end": 4.840312,
+      "resolved_start": 4.740313,
+      "changes": {
+        "affect": "Confused-70",
+        "gaze": "GAZE-JOAN"
+      },
+      "reason": "The claim that he has won leaves Bob visibly uncertain, and he settles his attention on Joan.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Confused-70",
+        "gaze": "GAZE-JOAN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "BOB",
+      "anchor_id": "w0013",
+      "anchor_text": "Freedom.",
+      "anchor_speaker": "JOAN",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 8.711187,
+      "raw_anchor_end": 9.681188,
+      "resolved_start": 9.681188,
+      "changes": {
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "Hearing freedom named aloud, Bob briefly looks down rather than meet the weight of it.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Confused-70",
+        "gaze": "GAZE-JOAN"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "BOB",
+      "anchor_id": "w0026",
+      "anchor_text": "See",
+      "anchor_speaker": "BOB",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 22.047935,
+      "raw_anchor_end": 22.137936,
+      "resolved_start": 22.047935,
+      "changes": {
+        "affect": "Polite-55",
+        "gaze": "GAZE-MOTORCYCLE"
+      },
+      "reason": "Bob gives her a courteous farewell while turning his attention back toward leaving.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Polite-55",
+        "gaze": "GAZE-MOTORCYCLE"
+      }
+    }
+  ]
+}

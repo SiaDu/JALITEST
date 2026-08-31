@@ -1,0 +1,97 @@
+std::locale LC_COLLATE=C;LC_CTYPE=English_United States.1252;LC_MONETARY=C;LC_NUMERIC=C;LC_TIME=C done. 
+total_clip_time = 4.26. 
+total_clip_time = 4.74031. 
+total_clip_time = 4.78031. 
+Skipped 'w' in sonorant stats
+Skipped 'w' in consonants stats
+total_clip_time = 4.81031. 
+total_clip_time = 4.84031. 
+total_clip_time = 4.87031. 
+total_clip_time = 4.90031. 
+total_clip_time = 4.93031. 
+total_clip_time = 5.03031. 
+total_clip_time = 5.16031. 
+Skipped 'w' in sonorant stats
+Skipped 'w' in consonants stats
+total_clip_time = 5.26031. 
+total_clip_time = 5.36031. 
+total_clip_time = 5.45031. 
+total_clip_time = 5.61031. 
+total_clip_time = 5.87031. 
+total_clip_time = 22.0479. 
+total_clip_time = 22.1079. 
+total_clip_time = 22.1379. 
+total_clip_time = 22.3579. 
+total_clip_time = 22.4179. 
+total_clip_time = 22.4779. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 22.6079. 
+total_clip_time = 22.7579. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 22.8779. 
+total_clip_time = 22.9279. 
+total_clip_time = 23.1179. 
+total_clip_time = 23.1879. 
+total_clip_time = 23.36. 
+total_clip_time = 23.999. 
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Not using it, so, not loading profile file: ""
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: w, what Start. 
+Else-Sync: w, what Start. 
+Lip-Sync: UX, what Start. 
+Else-Sync: UX, what Start. 
+Lip-Sync: t, what Start. 
+Else-Sync: UX, what Start. 
+Lip-Sync: d, did Start. 
+Else-Sync: IH, did Start. 
+Lip-Sync: IH, did Start. 
+Else-Sync: IH, did Start. 
+Lip-Sync: d, did Start. 
+Else-Sync: AY, did Start. 
+Lip-Sync: AY, i Start. 
+Else-Sync: AY, i Start. 
+Lip-Sync: w, win Start. 
+Else-Sync: w, win Start. 
+Lip-Sync: IH, win Start. 
+Else-Sync: IH, win Start. 
+Lip-Sync: n, win Start. 
+Else-Sync: Z, win Start. 
+Lip-Sync: Z, joan Start. 
+Else-Sync: Z, joan Start. 
+Lip-Sync: OW, joan Start. 
+Else-Sync: OW, joan Start. 
+Lip-Sync: n, joan Start. 
+Else-Sync: OW, joan Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: s, see Start. 
+Else-Sync: s, see Start. 
+Lip-Sync: IY, see Start. 
+Else-Sync: IY, see Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: y, you Start. 
+Else-Sync: UW, you Start. 
+Lip-Sync: UW, you Start. 
+Else-Sync: UW, you Start. 
+Lip-Sync: s, soon Start. 
+Else-Sync: UW, soon Start. 
+Lip-Sync: UW, soon Start. 
+Else-Sync: UW, soon Start. 
+Lip-Sync: n, soon Start. 
+Else-Sync: UW, soon Start. 
+Lip-Sync: Z, joan Start. 
+Else-Sync: Z, joan Start. 
+Lip-Sync: OW, joan Start. 
+Else-Sync: OW, joan Start. 
+Lip-Sync: n, joan Start. 
+Else-Sync: OW, joan Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 

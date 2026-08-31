@@ -1,0 +1,179 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260831_153609_832668",
+  "characters": [
+    "JOAN",
+    "BOB"
+  ],
+  "gaze_target_candidates": [
+    "MOTORCYCLE"
+  ],
+  "initial_states": {
+    "JOAN": {
+      "head": "HEAD-NONE",
+      "affect": "Sad-55",
+      "gaze": "GAZE-BOB"
+    },
+    "BOB": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-50",
+      "gaze": "GAZE-MOTORCYCLE"
+    }
+  },
+  "initial_reasons": {
+    "JOAN": "Joan approaches with controlled hurt, offering Bob a hard-won freedom rather than another accusation.",
+    "BOB": "Bob stays half-occupied with preparing to leave, guarded and uncertain about facing Joan."
+  },
+  "tracks": {
+    "JOAN": [
+      {
+        "event_id": "E003",
+        "actor": "JOAN",
+        "anchor_id": "w0011",
+        "changes": {
+          "affect": "Sad-70"
+        },
+        "reason": "Bob's question exposes the hurt beneath Joan's certainty."
+      },
+      {
+        "event_id": "E005",
+        "actor": "JOAN",
+        "anchor_id": "w0019",
+        "changes": {
+          "affect": "Dislike-60"
+        },
+        "reason": "Naming the damage done to all of them brings a restrained edge of resentment into Joan's face."
+      }
+    ],
+    "BOB": [
+      {
+        "event_id": "E001",
+        "actor": "BOB",
+        "anchor_id": "w0002",
+        "changes": {
+          "gaze": "GLANCE-JOAN"
+        },
+        "reason": "Joan's command makes Bob briefly check her reaction without yet abandoning the motorcycle."
+      },
+      {
+        "event_id": "E002",
+        "actor": "BOB",
+        "anchor_id": "w0008",
+        "changes": {
+          "affect": "Confused-70",
+          "gaze": "GAZE-JOAN"
+        },
+        "reason": "The claim that he has won leaves Bob visibly uncertain, and he settles his attention on Joan."
+      },
+      {
+        "event_id": "E004",
+        "actor": "BOB",
+        "anchor_id": "w0013",
+        "changes": {
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Hearing freedom named aloud, Bob briefly looks down rather than meet the weight of it."
+      },
+      {
+        "event_id": "E006",
+        "actor": "BOB",
+        "anchor_id": "w0026",
+        "changes": {
+          "affect": "Polite-55",
+          "gaze": "GAZE-MOTORCYCLE"
+        },
+        "reason": "Bob gives her a courteous farewell while turning his attention back toward leaving."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260831_153609_832668\\performance_proposal.txt",
+    "event_ids": [
+      "E003",
+      "E005",
+      "E001",
+      "E002",
+      "E004",
+      "E006"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "JOAN",
+        "BOB"
+      ],
+      "initial_states": {
+        "JOAN": {
+          "head": "HEAD-NONE",
+          "affect": "Sad-55",
+          "gaze": "GAZE-BOB"
+        },
+        "BOB": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-50",
+          "gaze": "GAZE-MOTORCYCLE"
+        }
+      },
+      "initial_reasons": {
+        "JOAN": "Joan approaches with controlled hurt, offering Bob a hard-won freedom rather than another accusation.",
+        "BOB": "Bob stays half-occupied with preparing to leave, guarded and uncertain about facing Joan."
+      },
+      "tracks": [
+        {
+          "actor": "BOB",
+          "anchor_id": "w0002",
+          "changes": {
+            "gaze": "GLANCE-JOAN"
+          },
+          "reason": "Joan's command makes Bob briefly check her reaction without yet abandoning the motorcycle."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0008",
+          "changes": {
+            "affect": "Confused-70",
+            "gaze": "GAZE-JOAN"
+          },
+          "reason": "The claim that he has won leaves Bob visibly uncertain, and he settles his attention on Joan."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0013",
+          "changes": {
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Hearing freedom named aloud, Bob briefly looks down rather than meet the weight of it."
+        },
+        {
+          "actor": "BOB",
+          "anchor_id": "w0026",
+          "changes": {
+            "affect": "Polite-55",
+            "gaze": "GAZE-MOTORCYCLE"
+          },
+          "reason": "Bob gives her a courteous farewell while turning his attention back toward leaving."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0011",
+          "changes": {
+            "affect": "Sad-70"
+          },
+          "reason": "Bob's question exposes the hurt beneath Joan's certainty."
+        },
+        {
+          "actor": "JOAN",
+          "anchor_id": "w0019",
+          "changes": {
+            "affect": "Dislike-60"
+          },
+          "reason": "Naming the damage done to all of them brings a restrained edge of resentment into Joan's face."
+        }
+      ]
+    }
+  }
+}

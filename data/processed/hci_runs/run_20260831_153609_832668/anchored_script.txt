@@ -1,0 +1,14 @@
+T01 JOAN:
+[w0001 Let] [w0002 go] [w0003 of] [w0004 it,] [w0005 Bobby.] [w0006 You] [w0007 won.]
+
+T02 BOB:
+[w0008 What] [w0009 did] [w0010 I] [w0011 win,] [w0012 Joan?]
+
+T03 JOAN:
+[w0013 Freedom.] [w0014 From] [w0015 all] [w0016 of] [w0017 us] [w0018 and] [w0019 our] [w0020 shit.]
+
+T04 JOAN:
+[w0021 Isn't] [w0022 that] [w0023 what] [w0024 you] [w0025 wanted?]
+
+T05 BOB:
+[w0026 See] [w0027 you] [w0028 soon,] [w0029 Joan.]
