@@ -462,11 +462,106 @@ def test_animation_runtime_plan_applies_valid_dirty_score_before_saving(tmp_path
     ]
 
 
-def test_dual_ui_removes_acting_interpretation_and_regenerate_placeholder():
+def test_participant_ui_uses_fixed_acting_interpretation_terminology():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
-    assert "ACTING INTERPRETATION" not in source
+    assert '"SEMANTIC PERFORMANCE TAG", expanded=True' in source
+    assert '"ACTING INTERPRETATION BY PHRASE", expanded=False' in source
+    assert "REASON BY PHRASE" not in source
+    assert "RATIONALE BY CHANGE" not in source
     assert "Regenerate Plan" not in source
     assert "Confirm Original Reason" not in source and "Replace Animator Reason" not in source
+
+
+def test_authoring_plan_sections_are_real_collapsible_bodies():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    collapsible = source.split("class CollapsibleSection", 1)[1].split(
+        "class _SparseScoreHighlighter", 1
+    )[0]
+    assert "self.body.setVisible(expanded)" in collapsible
+    assert "self.header_button = QtWidgets.QPushButton()" in collapsible
+    assert "self.header_button.setCheckable(True)" in collapsible
+    assert "QGroupBox.setCheckable" not in source
+    assert "self.toggled.emit(expanded)" in collapsible
+    assert "QSignalBlocker(self.header_button)" in collapsible
+
+
+def test_study_ui_mode_hides_both_plan_sections_in_direct_generation():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    apply_mode = source.split("    def _apply_study_ui_mode", 1)[1].split(
+        "    def _semantic_section_toggled", 1
+    )[0]
+    assert "study_ui_section_state(self.study_ui_mode)" in apply_mode
+    assert "section.setVisible(state[name][\"visible\"])" in apply_mode
+    assert "set_study_ui_mode" in source
+    assert "JALITEST_STUDY_UI_MODE" in source
+    advanced = source.split("    def _build_advanced_tab", 1)[1].split(
+        "    def _select_audio_folder", 1
+    )[0]
+    assert "Study UI Mode" not in advanced
+
+
+def test_user_section_toggles_log_inspection_without_dirtying_semantics():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    handlers = source.split("    def _semantic_section_toggled", 1)[1].split(
+        "    def _current_interpretation_context", 1
+    )[0]
+    for event in (
+        "semantic_section_opened",
+        "semantic_section_closed",
+        "interpretation_section_opened",
+        "interpretation_section_closed",
+    ):
+        assert event in handlers
+    assert "_score_changed" not in handlers
+    assert "apply_score_edits" not in handlers
+    assert "_mark_score_editors_clean" not in handlers
+    assert "_record_semantic_edit_event" not in handlers
+    assert "_schedule_semantic_score_editor_resize()" in handlers
+
+
+def test_programmatic_section_state_does_not_emit_fake_inspection_events():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    set_expanded = source.split("    def set_expanded", 1)[1].split(
+        "    def is_expanded", 1
+    )[0]
+    user_toggle = source.split("    def _user_toggled", 1)[1].split(
+        "class _SparseScoreHighlighter", 1
+    )[0]
+    assert "self.toggled.emit" not in set_expanded
+    assert "self.toggled.emit(expanded)" in user_toggle
+    mode_switch = source.split("    def set_study_ui_mode", 1)[1].split(
+        "    def _semantic_section_toggled", 1
+    )[0]
+    assert "_record_inspection_event" not in mode_switch
+    assert "record_study_ui_mode_change" in mode_switch
+
+
+def test_semantic_edit_log_records_only_clean_to_dirty_transitions():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    score_changed = source.split("    def _score_changed", 1)[1].split(
+        "    def _set_score_editor_text", 1
+    )[0]
+    mark_clean = source.split("    def _mark_score_editors_clean", 1)[1].split(
+        "    def validate_score", 1
+    )[0]
+    assert "if not self._semantic_edit_active:" in score_changed
+    assert "self._record_semantic_edit_event()" in score_changed
+    assert "self._semantic_edit_active = False" in score_changed
+    assert "self._semantic_edit_active = False" in mark_clean
+    assert "semantic_edit_events" in source
+
+
+def test_study_ui_lifecycle_is_sidecar_metadata_not_inspection_logging():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    close_event = source.split("    def closeEvent", 1)[1].split(
+        "    def _build_advanced_tab", 1
+    )[0]
+    build_session = source.split("    def _build_authoring_session_data", 1)[1].split(
+        "    def _save_authoring_session_for_path", 1
+    )[0]
+    assert "finish_study_ui_session" in close_event
+    assert "_record_inspection_event" not in close_event
+    assert '"study_ui_sessions": study_ui_sessions' in build_session
 
 
 def test_dual_mode_setup_does_not_access_validation_widgets_before_creation():

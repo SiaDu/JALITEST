@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 import sys
 
@@ -9,10 +10,20 @@ if str(MAYA_TOOLS) not in sys.path:
     sys.path.insert(0, str(MAYA_TOOLS))
 
 from authoring_session_data import (  # noqa: E402
+    STUDY_UI_DIRECT_GENERATION,
+    STUDY_UI_EDITABLE_PLAN,
+    STUDY_UI_NORMAL,
+    build_inspection_event,
+    build_semantic_edit_event,
+    build_study_ui_session,
     build_authoring_session,
     default_authoring_session_path,
+    finish_study_ui_session,
     load_authoring_session,
+    normalize_study_ui_mode,
+    record_study_ui_mode_change,
     save_authoring_session,
+    study_ui_section_state,
 )
 
 
@@ -85,3 +96,142 @@ def test_legacy_session_without_script_and_context_remains_valid(tmp_path: Path)
 
     assert loaded.get("input_script", "") == ""
     assert loaded.get("input_context", "") == ""
+
+
+def test_study_ui_modes_have_required_section_visibility_and_defaults():
+    for mode in (STUDY_UI_NORMAL, STUDY_UI_EDITABLE_PLAN):
+        assert study_ui_section_state(mode) == {
+            "semantic": {"visible": True, "expanded": True},
+            "interpretation": {"visible": True, "expanded": False},
+        }
+    assert study_ui_section_state(STUDY_UI_DIRECT_GENERATION) == {
+        "semantic": {"visible": False, "expanded": True},
+        "interpretation": {"visible": False, "expanded": False},
+    }
+
+
+def test_study_ui_mode_switch_is_presentation_only_and_does_not_modify_plan():
+    plan = {
+        "schema_version": "dual_performance_plan_v2",
+        "characters": ["ALICE", "BOB"],
+        "initial_states": {"ALICE": {}, "BOB": {}},
+        "tracks": {"ALICE": [], "BOB": []},
+    }
+    before = copy.deepcopy(plan)
+    study_ui_section_state(STUDY_UI_EDITABLE_PLAN)
+    study_ui_section_state(STUDY_UI_DIRECT_GENERATION)
+    assert plan == before
+    assert normalize_study_ui_mode("EDITABLE_PLAN") == STUDY_UI_EDITABLE_PLAN
+
+
+def test_inspection_events_are_distinct_from_semantic_edits_and_keep_context():
+    events = [
+        build_inspection_event(
+            "interpretation_section_opened",
+            study_ui_mode=STUDY_UI_EDITABLE_PLAN,
+            timestamp="2026-08-31T12:00:00+00:00",
+            sequence_id="SeqT",
+            run_id="run_20260830_183422_293410",
+            actor="WILL",
+            event_id="E004",
+        ),
+        build_inspection_event(
+            "interpretation_section_closed",
+            study_ui_mode=STUDY_UI_EDITABLE_PLAN,
+            timestamp="2026-08-31T12:00:05+00:00",
+            sequence_id="SeqT",
+        ),
+    ]
+    assert [event["event"] for event in events] == [
+        "interpretation_section_opened",
+        "interpretation_section_closed",
+    ]
+    assert events[0]["actor"] == "WILL"
+    assert events[0]["event_id"] == "E004"
+    assert all(event["event_type"] == "inspection" for event in events)
+    assert all("semantic_edit" not in event["event"] for event in events)
+
+
+def test_inspection_events_round_trip_in_authoring_sidecar(tmp_path: Path):
+    event = build_inspection_event(
+        "semantic_section_closed",
+        study_ui_mode=STUDY_UI_EDITABLE_PLAN,
+        timestamp="2026-08-31T12:00:00+00:00",
+        sequence_id="scene",
+    )
+    semantic_edit = build_semantic_edit_event(
+        study_ui_mode=STUDY_UI_EDITABLE_PLAN,
+        timestamp="2026-08-31T12:00:05+00:00",
+        sequence_id="scene",
+    )
+    study_ui_session = build_study_ui_session(
+        STUDY_UI_EDITABLE_PLAN,
+        timestamp="2026-08-31T11:59:59+00:00",
+    )
+    session = build_authoring_session(
+        sequence_id="scene",
+        mode="single",
+        audio_folder="",
+        characters=[],
+        look_at_targets=[],
+        base={
+            "inspection_events": [event],
+            "semantic_edit_events": [semantic_edit],
+            "study_ui_sessions": [study_ui_session],
+        },
+    )
+    path = tmp_path / "session.json"
+    save_authoring_session(session, path)
+    loaded = load_authoring_session(path)
+    assert loaded["inspection_events"] == [event]
+    assert loaded["semantic_edit_events"] == [semantic_edit]
+    assert loaded["study_ui_sessions"] == [study_ui_session]
+
+
+def test_separate_event_streams_support_before_first_semantic_edit_metric():
+    interpretation_open = build_inspection_event(
+        "interpretation_section_opened",
+        study_ui_mode=STUDY_UI_EDITABLE_PLAN,
+        timestamp="2026-08-31T12:00:01+00:00",
+        sequence_id="scene",
+    )
+    first_edit = build_semantic_edit_event(
+        study_ui_mode=STUDY_UI_EDITABLE_PLAN,
+        timestamp="2026-08-31T12:00:02+00:00",
+        sequence_id="scene",
+    )
+    assert interpretation_open["event_type"] == "inspection"
+    assert first_edit["event_type"] == "semantic_edit"
+    assert interpretation_open["timestamp"] < first_edit["timestamp"]
+
+
+def test_lifecycle_metadata_supports_initial_open_time_without_fake_inspection():
+    ui_session = build_study_ui_session(
+        STUDY_UI_EDITABLE_PLAN,
+        timestamp="2026-08-31T12:00:00+00:00",
+    )
+    assert ui_session["initial_section_state"]["semantic"] == {
+        "visible": True,
+        "expanded": True,
+    }
+    assert ui_session["initial_section_state"]["interpretation"]["expanded"] is False
+    assert "inspection_events" not in ui_session
+
+    record_study_ui_mode_change(
+        ui_session,
+        STUDY_UI_DIRECT_GENERATION,
+        timestamp="2026-08-31T12:00:03+00:00",
+    )
+    finish_study_ui_session(
+        ui_session,
+        timestamp="2026-08-31T12:00:05+00:00",
+    )
+
+    assert ui_session["mode_changes"] == [
+        {
+            "timestamp": "2026-08-31T12:00:03+00:00",
+            "study_ui_mode": STUDY_UI_DIRECT_GENERATION,
+            "section_state": study_ui_section_state(STUDY_UI_DIRECT_GENERATION),
+        }
+    ]
+    assert ui_session["ended_at"] == "2026-08-31T12:00:05+00:00"

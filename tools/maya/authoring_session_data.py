@@ -3,12 +3,136 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 from typing import Any, Iterable
 
 
 SCHEMA_VERSION = "authoring_session_v0"
+STUDY_UI_NORMAL = "normal"
+STUDY_UI_EDITABLE_PLAN = "editable_plan"
+STUDY_UI_DIRECT_GENERATION = "direct_generation"
+STUDY_UI_MODES = (
+    STUDY_UI_NORMAL,
+    STUDY_UI_EDITABLE_PLAN,
+    STUDY_UI_DIRECT_GENERATION,
+)
+INSPECTION_EVENT_NAMES = {
+    "semantic_section_opened",
+    "semantic_section_closed",
+    "interpretation_section_opened",
+    "interpretation_section_closed",
+}
+SEMANTIC_EDIT_EVENT_NAMES = {"semantic_edit_started"}
+
+
+def normalize_study_ui_mode(value: str | None) -> str:
+    """Validate an internal study presentation mode without touching plan data."""
+    mode = str(value or STUDY_UI_NORMAL).strip().lower()
+    if mode not in STUDY_UI_MODES:
+        raise ValueError(
+            f"Study UI mode must be one of {', '.join(STUDY_UI_MODES)}; got {value!r}."
+        )
+    return mode
+
+
+def study_ui_section_state(mode: str) -> dict[str, dict[str, bool]]:
+    """Return the programmatic visibility/default expansion for plan sections."""
+    normalized = normalize_study_ui_mode(mode)
+    visible = normalized != STUDY_UI_DIRECT_GENERATION
+    return {
+        "semantic": {"visible": visible, "expanded": True},
+        "interpretation": {"visible": visible, "expanded": False},
+    }
+
+
+def build_study_ui_session(
+    study_ui_mode: str, *, timestamp: str | None = None
+) -> dict[str, Any]:
+    """Create non-interaction lifecycle metadata for offline duration metrics."""
+    mode = normalize_study_ui_mode(study_ui_mode)
+    return {
+        "started_at": timestamp or datetime.now(timezone.utc).isoformat(),
+        "ended_at": None,
+        "study_ui_mode": mode,
+        "initial_section_state": study_ui_section_state(mode),
+        "mode_changes": [],
+    }
+
+
+def record_study_ui_mode_change(
+    session: dict[str, Any], mode: str, *, timestamp: str | None = None
+) -> None:
+    """Record a programmatic presentation change without creating inspection data."""
+    normalized = normalize_study_ui_mode(mode)
+    session.setdefault("mode_changes", []).append(
+        {
+            "timestamp": timestamp or datetime.now(timezone.utc).isoformat(),
+            "study_ui_mode": normalized,
+            "section_state": study_ui_section_state(normalized),
+        }
+    )
+
+
+def finish_study_ui_session(
+    session: dict[str, Any], *, timestamp: str | None = None
+) -> None:
+    """Close the lifecycle interval without manufacturing a user interaction."""
+    if session.get("ended_at") is None:
+        session["ended_at"] = timestamp or datetime.now(timezone.utc).isoformat()
+
+
+def build_inspection_event(
+    event: str,
+    *,
+    study_ui_mode: str,
+    timestamp: str | None = None,
+    sequence_id: str | None = None,
+    run_id: str | None = None,
+    actor: str | None = None,
+    event_id: str | None = None,
+) -> dict[str, str]:
+    """Build one sidecar inspection event; semantic edits use a separate path."""
+    if event not in INSPECTION_EVENT_NAMES:
+        raise ValueError(f"Unsupported inspection event {event!r}.")
+    row = {
+        "event": event,
+        "event_type": "inspection",
+        "timestamp": timestamp or datetime.now(timezone.utc).isoformat(),
+        "study_ui_mode": normalize_study_ui_mode(study_ui_mode),
+    }
+    for key, value in (
+        ("sequence_id", sequence_id),
+        ("run_id", run_id),
+        ("actor", actor),
+        ("event_id", event_id),
+    ):
+        clean = str(value or "").strip()
+        if clean:
+            row[key] = clean
+    return row
+
+
+def build_semantic_edit_event(
+    *,
+    study_ui_mode: str,
+    timestamp: str | None = None,
+    sequence_id: str | None = None,
+    run_id: str | None = None,
+) -> dict[str, str]:
+    """Build a sidecar event for one clean-to-dirty semantic edit transition."""
+    row = {
+        "event": "semantic_edit_started",
+        "event_type": "semantic_edit",
+        "timestamp": timestamp or datetime.now(timezone.utc).isoformat(),
+        "study_ui_mode": normalize_study_ui_mode(study_ui_mode),
+    }
+    for key, value in (("sequence_id", sequence_id), ("run_id", run_id)):
+        clean = str(value or "").strip()
+        if clean:
+            row[key] = clean
+    return row
 
 
 def _mapping_rows(value: Iterable[dict[str, Any]], fields: tuple[str, ...]) -> list[dict[str, str]]:
@@ -48,6 +172,55 @@ def validate_authoring_session(session: dict[str, Any]) -> None:
     if session["mode"] == "dual" and len(characters) not in {0, 2}:
         raise ValueError("Dual mode must contain both A and B character mappings, or no mappings.")
     _mapping_rows(session.get("look_at_targets", []), ("semantic_target", "maya_node"))
+    inspection_events = session.get("inspection_events", [])
+    if not isinstance(inspection_events, list):
+        raise ValueError("Authoring session inspection_events must be a list.")
+    for index, event in enumerate(inspection_events, start=1):
+        if not isinstance(event, dict):
+            raise ValueError(f"Inspection event {index} must be an object.")
+        if event.get("event") not in INSPECTION_EVENT_NAMES:
+            raise ValueError(f"Inspection event {index} has an unsupported event name.")
+        if event.get("event_type", "inspection") != "inspection":
+            raise ValueError(f"Inspection event {index} must have event_type 'inspection'.")
+        if not isinstance(event.get("timestamp"), str) or not event["timestamp"].strip():
+            raise ValueError(f"Inspection event {index} requires a timestamp.")
+        normalize_study_ui_mode(event.get("study_ui_mode"))
+    study_ui_sessions = session.get("study_ui_sessions", [])
+    if not isinstance(study_ui_sessions, list):
+        raise ValueError("Authoring session study_ui_sessions must be a list.")
+    for index, ui_session in enumerate(study_ui_sessions, start=1):
+        if not isinstance(ui_session, dict):
+            raise ValueError(f"Study UI session {index} must be an object.")
+        if not isinstance(ui_session.get("started_at"), str) or not ui_session["started_at"].strip():
+            raise ValueError(f"Study UI session {index} requires started_at.")
+        ended_at = ui_session.get("ended_at")
+        if ended_at is not None and (not isinstance(ended_at, str) or not ended_at.strip()):
+            raise ValueError(f"Study UI session {index} ended_at must be null or a timestamp.")
+        normalize_study_ui_mode(ui_session.get("study_ui_mode"))
+        if not isinstance(ui_session.get("initial_section_state"), dict):
+            raise ValueError(f"Study UI session {index} requires initial_section_state.")
+        mode_changes = ui_session.get("mode_changes", [])
+        if not isinstance(mode_changes, list):
+            raise ValueError(f"Study UI session {index} mode_changes must be a list.")
+        for change in mode_changes:
+            if not isinstance(change, dict) or not isinstance(change.get("timestamp"), str):
+                raise ValueError(f"Study UI session {index} has an invalid mode change.")
+            normalize_study_ui_mode(change.get("study_ui_mode"))
+    semantic_edit_events = session.get("semantic_edit_events", [])
+    if not isinstance(semantic_edit_events, list):
+        raise ValueError("Authoring session semantic_edit_events must be a list.")
+    for index, event in enumerate(semantic_edit_events, start=1):
+        if not isinstance(event, dict):
+            raise ValueError(f"Semantic edit event {index} must be an object.")
+        if event.get("event") not in SEMANTIC_EDIT_EVENT_NAMES:
+            raise ValueError(f"Semantic edit event {index} has an unsupported event name.")
+        if event.get("event_type", "semantic_edit") != "semantic_edit":
+            raise ValueError(
+                f"Semantic edit event {index} must have event_type 'semantic_edit'."
+            )
+        if not isinstance(event.get("timestamp"), str) or not event["timestamp"].strip():
+            raise ValueError(f"Semantic edit event {index} requires a timestamp.")
+        normalize_study_ui_mode(event.get("study_ui_mode"))
 
 
 def build_authoring_session(

@@ -53,10 +53,18 @@ if str(SRC_DIR) not in sys.path:
 from dual_sparse_score_model import DualSparseScoreModel, projection_offset_from_score_plain_offset  # noqa: E402
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key  # noqa: E402
 from authoring_session_data import (  # noqa: E402
+    STUDY_UI_NORMAL,
+    build_inspection_event,
+    build_semantic_edit_event,
+    build_study_ui_session,
     build_authoring_session,
     default_authoring_session_path,
+    finish_study_ui_session,
     load_authoring_session,
+    normalize_study_ui_mode,
+    record_study_ui_mode_change,
     save_authoring_session,
+    study_ui_section_state,
 )
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
@@ -155,6 +163,57 @@ def panel_dialogue_role(panel_actor: str, speaker: str) -> str:
     return "speaking" if speaker_key(panel_actor) == speaker_key(speaker) else "listening"
 
 
+class CollapsibleSection(QtWidgets.QWidget):
+    """A keyboard-accessible header whose body is removed from layout when closed."""
+
+    toggled = QtCore.Signal(bool)
+
+    def __init__(
+        self,
+        title: str,
+        *,
+        expanded: bool = True,
+        parent: QtWidgets.QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._title = title
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.header_button = QtWidgets.QPushButton()
+        self.header_button.setCheckable(True)
+        self.header_button.setAccessibleName(title)
+        self.header_button.clicked.connect(self._user_toggled)
+        layout.addWidget(self.header_button)
+        self.body = QtWidgets.QWidget()
+        self._body_layout = QtWidgets.QVBoxLayout(self.body)
+        layout.addWidget(self.body)
+        self.set_expanded(expanded)
+
+    def body_layout(self) -> QtWidgets.QVBoxLayout:
+        return self._body_layout
+
+    def set_expanded(self, expanded: bool) -> None:
+        expanded = bool(expanded)
+        blocker = QtCore.QSignalBlocker(self.header_button)
+        self.header_button.setChecked(expanded)
+        del blocker
+        self._apply_expanded(expanded)
+
+    def is_expanded(self) -> bool:
+        return self.header_button.isChecked()
+
+    def _apply_expanded(self, expanded: bool) -> None:
+        self.body.setVisible(expanded)
+        self.header_button.setText(f"{'▼' if expanded else '▶'} {self._title}")
+        self.header_button.setAccessibleDescription(
+            "Expanded; activate to collapse" if expanded else "Collapsed; activate to expand"
+        )
+
+    def _user_toggled(self, expanded: bool) -> None:
+        self._apply_expanded(expanded)
+        self.toggled.emit(expanded)
+
+
 class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
     """Color immutable dialogue by original speaker and tags distinctly."""
 
@@ -198,7 +257,12 @@ class _SparseScoreHighlighter(QtGui.QSyntaxHighlighter):
             plain_offset += 1
 
 class PerformancePlanEditor(QtWidgets.QDialog):
-    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
+    def __init__(
+        self,
+        parent: QtWidgets.QWidget | None = None,
+        *,
+        study_ui_mode: str | None = None,
+    ) -> None:
         super().__init__(parent or maya_main_window())
         self.setObjectName(WINDOW_OBJECT_NAME)
         self.setWindowTitle("Performance Plan Editor")
@@ -228,8 +292,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
         self._score_resize_scheduled = False
+        self.study_ui_mode = normalize_study_ui_mode(
+            study_ui_mode or os.getenv("JALITEST_STUDY_UI_MODE") or STUDY_UI_NORMAL
+        )
+        self._inspection_events: list[dict[str, str]] = []
+        self._semantic_edit_events: list[dict[str, str]] = []
+        self._semantic_edit_active = False
+        self._study_ui_session = build_study_ui_session(self.study_ui_mode)
 
         self._build_ui()
+        self._apply_study_ui_mode()
         self.backend_runner = BackendProcessRunner(self)
         self.backend_runner.output_received.connect(self._append_backend_output)
         self.backend_runner.succeeded.connect(self._generation_succeeded)
@@ -364,8 +436,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
 
     def _build_semantic_score(self, parent: QtWidgets.QVBoxLayout) -> None:
-        group = QtWidgets.QGroupBox("SEMANTIC PERFORMANCE TAG")
-        layout = QtWidgets.QVBoxLayout(group)
+        self.semantic_section = CollapsibleSection(
+            "SEMANTIC PERFORMANCE TAG", expanded=True
+        )
+        self.semantic_section.toggled.connect(self._semantic_section_toggled)
+        layout = self.semantic_section.body_layout()
         self.score_title_a = QtWidgets.QLabel("PERFORMANCE")
         layout.addWidget(self.score_title_a)
         self.initial_score_title_a = QtWidgets.QLabel("INITIAL PERFORMANCE")
@@ -425,12 +500,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         )
         self.validation_details.hide()
         layout.addWidget(self.validation_details)
-        parent.addWidget(group)
+        parent.addWidget(self.semantic_section)
 
     def _build_reason_view(self, parent: QtWidgets.QVBoxLayout) -> None:
-        group = QtWidgets.QGroupBox("REASON BY PHRASE")
-        self.reason_group = group
-        layout = QtWidgets.QVBoxLayout(group)
+        self.interpretation_section = CollapsibleSection(
+            "ACTING INTERPRETATION BY PHRASE", expanded=False
+        )
+        self.interpretation_section.toggled.connect(
+            self._interpretation_section_toggled
+        )
+        layout = self.interpretation_section.body_layout()
         selector = QtWidgets.QHBoxLayout()
         selector.addWidget(QtWidgets.QLabel("Phrase:"))
         self.phrase_number = QtWidgets.QSpinBox()
@@ -442,7 +521,106 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.phrase_reason = QtWidgets.QPlainTextEdit()
         _configure_multiline_editor(self.phrase_reason, height=240, read_only=True)
         layout.addWidget(self.phrase_reason)
-        parent.addWidget(group)
+        parent.addWidget(self.interpretation_section)
+
+    def set_study_ui_mode(self, mode: str) -> None:
+        """Apply an internal presentation condition without mutating the plan."""
+        normalized = normalize_study_ui_mode(mode)
+        if normalized != self.study_ui_mode:
+            record_study_ui_mode_change(self._study_ui_session, normalized)
+        self.study_ui_mode = normalized
+        self._apply_study_ui_mode()
+
+    def _apply_study_ui_mode(self) -> None:
+        state = study_ui_section_state(self.study_ui_mode)
+        for name, section in (
+            ("semantic", self.semantic_section),
+            ("interpretation", self.interpretation_section),
+        ):
+            section.set_expanded(state[name]["expanded"])
+            section.setVisible(state[name]["visible"])
+        if state["semantic"]["visible"]:
+            self._schedule_semantic_score_editor_resize()
+
+    def _semantic_section_toggled(self, expanded: bool) -> None:
+        self._record_inspection_event(
+            "semantic_section_opened" if expanded else "semantic_section_closed"
+        )
+        if expanded:
+            self._schedule_semantic_score_editor_resize()
+
+    def _interpretation_section_toggled(self, expanded: bool) -> None:
+        context = self._current_interpretation_context() if expanded else {}
+        self._record_inspection_event(
+            "interpretation_section_opened"
+            if expanded
+            else "interpretation_section_closed",
+            **context,
+        )
+
+    def _current_interpretation_context(self) -> dict[str, str]:
+        if not isinstance(self.score_model, DualSparseScoreModel):
+            return {}
+        rows = self.score_model.reason_entries()
+        index = self.phrase_number.value() - 1
+        if not 0 <= index < len(rows):
+            return {}
+        actor, event = rows[index]
+        return {
+            "actor": actor,
+            "event_id": str(event.get("event_id") or ""),
+        }
+
+    def _record_inspection_event(self, event: str, **context: str) -> None:
+        sequence_id, run_id = self._study_event_identifiers()
+        self._inspection_events.append(
+            build_inspection_event(
+                event,
+                study_ui_mode=self.study_ui_mode,
+                sequence_id=sequence_id,
+                run_id=run_id,
+                **context,
+            )
+        )
+        if self.plan is not None and self.source_path is not None and sequence_id:
+            try:
+                self._save_authoring_session_for_path(self.source_path)
+            except Exception as exc:
+                self._append_backend_output(f"Could not save inspection event: {exc}")
+
+    def _record_semantic_edit_event(self) -> None:
+        sequence_id, run_id = self._study_event_identifiers()
+        self._semantic_edit_events.append(
+            build_semantic_edit_event(
+                study_ui_mode=self.study_ui_mode,
+                sequence_id=sequence_id,
+                run_id=run_id,
+            )
+        )
+        if self.plan is not None and self.source_path is not None and sequence_id:
+            try:
+                self._save_authoring_session_for_path(self.source_path)
+            except Exception as exc:
+                self._append_backend_output(f"Could not save semantic edit event: {exc}")
+
+    def _study_event_identifiers(self) -> tuple[str, str]:
+        sequence_id = str((self.plan or {}).get("sequence_id") or "")
+        run_id = ""
+        if self.source_path is not None:
+            run_id = next(
+                (part for part in self.source_path.parts if part.startswith("run_")), ""
+            )
+        return sequence_id, run_id
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        finish_study_ui_session(self._study_ui_session)
+        sequence_id, _run_id = self._study_event_identifiers()
+        if self.plan is not None and self.source_path is not None and sequence_id:
+            try:
+                self._save_authoring_session_for_path(self.source_path)
+            except Exception as exc:
+                self._append_backend_output(f"Could not close study UI session: {exc}")
+        super().closeEvent(event)
 
     def _build_advanced_tab(self) -> None:
         advanced = QtWidgets.QWidget()
@@ -1094,6 +1272,21 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             }
             for index in range(character_count)
         ]
+        sequence_id, run_id = self._study_event_identifiers()
+        current_study_ui_session = {
+            **self._study_ui_session,
+            **({"sequence_id": sequence_id} if sequence_id else {}),
+            **({"run_id": run_id} if run_id else {}),
+        }
+        prior_study_ui_sessions = list(
+            (self.authoring_session or {}).get("study_ui_sessions", [])
+        )
+        study_ui_sessions = [
+            session
+            for session in prior_study_ui_sessions
+            if session.get("started_at") != current_study_ui_session["started_at"]
+        ]
+        study_ui_sessions.append(current_study_ui_session)
         return build_authoring_session(
             sequence_id=str((self.plan or {}).get("sequence_id") or ""),
             mode="dual" if dual else "single",
@@ -1102,7 +1295,18 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             input_context=self.input_context.toPlainText(),
             characters=characters,
             look_at_targets=self._look_at_mapping_data(),
-            base={**{key: value for key, value in (self.authoring_session or {}).items() if key != "gaze_neutrals"}, "gaze_calibrations": self.dual_gaze_calibrations, "jali_base_baseline": self.jali_base_baseline},
+            base={
+                **{
+                    key: value
+                    for key, value in (self.authoring_session or {}).items()
+                    if key != "gaze_neutrals"
+                },
+                "gaze_calibrations": self.dual_gaze_calibrations,
+                "jali_base_baseline": self.jali_base_baseline,
+                "inspection_events": list(self._inspection_events),
+                "semantic_edit_events": list(self._semantic_edit_events),
+                "study_ui_sessions": study_ui_sessions,
+            },
         )
 
     def _save_authoring_session_for_path(self, plan_path: Path) -> Path:
@@ -1121,12 +1325,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if score_text_matches_clean_baseline(
             self._score_payload(), self._clean_score_baseline
         ):
+            self._semantic_edit_active = False
             self.validation_label.setText("No pending tag edits.")
             self.validation_label.setStyleSheet("color: #166534;")
             self.validation_details.clear()
             self.validation_details.hide()
             self.apply_score_button.setEnabled(False)
             return
+        if not self._semantic_edit_active:
+            self._semantic_edit_active = True
+            self._record_semantic_edit_event()
         if self.score_model is not None:
             self.validation_label.setText("Tag changed — validate before saving.")
             self.validation_label.setStyleSheet("color: #92400e;")
@@ -1162,6 +1370,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _mark_score_editors_clean(self) -> None:
         """Record the currently rendered score as the accepted editor baseline."""
         self._clean_score_baseline = self._score_payload()
+        self._semantic_edit_active = False
         self.validation_label.setText("No pending tag edits.")
         self.validation_label.setStyleSheet("color: #166534;")
         self.validation_details.clear()
@@ -1301,6 +1510,28 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 load_authoring_session(session_path) if session_path.exists() else None
             )
             if self.authoring_session is not None:
+                loaded_inspection_events = self.authoring_session.get(
+                    "inspection_events", []
+                )
+                self._inspection_events = [
+                    *loaded_inspection_events,
+                    *[
+                        event
+                        for event in self._inspection_events
+                        if event not in loaded_inspection_events
+                    ],
+                ]
+                loaded_semantic_edit_events = self.authoring_session.get(
+                    "semantic_edit_events", []
+                )
+                self._semantic_edit_events = [
+                    *loaded_semantic_edit_events,
+                    *[
+                        event
+                        for event in self._semantic_edit_events
+                        if event not in loaded_semantic_edit_events
+                    ],
+                ]
                 self._restore_authoring_session(
                     self.authoring_session,
                     preserve_authoring_text=preserve_authoring_text,
@@ -1387,7 +1618,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.score_legend.show()
             self._resize_semantic_score_editors()
             self._schedule_semantic_score_editor_resize()
-            self.reason_group.setTitle("RATIONALE BY CHANGE")
             self._score_highlighters = [
                 _SparseScoreHighlighter(self.score_editor.document(), self.score_model.projection, self.score_model.characters, panel_actor=first),
                 _SparseScoreHighlighter(self.score_editor_b.document(), self.score_model.projection, self.score_model.characters, panel_actor=second),
@@ -1403,7 +1633,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.initial_score_editor_b.hide()
             self.dialogue_score_title_b.hide()
             self.score_legend.hide()
-            self.reason_group.setTitle("REASON BY PHRASE")
         target_character = str(self.plan.get("target_character") or "")
         if target_character and self.authoring_session is None:
             self.character_rows[0][0].setText(target_character)
@@ -1677,7 +1906,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         )
 
 
-def show_performance_plan_editor() -> PerformancePlanEditor:
+def show_performance_plan_editor(
+    *, study_ui_mode: str | None = None
+) -> PerformancePlanEditor:
     """Close any older editor instance and show a fresh window in Maya."""
     global PERFORMANCE_PLAN_EDITOR
     if PERFORMANCE_PLAN_EDITOR is not None:
@@ -1688,7 +1919,9 @@ def show_performance_plan_editor() -> PerformancePlanEditor:
         if widget.objectName() == WINDOW_OBJECT_NAME:
             widget.close()
             widget.deleteLater()
-    PERFORMANCE_PLAN_EDITOR = PerformancePlanEditor(parent=maya_main_window())
+    PERFORMANCE_PLAN_EDITOR = PerformancePlanEditor(
+        parent=maya_main_window(), study_ui_mode=study_ui_mode
+    )
     PERFORMANCE_PLAN_EDITOR.show()
     PERFORMANCE_PLAN_EDITOR.raise_()
     PERFORMANCE_PLAN_EDITOR.activateWindow()
