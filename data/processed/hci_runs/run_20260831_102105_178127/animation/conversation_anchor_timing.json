@@ -1,0 +1,474 @@
+{
+  "w0001": {
+    "speaker": "AGNES",
+    "turn_id": "T01",
+    "text": "Good",
+    "start": 0.0,
+    "end": 0.1,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0002": {
+    "speaker": "AGNES",
+    "turn_id": "T01",
+    "text": "day,",
+    "start": 1.55,
+    "end": 1.95,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0003": {
+    "speaker": "AGNES",
+    "turn_id": "T01",
+    "text": "sir.",
+    "start": 1.95,
+    "end": 2.25,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0004": {
+    "speaker": "WILL",
+    "turn_id": "T02",
+    "text": "Good",
+    "start": 3.570437,
+    "end": 3.690437,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0005": {
+    "speaker": "WILL",
+    "turn_id": "T02",
+    "text": "day",
+    "start": 3.690437,
+    "end": 3.860437,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0006": {
+    "speaker": "WILL",
+    "turn_id": "T02",
+    "text": "to",
+    "start": 3.860437,
+    "end": 3.990438,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0007": {
+    "speaker": "WILL",
+    "turn_id": "T02",
+    "text": "you.",
+    "start": 3.990438,
+    "end": 4.140437,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0008": {
+    "speaker": "AGNES",
+    "turn_id": "T03",
+    "text": "What",
+    "start": 5.648625,
+    "end": 5.798625,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0009": {
+    "speaker": "AGNES",
+    "turn_id": "T03",
+    "text": "brings",
+    "start": 5.798625,
+    "end": 6.048625,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0010": {
+    "speaker": "AGNES",
+    "turn_id": "T03",
+    "text": "you",
+    "start": 6.048625,
+    "end": 6.108625,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0011": {
+    "speaker": "AGNES",
+    "turn_id": "T03",
+    "text": "to",
+    "start": 6.108625,
+    "end": 6.218626,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0012": {
+    "speaker": "AGNES",
+    "turn_id": "T03",
+    "text": "Hewlands?",
+    "start": 6.218626,
+    "end": 6.868625,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0013": {
+    "speaker": "WILL",
+    "turn_id": "T04",
+    "text": "I'm",
+    "start": 4.140437,
+    "end": 4.310437,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0014": {
+    "speaker": "WILL",
+    "turn_id": "T04",
+    "text": "tutoring",
+    "start": 8.094,
+    "end": 8.534,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0015": {
+    "speaker": "WILL",
+    "turn_id": "T04",
+    "text": "the",
+    "start": 8.534,
+    "end": 8.594,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0016": {
+    "speaker": "WILL",
+    "turn_id": "T04",
+    "text": "boys",
+    "start": 8.594,
+    "end": 8.924,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0017": {
+    "speaker": "WILL",
+    "turn_id": "T04",
+    "text": "here.",
+    "start": 8.924,
+    "end": 9.134,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0018": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "The",
+    "start": 9.673126,
+    "end": 9.743126,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0019": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "Latin",
+    "start": 9.743126,
+    "end": 10.173126,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0020": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "tutor.",
+    "start": 10.173126,
+    "end": 10.723125,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0021": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "I've",
+    "start": 11.945251,
+    "end": 12.065251,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0022": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "heard",
+    "start": 12.065251,
+    "end": 12.285251,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0023": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "of",
+    "start": 12.285251,
+    "end": 12.385251,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0024": {
+    "speaker": "AGNES",
+    "turn_id": "T05",
+    "text": "you.",
+    "start": 12.385251,
+    "end": 12.67525,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0025": {
+    "speaker": "AGNES",
+    "turn_id": "T06",
+    "text": "What",
+    "start": 13.261625,
+    "end": 13.351625,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0026": {
+    "speaker": "AGNES",
+    "turn_id": "T06",
+    "text": "brought",
+    "start": 20.30275,
+    "end": 20.602751,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0027": {
+    "speaker": "AGNES",
+    "turn_id": "T06",
+    "text": "you",
+    "start": 20.602751,
+    "end": 20.702751,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0028": {
+    "speaker": "AGNES",
+    "turn_id": "T06",
+    "text": "into",
+    "start": 20.702751,
+    "end": 20.88275,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0029": {
+    "speaker": "AGNES",
+    "turn_id": "T06",
+    "text": "the",
+    "start": 20.88275,
+    "end": 20.97275,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0030": {
+    "speaker": "AGNES",
+    "turn_id": "T06",
+    "text": "garden?",
+    "start": 20.97275,
+    "end": 21.50275,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0031": {
+    "speaker": "WILL",
+    "turn_id": "T07",
+    "text": "Uh...",
+    "start": 24.461063,
+    "end": 25.031063,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0032": {
+    "speaker": "AGNES",
+    "turn_id": "T08",
+    "text": "It's",
+    "start": 27.379877,
+    "end": 27.599878,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0033": {
+    "speaker": "AGNES",
+    "turn_id": "T08",
+    "text": "just",
+    "start": 27.599878,
+    "end": 27.839876,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0034": {
+    "speaker": "AGNES",
+    "turn_id": "T08",
+    "text": "a",
+    "start": 27.839876,
+    "end": 27.899878,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0035": {
+    "speaker": "AGNES",
+    "turn_id": "T08",
+    "text": "question,",
+    "start": 27.899878,
+    "end": 28.569876,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0036": {
+    "speaker": "AGNES",
+    "turn_id": "T08",
+    "text": "master",
+    "start": 28.599878,
+    "end": 28.929876,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0037": {
+    "speaker": "AGNES",
+    "turn_id": "T08",
+    "text": "tutor.",
+    "start": 28.929876,
+    "end": 29.339876,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0038": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "Yes,",
+    "start": 29.7005,
+    "end": 29.990501,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0039": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "I,",
+    "start": 29.990501,
+    "end": 30.020502,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0040": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "uh...",
+    "start": 30.020502,
+    "end": 30.120501,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0041": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "I",
+    "start": 30.120501,
+    "end": 30.4505,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0042": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "suppose",
+    "start": 32.845062,
+    "end": 33.285065,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0043": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "the",
+    "start": 33.285065,
+    "end": 33.425064,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0044": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "air",
+    "start": 33.425064,
+    "end": 33.495064,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0045": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "was",
+    "start": 33.495064,
+    "end": 33.65506,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0046": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "fresh",
+    "start": 33.65506,
+    "end": 33.985062,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0047": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "out",
+    "start": 33.985062,
+    "end": 34.185059,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0048": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "here,",
+    "start": 34.185059,
+    "end": 34.355064,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0049": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "and...",
+    "start": 34.355064,
+    "end": 34.615059,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0050": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "uh,",
+    "start": 36.135124,
+    "end": 36.545124,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0051": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "I",
+    "start": 36.945126,
+    "end": 37.035122,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0052": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "saw",
+    "start": 37.035122,
+    "end": 37.255123,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0053": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "you",
+    "start": 37.255123,
+    "end": 37.365124,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0054": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "with",
+    "start": 37.365124,
+    "end": 37.495121,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0055": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "your",
+    "start": 37.495121,
+    "end": 37.625126,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0056": {
+    "speaker": "WILL",
+    "turn_id": "T09",
+    "text": "bird.",
+    "start": 37.625126,
+    "end": 38.105122,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.Textgrid"
+  },
+  "w0057": {
+    "speaker": "AGNES",
+    "turn_id": "T10",
+    "text": "It's",
+    "start": 40.315872,
+    "end": 40.435875,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0058": {
+    "speaker": "AGNES",
+    "turn_id": "T10",
+    "text": "a",
+    "start": 40.435875,
+    "end": 40.495872,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  },
+  "w0059": {
+    "speaker": "AGNES",
+    "turn_id": "T10",
+    "text": "hawk.",
+    "start": 40.495872,
+    "end": 41.895874,
+    "timing_source": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_AGNES.Textgrid"
+  }
+}

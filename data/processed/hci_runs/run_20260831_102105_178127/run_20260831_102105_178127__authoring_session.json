@@ -1,0 +1,268 @@
+{
+  "gaze_calibrations": {
+    "WILL->AGNES": {
+      "eye_stare_translate": [
+        -16.20481177958879,
+        1.0729397513682681e-13,
+        36.518592874281865
+      ],
+      "eye_stare_world_position": [
+        -13.892580658914106,
+        163.33882141113293,
+        5.749823121039245
+      ]
+    },
+    "WILL->TARGET": {
+      "eye_stare_translate": [
+        0.0,
+        0.0,
+        36.518592874281865
+      ],
+      "eye_stare_world_position": [
+        -15.371593978562792,
+        163.3388214111328,
+        21.886998970988994
+      ]
+    },
+    "WILL->HAWK": {
+      "eye_stare_translate": [
+        8.087785629505972e-15,
+        -18.014306727915084,
+        36.51859287428186
+      ],
+      "eye_stare_world_position": [
+        -15.371593978562785,
+        145.32451468321773,
+        21.886998970989005
+      ]
+    },
+    "AGNES->WILL": {
+      "eye_stare_translate": [
+        11.064605721777205,
+        0.0,
+        35.00692450451507
+      ],
+      "eye_stare_world_position": [
+        11.064332303600985,
+        165.33004760742188,
+        34.45640396523132
+      ]
+    },
+    "AGNES->HAWK": {
+      "eye_stare_translate": [
+        0.0,
+        -9.57923046187787,
+        35.00692450451507
+      ],
+      "eye_stare_world_position": [
+        -0.00027341817622072995,
+        155.750817145544,
+        34.45640396523132
+      ]
+    },
+    "AGNES->TARGET": {
+      "eye_stare_translate": [
+        0.0,
+        0.0,
+        35.00692450451507
+      ],
+      "eye_stare_world_position": [
+        -0.00027341817622072995,
+        165.33004760742188,
+        34.45640396523132
+      ]
+    }
+  },
+  "jali_base_baseline": {
+    "schema_version": "dual_jali_base_v2",
+    "actors": {
+      "WILL": {
+        "script_name": "WILL",
+        "maya_node": "|Angela_jRigMaya:JALI_GRP",
+        "jsync": "|Angela_jRigMaya:JALI_GRP|Angela_jRigMaya:jRig_GRP|Angela_jRigMaya:masterGRP|Angela_jRigMaya:speechMaster|jSync2_parent|jSync2",
+        "sound_file": "SeqT_WILL",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "transcript": "Good day to you.I'm tutoring the boys here.Uh...Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1,
+        "gaze_reference": {
+          "eye_stare_node": "Angela_jRigMaya:eyeStare_world",
+          "baseline_translateZ": 36.518592874281865,
+          "eye_stare_translate": [
+            0.0,
+            0.0,
+            36.518592874281865
+          ],
+          "both_eyes_node": "Angela_jRigMaya:CNT_BOTH_EYES",
+          "both_eyes_translate": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "AGNES": {
+        "script_name": "AGNES",
+        "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP",
+        "jsync": "|ValleyGirl_jRigMaya:JALI_GRP|ValleyGirl_jRigMaya:jRig_GRP|ValleyGirl_jRigMaya:masterGRP|ValleyGirl_jRigMaya:speechMaster|jSync1_parent|jSync1",
+        "sound_file": "SeqT_AGNES",
+        "text_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "sound_input_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "output_path": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT/",
+        "transcript": "Good day, sir.What brings you to Hewlands?The Latin tutor. I've heard of you.What brought you into the garden?It's just a question, master tutor.It's a hawk.",
+        "jsync_attrs": {
+          "calculate_paralinguals": true,
+          "paralingual_bearing": 3,
+          "paralingual_intensity": 80,
+          "calculate_expression": false,
+          "expression_source": 102,
+          "expression_strength": 80,
+          "override_annotation": false,
+          "calculate_blinks": true
+        },
+        "facs_animation_source": 1,
+        "gaze_reference": {
+          "eye_stare_node": "ValleyGirl_jRigMaya:eyeStare_world",
+          "baseline_translateZ": 35.00692450451507,
+          "eye_stare_translate": [
+            0.0,
+            0.0,
+            35.00692450451507
+          ],
+          "both_eyes_node": "ValleyGirl_jRigMaya:CNT_BOTH_EYES",
+          "both_eyes_translate": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  },
+  "inspection_events": [
+    {
+      "event": "semantic_section_closed",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:26:16.693810+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    },
+    {
+      "event": "semantic_section_opened",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:26:17.628178+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    },
+    {
+      "event": "semantic_section_closed",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:26:24.346823+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    },
+    {
+      "event": "interpretation_section_opened",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:26:25.364281+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127",
+      "actor": "WILL",
+      "event_id": "INITIAL:WILL"
+    },
+    {
+      "event": "interpretation_section_closed",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:26:26.093797+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    },
+    {
+      "event": "semantic_section_opened",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:27:21.944532+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    },
+    {
+      "event": "semantic_section_closed",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:27:23.276363+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    },
+    {
+      "event": "semantic_section_opened",
+      "event_type": "inspection",
+      "timestamp": "2026-08-31T09:28:32.027726+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    }
+  ],
+  "semantic_edit_events": [
+    {
+      "event": "semantic_edit_started",
+      "event_type": "semantic_edit",
+      "timestamp": "2026-08-31T09:28:37.446826+00:00",
+      "study_ui_mode": "normal",
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    }
+  ],
+  "study_ui_sessions": [
+    {
+      "started_at": "2026-08-31T09:17:15.507298+00:00",
+      "ended_at": "2026-08-31T09:32:21.368623+00:00",
+      "study_ui_mode": "normal",
+      "initial_section_state": {
+        "semantic": {
+          "visible": true,
+          "expanded": true
+        },
+        "interpretation": {
+          "visible": true,
+          "expanded": false
+        }
+      },
+      "mode_changes": [],
+      "sequence_id": "run_20260831_102105_178127",
+      "run_id": "run_20260831_102105_178127"
+    }
+  ],
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260831_102105_178127",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/SeqT",
+  "input_script": "AGNES: Good day, sir.\nWILL: Good day to you.\nAGNES: What brings you to Hewlands?\nWILL: I'm tutoring the boys here.\nAGNES: The Latin tutor. I've heard of you.\nAGNES: What brought you into the garden?\nWILL: Uh...\nAGNES: It's just a question, master tutor.\nWILL: Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.\nAGNES: It's a hawk.",
+  "input_context": "Scene:\nWill and Agnes meet for the first time in the garden at Hewlands. Will has just left the study where he is tutoring the boys after noticing Agnes outside with her hawk.\n\nStory:\nWill is working as a Latin tutor at Hewlands to help repay his father's debt. He feels trapped by his circumstances. Agnes lives at Hewlands and has an independent, unconventional relationship with the natural world.\n\nCharacter:\nWILL is educated, restless, curious, and somewhat socially uncertain around Agnes.\nAGNES is independent, intuitive, self-possessed, and cautious about this unfamiliar man.\n\nPerformance Context:\nThere is an immediate mutual attraction, but neither character knows the other yet. Their conversation is tentative and slightly awkward. Will is searching for a reason to remain near Agnes, while Agnes is curious about why he approached her. The hawk provides a safer subject through which they can c",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "WILL",
+      "maya_node": "|Angela_jRigMaya:JALI_GRP"
+    },
+    {
+      "alias": "B",
+      "script_name": "AGNES",
+      "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP"
+    }
+  ],
+  "look_at_targets": []
+}

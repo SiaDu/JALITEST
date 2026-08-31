@@ -1,0 +1,49 @@
+{
+  "initial_state": {
+    "head": "HEAD-NONE",
+    "affect": "Watchful-60",
+    "gaze": "GAZE-WILL"
+  },
+  "initial_timing": {
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0
+  },
+  "timeline": [
+    {
+      "event_id": "E001",
+      "resolved_start": 0.0,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Watchful-60",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E006",
+      "resolved_start": 27.379877,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sassy-55",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E008",
+      "resolved_start": 34.615059,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Watchful-70",
+        "gaze": "GAZE-WILL"
+      }
+    },
+    {
+      "event_id": "E009",
+      "resolved_start": 40.315872,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Sassy-65",
+        "gaze": "GAZE-HAWK"
+      }
+    }
+  ]
+}

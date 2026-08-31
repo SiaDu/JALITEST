@@ -1,0 +1,67 @@
+{
+  "initial_state": {
+    "head": "HEAD-NONE",
+    "affect": "Nervous-50",
+    "gaze": "GAZE-AGNES"
+  },
+  "initial_timing": {
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0
+  },
+  "timeline": [
+    {
+      "event_id": "E002",
+      "resolved_start": 1.95,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-50",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E003",
+      "resolved_start": 5.798625,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-65",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E004",
+      "resolved_start": 12.065251,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-65",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E005",
+      "resolved_start": 24.461063,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Thinking-60",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E007",
+      "resolved_start": 30.020502,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Thinking-60",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E010",
+      "resolved_start": 40.495872,
+      "state": {
+        "head": "HEAD-NONE",
+        "affect": "Thinking-60",
+        "gaze": "GAZE-HAWK"
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+[INITIAL]
+WILL
+affect: Nervous-50
+focus: TARGET
+acting: He is drawn toward her but remains visibly uncertain, trying to appear composed.
+
+AGNES
+affect: Watchful-60
+focus: TARGET
+acting: She observes the unfamiliar tutor with guarded curiosity, keeping her manner polite and self-possessed.
+
+[BEATS]
+E001
+actor: AGNES
+trigger: w0001
+acting: Her greeting settles her attention on the unfamiliar man.
+focus: WILL
+
+E002
+actor: WILL
+trigger: w0002
+acting: He answers courteously and fixes his attention on her.
+focus: AGNES
+
+E003
+actor: WILL
+trigger: w0008
+acting: Her direct question puts him briefly on the spot, and his nervousness becomes more visible.
+affect: Nervous-65
+
+E004
+actor: WILL
+trigger: w0021
+acting: Hearing that she has already heard of him makes him self-conscious; he briefly avoids her eyes.
+eye_action: brief_check DOWN
+
+E005
+actor: WILL
+trigger: w0031
+acting: The hesitation exposes his uncertainty as he searches for a safe answer.
+affect: Thinking-60
+eye_action: brief_check DOWN
+
+E006
+actor: AGNES
+trigger: w0032
+acting: She recognizes his discomfort and lightly needles him, without fully lowering her guard.
+affect: Sassy-55
+
+E007
+actor: WILL
+trigger: w0040
+acting: He gathers his thoughts, glancing upward as he searches for an explanation.
+eye_action: brief_check UP
+
+E008
+actor: AGNES
+trigger: w0049
+acting: His unfinished explanation confirms that there is more behind his arrival, sharpening her attention.
+affect: Watchful-70
+
+E009
+actor: AGNES
+trigger: w0057
+acting: Her correction is calm but quietly assertive, and her attention returns to the bird.
+affect: Sassy-65
+focus: HAWK
+
+E010
+actor: WILL
+trigger: w0058
+acting: The correction gives him a concrete subject to follow, and he turns his attention to the hawk.
+focus: HAWK
