@@ -172,6 +172,23 @@ def validate_authoring_session(session: dict[str, Any]) -> None:
     if session["mode"] == "dual" and len(characters) not in {0, 2}:
         raise ValueError("Dual mode must contain both A and B character mappings, or no mappings.")
     _mapping_rows(session.get("look_at_targets", []), ("semantic_target", "maya_node"))
+    speech_bases = session.get("jali_speech_bases", {})
+    if not isinstance(speech_bases, dict):
+        raise ValueError("jali_speech_bases must be an actor-keyed object.")
+    required_speech_fields = (
+        "script_name", "maya_node", "jsync", "sound_file", "wav_path",
+        "txt_path", "txt_sha256", "preparation_status", "prepared_at",
+    )
+    for actor, item in speech_bases.items():
+        if not isinstance(actor, str) or not actor.strip() or not isinstance(item, dict):
+            raise ValueError("Each JALI speech-base entry requires a named actor and object value.")
+        for field in required_speech_fields:
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                raise ValueError(f"{actor}: JALI speech-base field {field!r} must be a non-empty string.")
+        if item["preparation_status"] not in {"prepared", "reused"}:
+            raise ValueError(f"{actor}: invalid JALI speech-base preparation_status.")
+        if len(item["txt_sha256"]) != 64:
+            raise ValueError(f"{actor}: txt_sha256 must be a SHA-256 hex digest.")
     inspection_events = session.get("inspection_events", [])
     if not isinstance(inspection_events, list):
         raise ValueError("Authoring session inspection_events must be a list.")

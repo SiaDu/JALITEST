@@ -28,6 +28,7 @@ _LOCAL_MODULES = (
     "authoring_requirements",
     "backend_process_runner",
     "animation_apply_runner",
+    "jali_speech_base",
 )
 
 if str(TOOLS_DIR) not in sys.path:

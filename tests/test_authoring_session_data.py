@@ -188,6 +188,32 @@ def test_inspection_events_round_trip_in_authoring_sidecar(tmp_path: Path):
     assert loaded["study_ui_sessions"] == [study_ui_session]
 
 
+def test_jali_speech_base_runtime_metadata_round_trips_without_semantic_events(tmp_path: Path):
+    speech_bases = {
+        "AGNES": {
+            "script_name": "AGNES", "maya_node": "|AGNES|JALI_GRP",
+            "jsync": "|AGNES|JALI_GRP|speech|jSync17", "sound_file": "SeqT_AGNES",
+            "wav_path": "C:/audio/SeqT_AGNES.wav", "txt_path": "C:/audio/SeqT_AGNES.txt",
+            "txt_sha256": "a" * 64, "preparation_status": "prepared",
+            "prepared_at": "2026-08-31T00:00:00+00:00",
+        }
+    }
+    session = build_authoring_session(
+        sequence_id="scene", mode="dual", audio_folder="C:/audio",
+        characters=[
+            {"alias": "A", "script_name": "AGNES", "maya_node": "|AGNES|JALI_GRP"},
+            {"alias": "B", "script_name": "WILL", "maya_node": "|WILL|JALI_GRP"},
+        ],
+        look_at_targets=[],
+        base={"jali_speech_bases": speech_bases, "semantic_edit_events": []},
+    )
+    path = tmp_path / "session.json"
+    save_authoring_session(session, path)
+    loaded = load_authoring_session(path)
+    assert loaded["jali_speech_bases"] == speech_bases
+    assert loaded["semantic_edit_events"] == []
+
+
 def test_separate_event_streams_support_before_first_semantic_edit_metric():
     interpretation_open = build_inspection_event(
         "interpretation_section_opened",

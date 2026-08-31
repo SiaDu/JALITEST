@@ -18,6 +18,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from shiboken6 import wrapInstance
 from maya import OpenMayaUI as omui
 from maya import cmds
+from maya import mel
 
 
 TOOLS_DIR = Path(__file__).resolve().parent
@@ -91,6 +92,7 @@ from authoring_requirements import (  # noqa: E402
     required_look_at_targets,
 )
 from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
+from jali_speech_base import ensure_dual_jali_speech_bases, speech_base_status_text  # noqa: E402
 from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, dual_actor_row_index, optional_look_at_validation_error  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
@@ -289,6 +291,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.dual_gaze_calibrations: dict[str, dict[str, list[float]]] = {}
         self.dual_gaze_baselines: dict[str, dict[str, object]] = {}
         self.jali_base_baseline: dict[str, Any] | None = None
+        self.jali_speech_bases: dict[str, dict[str, Any]] = {}
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
         self._score_resize_scheduled = False
@@ -357,6 +360,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         layout.addWidget(self.gaze_calibration_label)
         self.gaze_calibration_layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.gaze_calibration_layout)
+        layout.addWidget(QtWidgets.QLabel("JALI SPEECH BASE"))
+        self.jali_speech_status_labels: dict[str, QtWidgets.QLabel] = {}
+        for alias in ("A", "B"):
+            label = QtWidgets.QLabel(speech_base_status_text(alias, "", "will_prepare"))
+            layout.addWidget(label)
+            self.jali_speech_status_labels[alias] = label
+        self.audio_folder.textChanged.connect(self._refresh_jali_speech_status_preview)
+        for script_field, maya_field, _row in self.character_rows:
+            script_field.textChanged.connect(self._refresh_jali_speech_status_preview)
+            maya_field.textChanged.connect(self._refresh_jali_speech_status_preview)
         optional = QtWidgets.QHBoxLayout()
         optional.addWidget(QtWidgets.QLabel("Optional Scene Target"))
         self.optional_gaze_actor = QtWidgets.QComboBox(); optional.addWidget(self.optional_gaze_actor)
@@ -376,6 +389,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         bottom.addStretch(1)
         layout.addLayout(bottom)
         authoring.addWidget(group)
+        self._refresh_jali_speech_status_preview()
         self._update_character_mode()
 
     def _build_setup(self, parent: QtWidgets.QVBoxLayout) -> None:
@@ -704,6 +718,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.character_rows[1][2].setVisible(dual)
         if self.character_mapping_rows:
             self.character_mapping_rows[1].setVisible(dual)
+        if hasattr(self, "jali_speech_status_labels"):
+            self.jali_speech_status_labels["B"].setVisible(dual)
         if hasattr(self, "legacy_look_at_label"):
             self.legacy_look_at_label.setVisible(not dual)
             for _semantic, _maya, row in self.look_at_rows:
@@ -973,6 +989,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if not script.strip() or not audio:
             QtWidgets.QMessageBox.warning(self,"Animation Setup Incomplete","Input Script and Input Audio Folder are required."); return
         mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}; self.backend_log.clear()
+        self.generate_animation_button.setEnabled(False)
+        self.restore_jali_base_button.setEnabled(False)
+        self.animation_status.setText("Preparing native JALI speech...")
+        self.animation_status.setStyleSheet("color: #1d4ed8;")
+        QtCore.QCoreApplication.processEvents()
+        stage = "Preparing native JALI speech"
         try:
             plan_characters = self.plan.get("characters", [])
             if not isinstance(plan_characters, list) or len(plan_characters) != 2:
@@ -980,14 +1002,58 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             for actor, index in zip(plan_characters, (0, 1)):
                 name=self.character_rows[index][0].text().strip(); node=self.character_rows[index][1].text().strip()
                 if not name or not node or not cmds.objExists(node): raise RuntimeError(f"{actor}: valid script character and Maya rig mapping are required.")
-                jsync=resolve_jsync_for_character(node)
-                sound=str(cmds.getAttr(f"{jsync}.sound_file") or "").strip()
-                if not sound: raise RuntimeError(f"{actor}: resolved jSync has no sound_file.")
-                text_input_path=str(cmds.getAttr(f"{jsync}.text_input_path") or "").strip()
-                transcript=resolve_jali_source_transcript_path(text_input_path, sound)
-                mappings[actor]={"script_name":name,"maya_node":node}; runtime[actor]={"script_name":name,"sound_file":sound,"transcript_path":str(transcript)}
-                self._append_backend_output(f"{actor}: jSync={jsync}; sound_file={sound}; text_input_path={text_input_path}; transcript_path={transcript}")
-            if any(runtime[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
+                mappings[actor]={"script_name":name,"maya_node":node}
+            if any(mappings[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
+            source_transcripts = export_dual_source_transcripts(
+                script=script, audio_folder=audio, characters=plan_characters
+            )
+            prepared = ensure_dual_jali_speech_bases(
+                actors=plan_characters,
+                character_mappings=mappings,
+                source_transcripts=source_transcripts,
+                saved_metadata=self.jali_speech_bases,
+                cmds_module=cmds,
+                mel_module=mel,
+                status_callback=self._set_jali_speech_status,
+            )
+            prior_baseline = self.jali_base_baseline
+            if any(row["preparation_status"] == "prepared" for row in prepared.values()):
+                self.jali_base_baseline = None
+            elif isinstance(prior_baseline, dict):
+                baseline_actors = prior_baseline.get("actors") or {}
+                if any(
+                    not isinstance(baseline_actors.get(actor), dict)
+                    or baseline_actors[actor].get("jsync") != prepared[actor]["jsync"]
+                    or baseline_actors[actor].get("sound_file") != prepared[actor]["sound_file"]
+                    for actor in plan_characters
+                ):
+                    self.jali_base_baseline = None
+            self.jali_speech_bases = prepared
+            for actor in plan_characters:
+                row = prepared[actor]
+                mappings[actor] = {
+                    "script_name": row["script_name"], "maya_node": row["maya_node"],
+                    "sound_file": row["sound_file"], "transcript_path": row["txt_path"],
+                    "jsync": row["jsync"],
+                }
+                runtime[actor] = {
+                    "script_name": row["script_name"], "sound_file": row["sound_file"],
+                    "transcript_path": row["txt_path"],
+                }
+                self._append_backend_output(
+                    f"{actor}: JALI speech base {row['preparation_status']}; rig={row['maya_node']}; "
+                    f"jSync={row['jsync']}; sound_file={row['sound_file']}; transcript={row['txt_path']}; "
+                    f"txt_sha256={row['txt_sha256']}"
+                )
+            # Native JALI bases for BOTH actors are now verified. Capture the
+            # immutable baseline before any backend compile or semantic overlay.
+            self.jali_base_baseline = capture_dual_jali_base_if_absent(
+                self.jali_base_baseline, character_mappings=mappings
+            )
+            self._save_authoring_session_for_path(self.source_path)
+            stage = "Compiling Performance Plan"
+            self.animation_status.setText("Compiling Performance Plan...")
+            QtCore.QCoreApplication.processEvents()
             animation_dir=self.source_path.parent/"animation"
             candidate_plan = self.score_model.apply(self._score_payload())
             if candidate_plan.get("schema_version") == "dual_performance_plan_v2":
@@ -1003,20 +1069,54 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             else:
                 runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
                 self.plan = save_animation_runtime_plan(self.score_model, self._score_payload(), runtime_plan)
+            self._save_authoring_session_for_path(self.source_path)
             fps=current_scene_fps()
-            if self.jali_base_baseline is None:
-                self.jali_base_baseline = capture_dual_jali_base_if_absent(self.jali_base_baseline, character_mappings=mappings)
-                self._save_authoring_session_for_path(self.source_path)
-            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings; self.generate_animation_button.setEnabled(False); self.restore_jali_base_button.setEnabled(False); self.animation_status.setText("Generating dual speaker emotion..."); self.animation_status.setStyleSheet("color: #1d4ed8;")
+            self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings
             command=self.animation_runner.start_dual(performance_plan=runtime_plan,script=script,audio_folder=audio,output_dir=animation_dir,fps=fps,runtime_mapping=runtime)
             self._append_backend_output(f"Dual emotion-only output: {command.output_dir}")
-        except Exception as exc: self._animation_failed(str(exc))
+        except Exception as exc: self._animation_failed(f"{stage} failed: {exc}")
+
+    def _jali_speech_status_label(self, actor: str) -> QtWidgets.QLabel | None:
+        names = [row[0].text().strip() for row in self.character_rows]
+        index = next((i for i, name in enumerate(names) if name.casefold() == str(actor).casefold()), None)
+        return self.jali_speech_status_labels.get("A" if index == 0 else "B" if index == 1 else "")
+
+    def _set_jali_speech_status(self, actor: str, clip: str, status: str) -> None:
+        label = self._jali_speech_status_label(actor)
+        if label is not None:
+            label.setText(speech_base_status_text(actor, clip, status))
+            label.setStyleSheet(
+                "color: #166534;" if status in {"reused", "prepared"}
+                else "color: #9b1c1c;" if status == "failed"
+                else "color: #1d4ed8;" if status == "preparing"
+                else ""
+            )
+            QtCore.QCoreApplication.processEvents()
+
+    def _refresh_jali_speech_status_preview(self, *_args: object) -> None:
+        if not hasattr(self, "jali_speech_status_labels"):
+            return
+        folder = self.audio_folder.text().strip() if hasattr(self, "audio_folder") else ""
+        for index, alias in enumerate(("A", "B")):
+            actor = self.character_rows[index][0].text().strip() or alias
+            clip = ""
+            try:
+                if folder:
+                    clip = resolve_character_wav(folder, actor).stem
+            except Exception:
+                pass
+            self.jali_speech_status_labels[alias].setText(
+                speech_base_status_text(actor, clip, "will_prepare")
+            )
+            self.jali_speech_status_labels[alias].setStyleSheet("")
 
     def _animation_compile_succeeded(self, manifest_path: object) -> None:
         stream = io.StringIO()
         try:
             with redirect_stdout(stream), redirect_stderr(stream):
                 if self._pending_animation_mode == "dual_emotion_only":
+                    self.animation_status.setText("Applying semantic animation...")
+                    QtCore.QCoreApplication.processEvents()
                     gaze_mappings = {alias: {**row, "gaze_targets": {key.split("->", 1)[1]: value for key, value in self.dual_gaze_calibrations.items() if key.startswith(alias + "->")}} for alias, row in self._pending_dual_mappings.items()}
                     is_v2 = (self.plan or {}).get("schema_version") == "dual_performance_plan_v2"
                     if is_v2:
@@ -1230,6 +1330,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.jali_base_baseline = None
             if saved_baseline is not None:
                 self._append_backend_output("Discarded legacy JALI baseline; a fresh dual_jali_base_v2 baseline will be captured on Generate.")
+        saved_speech_bases = session.get("jali_speech_bases")
+        self.jali_speech_bases = {
+            str(actor): dict(row)
+            for actor, row in (saved_speech_bases or {}).items()
+            if isinstance(row, dict)
+        } if isinstance(saved_speech_bases, dict) else {}
         for script_field, maya_field, _row in self.character_rows:
             script_field.clear()
             maya_field.clear()
@@ -1303,6 +1409,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 },
                 "gaze_calibrations": self.dual_gaze_calibrations,
                 "jali_base_baseline": self.jali_base_baseline,
+                "jali_speech_bases": self.jali_speech_bases,
                 "inspection_events": list(self._inspection_events),
                 "semantic_edit_events": list(self._semantic_edit_events),
                 "study_ui_sessions": study_ui_sessions,
@@ -1503,6 +1610,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return False
 
         self.authoring_session = None
+        self.jali_speech_bases = {}
         try:
             sequence_id = str(loaded_plan.get("sequence_id") or "")
             session_path = default_authoring_session_path(path, sequence_id)

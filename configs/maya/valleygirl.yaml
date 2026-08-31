@@ -2,6 +2,12 @@ maya_common:
   repo_root: .
   maya_project_root: E:/maya_project/JALI_test
 
+# Study-frozen native JALI creation settings. These are developer configuration,
+# not participant controls: English language enum and default/neutral speech style.
+maya_jali_speech_base:
+  language_code: 0
+  speech_style: 0
+
 maya_gaze:
   eye_stare_node_suffix: eyeStare_world
   clear_existing_eye_stare_translate_keys: true

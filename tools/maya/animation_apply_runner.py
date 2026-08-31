@@ -154,12 +154,16 @@ def resolve_jsync_for_character(
         str(node) for node in (cmds_module.ls(type="jSync", long=True) or [])
         if str(node).startswith(root + "|")
     ]
-    if expected_sound_file and len(candidates) > 1:
+    if expected_sound_file:
         expected = str(expected_sound_file)
-        candidates = [
-            node for node in candidates
-            if cmds_module.getAttr(f"{node}.sound_file") == expected
-        ]
+        matching: list[str] = []
+        for node in candidates:
+            try:
+                if cmds_module.getAttr(f"{node}.sound_file") == expected:
+                    matching.append(node)
+            except Exception:
+                continue
+        candidates = matching
     if not candidates:
         qualifier = f' with sound_file {expected_sound_file!r}' if expected_sound_file else ""
         raise RuntimeError(f"No jSync node found beneath character {character_node!r}{qualifier}.")
@@ -210,7 +214,12 @@ def capture_dual_jali_base(
         script_name = str(row.get("script_name") or "").strip()
         if not rig or not script_name or not cmds_module.objExists(rig):
             raise RuntimeError(f"{alias}: valid mapped JALI_GRP and script_name are required for JALI baseline capture.")
-        jsync = resolve_jsync_for_character(rig, cmds_module=cmds_module)
+        expected_sound = str(row.get("sound_file") or "").strip() or None
+        jsync = (
+            resolve_jsync_for_character(rig, expected_sound, cmds_module=cmds_module)
+            if expected_sound else
+            resolve_jsync_for_character(rig, cmds_module=cmds_module)
+        )
         if not jsync.startswith(rig.rstrip("|") + "|"):
             raise RuntimeError(f"{alias}: resolved jSync does not belong to mapped rig.")
         required = (*_JSYNC_BASELINE_ATTRS, "sound_file", "text_input_path", "sound_input_path", "output_path", "transcript")

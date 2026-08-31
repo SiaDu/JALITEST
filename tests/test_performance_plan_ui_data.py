@@ -391,6 +391,31 @@ def test_dual_v2_uses_actor_calibration_and_discards_legacy_jali_baselines():
     assert "Discarded legacy JALI baseline" in restore
 
 
+def test_dual_generate_prepares_native_jali_before_baseline_and_backend_compile():
+    source = (Path(__file__).resolve().parents[1] / "tools/maya/performance_plan_ui.py").read_text(encoding="utf-8")
+    dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _jali_speech_status_label", 1
+    )[0]
+    export_at = dual.index("export_dual_source_transcripts(")
+    ensure_at = dual.index("ensure_dual_jali_speech_bases(")
+    baseline_at = dual.index("capture_dual_jali_base_if_absent(")
+    compile_at = dual.index("self.animation_runner.start_dual(")
+    assert export_at < ensure_at < baseline_at < compile_at
+    assert 'self.animation_status.setText("Preparing native JALI speech...")' in dual
+    assert 'self.animation_status.setText("Compiling Performance Plan...")' in dual
+    assert 'self._animation_failed(f"{stage} failed: {exc}")' in dual
+
+
+def test_jali_speech_runtime_metadata_is_sidecar_only_and_not_semantic_dirty_state():
+    source = (Path(__file__).resolve().parents[1] / "tools/maya/performance_plan_ui.py").read_text(encoding="utf-8")
+    build = source.split("    def _build_authoring_session_data", 1)[1].split(
+        "    def _save_authoring_session_for_path", 1
+    )[0]
+    dirty = source.split("    def _score_changed", 1)[1].split("    def ", 1)[0]
+    assert '"jali_speech_bases": self.jali_speech_bases' in build
+    assert "jali_speech_bases" not in dirty
+
+
 def test_generation_success_loads_plan_without_reformatting_authoring_text():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     succeeded = source.split("    def _generation_succeeded", 1)[1].split(

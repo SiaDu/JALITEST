@@ -62,6 +62,21 @@ def test_baseline_is_actor_specific_and_first_capture_is_immutable(tmp_path):
     assert baseline["actors"]["A"]["transcript"] == "original A"
 
 
+def test_baseline_capture_uses_mapping_expected_sound_when_old_jsync_exists(tmp_path):
+    cmds, _baseline_value = _baseline(tmp_path)
+    old = "|A:ROOT|old|jSyncOld"
+    cmds.nodes.add(old)
+    cmds.values[f"{old}.sound_file"] = "OLD"
+    original_ls = cmds.ls
+    cmds.ls = lambda **kwargs: (["|A:ROOT|jSyncA", old, "|B:ROOT|jSyncB"] if kwargs.get("type") == "jSync" else original_ls(**kwargs))
+    mappings = _mappings()
+    mappings["A"]["sound_file"] = "SA"
+    mappings["B"]["sound_file"] = "SB"
+    baseline = capture_dual_jali_base(character_mappings=mappings, cmds_module=cmds)
+    assert baseline["actors"]["A"]["jsync"] == "|A:ROOT|jSyncA"
+    assert baseline["actors"]["B"]["jsync"] == "|B:ROOT|jSyncB"
+
+
 def test_restore_preflights_b_before_mutating_a(tmp_path):
     cmds, baseline = _baseline(tmp_path); mel = _Mel()
     cmds.nodes.discard("|B:ROOT|jSyncB")
