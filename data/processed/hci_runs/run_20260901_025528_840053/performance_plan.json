@@ -1,0 +1,307 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260901_025528_840053",
+  "characters": [
+    "AGNES",
+    "WILL"
+  ],
+  "gaze_target_candidates": [
+    "HAWK"
+  ],
+  "initial_states": {
+    "AGNES": {
+      "head": "HEAD-NONE",
+      "affect": "Watchful-60",
+      "gaze": "GAZE-HAWK"
+    },
+    "WILL": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-55",
+      "gaze": "GAZE-AGNES"
+    }
+  },
+  "initial_reasons": {
+    "AGNES": "She tends to the hawk until the unfamiliar man addresses her, remaining alert to his presence.",
+    "WILL": "He approaches with courteous uncertainty, drawn to Agnes but unsure how to begin."
+  },
+  "tracks": {
+    "AGNES": [
+      {
+        "event_id": "E001",
+        "actor": "AGNES",
+        "anchor_id": "w0001",
+        "changes": {
+          "affect": "Polite-65",
+          "gaze": "GAZE-WILL"
+        },
+        "reason": "She turns her attention from the hawk to acknowledge him with guarded courtesy."
+      },
+      {
+        "event_id": "E003",
+        "actor": "AGNES",
+        "anchor_id": "w0008",
+        "changes": {
+          "affect": "Watchful-70"
+        },
+        "reason": "Her greeting becomes a direct inquiry as she studies what has brought him to Hewlands."
+      },
+      {
+        "event_id": "E007",
+        "actor": "AGNES",
+        "anchor_id": "w0032",
+        "changes": {
+          "affect": "Sassy-60"
+        },
+        "reason": "She lightly teases his hesitation, making clear that she expects a straightforward answer."
+      },
+      {
+        "event_id": "E011",
+        "actor": "AGNES",
+        "anchor_id": "w0056",
+        "changes": {
+          "gaze": "GAZE-HAWK"
+        },
+        "reason": "His reference to the bird settles her attention on the hawk as the subject she would rather discuss."
+      },
+      {
+        "event_id": "E012",
+        "actor": "AGNES",
+        "anchor_id": "w0057",
+        "changes": {
+          "affect": "Sassy-75"
+        },
+        "reason": "She corrects him crisply, asserting the hawk's identity without abandoning her guarded composure."
+      }
+    ],
+    "WILL": [
+      {
+        "event_id": "E002",
+        "actor": "WILL",
+        "anchor_id": "w0004",
+        "changes": {
+          "affect": "Polite-60"
+        },
+        "reason": "He returns the greeting carefully, trying to appear more composed than he feels."
+      },
+      {
+        "event_id": "E004",
+        "actor": "WILL",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Nervous-65"
+        },
+        "reason": "The question makes him answer promptly but with visible social unease."
+      },
+      {
+        "event_id": "E005",
+        "actor": "WILL",
+        "anchor_id": "w0021",
+        "changes": {
+          "affect": "Surprised-60"
+        },
+        "reason": "Hearing that she has already heard of him catches him off guard."
+      },
+      {
+        "event_id": "E006",
+        "actor": "WILL",
+        "anchor_id": "w0025",
+        "changes": {
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "Her question about the garden makes him briefly avoid her eyes while searching for an acceptable answer."
+      },
+      {
+        "event_id": "E008",
+        "actor": "WILL",
+        "anchor_id": "w0040",
+        "changes": {
+          "affect": "Thinking-65",
+          "gaze": "GLANCE-UP"
+        },
+        "reason": "He searches for an explanation, looking away momentarily as he gathers his thoughts."
+      },
+      {
+        "event_id": "E009",
+        "actor": "WILL",
+        "anchor_id": "w0049",
+        "changes": {
+          "affect": "Nervous-75",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The unfinished explanation exposes his embarrassment and renewed discomfort."
+      },
+      {
+        "event_id": "E010",
+        "actor": "WILL",
+        "anchor_id": "w0055",
+        "changes": {
+          "gaze": "GAZE-HAWK"
+        },
+        "reason": "Mention of the bird gives him a safer subject and shifts his attention toward it."
+      },
+      {
+        "event_id": "E013",
+        "actor": "WILL",
+        "anchor_id": "w0057",
+        "changes": {
+          "affect": "Confused-55"
+        },
+        "reason": "The correction reveals his unfamiliarity and leaves him momentarily unsure how to respond."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260901_025528_840053\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E007",
+      "E011",
+      "E012",
+      "E002",
+      "E004",
+      "E005",
+      "E006",
+      "E008",
+      "E009",
+      "E010",
+      "E013"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "AGNES",
+        "WILL"
+      ],
+      "initial_states": {
+        "AGNES": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-60",
+          "gaze": "GAZE-HAWK"
+        },
+        "WILL": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-55",
+          "gaze": "GAZE-AGNES"
+        }
+      },
+      "initial_reasons": {
+        "AGNES": "She tends to the hawk until the unfamiliar man addresses her, remaining alert to his presence.",
+        "WILL": "He approaches with courteous uncertainty, drawn to Agnes but unsure how to begin."
+      },
+      "tracks": [
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0001",
+          "changes": {
+            "affect": "Polite-65",
+            "gaze": "GAZE-WILL"
+          },
+          "reason": "She turns her attention from the hawk to acknowledge him with guarded courtesy."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0008",
+          "changes": {
+            "affect": "Watchful-70"
+          },
+          "reason": "Her greeting becomes a direct inquiry as she studies what has brought him to Hewlands."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0032",
+          "changes": {
+            "affect": "Sassy-60"
+          },
+          "reason": "She lightly teases his hesitation, making clear that she expects a straightforward answer."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0056",
+          "changes": {
+            "gaze": "GAZE-HAWK"
+          },
+          "reason": "His reference to the bird settles her attention on the hawk as the subject she would rather discuss."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0057",
+          "changes": {
+            "affect": "Sassy-75"
+          },
+          "reason": "She corrects him crisply, asserting the hawk's identity without abandoning her guarded composure."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0004",
+          "changes": {
+            "affect": "Polite-60"
+          },
+          "reason": "He returns the greeting carefully, trying to appear more composed than he feels."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Nervous-65"
+          },
+          "reason": "The question makes him answer promptly but with visible social unease."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0021",
+          "changes": {
+            "affect": "Surprised-60"
+          },
+          "reason": "Hearing that she has already heard of him catches him off guard."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0025",
+          "changes": {
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "Her question about the garden makes him briefly avoid her eyes while searching for an acceptable answer."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0040",
+          "changes": {
+            "affect": "Thinking-65",
+            "gaze": "GLANCE-UP"
+          },
+          "reason": "He searches for an explanation, looking away momentarily as he gathers his thoughts."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0049",
+          "changes": {
+            "affect": "Nervous-75",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The unfinished explanation exposes his embarrassment and renewed discomfort."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0055",
+          "changes": {
+            "gaze": "GAZE-HAWK"
+          },
+          "reason": "Mention of the bird gives him a safer subject and shifts his attention toward it."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0057",
+          "changes": {
+            "affect": "Confused-55"
+          },
+          "reason": "The correction reveals his unfamiliarity and leaves him momentarily unsure how to respond."
+        }
+      ]
+    }
+  }
+}

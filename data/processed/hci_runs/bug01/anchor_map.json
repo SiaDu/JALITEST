@@ -1,0 +1,1995 @@
+{
+  "format": "conversation_anchor_v1",
+  "characters": {
+    "A": "MARTY",
+    "B": "DION"
+  },
+  "aliases": {
+    "A": "MARTY",
+    "B": "DION"
+  },
+  "turns": [
+    {
+      "turn_id": "T01",
+      "speaker": "MARTY",
+      "char_start": 0,
+      "char_end": 32,
+      "utterance_start": 7,
+      "utterance_end": 32,
+      "utterance_text": "Whoa. You did the orange?",
+      "anchors": [
+        {
+          "anchor_id": "w0001",
+          "turn_id": "T01",
+          "speaker": "MARTY",
+          "text": "Whoa.",
+          "char_start": 7,
+          "char_end": 12
+        },
+        {
+          "anchor_id": "w0002",
+          "turn_id": "T01",
+          "speaker": "MARTY",
+          "text": "You",
+          "char_start": 13,
+          "char_end": 16
+        },
+        {
+          "anchor_id": "w0003",
+          "turn_id": "T01",
+          "speaker": "MARTY",
+          "text": "did",
+          "char_start": 17,
+          "char_end": 20
+        },
+        {
+          "anchor_id": "w0004",
+          "turn_id": "T01",
+          "speaker": "MARTY",
+          "text": "the",
+          "char_start": 21,
+          "char_end": 24
+        },
+        {
+          "anchor_id": "w0005",
+          "turn_id": "T01",
+          "speaker": "MARTY",
+          "text": "orange?",
+          "char_start": 25,
+          "char_end": 32
+        }
+      ]
+    },
+    {
+      "turn_id": "T02",
+      "speaker": "DION",
+      "char_start": 33,
+      "char_end": 43,
+      "utterance_start": 39,
+      "utterance_end": 43,
+      "utterance_text": "Yep.",
+      "anchors": [
+        {
+          "anchor_id": "w0006",
+          "turn_id": "T02",
+          "speaker": "DION",
+          "text": "Yep.",
+          "char_start": 39,
+          "char_end": 43
+        }
+      ]
+    },
+    {
+      "turn_id": "T03",
+      "speaker": "MARTY",
+      "char_start": 44,
+      "char_end": 75,
+      "utterance_start": 51,
+      "utterance_end": 75,
+      "utterance_text": "How'd you do the orange?",
+      "anchors": [
+        {
+          "anchor_id": "w0007",
+          "turn_id": "T03",
+          "speaker": "MARTY",
+          "text": "How'd",
+          "char_start": 51,
+          "char_end": 56
+        },
+        {
+          "anchor_id": "w0008",
+          "turn_id": "T03",
+          "speaker": "MARTY",
+          "text": "you",
+          "char_start": 57,
+          "char_end": 60
+        },
+        {
+          "anchor_id": "w0009",
+          "turn_id": "T03",
+          "speaker": "MARTY",
+          "text": "do",
+          "char_start": 61,
+          "char_end": 63
+        },
+        {
+          "anchor_id": "w0010",
+          "turn_id": "T03",
+          "speaker": "MARTY",
+          "text": "the",
+          "char_start": 64,
+          "char_end": 67
+        },
+        {
+          "anchor_id": "w0011",
+          "turn_id": "T03",
+          "speaker": "MARTY",
+          "text": "orange?",
+          "char_start": 68,
+          "char_end": 75
+        }
+      ]
+    },
+    {
+      "turn_id": "T04",
+      "speaker": "DION",
+      "char_start": 76,
+      "char_end": 146,
+      "utterance_start": 82,
+      "utterance_end": 146,
+      "utterance_text": "I contacted someone at Halex. They colored the celluloid for me.",
+      "anchors": [
+        {
+          "anchor_id": "w0012",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "I",
+          "char_start": 82,
+          "char_end": 83
+        },
+        {
+          "anchor_id": "w0013",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "contacted",
+          "char_start": 84,
+          "char_end": 93
+        },
+        {
+          "anchor_id": "w0014",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "someone",
+          "char_start": 94,
+          "char_end": 101
+        },
+        {
+          "anchor_id": "w0015",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "at",
+          "char_start": 102,
+          "char_end": 104
+        },
+        {
+          "anchor_id": "w0016",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "Halex.",
+          "char_start": 105,
+          "char_end": 111
+        },
+        {
+          "anchor_id": "w0017",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "They",
+          "char_start": 112,
+          "char_end": 116
+        },
+        {
+          "anchor_id": "w0018",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "colored",
+          "char_start": 117,
+          "char_end": 124
+        },
+        {
+          "anchor_id": "w0019",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "the",
+          "char_start": 125,
+          "char_end": 128
+        },
+        {
+          "anchor_id": "w0020",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "celluloid",
+          "char_start": 129,
+          "char_end": 138
+        },
+        {
+          "anchor_id": "w0021",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "for",
+          "char_start": 139,
+          "char_end": 142
+        },
+        {
+          "anchor_id": "w0022",
+          "turn_id": "T04",
+          "speaker": "DION",
+          "text": "me.",
+          "char_start": 143,
+          "char_end": 146
+        }
+      ]
+    },
+    {
+      "turn_id": "T05",
+      "speaker": "MARTY",
+      "char_start": 147,
+      "char_end": 158,
+      "utterance_start": 154,
+      "utterance_end": 158,
+      "utterance_text": "How?",
+      "anchors": [
+        {
+          "anchor_id": "w0023",
+          "turn_id": "T05",
+          "speaker": "MARTY",
+          "text": "How?",
+          "char_start": 154,
+          "char_end": 158
+        }
+      ]
+    },
+    {
+      "turn_id": "T06",
+      "speaker": "DION",
+      "char_start": 159,
+      "char_end": 256,
+      "utterance_start": 165,
+      "utterance_end": 256,
+      "utterance_text": "Money, baby. Me and my pop, we believe in you. We're invested. That's why he's been so mad.",
+      "anchors": [
+        {
+          "anchor_id": "w0024",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "Money,",
+          "char_start": 165,
+          "char_end": 171
+        },
+        {
+          "anchor_id": "w0025",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "baby.",
+          "char_start": 172,
+          "char_end": 177
+        },
+        {
+          "anchor_id": "w0026",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "Me",
+          "char_start": 178,
+          "char_end": 180
+        },
+        {
+          "anchor_id": "w0027",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "and",
+          "char_start": 181,
+          "char_end": 184
+        },
+        {
+          "anchor_id": "w0028",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "my",
+          "char_start": 185,
+          "char_end": 187
+        },
+        {
+          "anchor_id": "w0029",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "pop,",
+          "char_start": 188,
+          "char_end": 192
+        },
+        {
+          "anchor_id": "w0030",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "we",
+          "char_start": 193,
+          "char_end": 195
+        },
+        {
+          "anchor_id": "w0031",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "believe",
+          "char_start": 196,
+          "char_end": 203
+        },
+        {
+          "anchor_id": "w0032",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "in",
+          "char_start": 204,
+          "char_end": 206
+        },
+        {
+          "anchor_id": "w0033",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "you.",
+          "char_start": 207,
+          "char_end": 211
+        },
+        {
+          "anchor_id": "w0034",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "We're",
+          "char_start": 212,
+          "char_end": 217
+        },
+        {
+          "anchor_id": "w0035",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "invested.",
+          "char_start": 218,
+          "char_end": 227
+        },
+        {
+          "anchor_id": "w0036",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "That's",
+          "char_start": 228,
+          "char_end": 234
+        },
+        {
+          "anchor_id": "w0037",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "why",
+          "char_start": 235,
+          "char_end": 238
+        },
+        {
+          "anchor_id": "w0038",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "he's",
+          "char_start": 239,
+          "char_end": 243
+        },
+        {
+          "anchor_id": "w0039",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "been",
+          "char_start": 244,
+          "char_end": 248
+        },
+        {
+          "anchor_id": "w0040",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "so",
+          "char_start": 249,
+          "char_end": 251
+        },
+        {
+          "anchor_id": "w0041",
+          "turn_id": "T06",
+          "speaker": "DION",
+          "text": "mad.",
+          "char_start": 252,
+          "char_end": 256
+        }
+      ]
+    },
+    {
+      "turn_id": "T07",
+      "speaker": "MARTY",
+      "char_start": 257,
+      "char_end": 285,
+      "utterance_start": 264,
+      "utterance_end": 285,
+      "utterance_text": "Check it out, Rachel.",
+      "anchors": [
+        {
+          "anchor_id": "w0042",
+          "turn_id": "T07",
+          "speaker": "MARTY",
+          "text": "Check",
+          "char_start": 264,
+          "char_end": 269
+        },
+        {
+          "anchor_id": "w0043",
+          "turn_id": "T07",
+          "speaker": "MARTY",
+          "text": "it",
+          "char_start": 270,
+          "char_end": 272
+        },
+        {
+          "anchor_id": "w0044",
+          "turn_id": "T07",
+          "speaker": "MARTY",
+          "text": "out,",
+          "char_start": 273,
+          "char_end": 277
+        },
+        {
+          "anchor_id": "w0045",
+          "turn_id": "T07",
+          "speaker": "MARTY",
+          "text": "Rachel.",
+          "char_start": 278,
+          "char_end": 285
+        }
+      ]
+    },
+    {
+      "turn_id": "T08",
+      "speaker": "DION",
+      "char_start": 286,
+      "char_end": 322,
+      "utterance_start": 292,
+      "utterance_end": 322,
+      "utterance_text": "Here, check out the packaging.",
+      "anchors": [
+        {
+          "anchor_id": "w0046",
+          "turn_id": "T08",
+          "speaker": "DION",
+          "text": "Here,",
+          "char_start": 292,
+          "char_end": 297
+        },
+        {
+          "anchor_id": "w0047",
+          "turn_id": "T08",
+          "speaker": "DION",
+          "text": "check",
+          "char_start": 298,
+          "char_end": 303
+        },
+        {
+          "anchor_id": "w0048",
+          "turn_id": "T08",
+          "speaker": "DION",
+          "text": "out",
+          "char_start": 304,
+          "char_end": 307
+        },
+        {
+          "anchor_id": "w0049",
+          "turn_id": "T08",
+          "speaker": "DION",
+          "text": "the",
+          "char_start": 308,
+          "char_end": 311
+        },
+        {
+          "anchor_id": "w0050",
+          "turn_id": "T08",
+          "speaker": "DION",
+          "text": "packaging.",
+          "char_start": 312,
+          "char_end": 322
+        }
+      ]
+    },
+    {
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "char_start": 323,
+      "char_end": 433,
+      "utterance_start": 330,
+      "utterance_end": 433,
+      "utterance_text": "Marty Supreme. The official Marty Mauser championship table tennis ball. Professionally made. Orange...",
+      "anchors": [
+        {
+          "anchor_id": "w0051",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "Marty",
+          "char_start": 330,
+          "char_end": 335
+        },
+        {
+          "anchor_id": "w0052",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "Supreme.",
+          "char_start": 336,
+          "char_end": 344
+        },
+        {
+          "anchor_id": "w0053",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "The",
+          "char_start": 345,
+          "char_end": 348
+        },
+        {
+          "anchor_id": "w0054",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "official",
+          "char_start": 349,
+          "char_end": 357
+        },
+        {
+          "anchor_id": "w0055",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "Marty",
+          "char_start": 358,
+          "char_end": 363
+        },
+        {
+          "anchor_id": "w0056",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "Mauser",
+          "char_start": 364,
+          "char_end": 370
+        },
+        {
+          "anchor_id": "w0057",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "championship",
+          "char_start": 371,
+          "char_end": 383
+        },
+        {
+          "anchor_id": "w0058",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "table",
+          "char_start": 384,
+          "char_end": 389
+        },
+        {
+          "anchor_id": "w0059",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "tennis",
+          "char_start": 390,
+          "char_end": 396
+        },
+        {
+          "anchor_id": "w0060",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "ball.",
+          "char_start": 397,
+          "char_end": 402
+        },
+        {
+          "anchor_id": "w0061",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "Professionally",
+          "char_start": 403,
+          "char_end": 417
+        },
+        {
+          "anchor_id": "w0062",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "made.",
+          "char_start": 418,
+          "char_end": 423
+        },
+        {
+          "anchor_id": "w0063",
+          "turn_id": "T09",
+          "speaker": "MARTY",
+          "text": "Orange...",
+          "char_start": 424,
+          "char_end": 433
+        }
+      ]
+    },
+    {
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "char_start": 434,
+      "char_end": 479,
+      "utterance_start": 441,
+      "utterance_end": 479,
+      "utterance_text": "Orange spheres? You came up with that?",
+      "anchors": [
+        {
+          "anchor_id": "w0064",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "Orange",
+          "char_start": 441,
+          "char_end": 447
+        },
+        {
+          "anchor_id": "w0065",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "spheres?",
+          "char_start": 448,
+          "char_end": 456
+        },
+        {
+          "anchor_id": "w0066",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "You",
+          "char_start": 457,
+          "char_end": 460
+        },
+        {
+          "anchor_id": "w0067",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "came",
+          "char_start": 461,
+          "char_end": 465
+        },
+        {
+          "anchor_id": "w0068",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "up",
+          "char_start": 466,
+          "char_end": 468
+        },
+        {
+          "anchor_id": "w0069",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "with",
+          "char_start": 469,
+          "char_end": 473
+        },
+        {
+          "anchor_id": "w0070",
+          "turn_id": "T10",
+          "speaker": "MARTY",
+          "text": "that?",
+          "char_start": 474,
+          "char_end": 479
+        }
+      ]
+    },
+    {
+      "turn_id": "T11",
+      "speaker": "DION",
+      "char_start": 480,
+      "char_end": 511,
+      "utterance_start": 486,
+      "utterance_end": 511,
+      "utterance_text": "Yeah. Pretty good, right?",
+      "anchors": [
+        {
+          "anchor_id": "w0071",
+          "turn_id": "T11",
+          "speaker": "DION",
+          "text": "Yeah.",
+          "char_start": 486,
+          "char_end": 491
+        },
+        {
+          "anchor_id": "w0072",
+          "turn_id": "T11",
+          "speaker": "DION",
+          "text": "Pretty",
+          "char_start": 492,
+          "char_end": 498
+        },
+        {
+          "anchor_id": "w0073",
+          "turn_id": "T11",
+          "speaker": "DION",
+          "text": "good,",
+          "char_start": 499,
+          "char_end": 504
+        },
+        {
+          "anchor_id": "w0074",
+          "turn_id": "T11",
+          "speaker": "DION",
+          "text": "right?",
+          "char_start": 505,
+          "char_end": 511
+        }
+      ]
+    },
+    {
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "char_start": 512,
+      "char_end": 581,
+      "utterance_start": 519,
+      "utterance_end": 581,
+      "utterance_text": "That's Pretty good? Damn, this is... I'm stunned. I'm stunned.",
+      "anchors": [
+        {
+          "anchor_id": "w0075",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "That's",
+          "char_start": 519,
+          "char_end": 525
+        },
+        {
+          "anchor_id": "w0076",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "Pretty",
+          "char_start": 526,
+          "char_end": 532
+        },
+        {
+          "anchor_id": "w0077",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "good?",
+          "char_start": 533,
+          "char_end": 538
+        },
+        {
+          "anchor_id": "w0078",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "Damn,",
+          "char_start": 539,
+          "char_end": 544
+        },
+        {
+          "anchor_id": "w0079",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "this",
+          "char_start": 545,
+          "char_end": 549
+        },
+        {
+          "anchor_id": "w0080",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "is...",
+          "char_start": 550,
+          "char_end": 555
+        },
+        {
+          "anchor_id": "w0081",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "I'm",
+          "char_start": 556,
+          "char_end": 559
+        },
+        {
+          "anchor_id": "w0082",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "stunned.",
+          "char_start": 560,
+          "char_end": 568
+        },
+        {
+          "anchor_id": "w0083",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "I'm",
+          "char_start": 569,
+          "char_end": 572
+        },
+        {
+          "anchor_id": "w0084",
+          "turn_id": "T12",
+          "speaker": "MARTY",
+          "text": "stunned.",
+          "char_start": 573,
+          "char_end": 581
+        }
+      ]
+    },
+    {
+      "turn_id": "T13",
+      "speaker": "DION",
+      "char_start": 582,
+      "char_end": 603,
+      "utterance_start": 588,
+      "utterance_end": 603,
+      "utterance_text": "Hand-drawn too.",
+      "anchors": [
+        {
+          "anchor_id": "w0085",
+          "turn_id": "T13",
+          "speaker": "DION",
+          "text": "Hand-drawn",
+          "char_start": 588,
+          "char_end": 598
+        },
+        {
+          "anchor_id": "w0086",
+          "turn_id": "T13",
+          "speaker": "DION",
+          "text": "too.",
+          "char_start": 599,
+          "char_end": 603
+        }
+      ]
+    },
+    {
+      "turn_id": "T14",
+      "speaker": "MARTY",
+      "char_start": 604,
+      "char_end": 625,
+      "utterance_start": 611,
+      "utterance_end": 625,
+      "utterance_text": "You drew this?",
+      "anchors": [
+        {
+          "anchor_id": "w0087",
+          "turn_id": "T14",
+          "speaker": "MARTY",
+          "text": "You",
+          "char_start": 611,
+          "char_end": 614
+        },
+        {
+          "anchor_id": "w0088",
+          "turn_id": "T14",
+          "speaker": "MARTY",
+          "text": "drew",
+          "char_start": 615,
+          "char_end": 619
+        },
+        {
+          "anchor_id": "w0089",
+          "turn_id": "T14",
+          "speaker": "MARTY",
+          "text": "this?",
+          "char_start": 620,
+          "char_end": 625
+        }
+      ]
+    },
+    {
+      "turn_id": "T15",
+      "speaker": "DION",
+      "char_start": 626,
+      "char_end": 637,
+      "utterance_start": 632,
+      "utterance_end": 637,
+      "utterance_text": "Yeah.",
+      "anchors": [
+        {
+          "anchor_id": "w0090",
+          "turn_id": "T15",
+          "speaker": "DION",
+          "text": "Yeah.",
+          "char_start": 632,
+          "char_end": 637
+        }
+      ]
+    },
+    {
+      "turn_id": "T16",
+      "speaker": "MARTY",
+      "char_start": 638,
+      "char_end": 659,
+      "utterance_start": 645,
+      "utterance_end": 659,
+      "utterance_text": "It's inspired.",
+      "anchors": [
+        {
+          "anchor_id": "w0091",
+          "turn_id": "T16",
+          "speaker": "MARTY",
+          "text": "It's",
+          "char_start": 645,
+          "char_end": 649
+        },
+        {
+          "anchor_id": "w0092",
+          "turn_id": "T16",
+          "speaker": "MARTY",
+          "text": "inspired.",
+          "char_start": 650,
+          "char_end": 659
+        }
+      ]
+    },
+    {
+      "turn_id": "T17",
+      "speaker": "DION",
+      "char_start": 660,
+      "char_end": 682,
+      "utterance_start": 666,
+      "utterance_end": 682,
+      "utterance_text": "I appreciate it.",
+      "anchors": [
+        {
+          "anchor_id": "w0093",
+          "turn_id": "T17",
+          "speaker": "DION",
+          "text": "I",
+          "char_start": 666,
+          "char_end": 667
+        },
+        {
+          "anchor_id": "w0094",
+          "turn_id": "T17",
+          "speaker": "DION",
+          "text": "appreciate",
+          "char_start": 668,
+          "char_end": 678
+        },
+        {
+          "anchor_id": "w0095",
+          "turn_id": "T17",
+          "speaker": "DION",
+          "text": "it.",
+          "char_start": 679,
+          "char_end": 682
+        }
+      ]
+    },
+    {
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "char_start": 683,
+      "char_end": 736,
+      "utterance_start": 690,
+      "utterance_end": 736,
+      "utterance_text": "I don't think you know what you're capable of.",
+      "anchors": [
+        {
+          "anchor_id": "w0096",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "I",
+          "char_start": 690,
+          "char_end": 691
+        },
+        {
+          "anchor_id": "w0097",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "don't",
+          "char_start": 692,
+          "char_end": 697
+        },
+        {
+          "anchor_id": "w0098",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "think",
+          "char_start": 698,
+          "char_end": 703
+        },
+        {
+          "anchor_id": "w0099",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "you",
+          "char_start": 704,
+          "char_end": 707
+        },
+        {
+          "anchor_id": "w0100",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "know",
+          "char_start": 708,
+          "char_end": 712
+        },
+        {
+          "anchor_id": "w0101",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "what",
+          "char_start": 713,
+          "char_end": 717
+        },
+        {
+          "anchor_id": "w0102",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "you're",
+          "char_start": 718,
+          "char_end": 724
+        },
+        {
+          "anchor_id": "w0103",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "capable",
+          "char_start": 725,
+          "char_end": 732
+        },
+        {
+          "anchor_id": "w0104",
+          "turn_id": "T18",
+          "speaker": "MARTY",
+          "text": "of.",
+          "char_start": 733,
+          "char_end": 736
+        }
+      ]
+    },
+    {
+      "turn_id": "T19",
+      "speaker": "MARTY",
+      "char_start": 737,
+      "char_end": 757,
+      "utterance_start": 744,
+      "utterance_end": 757,
+      "utterance_text": "Check it out.",
+      "anchors": [
+        {
+          "anchor_id": "w0105",
+          "turn_id": "T19",
+          "speaker": "MARTY",
+          "text": "Check",
+          "char_start": 744,
+          "char_end": 749
+        },
+        {
+          "anchor_id": "w0106",
+          "turn_id": "T19",
+          "speaker": "MARTY",
+          "text": "it",
+          "char_start": 750,
+          "char_end": 752
+        },
+        {
+          "anchor_id": "w0107",
+          "turn_id": "T19",
+          "speaker": "MARTY",
+          "text": "out.",
+          "char_start": 753,
+          "char_end": 757
+        }
+      ]
+    },
+    {
+      "turn_id": "T20",
+      "speaker": "DION",
+      "char_start": 758,
+      "char_end": 777,
+      "utterance_start": 764,
+      "utterance_end": 777,
+      "utterance_text": "Thanks a lot.",
+      "anchors": [
+        {
+          "anchor_id": "w0108",
+          "turn_id": "T20",
+          "speaker": "DION",
+          "text": "Thanks",
+          "char_start": 764,
+          "char_end": 770
+        },
+        {
+          "anchor_id": "w0109",
+          "turn_id": "T20",
+          "speaker": "DION",
+          "text": "a",
+          "char_start": 771,
+          "char_end": 772
+        },
+        {
+          "anchor_id": "w0110",
+          "turn_id": "T20",
+          "speaker": "DION",
+          "text": "lot.",
+          "char_start": 773,
+          "char_end": 777
+        }
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "anchor_id": "w0001",
+      "turn_id": "T01",
+      "speaker": "MARTY",
+      "text": "Whoa.",
+      "char_start": 7,
+      "char_end": 12
+    },
+    {
+      "anchor_id": "w0002",
+      "turn_id": "T01",
+      "speaker": "MARTY",
+      "text": "You",
+      "char_start": 13,
+      "char_end": 16
+    },
+    {
+      "anchor_id": "w0003",
+      "turn_id": "T01",
+      "speaker": "MARTY",
+      "text": "did",
+      "char_start": 17,
+      "char_end": 20
+    },
+    {
+      "anchor_id": "w0004",
+      "turn_id": "T01",
+      "speaker": "MARTY",
+      "text": "the",
+      "char_start": 21,
+      "char_end": 24
+    },
+    {
+      "anchor_id": "w0005",
+      "turn_id": "T01",
+      "speaker": "MARTY",
+      "text": "orange?",
+      "char_start": 25,
+      "char_end": 32
+    },
+    {
+      "anchor_id": "w0006",
+      "turn_id": "T02",
+      "speaker": "DION",
+      "text": "Yep.",
+      "char_start": 39,
+      "char_end": 43
+    },
+    {
+      "anchor_id": "w0007",
+      "turn_id": "T03",
+      "speaker": "MARTY",
+      "text": "How'd",
+      "char_start": 51,
+      "char_end": 56
+    },
+    {
+      "anchor_id": "w0008",
+      "turn_id": "T03",
+      "speaker": "MARTY",
+      "text": "you",
+      "char_start": 57,
+      "char_end": 60
+    },
+    {
+      "anchor_id": "w0009",
+      "turn_id": "T03",
+      "speaker": "MARTY",
+      "text": "do",
+      "char_start": 61,
+      "char_end": 63
+    },
+    {
+      "anchor_id": "w0010",
+      "turn_id": "T03",
+      "speaker": "MARTY",
+      "text": "the",
+      "char_start": 64,
+      "char_end": 67
+    },
+    {
+      "anchor_id": "w0011",
+      "turn_id": "T03",
+      "speaker": "MARTY",
+      "text": "orange?",
+      "char_start": 68,
+      "char_end": 75
+    },
+    {
+      "anchor_id": "w0012",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "I",
+      "char_start": 82,
+      "char_end": 83
+    },
+    {
+      "anchor_id": "w0013",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "contacted",
+      "char_start": 84,
+      "char_end": 93
+    },
+    {
+      "anchor_id": "w0014",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "someone",
+      "char_start": 94,
+      "char_end": 101
+    },
+    {
+      "anchor_id": "w0015",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "at",
+      "char_start": 102,
+      "char_end": 104
+    },
+    {
+      "anchor_id": "w0016",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "Halex.",
+      "char_start": 105,
+      "char_end": 111
+    },
+    {
+      "anchor_id": "w0017",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "They",
+      "char_start": 112,
+      "char_end": 116
+    },
+    {
+      "anchor_id": "w0018",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "colored",
+      "char_start": 117,
+      "char_end": 124
+    },
+    {
+      "anchor_id": "w0019",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "the",
+      "char_start": 125,
+      "char_end": 128
+    },
+    {
+      "anchor_id": "w0020",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "celluloid",
+      "char_start": 129,
+      "char_end": 138
+    },
+    {
+      "anchor_id": "w0021",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "for",
+      "char_start": 139,
+      "char_end": 142
+    },
+    {
+      "anchor_id": "w0022",
+      "turn_id": "T04",
+      "speaker": "DION",
+      "text": "me.",
+      "char_start": 143,
+      "char_end": 146
+    },
+    {
+      "anchor_id": "w0023",
+      "turn_id": "T05",
+      "speaker": "MARTY",
+      "text": "How?",
+      "char_start": 154,
+      "char_end": 158
+    },
+    {
+      "anchor_id": "w0024",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "Money,",
+      "char_start": 165,
+      "char_end": 171
+    },
+    {
+      "anchor_id": "w0025",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "baby.",
+      "char_start": 172,
+      "char_end": 177
+    },
+    {
+      "anchor_id": "w0026",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "Me",
+      "char_start": 178,
+      "char_end": 180
+    },
+    {
+      "anchor_id": "w0027",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "and",
+      "char_start": 181,
+      "char_end": 184
+    },
+    {
+      "anchor_id": "w0028",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "my",
+      "char_start": 185,
+      "char_end": 187
+    },
+    {
+      "anchor_id": "w0029",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "pop,",
+      "char_start": 188,
+      "char_end": 192
+    },
+    {
+      "anchor_id": "w0030",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "we",
+      "char_start": 193,
+      "char_end": 195
+    },
+    {
+      "anchor_id": "w0031",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "believe",
+      "char_start": 196,
+      "char_end": 203
+    },
+    {
+      "anchor_id": "w0032",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "in",
+      "char_start": 204,
+      "char_end": 206
+    },
+    {
+      "anchor_id": "w0033",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "you.",
+      "char_start": 207,
+      "char_end": 211
+    },
+    {
+      "anchor_id": "w0034",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "We're",
+      "char_start": 212,
+      "char_end": 217
+    },
+    {
+      "anchor_id": "w0035",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "invested.",
+      "char_start": 218,
+      "char_end": 227
+    },
+    {
+      "anchor_id": "w0036",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "That's",
+      "char_start": 228,
+      "char_end": 234
+    },
+    {
+      "anchor_id": "w0037",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "why",
+      "char_start": 235,
+      "char_end": 238
+    },
+    {
+      "anchor_id": "w0038",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "he's",
+      "char_start": 239,
+      "char_end": 243
+    },
+    {
+      "anchor_id": "w0039",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "been",
+      "char_start": 244,
+      "char_end": 248
+    },
+    {
+      "anchor_id": "w0040",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "so",
+      "char_start": 249,
+      "char_end": 251
+    },
+    {
+      "anchor_id": "w0041",
+      "turn_id": "T06",
+      "speaker": "DION",
+      "text": "mad.",
+      "char_start": 252,
+      "char_end": 256
+    },
+    {
+      "anchor_id": "w0042",
+      "turn_id": "T07",
+      "speaker": "MARTY",
+      "text": "Check",
+      "char_start": 264,
+      "char_end": 269
+    },
+    {
+      "anchor_id": "w0043",
+      "turn_id": "T07",
+      "speaker": "MARTY",
+      "text": "it",
+      "char_start": 270,
+      "char_end": 272
+    },
+    {
+      "anchor_id": "w0044",
+      "turn_id": "T07",
+      "speaker": "MARTY",
+      "text": "out,",
+      "char_start": 273,
+      "char_end": 277
+    },
+    {
+      "anchor_id": "w0045",
+      "turn_id": "T07",
+      "speaker": "MARTY",
+      "text": "Rachel.",
+      "char_start": 278,
+      "char_end": 285
+    },
+    {
+      "anchor_id": "w0046",
+      "turn_id": "T08",
+      "speaker": "DION",
+      "text": "Here,",
+      "char_start": 292,
+      "char_end": 297
+    },
+    {
+      "anchor_id": "w0047",
+      "turn_id": "T08",
+      "speaker": "DION",
+      "text": "check",
+      "char_start": 298,
+      "char_end": 303
+    },
+    {
+      "anchor_id": "w0048",
+      "turn_id": "T08",
+      "speaker": "DION",
+      "text": "out",
+      "char_start": 304,
+      "char_end": 307
+    },
+    {
+      "anchor_id": "w0049",
+      "turn_id": "T08",
+      "speaker": "DION",
+      "text": "the",
+      "char_start": 308,
+      "char_end": 311
+    },
+    {
+      "anchor_id": "w0050",
+      "turn_id": "T08",
+      "speaker": "DION",
+      "text": "packaging.",
+      "char_start": 312,
+      "char_end": 322
+    },
+    {
+      "anchor_id": "w0051",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "Marty",
+      "char_start": 330,
+      "char_end": 335
+    },
+    {
+      "anchor_id": "w0052",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "Supreme.",
+      "char_start": 336,
+      "char_end": 344
+    },
+    {
+      "anchor_id": "w0053",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "The",
+      "char_start": 345,
+      "char_end": 348
+    },
+    {
+      "anchor_id": "w0054",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "official",
+      "char_start": 349,
+      "char_end": 357
+    },
+    {
+      "anchor_id": "w0055",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "Marty",
+      "char_start": 358,
+      "char_end": 363
+    },
+    {
+      "anchor_id": "w0056",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "Mauser",
+      "char_start": 364,
+      "char_end": 370
+    },
+    {
+      "anchor_id": "w0057",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "championship",
+      "char_start": 371,
+      "char_end": 383
+    },
+    {
+      "anchor_id": "w0058",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "table",
+      "char_start": 384,
+      "char_end": 389
+    },
+    {
+      "anchor_id": "w0059",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "tennis",
+      "char_start": 390,
+      "char_end": 396
+    },
+    {
+      "anchor_id": "w0060",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "ball.",
+      "char_start": 397,
+      "char_end": 402
+    },
+    {
+      "anchor_id": "w0061",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "Professionally",
+      "char_start": 403,
+      "char_end": 417
+    },
+    {
+      "anchor_id": "w0062",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "made.",
+      "char_start": 418,
+      "char_end": 423
+    },
+    {
+      "anchor_id": "w0063",
+      "turn_id": "T09",
+      "speaker": "MARTY",
+      "text": "Orange...",
+      "char_start": 424,
+      "char_end": 433
+    },
+    {
+      "anchor_id": "w0064",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "Orange",
+      "char_start": 441,
+      "char_end": 447
+    },
+    {
+      "anchor_id": "w0065",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "spheres?",
+      "char_start": 448,
+      "char_end": 456
+    },
+    {
+      "anchor_id": "w0066",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "You",
+      "char_start": 457,
+      "char_end": 460
+    },
+    {
+      "anchor_id": "w0067",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "came",
+      "char_start": 461,
+      "char_end": 465
+    },
+    {
+      "anchor_id": "w0068",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "up",
+      "char_start": 466,
+      "char_end": 468
+    },
+    {
+      "anchor_id": "w0069",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "with",
+      "char_start": 469,
+      "char_end": 473
+    },
+    {
+      "anchor_id": "w0070",
+      "turn_id": "T10",
+      "speaker": "MARTY",
+      "text": "that?",
+      "char_start": 474,
+      "char_end": 479
+    },
+    {
+      "anchor_id": "w0071",
+      "turn_id": "T11",
+      "speaker": "DION",
+      "text": "Yeah.",
+      "char_start": 486,
+      "char_end": 491
+    },
+    {
+      "anchor_id": "w0072",
+      "turn_id": "T11",
+      "speaker": "DION",
+      "text": "Pretty",
+      "char_start": 492,
+      "char_end": 498
+    },
+    {
+      "anchor_id": "w0073",
+      "turn_id": "T11",
+      "speaker": "DION",
+      "text": "good,",
+      "char_start": 499,
+      "char_end": 504
+    },
+    {
+      "anchor_id": "w0074",
+      "turn_id": "T11",
+      "speaker": "DION",
+      "text": "right?",
+      "char_start": 505,
+      "char_end": 511
+    },
+    {
+      "anchor_id": "w0075",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "That's",
+      "char_start": 519,
+      "char_end": 525
+    },
+    {
+      "anchor_id": "w0076",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "Pretty",
+      "char_start": 526,
+      "char_end": 532
+    },
+    {
+      "anchor_id": "w0077",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "good?",
+      "char_start": 533,
+      "char_end": 538
+    },
+    {
+      "anchor_id": "w0078",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "Damn,",
+      "char_start": 539,
+      "char_end": 544
+    },
+    {
+      "anchor_id": "w0079",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "this",
+      "char_start": 545,
+      "char_end": 549
+    },
+    {
+      "anchor_id": "w0080",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "is...",
+      "char_start": 550,
+      "char_end": 555
+    },
+    {
+      "anchor_id": "w0081",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "I'm",
+      "char_start": 556,
+      "char_end": 559
+    },
+    {
+      "anchor_id": "w0082",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "stunned.",
+      "char_start": 560,
+      "char_end": 568
+    },
+    {
+      "anchor_id": "w0083",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "I'm",
+      "char_start": 569,
+      "char_end": 572
+    },
+    {
+      "anchor_id": "w0084",
+      "turn_id": "T12",
+      "speaker": "MARTY",
+      "text": "stunned.",
+      "char_start": 573,
+      "char_end": 581
+    },
+    {
+      "anchor_id": "w0085",
+      "turn_id": "T13",
+      "speaker": "DION",
+      "text": "Hand-drawn",
+      "char_start": 588,
+      "char_end": 598
+    },
+    {
+      "anchor_id": "w0086",
+      "turn_id": "T13",
+      "speaker": "DION",
+      "text": "too.",
+      "char_start": 599,
+      "char_end": 603
+    },
+    {
+      "anchor_id": "w0087",
+      "turn_id": "T14",
+      "speaker": "MARTY",
+      "text": "You",
+      "char_start": 611,
+      "char_end": 614
+    },
+    {
+      "anchor_id": "w0088",
+      "turn_id": "T14",
+      "speaker": "MARTY",
+      "text": "drew",
+      "char_start": 615,
+      "char_end": 619
+    },
+    {
+      "anchor_id": "w0089",
+      "turn_id": "T14",
+      "speaker": "MARTY",
+      "text": "this?",
+      "char_start": 620,
+      "char_end": 625
+    },
+    {
+      "anchor_id": "w0090",
+      "turn_id": "T15",
+      "speaker": "DION",
+      "text": "Yeah.",
+      "char_start": 632,
+      "char_end": 637
+    },
+    {
+      "anchor_id": "w0091",
+      "turn_id": "T16",
+      "speaker": "MARTY",
+      "text": "It's",
+      "char_start": 645,
+      "char_end": 649
+    },
+    {
+      "anchor_id": "w0092",
+      "turn_id": "T16",
+      "speaker": "MARTY",
+      "text": "inspired.",
+      "char_start": 650,
+      "char_end": 659
+    },
+    {
+      "anchor_id": "w0093",
+      "turn_id": "T17",
+      "speaker": "DION",
+      "text": "I",
+      "char_start": 666,
+      "char_end": 667
+    },
+    {
+      "anchor_id": "w0094",
+      "turn_id": "T17",
+      "speaker": "DION",
+      "text": "appreciate",
+      "char_start": 668,
+      "char_end": 678
+    },
+    {
+      "anchor_id": "w0095",
+      "turn_id": "T17",
+      "speaker": "DION",
+      "text": "it.",
+      "char_start": 679,
+      "char_end": 682
+    },
+    {
+      "anchor_id": "w0096",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "I",
+      "char_start": 690,
+      "char_end": 691
+    },
+    {
+      "anchor_id": "w0097",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "don't",
+      "char_start": 692,
+      "char_end": 697
+    },
+    {
+      "anchor_id": "w0098",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "think",
+      "char_start": 698,
+      "char_end": 703
+    },
+    {
+      "anchor_id": "w0099",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "you",
+      "char_start": 704,
+      "char_end": 707
+    },
+    {
+      "anchor_id": "w0100",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "know",
+      "char_start": 708,
+      "char_end": 712
+    },
+    {
+      "anchor_id": "w0101",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "what",
+      "char_start": 713,
+      "char_end": 717
+    },
+    {
+      "anchor_id": "w0102",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "you're",
+      "char_start": 718,
+      "char_end": 724
+    },
+    {
+      "anchor_id": "w0103",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "capable",
+      "char_start": 725,
+      "char_end": 732
+    },
+    {
+      "anchor_id": "w0104",
+      "turn_id": "T18",
+      "speaker": "MARTY",
+      "text": "of.",
+      "char_start": 733,
+      "char_end": 736
+    },
+    {
+      "anchor_id": "w0105",
+      "turn_id": "T19",
+      "speaker": "MARTY",
+      "text": "Check",
+      "char_start": 744,
+      "char_end": 749
+    },
+    {
+      "anchor_id": "w0106",
+      "turn_id": "T19",
+      "speaker": "MARTY",
+      "text": "it",
+      "char_start": 750,
+      "char_end": 752
+    },
+    {
+      "anchor_id": "w0107",
+      "turn_id": "T19",
+      "speaker": "MARTY",
+      "text": "out.",
+      "char_start": 753,
+      "char_end": 757
+    },
+    {
+      "anchor_id": "w0108",
+      "turn_id": "T20",
+      "speaker": "DION",
+      "text": "Thanks",
+      "char_start": 764,
+      "char_end": 770
+    },
+    {
+      "anchor_id": "w0109",
+      "turn_id": "T20",
+      "speaker": "DION",
+      "text": "a",
+      "char_start": 771,
+      "char_end": 772
+    },
+    {
+      "anchor_id": "w0110",
+      "turn_id": "T20",
+      "speaker": "DION",
+      "text": "lot.",
+      "char_start": 773,
+      "char_end": 777
+    }
+  ]
+}

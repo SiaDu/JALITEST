@@ -1,0 +1,97 @@
+[GAZE_TARGETS]
+HAWK
+
+[INITIAL]
+
+AGNES
+affect: Watchful-60
+gaze: GAZE-HAWK
+reason: She tends to the hawk until the unfamiliar man addresses her, remaining alert to his presence.
+
+WILL
+affect: Nervous-55
+gaze: GAZE-AGNES
+reason: He approaches with courteous uncertainty, drawn to Agnes but unsure how to begin.
+
+[CHANGES]
+
+E001
+actor: AGNES
+anchor: w0001
+reason: She turns her attention from the hawk to acknowledge him with guarded courtesy.
+affect: Polite-65
+gaze: GAZE-WILL
+
+E003
+actor: AGNES
+anchor: w0008
+reason: Her greeting becomes a direct inquiry as she studies what has brought him to Hewlands.
+affect: Watchful-70
+
+E007
+actor: AGNES
+anchor: w0032
+reason: She lightly teases his hesitation, making clear that she expects a straightforward answer.
+affect: Sassy-60
+
+E011
+actor: AGNES
+anchor: w0056
+reason: His reference to the bird settles her attention on the hawk as the subject she would rather discuss.
+gaze: GAZE-HAWK
+
+E012
+actor: AGNES
+anchor: w0057
+reason: She corrects him crisply, asserting the hawk's identity without abandoning her guarded composure.
+affect: Sassy-75
+
+E002
+actor: WILL
+anchor: w0004
+reason: He returns the greeting carefully, trying to appear more composed than he feels.
+affect: Polite-60
+
+E004
+actor: WILL
+anchor: w0013
+reason: The question makes him answer promptly but with visible social unease.
+affect: Nervous-65
+
+E005
+actor: WILL
+anchor: w0021
+reason: Hearing that she has already heard of him catches him off guard.
+affect: Surprised-60
+
+E006
+actor: WILL
+anchor: w0025
+reason: Her question about the garden makes him briefly avoid her eyes while searching for an acceptable answer.
+gaze: GLANCE-DOWN
+
+E008
+actor: WILL
+anchor: w0040
+reason: He searches for an explanation, looking away momentarily as he gathers his thoughts.
+affect: Thinking-65
+gaze: GLANCE-UP
+
+E009
+actor: WILL
+anchor: w0049
+reason: The unfinished explanation exposes his embarrassment and renewed discomfort.
+affect: Nervous-75
+gaze: GLANCE-DOWN
+
+E010
+actor: WILL
+anchor: w0055
+reason: Mention of the bird gives him a safer subject and shifts his attention toward it.
+gaze: GAZE-HAWK
+
+E013
+actor: WILL
+anchor: w0057
+reason: The correction reveals his unfamiliarity and leaves him momentarily unsure how to respond.
+affect: Confused-55

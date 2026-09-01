@@ -1,0 +1,177 @@
+{
+  "initial_state": {
+    "actor": "WILL",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-55",
+      "gaze": "GAZE-AGNES"
+    },
+    "reason": "He approaches with courteous uncertainty, drawn to Agnes but unsure how to begin."
+  },
+  "events": [
+    {
+      "event_id": "E002",
+      "actor": "WILL",
+      "anchor_id": "w0004",
+      "anchor_text": "Good",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 3.570437,
+      "raw_anchor_end": 3.690437,
+      "resolved_start": 3.570437,
+      "changes": {
+        "affect": "Polite-60"
+      },
+      "reason": "He returns the greeting carefully, trying to appear more composed than he feels.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Polite-60",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "WILL",
+      "anchor_id": "w0013",
+      "anchor_text": "I'm",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 4.140437,
+      "raw_anchor_end": 4.310437,
+      "resolved_start": 4.140437,
+      "changes": {
+        "affect": "Nervous-65"
+      },
+      "reason": "The question makes him answer promptly but with visible social unease.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-65",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "WILL",
+      "anchor_id": "w0021",
+      "anchor_text": "I've",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 11.945251,
+      "raw_anchor_end": 12.065251,
+      "resolved_start": 12.065251,
+      "changes": {
+        "affect": "Surprised-60"
+      },
+      "reason": "Hearing that she has already heard of him catches him off guard.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-60",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "WILL",
+      "anchor_id": "w0025",
+      "anchor_text": "What",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 13.261625,
+      "raw_anchor_end": 13.351625,
+      "resolved_start": 13.351625,
+      "changes": {
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "Her question about the garden makes him briefly avoid her eyes while searching for an acceptable answer.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Surprised-60",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E008",
+      "actor": "WILL",
+      "anchor_id": "w0040",
+      "anchor_text": "uh...",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 30.020502,
+      "raw_anchor_end": 30.120501,
+      "resolved_start": 30.020502,
+      "changes": {
+        "affect": "Thinking-65",
+        "gaze": "GLANCE-UP"
+      },
+      "reason": "He searches for an explanation, looking away momentarily as he gathers his thoughts.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Thinking-65",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E009",
+      "actor": "WILL",
+      "anchor_id": "w0049",
+      "anchor_text": "and...",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 34.355064,
+      "raw_anchor_end": 34.615059,
+      "resolved_start": 34.355064,
+      "changes": {
+        "affect": "Nervous-75",
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "The unfinished explanation exposes his embarrassment and renewed discomfort.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-75",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E010",
+      "actor": "WILL",
+      "anchor_id": "w0055",
+      "anchor_text": "your",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 37.495121,
+      "raw_anchor_end": 37.625126,
+      "resolved_start": 37.495121,
+      "changes": {
+        "gaze": "GAZE-HAWK"
+      },
+      "reason": "Mention of the bird gives him a safer subject and shifts his attention toward it.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-75",
+        "gaze": "GAZE-HAWK"
+      }
+    },
+    {
+      "event_id": "E013",
+      "actor": "WILL",
+      "anchor_id": "w0057",
+      "anchor_text": "It's",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 40.325874,
+      "raw_anchor_end": 40.435875,
+      "resolved_start": 40.435875,
+      "changes": {
+        "affect": "Confused-55"
+      },
+      "reason": "The correction reveals his unfamiliarity and leaves him momentarily unsure how to respond.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Confused-55",
+        "gaze": "GAZE-HAWK"
+      }
+    }
+  ]
+}

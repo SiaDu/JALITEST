@@ -1,0 +1,10 @@
+AGNES: Good day, sir.
+WILL: Good day to you.
+AGNES: What brings you to Hewlands?
+WILL: I'm tutoring the boys here.
+AGNES: The Latin tutor. I've heard of you.
+AGNES: What brought you into the garden?
+WILL: Uh...
+AGNES: It's just a question, master tutor.
+WILL: Yes, I, uh... I suppose the air was fresh out here, and... uh, I saw you with your bird.
+AGNES: It's a hawk.

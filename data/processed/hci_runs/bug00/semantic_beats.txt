@@ -1,0 +1,68 @@
+[INITIAL]
+AGNES
+affect: Watchful-60
+focus: WILL
+acting: Agnes greets the unfamiliar man with composed caution, keeping him under steady observation.
+
+WILL
+affect: Nervous-60
+focus: AGNES
+acting: Will tries to appear courteous and at ease while remaining quietly drawn to her.
+
+[BEATS]
+E001
+actor: WILL
+trigger: w0008
+acting: The direct question makes Will visibly more self-conscious as he searches for a satisfactory answer.
+affect: Nervous-72
+
+E002
+actor: AGNES
+trigger: w0018
+acting: Recognizing him as the Latin tutor, Agnes studies him with renewed interest.
+affect: Thinking-60
+
+E003
+actor: WILL
+trigger: w0021
+acting: Hearing that she has heard of him unsettles Will, and he briefly avoids her eyes.
+eye_action: brief_check DOWN
+
+E004
+actor: WILL
+trigger: w0031
+acting: Will falters under the pointed question, showing a sharper flicker of nervousness.
+affect: Nervous-82
+eye_action: brief_check DOWN
+
+E005
+actor: AGNES
+trigger: w0032
+acting: Agnes lightly chides his hesitation, allowing a trace of dry amusement into her composure.
+affect: Sassy-65
+
+E006
+actor: WILL
+trigger: w0038
+acting: Will searches for an explanation, looking upward as he gathers his thoughts.
+affect: Thinking-60
+eye_action: brief_check UP
+
+E007
+actor: WILL
+trigger: w0040
+acting: The renewed hesitation exposes how uncertain he feels in her presence.
+affect: Nervous-80
+eye_action: brief_check DOWN
+
+E008
+actor: WILL
+trigger: w0056
+acting: As he reaches the safer subject of the bird, Will lets his attention settle on it.
+focus: HAWK
+
+E009
+actor: AGNES
+trigger: w0057
+acting: Agnes corrects him with quiet precision and turns her settled attention to the hawk.
+focus: HAWK

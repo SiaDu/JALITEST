@@ -1,0 +1,4 @@
+<mask=Polite-60> Good day to you </mask=Polite-60> .
+<mask=Nervous-65> I'm tutoring the boys here </mask=Nervous-65> .
+<mask=Surprised-60> Uh </mask=Surprised-60> ...
+<mask=Surprised-60> Yes, I </mask=Surprised-60> , <mask=Thinking-65> uh... I suppose the air was fresh out here </mask=Thinking-65> , <mask=Nervous-75> and... uh, I saw you with your bird </mask=Nervous-75> .

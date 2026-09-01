@@ -1,0 +1,199 @@
+{
+  "actor": "WILL",
+  "script_name": "WILL",
+  "mask_tag_count": 4,
+  "spoken_anchor_ids": [
+    "w0004",
+    "w0005",
+    "w0006",
+    "w0007",
+    "w0013",
+    "w0014",
+    "w0015",
+    "w0016",
+    "w0017",
+    "w0031",
+    "w0038",
+    "w0039",
+    "w0040",
+    "w0041",
+    "w0042",
+    "w0043",
+    "w0044",
+    "w0045",
+    "w0046",
+    "w0047",
+    "w0048",
+    "w0049",
+    "w0050",
+    "w0051",
+    "w0052",
+    "w0053",
+    "w0054",
+    "w0055",
+    "w0056"
+  ],
+  "anchor_token_spans": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      19,
+      20
+    ],
+    [
+      20,
+      21
+    ],
+    [
+      21,
+      22
+    ],
+    [
+      22,
+      23
+    ],
+    [
+      23,
+      24
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      25,
+      26
+    ],
+    [
+      26,
+      27
+    ],
+    [
+      27,
+      28
+    ],
+    [
+      28,
+      29
+    ]
+  ],
+  "events": [
+    {
+      "type": "mask",
+      "value": "Nervous-55",
+      "span": {
+        "start": 0,
+        "end": 15
+      },
+      "order": 0,
+      "anchor_id": "w0004"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-70",
+      "span": {
+        "start": 17,
+        "end": 43
+      },
+      "order": 1,
+      "anchor_id": "w0013"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-82",
+      "span": {
+        "start": 45,
+        "end": 47
+      },
+      "order": 2,
+      "anchor_id": "w0031"
+    },
+    {
+      "type": "mask",
+      "value": "Nervous-82",
+      "span": {
+        "start": 51,
+        "end": 138
+      },
+      "order": 3,
+      "anchor_id": "w0038"
+    }
+  ],
+  "sound_file": "SeqT_WILL",
+  "source_transcript_path": "C:\\Users\\xyang\\Documents\\maya\\projects\\EPJaliCHI\\sound\\SeqT\\SeqT_WILL.txt",
+  "annotated_transcript_path": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260901_030558_196318\\animation\\characters\\WILL\\jali_speaker_annotated.txt"
+}

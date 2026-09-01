@@ -1,0 +1,100 @@
+{
+  "initial": {
+    "AGNES": {
+      "affect": "Watchful-60",
+      "focus": "WILL",
+      "acting": "Agnes greets the unfamiliar man with composed caution, keeping him under steady observation.",
+      "head": "HEAD-NONE"
+    },
+    "WILL": {
+      "affect": "Nervous-60",
+      "focus": "AGNES",
+      "acting": "Will tries to appear courteous and at ease while remaining quietly drawn to her.",
+      "head": "HEAD-NONE"
+    }
+  },
+  "beats": [
+    {
+      "event_id": "E001",
+      "actor": "WILL",
+      "anchor_id": "w0008",
+      "acting": "The direct question makes Will visibly more self-conscious as he searches for a satisfactory answer.",
+      "affect": "Nervous-72"
+    },
+    {
+      "event_id": "E002",
+      "actor": "AGNES",
+      "anchor_id": "w0018",
+      "acting": "Recognizing him as the Latin tutor, Agnes studies him with renewed interest.",
+      "affect": "Thinking-60"
+    },
+    {
+      "event_id": "E003",
+      "actor": "WILL",
+      "anchor_id": "w0021",
+      "acting": "Hearing that she has heard of him unsettles Will, and he briefly avoids her eyes.",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "WILL",
+      "anchor_id": "w0031",
+      "acting": "Will falters under the pointed question, showing a sharper flicker of nervousness.",
+      "affect": "Nervous-82",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E005",
+      "actor": "AGNES",
+      "anchor_id": "w0032",
+      "acting": "Agnes lightly chides his hesitation, allowing a trace of dry amusement into her composure.",
+      "affect": "Sassy-65"
+    },
+    {
+      "event_id": "E006",
+      "actor": "WILL",
+      "anchor_id": "w0038",
+      "acting": "Will searches for an explanation, looking upward as he gathers his thoughts.",
+      "affect": "Thinking-60",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "UP"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "WILL",
+      "anchor_id": "w0040",
+      "acting": "The renewed hesitation exposes how uncertain he feels in her presence.",
+      "affect": "Nervous-80",
+      "eye_action": {
+        "action": "brief_check",
+        "target": "DOWN"
+      }
+    },
+    {
+      "event_id": "E008",
+      "actor": "WILL",
+      "anchor_id": "w0056",
+      "acting": "As he reaches the safer subject of the bird, Will lets his attention settle on it.",
+      "focus": "HAWK"
+    },
+    {
+      "event_id": "E009",
+      "actor": "AGNES",
+      "anchor_id": "w0057",
+      "acting": "Agnes corrects him with quiet precision and turns her settled attention to the hawk.",
+      "focus": "HAWK"
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  }
+}

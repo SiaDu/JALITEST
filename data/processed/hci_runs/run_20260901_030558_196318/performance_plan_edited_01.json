@@ -1,0 +1,367 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260901_030558_196318",
+  "characters": [
+    "AGNES",
+    "WILL"
+  ],
+  "gaze_target_candidates": [
+    "TARGET",
+    "HAWK"
+  ],
+  "initial_states": {
+    "AGNES": {
+      "affect": "Watchful-60",
+      "gaze": "GAZE-WILL",
+      "head": "HEAD-NONE"
+    },
+    "WILL": {
+      "affect": "Nervous-55",
+      "gaze": "GAZE-AGNES",
+      "head": "HEAD-NONE"
+    }
+  },
+  "initial_reasons": {
+    "AGNES": "Agnes greets the unfamiliar man with composed courtesy, observing him carefully while keeping her curiosity guarded.",
+    "WILL": "Will approaches with restrained curiosity, trying to appear at ease despite his uncertainty around Agnes."
+  },
+  "tracks": {
+    "AGNES": [
+      {
+        "event_id": "E001",
+        "actor": "AGNES",
+        "source_event_id": "E001",
+        "anchor_id": "w0001",
+        "changes": {
+          "affect": "Polite-65",
+          "gaze": "GAZE-WILL"
+        },
+        "original_changes": {
+          "affect": "Polite-65",
+          "gaze": "GAZE-WILL"
+        },
+        "reason": "Agnes offers a formal greeting while giving the unfamiliar man her measured attention.",
+        "original_reason": "Agnes offers a formal greeting while giving the unfamiliar man her measured attention.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E003",
+        "actor": "AGNES",
+        "source_event_id": "E003",
+        "anchor_id": "w0008",
+        "changes": {
+          "affect": "Friendly-55"
+        },
+        "original_changes": {
+          "affect": "Friendly-55"
+        },
+        "reason": "Her direct question carries genuine curiosity beneath the politeness.",
+        "original_reason": "Her direct question carries genuine curiosity beneath the politeness.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E005",
+        "actor": "AGNES",
+        "source_event_id": "E005",
+        "anchor_id": "w0018",
+        "changes": {
+          "affect": "Watchful-72"
+        },
+        "original_changes": {
+          "affect": "Watchful-72"
+        },
+        "reason": "Recognition sharpens Agnes's scrutiny as she studies the tutor she has heard about.",
+        "original_reason": "Recognition sharpens Agnes's scrutiny as she studies the tutor she has heard about.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E007",
+        "actor": "AGNES",
+        "source_event_id": "E007",
+        "anchor_id": "w0032",
+        "changes": {
+          "affect": "Sassy-60"
+        },
+        "original_changes": {
+          "affect": "Sassy-60"
+        },
+        "reason": "Agnes lightly needles him, making clear that her question was simple while testing how he will respond.",
+        "original_reason": "Agnes lightly needles him, making clear that her question was simple while testing how he will respond.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E010",
+        "actor": "AGNES",
+        "source_event_id": "E010",
+        "anchor_id": "w0057",
+        "changes": {
+          "affect": "Sassy-65",
+          "gaze": "GAZE-HAWK"
+        },
+        "original_changes": {
+          "affect": "Sassy-65",
+          "gaze": "GAZE-HAWK"
+        },
+        "reason": "Agnes corrects him with quiet certainty, redirecting the conversation toward the creature she knows well.",
+        "original_reason": "Agnes corrects him with quiet certainty, redirecting the conversation toward the creature she knows well.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      }
+    ],
+    "WILL": [
+      {
+        "event_id": "E002",
+        "actor": "WILL",
+        "source_event_id": "E002",
+        "anchor_id": "w0002",
+        "changes": {
+          "gaze": "GAZE-AGNES"
+        },
+        "original_changes": {
+          "gaze": "GAZE-AGNES"
+        },
+        "reason": "Will returns the greeting and settles his attention on Agnes, encouraged by the opening.",
+        "original_reason": "Will returns the greeting and settles his attention on Agnes, encouraged by the opening.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E004",
+        "actor": "WILL",
+        "source_event_id": "E004",
+        "anchor_id": "w0013",
+        "changes": {
+          "affect": "Nervous-70"
+        },
+        "original_changes": {
+          "affect": "Nervous-70"
+        },
+        "reason": "Naming his position makes Will newly conscious of how little he belongs here.",
+        "original_reason": "Naming his position makes Will newly conscious of how little he belongs here.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E011",
+        "actor": "WILL",
+        "source_event_id": "E011",
+        "anchor_id": "w0020",
+        "changes": {
+          "affect": "Happy-82"
+        },
+        "original_changes": null,
+        "reason": null,
+        "original_reason": null,
+        "edited_by_user": true,
+        "reason_status": "stale_after_user_edit"
+      },
+      {
+        "event_id": "E006",
+        "actor": "WILL",
+        "source_event_id": "E006",
+        "anchor_id": "w0031",
+        "changes": {
+          "affect": "Nervous-82",
+          "gaze": "GLANCE-DOWN"
+        },
+        "original_changes": {
+          "affect": "Nervous-82",
+          "gaze": "GLANCE-DOWN"
+        },
+        "reason": "The question catches Will unprepared; he hesitates and briefly avoids her eyes while searching for an answer.",
+        "original_reason": "The question catches Will unprepared; he hesitates and briefly avoids her eyes while searching for an answer.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E008",
+        "actor": "WILL",
+        "source_event_id": "E008",
+        "anchor_id": "w0038",
+        "changes": {
+          "gaze": "GLANCE-UP"
+        },
+        "original_changes": {
+          "gaze": "GLANCE-UP"
+        },
+        "reason": "Will gathers his thoughts, glancing away momentarily as he searches for a plausible explanation.",
+        "original_reason": "Will gathers his thoughts, glancing away momentarily as he searches for a plausible explanation.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      },
+      {
+        "event_id": "E009",
+        "actor": "WILL",
+        "source_event_id": "E009",
+        "anchor_id": "w0052",
+        "changes": {
+          "gaze": "GAZE-HAWK"
+        },
+        "original_changes": {
+          "gaze": "GAZE-HAWK"
+        },
+        "reason": "Mentioning the bird draws Will's attention toward the hawk, giving him a safer subject than his own motives.",
+        "original_reason": "Mentioning the bird draws Will's attention toward the hawk, giving him a safer subject than his own motives.",
+        "edited_by_user": false,
+        "reason_status": "llm_original"
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260901_030558_196318\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E005",
+      "E007",
+      "E010",
+      "E002",
+      "E004",
+      "E006",
+      "E008",
+      "E009"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "AGNES",
+        "WILL"
+      ],
+      "initial_states": {
+        "AGNES": {
+          "head": "HEAD-NONE",
+          "affect": "Watchful-60",
+          "gaze": "GAZE-TARGET"
+        },
+        "WILL": {
+          "head": "HEAD-NONE",
+          "affect": "Nervous-55",
+          "gaze": "GAZE-TARGET"
+        }
+      },
+      "initial_reasons": {
+        "AGNES": "Agnes greets the unfamiliar man with composed courtesy, observing him carefully while keeping her curiosity guarded.",
+        "WILL": "Will approaches with restrained curiosity, trying to appear at ease despite his uncertainty around Agnes."
+      },
+      "tracks": [
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0001",
+          "changes": {
+            "affect": "Polite-65",
+            "gaze": "GAZE-WILL"
+          },
+          "reason": "Agnes offers a formal greeting while giving the unfamiliar man her measured attention."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0008",
+          "changes": {
+            "affect": "Friendly-55"
+          },
+          "reason": "Her direct question carries genuine curiosity beneath the politeness."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0018",
+          "changes": {
+            "affect": "Watchful-72"
+          },
+          "reason": "Recognition sharpens Agnes's scrutiny as she studies the tutor she has heard about."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0032",
+          "changes": {
+            "affect": "Sassy-60"
+          },
+          "reason": "Agnes lightly needles him, making clear that her question was simple while testing how he will respond."
+        },
+        {
+          "actor": "AGNES",
+          "anchor_id": "w0057",
+          "changes": {
+            "affect": "Sassy-65",
+            "gaze": "GAZE-HAWK"
+          },
+          "reason": "Agnes corrects him with quiet certainty, redirecting the conversation toward the creature she knows well."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0002",
+          "changes": {
+            "gaze": "GAZE-AGNES"
+          },
+          "reason": "Will returns the greeting and settles his attention on Agnes, encouraged by the opening."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0013",
+          "changes": {
+            "affect": "Nervous-70"
+          },
+          "reason": "Naming his position makes Will newly conscious of how little he belongs here."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0031",
+          "changes": {
+            "affect": "Nervous-82",
+            "gaze": "GLANCE-DOWN"
+          },
+          "reason": "The question catches Will unprepared; he hesitates and briefly avoids her eyes while searching for an answer."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0038",
+          "changes": {
+            "gaze": "GLANCE-UP"
+          },
+          "reason": "Will gathers his thoughts, glancing away momentarily as he searches for a plausible explanation."
+        },
+        {
+          "actor": "WILL",
+          "anchor_id": "w0052",
+          "changes": {
+            "gaze": "GAZE-HAWK"
+          },
+          "reason": "Mentioning the bird draws Will's attention toward the hawk, giving him a safer subject than his own motives."
+        }
+      ]
+    }
+  },
+  "initial_provenance": {
+    "AGNES": {
+      "source_event_id": "INITIAL:AGNES",
+      "original_state": {
+        "head": "HEAD-NONE",
+        "affect": "Watchful-60",
+        "gaze": "GAZE-TARGET"
+      },
+      "original_reason": "Agnes greets the unfamiliar man with composed courtesy, observing him carefully while keeping her curiosity guarded.",
+      "reason": "Agnes greets the unfamiliar man with composed courtesy, observing him carefully while keeping her curiosity guarded.",
+      "edited_by_user": true,
+      "reason_status": "stale_after_user_edit"
+    },
+    "WILL": {
+      "source_event_id": "INITIAL:WILL",
+      "original_state": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-55",
+        "gaze": "GAZE-TARGET"
+      },
+      "original_reason": "Will approaches with restrained curiosity, trying to appear at ease despite his uncertainty around Agnes.",
+      "reason": "Will approaches with restrained curiosity, trying to appear at ease despite his uncertainty around Agnes.",
+      "edited_by_user": true,
+      "reason_status": "stale_after_user_edit"
+    }
+  }
+}

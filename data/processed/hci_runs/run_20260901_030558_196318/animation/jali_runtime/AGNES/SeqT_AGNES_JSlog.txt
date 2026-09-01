@@ -1,0 +1,364 @@
+std::locale LC_COLLATE=C;LC_CTYPE=English_United States.1252;LC_MONETARY=C;LC_NUMERIC=C;LC_TIME=C done. 
+total_clip_time = 0.04. 
+total_clip_time = 0.07. 
+total_clip_time = 0.1. 
+total_clip_time = 1.55. 
+total_clip_time = 1.79. 
+total_clip_time = 1.95. 
+total_clip_time = 2.09. 
+total_clip_time = 2.25. 
+total_clip_time = 3.47. 
+total_clip_time = 4.98. 
+total_clip_time = 5.64862. 
+total_clip_time = 5.70862. 
+Skipped 'w' in sonorant stats
+Skipped 'w' in consonants stats
+total_clip_time = 5.73863. 
+total_clip_time = 5.79862. 
+total_clip_time = 5.82863. 
+total_clip_time = 5.85862. 
+total_clip_time = 5.91862. 
+total_clip_time = 5.98863. 
+total_clip_time = 6.04862. 
+total_clip_time = 6.07863. 
+total_clip_time = 6.10862. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 6.16862. 
+total_clip_time = 6.21863. 
+total_clip_time = 6.26862. 
+total_clip_time = 6.38863. 
+total_clip_time = 6.44863. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 6.50863. 
+total_clip_time = 6.56862. 
+total_clip_time = 6.70862. 
+total_clip_time = 6.74862. 
+total_clip_time = 6.86863. 
+total_clip_time = 7.7. 
+total_clip_time = 9.46. 
+total_clip_time = 9.67313. 
+total_clip_time = 9.71313. 
+total_clip_time = 9.74313. 
+total_clip_time = 9.85313. 
+total_clip_time = 9.97313. 
+total_clip_time = 10.0331. 
+total_clip_time = 10.0731. 
+total_clip_time = 10.1731. 
+total_clip_time = 10.2731. 
+total_clip_time = 10.4331. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 10.5531. 
+total_clip_time = 10.7131. 
+total_clip_time = 11.9453. 
+total_clip_time = 12.0053. 
+total_clip_time = 12.0653. 
+total_clip_time = 12.1153. 
+total_clip_time = 12.2453. 
+total_clip_time = 12.2853. 
+total_clip_time = 12.3253. 
+total_clip_time = 12.3853. 
+total_clip_time = 12.4952. 
+total_clip_time = 12.6753. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 13.2616. 
+total_clip_time = 13.2916. 
+Skipped 'w' in sonorant stats
+Skipped 'w' in consonants stats
+total_clip_time = 13.3216. 
+total_clip_time = 13.3516. 
+total_clip_time = 13.82. 
+total_clip_time = 19.74. 
+total_clip_time = 20.3027. 
+total_clip_time = 20.4328. 
+total_clip_time = 20.4727. 
+total_clip_time = 20.5527. 
+total_clip_time = 20.6028. 
+total_clip_time = 20.6728. 
+total_clip_time = 20.7027. 
+total_clip_time = 20.7528. 
+total_clip_time = 20.8127. 
+total_clip_time = 20.8528. 
+total_clip_time = 20.8827. 
+total_clip_time = 20.9228. 
+total_clip_time = 20.9727. 
+total_clip_time = 21.0427. 
+total_clip_time = 21.1927. 
+total_clip_time = 21.2327. 
+total_clip_time = 21.2627. 
+total_clip_time = 21.3628. 
+total_clip_time = 21.5028. 
+total_clip_time = 21.79. 
+total_clip_time = 21.81. 
+total_clip_time = 21.94. 
+total_clip_time = 26.02. 
+total_clip_time = 27.3799. 
+total_clip_time = 27.4399. 
+total_clip_time = 27.4899. 
+total_clip_time = 27.5999. 
+total_clip_time = 27.6399. 
+total_clip_time = 27.7099. 
+total_clip_time = 27.7799. 
+total_clip_time = 27.8399. 
+total_clip_time = 27.8999. 
+total_clip_time = 27.9799. 
+total_clip_time = 28.0099. 
+Skipped 'w' in sonorant stats
+Skipped 'w' in consonants stats
+total_clip_time = 28.1199. 
+total_clip_time = 28.2699. 
+total_clip_time = 28.3099. 
+total_clip_time = 28.3899. 
+total_clip_time = 28.5699. 
+total_clip_time = 28.5999. 
+total_clip_time = 28.6399. 
+total_clip_time = 28.7699. 
+total_clip_time = 28.8299. 
+total_clip_time = 28.8799. 
+total_clip_time = 28.9299. 
+total_clip_time = 29.0599. 
+total_clip_time = 29.1799. 
+Skipped 'UW' in sonorant stats
+Skipped 'UW' in vowel stats
+total_clip_time = 29.2799. 
+total_clip_time = 29.3399. 
+total_clip_time = 29.54. 
+total_clip_time = 39.18. 
+total_clip_time = 40.3159. 
+total_clip_time = 40.3559. 
+total_clip_time = 40.3859. 
+total_clip_time = 40.4359. 
+total_clip_time = 40.4959. 
+total_clip_time = 40.5659. 
+total_clip_time = 40.7459. 
+total_clip_time = 41.8959. 
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Skipped 'UW' in sonorant std stats
+Skipped 'UW' in vowel std stats
+Not using it, so, not loading profile file: ""
+Lip-Sync: g, good Start. 
+Else-Sync: IH, good Start. 
+Lip-Sync: IH, good Start. 
+Else-Sync: IH, good Start. 
+Lip-Sync: d, good Start. 
+Else-Sync: IH, good Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: d, day Start. 
+Else-Sync: EY, day Start. 
+Lip-Sync: EY, day Start. 
+Else-Sync: EY, day Start. 
+Lip-Sync: s, sir Start. 
+Else-Sync: ER, sir Start. 
+Lip-Sync: ER, sir Start. 
+Else-Sync: ER, sir Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: w, what Start. 
+Else-Sync: w, what Start. 
+Lip-Sync: UX, what Start. 
+Else-Sync: UX, what Start. 
+Lip-Sync: t, what Start. 
+Else-Sync: UX, what Start. 
+Lip-Sync: b, brings Start. 
+Else-Sync: r, brings Start. 
+Lip-Sync: r, brings Start. 
+Else-Sync: r, brings Start. 
+Lip-Sync: IH, brings Start. 
+Else-Sync: IH, brings Start. 
+Lip-Sync: N, brings Start. 
+Else-Sync: z, brings Start. 
+Lip-Sync: z, brings Start. 
+Else-Sync: z, brings Start. 
+Lip-Sync: y, you Start. 
+Else-Sync: UW, you Start. 
+Lip-Sync: UW, you Start. 
+Else-Sync: UW, you Start. 
+Lip-Sync: t, to Start. 
+Else-Sync: IH, to Start. 
+Lip-Sync: IH, to Start. 
+Else-Sync: IH, to Start. 
+Lip-Sync: h, hewlands Start. 
+Else-Sync: y, hewlands Start. 
+Lip-Sync: y, hewlands Start. 
+Else-Sync: y, hewlands Start. 
+Lip-Sync: UW, hewlands Start. 
+Else-Sync: UW, hewlands Start. 
+Lip-Sync: l, hewlands Start. 
+Else-Sync: UW, hewlands Start. 
+Lip-Sync: UX, hewlands Start. 
+Else-Sync: UX, hewlands Start. 
+Lip-Sync: n, hewlands Start. 
+Else-Sync: UX, hewlands Start. 
+Lip-Sync: d, hewlands Start. 
+Else-Sync: z, hewlands Start. 
+Lip-Sync: z, hewlands Start. 
+Else-Sync: z, hewlands Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: D, the Start. 
+Else-Sync: D, the Start. 
+Lip-Sync: UX, the Start. 
+Else-Sync: UX, the Start. 
+Lip-Sync: l, latin Start. 
+Else-Sync: AE, latin Start. 
+Lip-Sync: AE, latin Start. 
+Else-Sync: AE, latin Start. 
+Lip-Sync: t, latin Start. 
+Else-Sync: AE, latin Start. 
+Lip-Sync: UX, latin Start. 
+Else-Sync: UX, latin Start. 
+Lip-Sync: n, latin Start. 
+Else-Sync: UX, latin Start. 
+Lip-Sync: t, tutor Start. 
+Else-Sync: UW, tutor Start. 
+Lip-Sync: UW, tutor Start. 
+Else-Sync: UW, tutor Start. 
+Lip-Sync: t, tutor Start. 
+Else-Sync: UW, tutor Start. 
+Lip-Sync: ER, tutor Start. 
+Else-Sync: ER, tutor Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: AY, i've Start. 
+Else-Sync: AY, i've Start. 
+Lip-Sync: v, i've Start. 
+Else-Sync: v, i've Start. 
+Lip-Sync: h, heard Start. 
+Else-Sync: EH, heard Start. 
+Lip-Sync: EH, heard Start. 
+Else-Sync: EH, heard Start. 
+Lip-Sync: d, heard Start. 
+Else-Sync: EH, heard Start. 
+Lip-Sync: UX, of Start. 
+Else-Sync: UX, of Start. 
+Lip-Sync: v, of Start. 
+Else-Sync: v, of Start. 
+Lip-Sync: y, you Start. 
+Else-Sync: UW, you Start. 
+Lip-Sync: UW, you Start. 
+Else-Sync: UW, you Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: w, what Start. 
+Else-Sync: w, what Start. 
+Lip-Sync: UX, what Start. 
+Else-Sync: UX, what Start. 
+Lip-Sync: t, what Start. 
+Else-Sync: UX, what Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: b, brought Start. 
+Else-Sync: r, brought Start. 
+Lip-Sync: r, brought Start. 
+Else-Sync: r, brought Start. 
+Lip-Sync: AO, brought Start. 
+Else-Sync: AO, brought Start. 
+Lip-Sync: t, brought Start. 
+Else-Sync: AO, brought Start. 
+Lip-Sync: y, you Start. 
+Else-Sync: y, you Start. 
+Lip-Sync: UH, you Start. 
+Else-Sync: UH, you Start. 
+Lip-Sync: IH, into Start. 
+Else-Sync: IH, into Start. 
+Lip-Sync: n, into Start. 
+Else-Sync: IH, into Start. 
+Lip-Sync: t, into Start. 
+Else-Sync: UX, into Start. 
+Lip-Sync: UX, into Start. 
+Else-Sync: UX, into Start. 
+Lip-Sync: D, the Start. 
+Else-Sync: D, the Start. 
+Lip-Sync: UX, the Start. 
+Else-Sync: UX, the Start. 
+Lip-Sync: g, garden Start. 
+Else-Sync: AA, garden Start. 
+Lip-Sync: AA, garden Start. 
+Else-Sync: AA, garden Start. 
+Lip-Sync: r, garden Start. 
+Else-Sync: r, garden Start. 
+Lip-Sync: d, garden Start. 
+Else-Sync: r, garden Start. 
+Lip-Sync: UX, garden Start. 
+Else-Sync: UX, garden Start. 
+Lip-Sync: n, garden Start. 
+Else-Sync: UX, garden Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: IH, it's Start. 
+Else-Sync: IH, it's Start. 
+Lip-Sync: t, it's Start. 
+Else-Sync: z, it's Start. 
+Lip-Sync: z, it's Start. 
+Else-Sync: z, it's Start. 
+Lip-Sync: Z, just Start. 
+Else-Sync: Z, just Start. 
+Lip-Sync: UX, just Start. 
+Else-Sync: UX, just Start. 
+Lip-Sync: s, just Start. 
+Else-Sync: s, just Start. 
+Lip-Sync: t, just Start. 
+Else-Sync: UX, just Start. 
+Lip-Sync: UX, a Start. 
+Else-Sync: UX, a Start. 
+Lip-Sync: k, question Start. 
+Else-Sync: w, question Start. 
+Lip-Sync: w, question Start. 
+Else-Sync: w, question Start. 
+Lip-Sync: EH, question Start. 
+Else-Sync: EH, question Start. 
+Lip-Sync: s, question Start. 
+Else-Sync: C, question Start. 
+Lip-Sync: C, question Start. 
+Else-Sync: C, question Start. 
+Lip-Sync: UX, question Start. 
+Else-Sync: UX, question Start. 
+Lip-Sync: n, question Start. 
+Else-Sync: UX, question Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: m, master Start. 
+Else-Sync: m, master Start. 
+Lip-Sync: AE, master Start. 
+Else-Sync: AE, master Start. 
+Lip-Sync: s, master Start. 
+Else-Sync: s, master Start. 
+Lip-Sync: t, master Start. 
+Else-Sync: ER, master Start. 
+Lip-Sync: ER, master Start. 
+Else-Sync: ER, master Start. 
+Lip-Sync: t, tutor Start. 
+Else-Sync: UW, tutor Start. 
+Lip-Sync: UW, tutor Start. 
+Else-Sync: UW, tutor Start. 
+Lip-Sync: t, tutor Start. 
+Else-Sync: UW, tutor Start. 
+Lip-Sync: EH, tutor Start. 
+Else-Sync: EH, tutor Start. 
+Lip-Sync: sil, . Start. 
+Else-Sync: sil, . Start. 
+Lip-Sync: IH, it's Start. 
+Else-Sync: IH, it's Start. 
+Lip-Sync: t, it's Start. 
+Else-Sync: s, it's Start. 
+Lip-Sync: s, it's Start. 
+Else-Sync: s, it's Start. 
+Lip-Sync: UX, a Start. 
+Else-Sync: UX, a Start. 
+Lip-Sync: h, hawk Start. 
+Else-Sync: AO, hawk Start. 
+Lip-Sync: AO, hawk Start. 
+Else-Sync: AO, hawk Start. 
+Lip-Sync: k, hawk Start. 
+Else-Sync: AO, hawk Start. 

@@ -1,0 +1,130 @@
+[INITIAL]
+MARTY
+affect: Happy-65
+focus: ORANGE_BALLS
+acting: Marty is already keyed up by the sight of the orange balls, eager to see what Dion has made.
+
+DION
+affect: Friendly-70
+focus: MARTY
+acting: Dion watches Marty closely, hoping the work and investment will finally receive genuine recognition.
+
+[BEATS]
+E001
+actor: MARTY
+trigger: w0001
+affect: Surprised-82
+acting: The striking orange finish catches Marty off guard and sparks immediate, genuine excitement.
+
+E002
+actor: DION
+trigger: w0002
+affect: Happy-78
+acting: Dion answers with quiet pride, pleased that Marty has noticed the result.
+
+E003
+actor: MARTY
+trigger: w0007
+focus: DION
+acting: Marty turns his attention from the balls to Dion, urgently wanting to know how the result was achieved.
+
+E004
+actor: DION
+trigger: w0024
+affect: Happy-82
+acting: Dion proudly reveals that money and family investment made the production possible.
+
+E005
+actor: MARTY
+trigger: w0031
+affect: Happy-78
+acting: Hearing that Dion and his father believe in him gives Marty a brief validating rush.
+
+E006
+actor: MARTY
+trigger: w0042
+eye_action: brief_check RACHEL
+acting: Marty briefly checks Rachel's reaction, seeking her agreement with his excitement.
+
+E007
+actor: DION
+trigger: w0046
+focus: PACKAGING
+acting: Dion redirects his attention to the packaging and presents it as the next impressive reveal.
+
+E008
+actor: MARTY
+trigger: w0051
+focus: PACKAGING
+acting: Marty settles his attention on the package, taking in the branding and professional presentation.
+
+E009
+actor: MARTY
+trigger: w0061
+affect: Happy-88
+acting: The professional finish confirms Marty's ambitions and intensifies his admiration.
+
+E010
+actor: MARTY
+trigger: w0064
+affect: Surprised-92
+acting: The orange-spheres concept lands as an unexpectedly inspired piece of branding.
+
+E011
+actor: DION
+trigger: w0071
+affect: Happy-88
+acting: Dion is encouraged that Marty is recognizing the originality of the idea.
+
+E012
+actor: MARTY
+trigger: w0075
+affect: Happy-94
+acting: Marty enthusiastically affirms the work, making Dion's achievement feel fully seen.
+
+E013
+actor: MARTY
+trigger: w0078
+affect: Surprised-97
+acting: The scale of what Dion accomplished overwhelms Marty into sincere astonishment.
+
+E014
+actor: DION
+trigger: w0085
+acting: Dion adds the hand-drawn detail with modest pride, offering one more reason for Marty to value the package.
+
+E015
+actor: MARTY
+trigger: w0087
+focus: DION
+acting: Marty looks back to Dion, newly impressed and eager to confirm that Dion personally created the design.
+
+E016
+actor: DION
+trigger: w0090
+affect: Happy-94
+acting: Dion's restrained answer carries deep satisfaction at finally receiving Marty's admiration.
+
+E017
+actor: MARTY
+trigger: w0091
+affect: Happy-98
+acting: Marty openly celebrates Dion's creativity, treating the design as genuinely inspired.
+
+E018
+actor: DION
+trigger: w0093
+affect: Happy-97
+acting: Dion accepts the praise warmly, allowing himself to feel recognized rather than merely invested.
+
+E019
+actor: MARTY
+trigger: w0105
+eye_action: brief_check PACKAGING
+acting: Marty briefly returns his eyes to the package, still energized by the object he has been praising.
+
+E020
+actor: DION
+trigger: w0108
+affect: Happy-99
+acting: Dion's thanks lands as grateful and relieved, confirming how much the recognition mattered to him.

@@ -1,0 +1,92 @@
+[INITIAL]
+AGNES
+affect: Watchful-60
+focus: HAWK
+acting: She tends to the hawk until the unfamiliar man addresses her, remaining alert to his presence.
+
+WILL
+affect: Nervous-55
+focus: AGNES
+acting: He approaches with courteous uncertainty, drawn to Agnes but unsure how to begin.
+
+[BEATS]
+E001
+actor: AGNES
+trigger: w0001
+affect: Polite-65
+focus: WILL
+acting: She turns her attention from the hawk to acknowledge him with guarded courtesy.
+
+E002
+actor: WILL
+trigger: w0004
+affect: Polite-60
+acting: He returns the greeting carefully, trying to appear more composed than he feels.
+
+E003
+actor: AGNES
+trigger: w0008
+affect: Watchful-70
+acting: Her greeting becomes a direct inquiry as she studies what has brought him to Hewlands.
+
+E004
+actor: WILL
+trigger: w0013
+affect: Nervous-65
+acting: The question makes him answer promptly but with visible social unease.
+
+E005
+actor: WILL
+trigger: w0021
+affect: Surprised-60
+acting: Hearing that she has already heard of him catches him off guard.
+
+E006
+actor: WILL
+trigger: w0025
+eye_action: brief_check DOWN
+acting: Her question about the garden makes him briefly avoid her eyes while searching for an acceptable answer.
+
+E007
+actor: AGNES
+trigger: w0032
+affect: Sassy-60
+acting: She lightly teases his hesitation, making clear that she expects a straightforward answer.
+
+E008
+actor: WILL
+trigger: w0040
+affect: Thinking-65
+eye_action: brief_check UP
+acting: He searches for an explanation, looking away momentarily as he gathers his thoughts.
+
+E009
+actor: WILL
+trigger: w0049
+affect: Nervous-75
+eye_action: brief_check DOWN
+acting: The unfinished explanation exposes his embarrassment and renewed discomfort.
+
+E010
+actor: WILL
+trigger: w0055
+focus: HAWK
+acting: Mention of the bird gives him a safer subject and shifts his attention toward it.
+
+E011
+actor: AGNES
+trigger: w0056
+focus: HAWK
+acting: His reference to the bird settles her attention on the hawk as the subject she would rather discuss.
+
+E012
+actor: AGNES
+trigger: w0057
+affect: Sassy-75
+acting: She corrects him crisply, asserting the hawk's identity without abandoning her guarded composure.
+
+E013
+actor: WILL
+trigger: w0057
+affect: Confused-55
+acting: The correction reveals his unfamiliarity and leaves him momentarily unsure how to respond.

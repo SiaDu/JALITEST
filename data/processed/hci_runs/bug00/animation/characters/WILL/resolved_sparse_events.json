@@ -1,0 +1,138 @@
+{
+  "initial_state": {
+    "actor": "WILL",
+    "timing_role": "INITIAL_STATE",
+    "resolved_start": 0.0,
+    "state": {
+      "head": "HEAD-NONE",
+      "affect": "Nervous-60",
+      "gaze": "GAZE-AGNES"
+    },
+    "reason": "Will tries to appear courteous and at ease while remaining quietly drawn to her."
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "actor": "WILL",
+      "anchor_id": "w0008",
+      "anchor_text": "What",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 5.648625,
+      "raw_anchor_end": 5.798625,
+      "resolved_start": 5.798625,
+      "changes": {
+        "affect": "Nervous-72"
+      },
+      "reason": "The direct question makes Will visibly more self-conscious as he searches for a satisfactory answer.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-72",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E003",
+      "actor": "WILL",
+      "anchor_id": "w0021",
+      "anchor_text": "I've",
+      "anchor_speaker": "AGNES",
+      "timing_role": "LISTEN_REACTION",
+      "raw_anchor_start": 11.945251,
+      "raw_anchor_end": 12.065251,
+      "resolved_start": 12.065251,
+      "changes": {
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "Hearing that she has heard of him unsettles Will, and he briefly avoids her eyes.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-72",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E004",
+      "actor": "WILL",
+      "anchor_id": "w0031",
+      "anchor_text": "Uh...",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 24.461063,
+      "raw_anchor_end": 25.031063,
+      "resolved_start": 24.461063,
+      "changes": {
+        "affect": "Nervous-82",
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "Will falters under the pointed question, showing a sharper flicker of nervousness.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-82",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E006",
+      "actor": "WILL",
+      "anchor_id": "w0038",
+      "anchor_text": "Yes,",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 29.7005,
+      "raw_anchor_end": 29.990501,
+      "resolved_start": 29.7005,
+      "changes": {
+        "affect": "Thinking-60",
+        "gaze": "GLANCE-UP"
+      },
+      "reason": "Will searches for an explanation, looking upward as he gathers his thoughts.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Thinking-60",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E007",
+      "actor": "WILL",
+      "anchor_id": "w0040",
+      "anchor_text": "uh...",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 30.020502,
+      "raw_anchor_end": 30.120501,
+      "resolved_start": 30.020502,
+      "changes": {
+        "affect": "Nervous-80",
+        "gaze": "GLANCE-DOWN"
+      },
+      "reason": "The renewed hesitation exposes how uncertain he feels in her presence.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-80",
+        "gaze": "GAZE-AGNES"
+      }
+    },
+    {
+      "event_id": "E008",
+      "actor": "WILL",
+      "anchor_id": "w0056",
+      "anchor_text": "bird.",
+      "anchor_speaker": "WILL",
+      "timing_role": "SPEAK_ONSET",
+      "raw_anchor_start": 37.625126,
+      "raw_anchor_end": 38.105122,
+      "resolved_start": 37.625126,
+      "changes": {
+        "gaze": "GAZE-HAWK"
+      },
+      "reason": "As he reaches the safer subject of the bird, Will lets his attention settle on it.",
+      "state_after": {
+        "head": "HEAD-NONE",
+        "affect": "Nervous-80",
+        "gaze": "GAZE-HAWK"
+      }
+    }
+  ]
+}
