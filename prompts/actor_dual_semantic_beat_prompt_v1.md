@@ -51,6 +51,13 @@ trigger: w0003
 acting: The threat raises visible anxiety and briefly breaks eye contact.
 affect: Nervous-80
 eye_action: brief_check DOWN
+head: HEAD-DOWN-SUBTLE
+
+E004
+actor: {{character_a}}
+trigger: w0004
+acting: The actor regains composure and returns their neck to its neutral pose.
+head: HEAD-NONE
 ```
 
 Concrete INITIAL illustration: `AGNES` with `affect: Watchful-60`, `focus: WILL`, and an acting interpretation; `WILL` with `affect: Nervous-55`, `focus: AGNES`, and an acting interpretation.
@@ -78,6 +85,8 @@ Choose one field for that beat; use a later distinct meaningful anchor only when
 `focus: HAWK` answers what person, object, or location the actor is persistently attending to. It changes the persistent focus. `eye_action: brief_check DOWN` answers whether the actor briefly moves their eyes away from that current focus. It is temporary and automatically returns to the persistent focus. Do not emit a later focus merely to return after an eye_action.
 
 Affect is a strict closed vocabulary. Never invent, paraphrase, or substitute an affect label. If the desired emotion is not present, choose the closest AVAILABLE listed Mask state. Intensities are any positive integer percentage. Initial affect must be visible and not MASK-NONE. In [BEATS], affect may be MASK-NONE when the persistent semantic affect should end. Head and blink use only the listed executable vocabulary; blink is forbidden in INITIAL.
+
+Head is a persistent neck pose, not a one-shot nod: it remains active until a later head field changes it. Actively consider head behavior at meaningful speaking and listening beats. Use HEAD-UP for lifted attention, resolve, or challenge; HEAD-DOWN for shame, grief, submission, or inward withdrawal; and HEAD-TILT_LEFT/HEAD-TILT_RIGHT for appraisal, uncertainty, or asymmetric curiosity. Choose SUBTLE, MEDIUM, or STRONG according to the supported physical emphasis. A head field may accompany affect or eye_action in the same beat when the performance motivates both. Use a later `head: HEAD-NONE` when the actor returns to a neutral neck pose. Do not add head merely to satisfy a quota, and do not mechanically mirror every eye movement with the neck.
 
 An attention target may be either performance actor, a non-animated person, a physical object/location, or UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT. Use one identifier without spaces, such as HAWK or FRONT_DOOR. IMPORTANT: `TARGET` is documentation metavocabulary only; never output the literal word `TARGET` as a focus or eye-action target. Valid concrete examples: `focus: HAWK`, `focus: FRONT_DOOR`, `eye_action: brief_check DOWN`, `eye_action: brief_check HAWK`. Invalid examples (do not output): `focus: TARGET`, `eye_action: brief_check TARGET`.
 

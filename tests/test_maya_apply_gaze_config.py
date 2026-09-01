@@ -47,6 +47,9 @@ def test_load_config_and_aliases():
 def test_offset_resolution_keeps_eye_stare_z_base():
     config = load_maya_gaze_config(CONFIG)
 
+    assert config["short_glance_policy"] == "shorten_or_drop"
+    assert config["short_glance_min_hold_frames"] == 1
+
     assert resolve_offset_position(TEST_BASE_POSITION, config["direction_offsets"]["UP_RIGHT"]) == [
         40.0,
         25.0,

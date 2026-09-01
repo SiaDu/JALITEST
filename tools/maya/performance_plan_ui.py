@@ -1313,6 +1313,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                     listener_result = apply_dual_listener_mask_artifacts(prepared_context=listener_context)
                     gaze_result = apply_dual_gaze_only_artifacts(prepared_context=gaze_context)
+                    for warning in gaze_context.get("warnings", []):
+                        self._append_backend_output(f"Gaze timing warning: {warning}")
                     overlay_result = apply_dual_v2_head_blink_overlays(prepared_context=overlay_context) if overlay_context else {}
                     blink_diagnostic = diagnose_v2_blink_ownership(prepared_context=overlay_context) if overlay_context else None
                     for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; realign_filter={item['jali_settings']['filter_silence_gaps']}; realign_threshold_db={item['jali_settings']['silence_threshold_db']:g}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks={item['calculate_blinks']}; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
@@ -1322,7 +1324,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     if is_v2 and listener_context.get("expressive_eyelid_mapping_requirement"):
                         self._append_backend_output("Expressive eyelid Maya-smoke requirement (no guessed User mapping): " + ", ".join(listener_context["expressive_eyelid_mapping_requirement"]))
                     gaze_events = sum(gaze_result[actor]['gaze_events'] for actor in self.plan.get("characters", []))
-                    overlay_summary = f"; additive head/blink overlays ({sum(row['head_key_count'] + row['blink_key_count'] for row in overlay_result.values())} keys)" if overlay_result else ""
+                    overlay_summary = f"; additive head/blink overlays ({sum(overlay_result[actor]['head_key_count'] + overlay_result[actor]['blink_key_count'] for actor in self.plan.get('characters', []))} keys)" if overlay_result else ""
                     self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events){overlay_summary}\njSync preserved: yes")
                     if blink_diagnostic:
                         self._append_backend_output("Blink ownership diagnostic: JALI calculate_blinks=False; native JALI eyelid/paralingual curves allowed; User performative blink controls owned by JALITEST blink layer.")

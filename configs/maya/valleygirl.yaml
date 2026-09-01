@@ -21,6 +21,8 @@ maya_gaze:
   gaze_transition_frames: 3
   glance_hold_seconds: 0.5
   glance_transition_frames: 3
+  short_glance_policy: shorten_or_drop
+  short_glance_min_hold_frames: 1
   directional_eye_magnitude: 5
   directional_eye_limit: 6
   apply_weighted_flat_tangents: true

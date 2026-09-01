@@ -1508,7 +1508,7 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
     gaze_config = load_maya_gaze_config(DEFAULT_MAYA_CONFIG)
     overlay_config = _v2_overlay_config()
     micro_config = overlay_config["micro_saccade"]
-    prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}}
+    prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}, "warnings": []}
     directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
     for actor in manifest["characters"]:
         row = character_mappings.get(actor) or {}
@@ -1532,6 +1532,7 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
                 end = start + float(gaze_config.get("glance_hold_seconds", 0.5)) + transition
                 if event.get("timing_role") != "SPEAK_ONSET":
                     end += transition
+                end = min(end, float(manifest["shared_duration_seconds"]))
             else:
                 end = float(gaze_rows[index + 1]["resolved_start"]) if index + 1 < len(gaze_rows) else float(manifest["shared_duration_seconds"])
             raw.append({"id": event["event_id"], "phrase_id": event["event_id"], "reason": event.get("reason"), "type": "gaze", "mode": mode, "target": target, "timing_role": event.get("timing_role"), "social_avert": False, "resolved_time": {"start": start, "end": end}})
@@ -1549,11 +1550,20 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
             if event["mode"] in {"GAZE", "GLANCE"} and target not in directions:
                 positions[target] = resolve_actor_target_position(actor, target, character_mappings)
         schedule = build_dual_gaze_schedule(raw, neutral_position=reference["eye_stare_translate"], neutral_eyes=reference["both_eyes_translate"], target_positions=positions, magnitude=float(gaze_config.get("directional_eye_magnitude", 5)), limit=float(gaze_config.get("directional_eye_limit", 6)))
+        schedule, timing_warnings = adapt_short_glance_schedule(
+            schedule,
+            fps=float(manifest["fps"]),
+            glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)),
+            glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)),
+            policy=str(gaze_config.get("short_glance_policy", "shorten_or_drop")),
+            min_hold_frames=int(gaze_config.get("short_glance_min_hold_frames", 1)),
+        )
+        prepared["warnings"].extend(f"{actor}: {warning}" for warning in timing_warnings)
         plugs = [*(f"{reference['eye_stare_node']}.translate{axis}" for axis in "XYZ"), f"{reference['both_eyes_node']}.translateX", f"{reference['both_eyes_node']}.translateY"]
         if any(not cmds_module.objExists(plug) for plug in plugs):
             raise RuntimeError(f"{actor}: required gaze controls do not exist.")
         try:
-            keys = build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)))
+            keys = build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)), allow_shortened_glance=True)
         except ValueError as exc:
             raise ValueError(f"{actor}: v2 gaze event cannot be scheduled: {exc}") from exc
         micro_node = qualify_rig_control(rig, str(micro_config["control_suffix"]))
@@ -1749,6 +1759,56 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
         if mode != "GLANCE": previous={"eye_stare":list(state["eye_stare"]),"eyes":list(state["eyes"])}
         schedule.append(state)
     return schedule
+
+
+def adapt_short_glance_schedule(
+    schedule: Iterable[dict[str, Any]], *, fps: float,
+    glance_transition_frames: int, glance_hold_seconds: float,
+    policy: str = "shorten_or_drop", min_hold_frames: int = 1,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Shorten crowded GLANCE holds, or drop them when motion cannot fit."""
+    if policy != "shorten_or_drop":
+        raise ValueError(f"Unsupported short GLANCE policy: {policy!r}")
+    transition = max(1, int(glance_transition_frames))
+    preferred_hold = max(1, int(math.ceil(float(glance_hold_seconds) * float(fps))))
+    minimum_hold = max(1, int(min_hold_frames))
+    if minimum_hold > preferred_hold:
+        raise ValueError("short_glance_min_hold_frames cannot exceed the configured GLANCE hold.")
+    ordered = list(schedule)
+    adapted: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    for index, state in enumerate(ordered):
+        event = state["event"]
+        if event.get("mode") != "GLANCE":
+            adapted.append(state)
+            continue
+        start = float(state["start"]) * float(fps)
+        end = float(state["end"]) * float(fps)
+        speaker_glance = event.get("timing_role") == "SPEAK_ONSET"
+        out = start if speaker_glance else start + transition
+        back = end - transition
+        available_hold = max(0.0, back - out)
+        if available_hold + GLANCE_FRAME_EPSILON >= preferred_hold:
+            adapted.append(state)
+            continue
+        event_id = event.get("id") or event.get("phrase_id") or "<unknown>"
+        next_event = None
+        if index + 1 < len(ordered):
+            following = ordered[index + 1]["event"]
+            next_event = following.get("id") or following.get("phrase_id")
+        conflict = f" before {next_event}" if next_event else " before clip end"
+        if available_hold + GLANCE_FRAME_EPSILON >= minimum_hold:
+            adapted.append(state)
+            warnings.append(
+                f"{event_id}: shortened GLANCE hold from {preferred_hold} to "
+                f"{available_hold:.6f} frames{conflict}."
+            )
+        else:
+            warnings.append(
+                f"{event_id}: dropped GLANCE because only {available_hold:.6f} hold frames "
+                f"were available{conflict}; at least {minimum_hold} frame is required."
+            )
+    return adapted, warnings
 
 
 def build_dual_gaze_key_schedule(schedule: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 3, glance_min_hold_seconds: float | None = None, glance_hold_seconds: float | None = None, glance_transition_frames: int | None = None, allow_shortened_glance: bool = False, timeline_start: float = 0.0, initialization_epsilon: float = 1e-6) -> list[dict[str, Any]]:

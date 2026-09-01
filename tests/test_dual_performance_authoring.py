@@ -346,6 +346,11 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "eye_action: brief_check WILL" in prompt
     assert "affect: Nervous-75" in prompt
     assert "affect: Nervous-80\neye_action: brief_check DOWN" in prompt
+    assert "eye_action: brief_check DOWN\nhead: HEAD-DOWN-SUBTLE" in prompt
+    assert "head: HEAD-NONE" in prompt
+    assert "Head is a persistent neck pose" in prompt
+    assert "Actively consider head behavior" in prompt
+    assert "Do not add head merely to satisfy a quota" in prompt
     assert "Acting Direction: NONE" in prompt
     assert "Context: NONE" not in prompt
     assert "AGNES becomes increasingly curious about WILL." not in prompt
@@ -353,7 +358,7 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
 
     def runner(**kwargs):
         calls.append(kwargs)
-        proposal_text = "[INITIAL]\nAGNES\naffect: Watchful-80\nfocus: WILL\nacting: Enters watchful.\n\nWILL\naffect: Nervous-60\nfocus: AGNES\nacting: Enters guarded.\n[BEATS]\nE001\nactor: AGNES\ntrigger: w0001\nacting: He becomes more alert.\naffect: Watchful-100"
+        proposal_text = "[INITIAL]\nAGNES\naffect: Watchful-80\nfocus: WILL\nacting: Enters watchful.\n\nWILL\naffect: Nervous-60\nfocus: AGNES\nacting: Enters guarded.\n[BEATS]\nE001\nactor: AGNES\ntrigger: w0001\nacting: She becomes more alert and lifts her head.\naffect: Watchful-100\nhead: HEAD-UP-SUBTLE"
         Path(kwargs["output_text"]).write_text(proposal_text, encoding="utf-8")
         Path(kwargs["output_meta"]).write_text('{"status":"completed"}\n', encoding="utf-8")
         return proposal_text, {"status": "completed"}
@@ -363,6 +368,9 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
         run_id="dual_run", output_dir=tmp_path / "dual_run", proposal_runner=runner,
     )
     assert len(calls) == 1 and plan["schema_version"] == "dual_performance_plan_v2"
+    assert plan["tracks"]["AGNES"][0]["changes"] == {
+        "affect": "Watchful-100", "head": "HEAD-UP-SUBTLE"
+    }
     for name in (
         "input_script.txt", "input_context.txt", "actor_prompt.txt", "anchored_script.txt",
         "anchor_map.json", "semantic_beats.txt", "semantic_beats.json", "performance_proposal.txt", "llm_response_meta.json", "performance_plan.json",

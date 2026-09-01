@@ -515,6 +515,17 @@ def test_dual_timeline_audio_applies_only_after_all_animation_channels_succeed()
     assert "node_action={'reused' if timeline_audio['audio_node_reused'] else 'created'}" in succeeded
 
 
+def test_dual_apply_reports_nonfatal_gaze_timing_warnings():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    succeeded = source.split("    def _animation_compile_succeeded", 1)[1].split(
+        "    def _animation_failed", 1
+    )[0]
+    assert 'gaze_context.get("warnings", [])' in succeeded
+    assert "Gaze timing warning:" in succeeded
+    assert "for row in overlay_result.values()" not in succeeded
+    assert "overlay_result[actor]['head_key_count']" in succeeded
+
+
 def test_dual_master_audio_pending_state_clears_on_success_and_failure():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     succeeded = source.split("    def _animation_compile_succeeded", 1)[1].split(

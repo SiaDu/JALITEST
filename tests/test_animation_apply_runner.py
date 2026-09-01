@@ -21,6 +21,7 @@ from animation_apply_runner import (  # noqa: E402
     adapt_dual_gaze_events,
     directional_eye_offset,
     build_dual_gaze_schedule,
+    adapt_short_glance_schedule,
     build_dual_gaze_key_schedule,
     clear_character_gaze_animation,
     prepare_dual_animation_overlay,
@@ -889,6 +890,7 @@ def test_v2_gaze_prepare_keeps_micro_saccades_in_a_separate_runtime_section(monk
     mappings = {"ALICE": {"maya_node": "|ALICE:ROOT", "gaze_targets": {"BOB": {"eye_stare_translate": [1, 2, 3]}}}, "BOB": {"maya_node": "|BOB:ROOT", "gaze_targets": {"ALICE": {"eye_stare_translate": [4, 5, 6]}}}}
     prepared = prepare_dual_v2_gaze_only_artifacts(manifest_path=manifest, character_mappings=mappings, cmds_module=_ListenerCmds())
     alice = prepared["ALICE"]
+    assert prepared["warnings"] == []
     assert alice["micro_saccade_layer"] == "JALITEST_microSaccade_ALICE"
     assert alice["micro_saccade_plugs"] == ["ALICE:CNT_BOTH_EYES.translateX", "ALICE:CNT_BOTH_EYES.translateY"]
     assert alice["micro_saccade_keys"] and all("eyeStare_world" not in plug for plug in alice["micro_saccade_plugs"])
@@ -1586,6 +1588,85 @@ def test_visual_onset_collision_that_truncates_glance_below_minimum_still_fails(
         build_dual_gaze_key_schedule(
             schedule, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5
         )
+
+
+def test_short_glance_adapter_preserves_e034_with_reduced_hold_and_warning():
+    fps = 30.0
+    events = [
+        {"id": "INITIAL_STATE", "mode": "GAZE", "target": "AGNES", "timing_role": "INITIAL_STATE", "resolved_time": {"start": 0.0, "end": 105.820877}},
+        {"id": "E034", "mode": "GLANCE", "target": "DOWN", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": 105.820877, "end": 106.520877}},
+        {"id": "E037", "mode": "GAZE", "target": "HAMNET", "timing_role": "LISTEN_REACTION", "visual_onset": 106.300880, "resolved_time": {"start": 106.300880, "end": 108.0}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 9], neutral_eyes=[0, 0],
+        target_positions={"AGNES": [1, 0, 9], "HAMNET": [2, 0, 9]},
+    )
+
+    adapted, warnings = adapt_short_glance_schedule(
+        schedule, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5,
+    )
+    keys = build_dual_gaze_key_schedule(
+        adapted, fps=fps, glance_transition_frames=3, glance_hold_seconds=.5,
+        allow_shortened_glance=True,
+    )
+
+    down_keys = [key for key in keys if key["eyes"] == [0.0, -5.0]]
+    assert down_keys[1]["frame"] - down_keys[0]["frame"] == pytest.approx(8.40009)
+    assert warnings == [
+        "E034: shortened GLANCE hold from 15 to 8.400090 frames before E037."
+    ]
+
+
+def test_short_glance_adapter_drops_motion_that_cannot_hold_one_frame():
+    events = [
+        {"id": "INITIAL_STATE", "mode": "GAZE", "target": "A", "timing_role": "INITIAL_STATE", "resolved_time": {"start": 0.0, "end": 2.0}},
+        {"id": "SHORT", "mode": "GLANCE", "target": "DOWN", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": 2.0, "end": 2.7}},
+        {"id": "NEXT", "mode": "GAZE", "target": "B", "timing_role": "LISTEN_REACTION", "visual_onset": 2.21, "resolved_time": {"start": 2.21, "end": 4.0}},
+    ]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 9], neutral_eyes=[0, 0],
+        target_positions={"A": [1, 0, 9], "B": [2, 0, 9]},
+    )
+
+    adapted, warnings = adapt_short_glance_schedule(
+        schedule, fps=30, glance_transition_frames=3, glance_hold_seconds=.5,
+    )
+    keys = build_dual_gaze_key_schedule(
+        adapted, fps=30, glance_transition_frames=3, glance_hold_seconds=.5,
+        allow_shortened_glance=True,
+    )
+
+    assert [state["event"]["id"] for state in adapted] == ["INITIAL_STATE", "NEXT"]
+    assert not any(key["eyes"] == [0.0, -5.0] for key in keys)
+    assert warnings == [
+        "SHORT: dropped GLANCE because only 0.300000 hold frames were available before NEXT; at least 1 frame is required."
+    ]
+
+
+def test_short_glance_adapter_leaves_full_hold_unchanged_without_warning():
+    events = [{"id": "G1", "mode": "GLANCE", "target": "DOWN", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": 2.0, "end": 2.7}}]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 9], neutral_eyes=[0, 0], target_positions={},
+    )
+    adapted, warnings = adapt_short_glance_schedule(
+        schedule, fps=30, glance_transition_frames=3, glance_hold_seconds=.5,
+    )
+    assert adapted == schedule
+    assert warnings == []
+
+
+def test_short_glance_adapter_reports_clip_end_truncation():
+    events = [{"id": "LAST", "mode": "GLANCE", "target": "DOWN", "timing_role": "LISTEN_REACTION", "resolved_time": {"start": 9.9, "end": 10.0}}]
+    schedule = build_dual_gaze_schedule(
+        events, neutral_position=[0, 0, 9], neutral_eyes=[0, 0], target_positions={},
+    )
+    adapted, warnings = adapt_short_glance_schedule(
+        schedule, fps=30, glance_transition_frames=3, glance_hold_seconds=.5,
+    )
+    assert adapted == []
+    assert warnings == [
+        "LAST: dropped GLANCE because only 0.000000 hold frames were available before clip end; at least 1 frame is required."
+    ]
 
 
 def test_clear_character_gaze_animation_is_attribute_scoped():
