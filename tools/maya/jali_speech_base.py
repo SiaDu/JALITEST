@@ -7,7 +7,6 @@ safety can be tested outside Maya.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
 import math
@@ -20,6 +19,7 @@ from animation_apply_runner import (
     resolve_jali_source_transcript_path,
     resolve_jsync_for_character,
 )
+from jali_mel_globals import temporary_jali_alignment_globals
 
 
 REQUIRED_JSYNC_ATTRS = (
@@ -239,54 +239,6 @@ def _validate_sources(actor: str, maya_node: str, wav_path: str | Path, txt_path
     if wav.stem.casefold() != txt.stem.casefold():
         raise RuntimeError(f"{actor}: WAV/TXT stems do not match: {wav.name}, {txt.name}")
     return rig, wav, txt, wav.stem
-
-
-_JALI_GLOBALS = (
-    ("silence_handling", "int", "jalitest_get_silence_handling"),
-    ("silence_handling_decibel", "float", "jalitest_get_silence_threshold"),
-    ("jali_afscratch", "int", "jalitest_get_animate_from_scratch"),
-)
-
-
-def _read_mel_global(mel_module: Any, name: str, mel_type: str, getter: str) -> Any:
-    if not mel_module.eval(f'exists "{getter}"'):
-        mel_module.eval(
-            f"global proc {mel_type} {getter}() {{ "
-            f"global {mel_type} ${name}; return ${name}; }}"
-        )
-    return mel_module.eval(f"{getter}()")
-
-
-def _set_mel_global(mel_module: Any, name: str, mel_type: str, value: Any) -> None:
-    rendered = str(int(value)) if mel_type == "int" else repr(float(value))
-    mel_module.eval(f"global {mel_type} ${name}; ${name} = {rendered};")
-
-
-@contextmanager
-def jali_alignment_settings(
-    mel_module: Any,
-    settings: dict[str, Any],
-    *,
-    animate_from_scratch: bool,
-) -> Iterable[None]:
-    """Temporarily apply the three JALI alignment globals used by call_jSync."""
-    normalized = normalize_jali_speech_settings(settings)
-    old = {
-        name: _read_mel_global(mel_module, name, mel_type, getter)
-        for name, mel_type, getter in _JALI_GLOBALS
-    }
-    desired = {
-        "silence_handling": int(normalized["filter_silence_gaps"]),
-        "silence_handling_decibel": normalized["silence_threshold_db"],
-        "jali_afscratch": int(bool(animate_from_scratch)),
-    }
-    try:
-        for name, mel_type, _getter in _JALI_GLOBALS:
-            _set_mel_global(mel_module, name, mel_type, desired[name])
-        yield
-    finally:
-        for name, mel_type, _getter in _JALI_GLOBALS:
-            _set_mel_global(mel_module, name, mel_type, old[name])
 
 
 def inspect_jali_speech_base(
@@ -616,8 +568,11 @@ def prepare_jali_speech_base(
             f'call_jSync("{_mel_folder(txt.parent)}", "{folder}", "{folder}", '
             f'"{_mel_string(sound)}", {int(language_code)}, {int(speech_style)});'
         )
-        with jali_alignment_settings(
-            mel_module, settings, animate_from_scratch=animate_from_scratch
+        with temporary_jali_alignment_globals(
+            mel_module,
+            filter_silence_gaps=settings["filter_silence_gaps"],
+            silence_threshold_db=settings["silence_threshold_db"],
+            animate_from_scratch=animate_from_scratch,
         ):
             mel_module.eval(prepare_command)
             mel_module.eval(analyze_command)

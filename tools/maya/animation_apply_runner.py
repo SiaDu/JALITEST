@@ -15,6 +15,7 @@ from typing import Any, Iterable
 import wave
 
 from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, mapped_user_plugs, parse_mask_state, unmapped_expressive_eyelid_aus, user_pose_for_mask
+from jali_mel_globals import temporary_jali_alignment_globals
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -754,7 +755,7 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         diagnostic=Path((character_artifacts.get(alias) or {}).get("jali_speaker_annotation") or manifest["artifacts"].get(f"{alias}_jali_speaker_annotation") or "")
         if not artifact.is_file() or not diagnostic.is_file(): raise FileNotFoundError(f"{alias}: dual speaker emotion artifacts are missing.")
         info=json.loads(diagnostic.read_text(encoding="utf-8")); mask=bool(info.get("mask_tag_count"))
-        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","override_annotation","calculate_blinks","transcript","text_input_path","sound_input_path","output_path")
+        attrs=("calculate_paralinguals","paralingual_bearing","paralingual_intensity","override_annotation","calculate_blinks","transcript","text_input_path","sound_input_path","output_path","silence_handling","silence_handling_decibel")
         if manifest.get("schema_version") == "dual_animation_manifest_v0":
             attrs += ("calculate_expression", "expression_source", "expression_strength")
         missing=[attr for attr in attrs if not cmds_module.objExists(f"{jsync}.{attr}")]
@@ -764,7 +765,7 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
         if not mel_module.eval('exists "realign_node"'): raise RuntimeError("Installed JALI realign_node procedure is unavailable.")
         stage=manifest_file.parent/"jali_runtime"/alias
         original={attr: cmds_module.getAttr(f"{jsync}.{attr}") for attr in ("text_input_path","sound_input_path","output_path")}
-        prepared[alias]={"rig":rig,"jsync":jsync,"leaf":jsync.rsplit("|",1)[-1],"prefix":prefix,"artifact":artifact,"wav":wav,"stage":stage,"original_paths":original,"info":info,"mask":mask,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None}
+        prepared[alias]={"rig":rig,"jsync":jsync,"leaf":jsync.rsplit("|",1)[-1],"prefix":prefix,"artifact":artifact,"wav":wav,"stage":stage,"original_paths":original,"info":info,"mask":mask,"mask_bearing":_enum_index(jsync,"paralingual_bearing","from Annotation",cmds_module) if mask else None,"mask_intensity":_enum_index(jsync,"paralingual_intensity","From Transcript Tags",cmds_module) if mask else None,"jali_settings":{"filter_silence_gaps":bool(cmds_module.getAttr(f"{jsync}.silence_handling")),"silence_threshold_db":float(cmds_module.getAttr(f"{jsync}.silence_handling_decibel"))}}
     selection=cmds_module.ls(selection=True, long=True) or []
     result: dict[str, Any] = {}
     changed: list[dict[str, Any]] = []
@@ -779,9 +780,20 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
             if mask: cmds_module.setAttr(f"{jsync}.paralingual_bearing",item["mask_bearing"]); cmds_module.setAttr(f"{jsync}.paralingual_intensity",item["mask_intensity"])
             cmds_module.setAttr(f"{jsync}.transcript",item["artifact"].read_text(encoding="utf-8"),type="string")
             for attr in item["original_paths"]: cmds_module.setAttr(f"{jsync}.{attr}",str(item["stage"])+os.sep,type="string")
-            changed.append(item); mel_module.eval(f'realign_node "{item["leaf"]}";')
+            changed.append(item)
+            # realign_node deletes the existing TextGrid/PraatOutput and runs
+            # jAnalyze_batch again.  Reapply the live jSync silence settings so
+            # a Seq3 base prepared at -60 dB is not silently realigned at the
+            # restored JALI UI default (-35 dB), which drops quiet speech.
+            with temporary_jali_alignment_globals(
+                mel_module,
+                filter_silence_gaps=item["jali_settings"]["filter_silence_gaps"],
+                silence_threshold_db=item["jali_settings"]["silence_threshold_db"],
+                animate_from_scratch=True,
+            ):
+                mel_module.eval(f'realign_node "{item["leaf"]}";')
             if mask: mel_module.eval(f'jali_set_myofAnimation "{jsync}" "{prefix}" 0;')
-            result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_blinks":cmds_module.getAttr(f"{jsync}.calculate_blinks"),"mask_binding":mask,"warnings":[]}
+            result[alias]={**item["info"],"maya_node":item["rig"],"jsync_node":jsync,"rig_prefix":prefix,"staging_dir":str(item["stage"]),"staging_txt":str(staged_txt),"staging_wav":str(staged_wav),"realign_completed":True,"paths_restored":False,"calculate_paralinguals":mask,"calculate_blinks":cmds_module.getAttr(f"{jsync}.calculate_blinks"),"mask_binding":mask,"jali_settings":dict(item["jali_settings"]),"warnings":[]}
     finally:
      for item in changed:
         for attr,value in item["original_paths"].items(): cmds_module.setAttr(f"{item['jsync']}.{attr}",value,type="string")

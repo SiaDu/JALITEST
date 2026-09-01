@@ -670,6 +670,11 @@ def test_selection_restored_after_failed_preparation(tmp_path):
             cmds_module=cmds, mel_module=mel,
         )
     assert cmds.selection == ["prop_CTRL"]
+    assert mel.globals == {
+        "silence_handling": 1,
+        "silence_handling_decibel": -35.0,
+        "jali_afscratch": 0,
+    }
 
 
 def test_failed_replacement_restores_old_node_and_alignment(tmp_path):

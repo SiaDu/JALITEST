@@ -67,6 +67,56 @@ from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pos
 from diagnose_eyelid_user_mappings import diagnose_eyelid_user_mappings  # noqa: E402
 
 
+class _AlignmentMel:
+    def __init__(self, log=None):
+        self.calls = []
+        self.log = log
+        self.globals = {
+            "silence_handling": 1,
+            "silence_handling_decibel": -35.0,
+            "jali_afscratch": 0,
+        }
+        self.getters = {}
+        self.settings_at_realign = []
+
+    def eval(self, command):
+        import re
+
+        self.calls.append(command)
+        if self.log is not None:
+            self.log.append(("mel", command))
+        exists = re.fullmatch(r'exists "([^"]+)"', command)
+        if exists:
+            return int(
+                exists.group(1) == "realign_node"
+                or exists.group(1) in self.getters
+            )
+        definition = re.search(
+            r"global proc (?:int|float) (\w+)\(\).*\$(\w+); return",
+            command,
+        )
+        if definition:
+            self.getters[definition.group(1)] = definition.group(2)
+            return None
+        getter = re.fullmatch(r"(jalitest_get_\w+)\(\)", command)
+        if getter:
+            return self.globals[self.getters[getter.group(1)]]
+        setter = re.fullmatch(
+            r"global (int|float) \$(\w+); \$\2 = (-?\d+(?:\.\d+)?);",
+            command,
+        )
+        if setter:
+            self.globals[setter.group(2)] = (
+                int(float(setter.group(3)))
+                if setter.group(1) == "int"
+                else float(setter.group(3))
+            )
+            return None
+        if command.startswith('realign_node "'):
+            self.settings_at_realign.append(dict(self.globals))
+        return None
+
+
 def _write_wav(path: Path, *, seconds: float, sample_rate: int = 100) -> None:
     with wave.open(str(path), "wb") as audio:
         audio.setnchannels(1)
@@ -251,7 +301,11 @@ def test_dual_emotion_preflight_failure_mutates_neither_actor(monkeypatch, tmp_p
     class Cmds:
         calls=[]
         def objExists(self, plug): return "jSync2.calculate_expression" not in plug
-        def getAttr(self, plug): return "SA" if "jSync1" in plug else "SB"
+        def getAttr(self, plug):
+            if plug.endswith(".sound_file"): return "SA" if "jSync1" in plug else "SB"
+            if plug.endswith(".silence_handling"): return True
+            if plug.endswith(".silence_handling_decibel"): return -60.0
+            return "original/"
         def attributeQuery(self, *_a, **_k): return ["from Annotation:From Transcript Tags"]
         def setAttr(self,*a,**k): self.calls.append((a,k))
     cmds=Cmds(); mel=SimpleNamespace(eval=lambda value: 1 if "exists" in value else pytest.fail("MEL must not run"))
@@ -273,17 +327,30 @@ def test_dual_emotion_realigns_from_separate_staging_and_restores_paths(monkeypa
     class Cmds:
         def __init__(self): self.values={}; self.calls=[]; self.selection=[]
         def objExists(self,_): return True
-        def getAttr(self,p): return self.values.get(p, "SA" if "jSync1.sound_file" in p else "SB" if "jSync2.sound_file" in p else "original/")
+        def getAttr(self,p):
+            if p.endswith(".silence_handling"): return True
+            if p.endswith(".silence_handling_decibel"): return -60.0
+            return self.values.get(p, "SA" if "jSync1.sound_file" in p else "SB" if "jSync2.sound_file" in p else "original/")
         def attributeQuery(self,*_a,**_k): return ["from Annotation:From Transcript Tags"]
         def setAttr(self,*a,**k): self.values[a[0]]=a[1]; self.calls.append(a)
         def ls(self,**k): return self.selection if k.get("selection") else []
         def select(self,items=None,**k): self.selection=[] if k.get("clear") else list(items or [])
-    cmds=Cmds(); mel_calls=[]; mel=SimpleNamespace(eval=lambda value: mel_calls.append(value) or (1 if "exists" in value else None))
+    cmds=Cmds(); mel=_AlignmentMel()
     monkeypatch.setattr(runner,"resolve_jsync_for_character",lambda rig,*_a,**_k: "|A:ROOT|jSync1" if rig == "|A:ROOT" else "|B:ROOT|jSync2")
     result=apply_dual_speaker_emotion_artifacts(manifest_path=manifest,character_mappings={"A":{"maya_node":"|A:ROOT"},"B":{"maya_node":"|B:ROOT"}},cmds_module=cmds,mel_module=mel)
     assert all(Path(result[a]["staging_txt"]).read_text().startswith("<mask=") for a in ("A","B"))
     assert Path(result["A"]["staging_wav"]).read_bytes() == b"A" and Path(result["B"]["staging_wav"]).read_bytes() == b"B"
-    assert all(result[a]["paths_restored"] for a in ("A","B")) and sum(call.startswith('realign_node ') for call in mel_calls) == 2
+    assert all(result[a]["paths_restored"] for a in ("A","B")) and sum(call.startswith('realign_node ') for call in mel.calls) == 2
+    assert mel.settings_at_realign == [
+        {"silence_handling": 1, "silence_handling_decibel": -60.0, "jali_afscratch": 1},
+        {"silence_handling": 1, "silence_handling_decibel": -60.0, "jali_afscratch": 1},
+    ]
+    assert mel.globals == {
+        "silence_handling": 1,
+        "silence_handling_decibel": -35.0,
+        "jali_afscratch": 0,
+    }
+    assert all(result[a]["jali_settings"] == {"filter_silence_gaps": True, "silence_threshold_db": -60.0} for a in ("A", "B"))
 
 
 def test_v2_generate_disables_jali_blink_before_each_realign(monkeypatch, tmp_path):
@@ -310,16 +377,15 @@ def test_v2_generate_disables_jali_blink_before_each_realign(monkeypatch, tmp_pa
         def getAttr(self, plug):
             if plug.endswith(".sound_file"): return "SA" if "ALICE" in plug else "SB"
             if plug.endswith(".calculate_blinks"): return self.values.get(plug, True)
+            if plug.endswith(".silence_handling"): return True
+            if plug.endswith(".silence_handling_decibel"): return -60.0
             return self.values.get(plug, "original/")
         def setAttr(self, plug, value, **_kwargs): self.values[plug] = value; log.append(("set", plug, value))
         def ls(self, **_kwargs): return []
         def select(self, *_args, **_kwargs): pass
     cmds = Cmds()
-    def mel_eval(value):
-        log.append(("mel", value))
-        return 1 if "exists" in value else None
     monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda rig, *_a, **_k: rig + "|" + ("ALICE_jSync" if "ALICE" in rig else "BOB_jSync"))
-    result = apply_dual_speaker_emotion_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=cmds, mel_module=SimpleNamespace(eval=mel_eval))
+    result = apply_dual_speaker_emotion_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=cmds, mel_module=_AlignmentMel(log=log))
     for actor in ("ALICE", "BOB"):
         plug = f"|{actor}:ROOT|{actor}_jSync.calculate_blinks"
         disable_index = log.index(("set", plug, False))
