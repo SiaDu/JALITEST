@@ -137,6 +137,74 @@ def projection_offset_from_score_plain_offset(score_text: str, plain_offset: int
     return plain_offset
 
 
+def resolve_tag_offset_to_anchor(projection: DialogueProjection, clean_offset: int) -> DisplayAnchor:
+    """Resolve a tag's offset in tag-free text to the nearest dialogue anchor.
+
+    The actor panel determines who owns the resulting event.  Physical tag
+    placement only chooses an anchor in the shared dialogue projection.
+    """
+    anchors = projection.anchors
+    if not anchors:
+        raise ValueError("Cannot place a semantic tag without dialogue anchors")
+
+    offset = int(clean_offset)
+    if offset <= anchors[0].start:
+        return anchors[0]
+    if offset >= anchors[-1].end:
+        return anchors[-1]
+
+    # Anchor ends are deliberately inclusive for editing: a tag immediately
+    # after a token still belongs to that token.
+    for anchor in anchors:
+        if anchor.start <= offset <= anchor.end:
+            return anchor
+
+    for previous, following in zip(anchors, anchors[1:]):
+        if previous.end < offset < following.start:
+            previous_distance = offset - previous.end
+            following_distance = following.start - offset
+            # A tie resolves forward so whitespace placement is deterministic.
+            return following if following_distance <= previous_distance else previous
+
+    # Conversation anchors are ordered and non-overlapping.  This defensive
+    # fallback keeps the helper deterministic for a malformed projection.
+    return min(anchors, key=lambda anchor: (min(abs(offset - anchor.start), abs(offset - anchor.end)), -anchor.start))
+
+
+def _canonical_offset_from_tag_free_text(
+    clean_offset: int,
+    edited_tokens: list[re.Match[str]],
+    canonical_tokens: list[DisplayAnchor],
+) -> int:
+    """Map an editable score offset into the canonical dialogue projection.
+
+    Whitespace is intentionally editable, so its raw offsets can differ from
+    the projection.  Token-relative positions remain exact; a whitespace gap
+    resolves against its adjacent token boundaries, with the same forward tie
+    break used by ``resolve_tag_offset_to_anchor``.
+    """
+    if not canonical_tokens:
+        return clean_offset
+    if not edited_tokens:
+        return canonical_tokens[0].start
+    for index, token in enumerate(edited_tokens):
+        if token.start() <= clean_offset <= token.end() and index < len(canonical_tokens):
+            anchor = canonical_tokens[index]
+            return anchor.start + min(clean_offset - token.start(), anchor.end - anchor.start)
+    if clean_offset <= edited_tokens[0].start():
+        return canonical_tokens[0].start
+    if clean_offset >= edited_tokens[-1].end():
+        return canonical_tokens[-1].end
+    for index, (previous, following) in enumerate(zip(edited_tokens, edited_tokens[1:])):
+        if previous.end() < clean_offset < following.start():
+            previous_distance = clean_offset - previous.end()
+            following_distance = following.start() - clean_offset
+            previous_anchor = canonical_tokens[min(index, len(canonical_tokens) - 1)]
+            following_anchor = canonical_tokens[min(index + 1, len(canonical_tokens) - 1)]
+            return following_anchor.start if following_distance <= previous_distance else previous_anchor.end
+    return clean_offset
+
+
 class DualSparseScoreModel:
     """Validate and apply independent actor score editors for v2 plans."""
 
@@ -233,7 +301,7 @@ class DualSparseScoreModel:
         if actor not in self.characters:
             return ScoreValidation((), (ScoreIssue(actor, "Unknown actor editor"),))
         initial_changes, errors = self.validate_initial_actor(actor, initial_text if initial_text is not None else self.initial_score_texts[actor])
-        placements: list[tuple[re.Match[str], int, dict[str, str]]] = []
+        placements: list[tuple[int, dict[str, str]]] = []
         stripped: list[str] = []
         cursor = 0
         clean_length = 0
@@ -252,7 +320,7 @@ class DualSparseScoreModel:
                     errors.append(ScoreIssue(actor, f"Duplicate {channel} change in one tag cluster"))
                 changes[channel] = value
             if changes:
-                placements.append((match, clean_length, changes))
+                placements.append((clean_length, changes))
             cursor = match.end()
         stripped.append(text[cursor:])
         clean = "".join(stripped)
@@ -261,23 +329,17 @@ class DualSparseScoreModel:
         if [match.group(0) for match in edited_tokens] != [anchor.text for anchor in canonical_tokens]:
             errors.append(ScoreIssue(actor, "Dialogue tokens and punctuation are immutable and must preserve the canonical anchor sequence"))
         grouped: dict[str, dict[str, str]] = {}
-        for cluster, offset, changes in placements:
-            next_indices = [index for index, token in enumerate(edited_tokens) if token.start() == offset]
-            embedded = any(token.start() < offset < token.end() for token in edited_tokens)
-            direct_next = cluster.end() < len(text) and not text[cluster.end()].isspace()
-            placement_key: str | None = None
-            if embedded:
-                errors.append(ScoreIssue(actor, "Tag cluster cannot split a dialogue token"))
-            elif direct_next and next_indices and next_indices[0] < len(canonical_tokens):
-                placement_key = canonical_tokens[next_indices[0]].anchor_id
-            else:
-                errors.append(ScoreIssue(actor, "Tag cluster must attach directly before a dialogue token"))
-            if placement_key is None or not changes:
+        for offset, changes in placements:
+            try:
+                canonical_offset = _canonical_offset_from_tag_free_text(offset, edited_tokens, canonical_tokens)
+                anchor = resolve_tag_offset_to_anchor(self.projection, canonical_offset)
+            except ValueError as exc:
+                errors.append(ScoreIssue(actor, str(exc)))
                 continue
-            destination = grouped.setdefault(placement_key, {})
+            destination = grouped.setdefault(anchor.anchor_id, {})
             for channel, value in changes.items():
                 if channel in destination:
-                    errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {placement_key}"))
+                    errors.append(ScoreIssue(actor, f"Duplicate {channel} change at {anchor.anchor_id}"))
                 destination[channel] = value
         events = tuple({"actor": actor, "anchor_id": anchor_id, "changes": changes} for anchor_id, changes in grouped.items())
         if initial_changes:

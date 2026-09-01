@@ -1,7 +1,16 @@
 from __future__ import annotations
 
+import re
+
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
-from tools.maya.dual_sparse_score_model import DualSparseScoreModel, build_dialogue_projection, projection_offset_from_score_plain_offset
+from tools.maya.dual_sparse_score_model import (
+    DialogueProjection,
+    DisplayAnchor,
+    DualSparseScoreModel,
+    build_dialogue_projection,
+    projection_offset_from_score_plain_offset,
+    resolve_tag_offset_to_anchor,
+)
 
 
 SCRIPT = "ALICE: We're very dangerous.\nBOB: No."
@@ -110,10 +119,11 @@ def test_dedicated_initial_score_rejects_blink_and_glance():
     assert not model.validate_actor("ALICE", score, initial.replace("<GAZE-BOB>", "<GLANCE-DOWN>")).valid
 
 
-def test_score_rejects_dialogue_edits_and_wrong_side_or_whitespace_tags():
+def test_score_rejects_dialogue_edits_but_accepts_free_tag_placement():
     model = DualSparseScoreModel(PLAN, ANCHORS)
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"].replace("dangerous", "safe")).valid
-    assert not model.validate_actor("BOB", model.score_texts["BOB"].replace("<Nervous-60><GAZE-DOWN>dangerous.", "dangerous.<Nervous-60><GAZE-DOWN>")).valid
+    moved = model.score_texts["BOB"].replace("<Nervous-60><GAZE-DOWN>dangerous.", "dangerous.<Nervous-60><GAZE-DOWN>")
+    assert model.validate_actor("BOB", moved).valid
     assert model.validate_actor("ALICE", model.score_texts["ALICE"].replace("We're", "\n  We're")).valid
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("<GAZE-BOB>", "<GLANCE-NONE>")).valid
 
@@ -306,6 +316,118 @@ def test_real_listener_initial_state_and_token_adjacent_changes():
     assert not model.validate_actor("BOB", score.replace("dangerous.", "safe.")).valid
     assert not model.validate_actor("BOB", score.replace("Have you", "you Have")).valid
     assert not model.validate_actor("BOB", score.replace("Evening,", "ALICE: Evening,")).valid
-    ambiguous = score.replace("<GAZE-RIGHT><HEAD-UP-MEDIUM>Bert!", " <GAZE-RIGHT><HEAD-UP-MEDIUM> Bert!")
-    issues = [error.message for error in model.validate_actor("BOB", ambiguous).errors if "attach directly before a dialogue token" in error.message]
-    assert len(issues) == 1
+    free_placement = score.replace("<GAZE-RIGHT><HEAD-UP-MEDIUM>Bert!", " <GAZE-RIGHT><HEAD-UP-MEDIUM> Bert!")
+    assert model.validate_actor("BOB", free_placement).valid
+
+
+FREE_SCRIPT = "MARTY: Whoa.\nDION: Yep.\nMARTY: How'd you do the orange?"
+FREE_ANCHORS = build_conversation_anchor_model(FREE_SCRIPT, character_a="MARTY", character_b="DION")
+
+
+def _free_placement_model() -> DualSparseScoreModel:
+    return DualSparseScoreModel({
+        "schema_version": "dual_performance_plan_v2",
+        "characters": ["MARTY", "DION"],
+        "initial_states": {
+            "MARTY": {"affect": "Neutral-60", "gaze": "GAZE-DION", "head": "HEAD-NONE"},
+            "DION": {"affect": "Neutral-60", "gaze": "GAZE-MARTY", "head": "HEAD-NONE"},
+        },
+        "initial_reasons": {"MARTY": "Listening.", "DION": "Listening."},
+        "tracks": {"MARTY": [], "DION": []},
+    }, FREE_ANCHORS)
+
+
+def _event_for(validation, anchor_id: str) -> dict:
+    return next(event for event in validation.events if not event.get("initial") and event["anchor_id"] == anchor_id)
+
+
+def test_resolve_tag_offset_to_anchor_uses_inclusive_end_and_forward_tie_break():
+    projection = DialogueProjection(
+        "Whoa.  Yep.",
+        (
+            DisplayAnchor("w1", "Whoa.", "MARTY", 0, 5),
+            DisplayAnchor("w2", "Yep.", "DION", 7, 11),
+        ),
+        (),
+    )
+    assert resolve_tag_offset_to_anchor(projection, -2).anchor_id == "w1"
+    assert resolve_tag_offset_to_anchor(projection, 0).anchor_id == "w1"
+    assert resolve_tag_offset_to_anchor(projection, 5).anchor_id == "w1"
+    assert resolve_tag_offset_to_anchor(projection, 6).anchor_id == "w2"
+    assert resolve_tag_offset_to_anchor(projection, 99).anchor_id == "w2"
+
+
+def test_free_tag_placement_snaps_marty_panel_tags_without_editing_dialogue():
+    model = _free_placement_model()
+    score = model.score_texts["MARTY"]
+    assert model.projection.display_text.replace("\n", " ") == "Whoa. Yep. How'd you do the orange?"
+    anchors = {anchor.text: anchor.anchor_id for anchor in model.projection.anchors}
+    variants = {
+        "prefix": (score.replace("Whoa.", "<Happy-80>Whoa.", 1), anchors["Whoa."]),
+        "split": (score.replace("Whoa.", "Wh<Happy-80>oa.", 1), anchors["Whoa."]),
+        "postfix": (score.replace("Whoa.", "Whoa.<Happy-80>", 1), anchors["Whoa."]),
+        "between": (score.replace("Whoa.\nYep.", "Whoa. <Happy-80> Yep.", 1), anchors["Yep."]),
+        "newline": (score.replace("Whoa.\nYep.", "Whoa.\n<Happy-80>\nYep.", 1), anchors["Yep."]),
+        "end": (score + "<Happy-80>", anchors["orange?"]),
+        "start": ("<Happy-80>" + score, anchors["Whoa."]),
+    }
+    for name, (edited, expected_anchor) in variants.items():
+        validation = model.validate_actor("MARTY", edited)
+        assert validation.valid, (name, [issue.message for issue in validation.errors])
+        assert _event_for(validation, expected_anchor)["changes"] == {"affect": "Happy-80"}
+        assert "".join(re.sub(r"<[^<>]+>", "", edited).split()) == "".join(model.projection.display_text.split())
+
+
+def test_split_token_tag_round_trips_to_canonical_before_anchor_syntax():
+    model = _free_placement_model()
+    texts = dict(model.score_texts)
+    texts["MARTY"] = texts["MARTY"].replace("Whoa.", "Wh<Happy-80>oa.", 1)
+    applied = model.apply(texts)
+    change = applied["tracks"]["MARTY"][0]
+    assert change["actor"] == "MARTY"
+    assert change["anchor_id"] == model.projection.anchors[0].anchor_id
+    assert change["changes"] == {"affect": "Happy-80"}
+    refreshed = DualSparseScoreModel(applied, FREE_ANCHORS)
+    assert "<Happy-80>Whoa." in refreshed.score_texts["MARTY"]
+    assert "Wh<Happy-80>oa." not in refreshed.score_texts["MARTY"]
+
+
+def test_listener_panel_can_tag_dions_word_from_prefix_split_or_postfix():
+    model = _free_placement_model()
+    dion_yep = next(anchor for anchor in model.projection.anchors if anchor.speaker == "DION" and anchor.text == "Yep.")
+    variants = (
+        model.score_texts["MARTY"].replace("Yep.", "<Surprised-70>Yep.", 1),
+        model.score_texts["MARTY"].replace("Yep.", "Ye<Surprised-70>p.", 1),
+        model.score_texts["MARTY"].replace("Yep.", "Yep.<Surprised-70>", 1),
+    )
+    for edited in variants:
+        validation = model.validate_actor("MARTY", edited)
+        assert validation.valid, [issue.message for issue in validation.errors]
+        event = _event_for(validation, dion_yep.anchor_id)
+        assert event == {"actor": "MARTY", "anchor_id": dion_yep.anchor_id, "changes": {"affect": "Surprised-70"}}
+        assert dion_yep.speaker == "DION" and event["actor"] != dion_yep.speaker
+
+
+def test_different_channels_snapping_to_one_anchor_merge_but_same_channel_collides():
+    model = _free_placement_model()
+    merged = model.score_texts["MARTY"].replace("Whoa.", "<Happy-80>Whoa.<GAZE-DION>", 1)
+    validation = model.validate_actor("MARTY", merged)
+    assert validation.valid
+    assert _event_for(validation, model.projection.anchors[0].anchor_id)["changes"] == {"affect": "Happy-80", "gaze": "GAZE-DION"}
+
+    collision = model.score_texts["MARTY"].replace("Whoa.", "<Happy-80>Whoa.<Neutral-60>", 1)
+    assert not model.validate_actor("MARTY", collision).valid
+
+
+def test_generated_plan_preserves_actor_anchor_and_changes_after_render_validate_apply():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    applied = model.apply(dict(model.score_texts))
+
+    def semantic_rows(plan):
+        return [
+            (actor, event["anchor_id"], event["changes"])
+            for actor in plan["characters"]
+            for event in plan["tracks"][actor]
+        ]
+
+    assert semantic_rows(applied) == semantic_rows(PLAN)
