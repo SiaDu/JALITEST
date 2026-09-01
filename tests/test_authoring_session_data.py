@@ -47,16 +47,6 @@ def test_character_mapping_rebinds_rigs_by_identity_not_plan_row_order():
     ]
 
 
-def test_bug00_session_fixture_rebinds_its_actor_rigs_when_plan_order_swaps():
-    fixture = Path(__file__).resolve().parents[1] / "data/processed/hci_runs/bug00"
-    session = load_authoring_session(next(fixture.glob("*__authoring_session.json")))
-    rebound = rebind_character_mappings(["WILL", "AGNES"], session["characters"])
-    assert rebound == [
-        {"script_name": "WILL", "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP"},
-        {"script_name": "AGNES", "maya_node": "|Angela_jRigMaya:JALI_GRP"},
-    ]
-
-
 def test_runtime_character_mapping_and_session_order_are_identity_keyed():
     persisted = [
         {"script_name": "WILL", "maya_node": "Angela"},

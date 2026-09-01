@@ -113,8 +113,7 @@ def render_actor_score(plan: dict[str, Any], projection: DialogueProjection, act
     anchors = projection.anchor_map
     for event in plan.get("tracks", {}).get(actor, []):
         anchor = anchors[event["anchor_id"]]
-        before = speaker_key(anchor.speaker) == speaker_key(actor)
-        offset = anchor.start if before else anchor.end
+        offset = anchor.start
         tags = [_format_tag(channel, event["changes"][channel]) for channel in CHANNEL_ORDER if channel in event.get("changes", {})]
         insertions.setdefault(offset, []).extend(tags)
     text = projection.display_text
@@ -263,28 +262,16 @@ class DualSparseScoreModel:
             errors.append(ScoreIssue(actor, "Dialogue tokens and punctuation are immutable and must preserve the canonical anchor sequence"))
         grouped: dict[str, dict[str, str]] = {}
         for cluster, offset, changes in placements:
-            prior_indices = [index for index, token in enumerate(edited_tokens) if token.end() == offset]
             next_indices = [index for index, token in enumerate(edited_tokens) if token.start() == offset]
             embedded = any(token.start() < offset < token.end() for token in edited_tokens)
-            before_first_token = bool(edited_tokens) and offset <= edited_tokens[0].start()
-            direct_previous = cluster.start() > 0 and not text[cluster.start() - 1].isspace()
             direct_next = cluster.end() < len(text) and not text[cluster.end()].isspace()
             placement_key: str | None = None
-            if before_first_token:
-                if direct_next and next_indices == [0] and speaker_key(canonical_tokens[0].speaker) == speaker_key(actor):
-                    placement_key = canonical_tokens[0].anchor_id
-                else:
-                    errors.append(ScoreIssue(actor, "Leading tag cluster must attach directly before this actor's first dialogue token"))
-            elif embedded:
+            if embedded:
                 errors.append(ScoreIssue(actor, "Tag cluster cannot split a dialogue token"))
-            elif direct_next and next_indices and next_indices[0] < len(canonical_tokens) and speaker_key(canonical_tokens[next_indices[0]].speaker) == speaker_key(actor):
+            elif direct_next and next_indices and next_indices[0] < len(canonical_tokens):
                 placement_key = canonical_tokens[next_indices[0]].anchor_id
-            elif direct_previous and prior_indices and prior_indices[-1] < len(canonical_tokens) and speaker_key(canonical_tokens[prior_indices[-1]].speaker) != speaker_key(actor):
-                placement_key = canonical_tokens[prior_indices[-1]].anchor_id
-            elif not direct_previous and not direct_next:
-                errors.append(ScoreIssue(actor, "Tag cluster placement is ambiguous; attach it directly before an own spoken token or after a heard token"))
             else:
-                errors.append(ScoreIssue(actor, "Tag cluster is not role-appropriately before an own spoken token or after a heard token"))
+                errors.append(ScoreIssue(actor, "Tag cluster must attach directly before a dialogue token"))
             if placement_key is None or not changes:
                 continue
             destination = grouped.setdefault(placement_key, {})

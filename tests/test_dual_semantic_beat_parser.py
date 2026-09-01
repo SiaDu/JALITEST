@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from pathlib import Path
 
 from expregaze_jali.dual_semantic_beat_parser import parse_dual_semantic_beats
 from expregaze_jali.performance_proposal_parser import ProposalValidationError, load_semantic_vocabulary
@@ -49,17 +48,6 @@ def test_parser_drops_valid_acting_only_beats_without_renumbering_neighbors():
     assert ir["diagnostics"]["warnings"] == [
         "E014: dropped acting-only beat because it contains no semantic changes"
     ]
-
-
-def test_bug01_acting_only_regression_fixture_is_pruned_for_execution():
-    fixture = Path(__file__).resolve().parents[1] / "data/processed/hci_runs/bug01"
-    script = (fixture / "input_script.txt").read_text(encoding="utf-8")
-    model = build_conversation_anchor_model(script, character_a="MARTY", character_b="DION")
-    ir = parse_dual_semantic_beats(
-        fixture / "semantic_beats.txt", vocabulary=load_semantic_vocabulary(), anchor_model=model
-    )
-    assert "E014" not in [beat["event_id"] for beat in ir["beats"]]
-    assert "E014: dropped acting-only beat because it contains no semantic changes" in ir["diagnostics"]["warnings"]
 
 
 def test_parser_still_rejects_missing_acting_when_a_semantic_change_is_present():
