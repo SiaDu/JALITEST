@@ -35,6 +35,7 @@ class FakeCmds:
     def add_jsync(
         self, rig: str, node_name: str, sound: str, txt: Path,
         *, filter_silence: bool = True, threshold: float = -35.0,
+        speech_style: int = 0,
     ) -> str:
         node = f"{rig}|speech|{node_name}"
         self.nodes.add(node)
@@ -45,6 +46,7 @@ class FakeCmds:
         self.values[f"{node}.output_path"] = str(txt.parent)
         self.values[f"{node}.silence_handling"] = int(filter_silence)
         self.values[f"{node}.silence_handling_decibel"] = float(threshold)
+        self.values[f"{node}.speech_style"] = int(speech_style)
         (txt.parent / f"{sound}_PraatOutput.txt").write_text(
             "alignment", encoding="utf-8"
         )
@@ -194,6 +196,7 @@ def metadata(actor: str, rig: str, jsync: str, source: dict[str, str]) -> dict[s
         "script_name": actor, "maya_node": rig, "jsync": jsync,
         "sound_file": wav.stem, "wav_path": str(wav), "txt_path": str(txt),
         "txt_sha256": transcript_sha256(txt), "preparation_status": "prepared",
+        "speech_style": 0,
         "jali_settings": {"filter_silence_gaps": True, "silence_threshold_db": -35.0},
         "animated_from_scratch": False,
         "wav_size": wav.stat().st_size, "wav_mtime_ns": wav.stat().st_mtime_ns,
@@ -221,6 +224,10 @@ def test_sequence_defaults_use_minus_60_only_for_exact_seq3_folder(tmp_path):
         tmp_path / "Seq30", config_path
     )["silence_threshold_db"] == -35.0
     assert load_jali_speech_base_config(config_path)["filter_silence_gaps"] is True
+
+
+def test_production_config_matches_native_normal_conversation_speech_style():
+    assert load_jali_speech_base_config()["speech_style"] == 4
 
 
 def test_existing_exact_base_with_matching_fingerprint_is_reused(tmp_path):
@@ -389,6 +396,42 @@ def test_setting_change_and_force_from_scratch_both_bypass_reuse(tmp_path):
         )
         assert result["preparation_status"] == "prepared"
         assert len(mel.settings_at_call) == 1
+
+
+def test_native_speech_style_mismatch_forces_reprepare(tmp_path):
+    source = sources(tmp_path)["AGNES"]
+    rig = "|AGNES|JALI_GRP"
+    cmds = FakeCmds()
+    old = cmds.add_jsync(
+        rig, "jSync1", "SeqT_AGNES", Path(source["txt"]), speech_style=0
+    )
+    saved = metadata("AGNES", rig, old, source)
+    mel = FakeMel(
+        on_call=lambda: cmds.add_jsync(
+            rig,
+            "jSync17",
+            "SeqT_AGNES",
+            Path(source["txt"]),
+            speech_style=4,
+        )
+    )
+    result = ensure_jali_speech_base(
+        actor="AGNES",
+        script_name="AGNES",
+        maya_node=rig,
+        wav_path=source["wav"],
+        txt_path=source["txt"],
+        saved_metadata=saved,
+        language_code=0,
+        speech_style=4,
+        jali_settings={"filter_silence_gaps": True, "silence_threshold_db": -35},
+        known_mapped_rigs=(rig, "|WILL|JALI_GRP"),
+        cmds_module=cmds,
+        mel_module=mel,
+    )
+    assert result["preparation_status"] == "prepared"
+    assert result["speech_style"] == 4
+    assert any(call.endswith(', 0, 4);') for call in mel.calls if call.startswith("call_jSync"))
 
 
 def test_legacy_metadata_without_jali_settings_is_not_reused(tmp_path):

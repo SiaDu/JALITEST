@@ -293,6 +293,7 @@ def inspect_jali_speech_base(
     *, actor: str, script_name: str, maya_node: str, wav_path: str | Path,
     txt_path: str | Path, saved_metadata: dict[str, Any] | None = None,
     jali_settings: dict[str, Any] | None = None,
+    speech_style: int | None = None,
     cmds_module: Any | None = None,
 ) -> dict[str, Any]:
     """Inspect an exact rig+sound base and determine conservative reuse."""
@@ -364,6 +365,26 @@ def inspect_jali_speech_base(
         }
     live_filter = bool(cmds_module.getAttr(f"{jsync}.silence_handling"))
     live_threshold = float(cmds_module.getAttr(f"{jsync}.silence_handling_decibel"))
+    live_speech_style = (
+        int(cmds_module.getAttr(f"{jsync}.speech_style"))
+        if cmds_module.objExists(f"{jsync}.speech_style")
+        else None
+    )
+    if speech_style is not None and live_speech_style != int(speech_style):
+        return {
+            "reusable": False,
+            "reason": (
+                "live jSync speech style does not match: "
+                f"requested={int(speech_style)}, actual={live_speech_style}"
+            ),
+            "jsync": jsync,
+            "sound_file": sound,
+            "wav_path": str(wav),
+            "txt_path": str(txt),
+            "txt_sha256": digest,
+            "speech_style": live_speech_style,
+            **_wav_identity(wav),
+        }
     if live_filter != settings["filter_silence_gaps"] or (
         live_filter
         and not math.isclose(
@@ -396,7 +417,9 @@ def inspect_jali_speech_base(
             "sound_file": sound, "wav_path": str(wav), "txt_path": str(txt), "txt_sha256": digest,
             **_wav_identity(wav),
         }
-        mismatches = [key for key, value in expected.items() if str(saved.get(key) or "") != str(value)]
+        if speech_style is not None:
+            expected["speech_style"] = int(speech_style)
+        mismatches = [key for key, value in expected.items() if saved.get(key) != value]
         if not _jali_speech_settings_match(saved.get("jali_settings"), settings):
             mismatches.append("jali_settings")
         if mismatches:
@@ -406,6 +429,7 @@ def inspect_jali_speech_base(
         "reusable": True, "reason": "exact live source identity and fingerprint match",
         "script_name": str(script_name), "maya_node": rig, "jsync": jsync,
         "sound_file": sound, "wav_path": str(wav), "txt_path": str(txt), "txt_sha256": digest,
+        "speech_style": live_speech_style,
         "jali_settings": settings,
         "actual_jali_settings": {
             "filter_silence_gaps": live_filter,
@@ -636,6 +660,7 @@ def prepare_jali_speech_base(
         inspected = inspect_jali_speech_base(
             actor=actor, script_name=script_name, maya_node=rig, wav_path=wav,
             txt_path=txt, saved_metadata=None, jali_settings=settings,
+            speech_style=speech_style,
             cmds_module=cmds_module,
         )
         if not inspected["reusable"]:
@@ -683,7 +708,7 @@ def prepare_jali_speech_base(
     finally:
         _restore_selection(cmds_module, original)
     return {
-        **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns")},
+        **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns", "speech_style")},
         "jali_settings": settings,
         "actual_jali_settings": actual,
         "alignment_status": "prepared",
@@ -708,11 +733,12 @@ def ensure_jali_speech_base(
         inspected = inspect_jali_speech_base(
             actor=actor, script_name=script_name, maya_node=maya_node, wav_path=wav_path,
             txt_path=txt_path, saved_metadata=saved_metadata,
-            jali_settings=settings, cmds_module=cmds_module,
+            jali_settings=settings, speech_style=speech_style,
+            cmds_module=cmds_module,
         )
     if inspected["reusable"]:
         return {
-            **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns")},
+            **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns", "speech_style")},
             "jali_settings": settings,
             "actual_jali_settings": inspected["actual_jali_settings"],
             "alignment_status": "reused",

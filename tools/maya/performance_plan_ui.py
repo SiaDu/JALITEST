@@ -1213,6 +1213,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                         f"requested_threshold_db={effective_jali_settings['silence_threshold_db']:g}; "
                         f"actual_filter={actual['filter_silence_gaps']}; "
                         f"actual_threshold_db={actual['silence_threshold_db']:g}; "
+                        f"speech_style={row['speech_style']}; "
                         f"from_scratch={'yes' if force_from_scratch else 'no'}"
                     )
                 else:

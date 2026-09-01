@@ -6,7 +6,9 @@ maya_common:
 # Advanced / Debug UI can override the silence settings before animation.
 maya_jali_speech_base:
   language_code: 0
-  speech_style: 0
+  # JALI 2.18: Normal Conversation (mid Lip + mid Jaw), matching the
+  # native Animate from File dialog used for the study rigs.
+  speech_style: 4
   filter_silence_gaps: true
   silence_threshold_db: -35.0
   sequence_overrides:
