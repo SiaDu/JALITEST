@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import pytest
+
 from expregaze_jali.compile_dual_semantic_beats import compile_dual_semantic_beats, render_compiled_dual_performance_proposal
 from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
+from expregaze_jali.performance_proposal_parser import ProposalValidationError
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
 
@@ -53,3 +56,15 @@ def test_eye_action_preserves_focus_and_derives_non_directional_candidates():
     assert [event["changes"] for event in will] == [{"gaze": "GLANCE-DOWN"}, {"gaze": "GLANCE-HAWK"}]
     assert proposal["gaze_target_candidates"] == ["HAWK"]
     assert "E3: dropped after no semantic changes remained" in proposal["diagnostics"]["warnings"]
+
+
+def test_compiler_rejects_reserved_target_without_emitting_gaze_or_calibration_candidate():
+    ir = {
+        "initial": {
+            "AGNES": {"affect": "Watchful-80", "focus": "TARGET", "acting": "She watches the scene."},
+            "WILL": {"affect": "Neutral-60", "focus": "AGNES", "acting": "He watches Agnes."},
+        },
+        "beats": [], "diagnostics": {"errors": [], "warnings": []},
+    }
+    with pytest.raises(ProposalValidationError, match="reserved placeholder"):
+        compile_dual_semantic_beats(ir, anchor_model=MODEL)

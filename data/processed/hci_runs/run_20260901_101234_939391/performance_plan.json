@@ -1,0 +1,356 @@
+{
+  "schema_version": "dual_performance_plan_v2",
+  "sequence_id": "run_20260901_101234_939391",
+  "characters": [
+    "MARTY",
+    "DION"
+  ],
+  "gaze_target_candidates": [
+    "RACHEL",
+    "PACKAGING"
+  ],
+  "initial_states": {
+    "MARTY": {
+      "head": "HEAD-NONE",
+      "affect": "Neutral-35",
+      "gaze": "GAZE-DION"
+    },
+    "DION": {
+      "head": "HEAD-NONE",
+      "affect": "Friendly-55",
+      "gaze": "GAZE-MARTY"
+    }
+  },
+  "initial_reasons": {
+    "MARTY": "Marty is attentive and curious, watching Dion for an explanation.",
+    "DION": "Dion is relaxed and pleased to reveal the work he has arranged."
+  },
+  "tracks": {
+    "MARTY": [
+      {
+        "event_id": "E001",
+        "actor": "MARTY",
+        "anchor_id": "w0001",
+        "changes": {
+          "affect": "Surprised-70"
+        },
+        "reason": "The unexpected result catches Marty off guard."
+      },
+      {
+        "event_id": "E003",
+        "actor": "MARTY",
+        "anchor_id": "w0031",
+        "changes": {
+          "affect": "Happy-65"
+        },
+        "reason": "Hearing that Dion and his father believe in him visibly warms and encourages Marty."
+      },
+      {
+        "event_id": "E005",
+        "actor": "MARTY",
+        "anchor_id": "w0042",
+        "changes": {
+          "gaze": "GAZE-RACHEL"
+        },
+        "reason": "Marty turns his attention toward Rachel as he invites her to inspect the result."
+      },
+      {
+        "event_id": "E007",
+        "actor": "MARTY",
+        "anchor_id": "w0051",
+        "changes": {
+          "gaze": "GAZE-PACKAGING"
+        },
+        "reason": "Marty settles his attention on the package and begins reading it with growing interest."
+      },
+      {
+        "event_id": "E008",
+        "actor": "MARTY",
+        "anchor_id": "w0061",
+        "changes": {
+          "affect": "Surprised-75"
+        },
+        "reason": "The professional presentation makes Marty's admiration visibly intensify."
+      },
+      {
+        "event_id": "E009",
+        "actor": "MARTY",
+        "anchor_id": "w0066",
+        "changes": {
+          "gaze": "GAZE-DION"
+        },
+        "reason": "The unusual orange spheres prompt Marty to look back to Dion for confirmation."
+      },
+      {
+        "event_id": "E011",
+        "actor": "MARTY",
+        "anchor_id": "w0078",
+        "changes": {
+          "affect": "Surprised-90"
+        },
+        "reason": "The realization overwhelms Marty, leaving him openly stunned."
+      },
+      {
+        "event_id": "E012",
+        "actor": "MARTY",
+        "anchor_id": "w0091",
+        "changes": {
+          "affect": "Happy-75"
+        },
+        "reason": "Marty recognizes the creativity behind the drawing and responds with genuine admiration."
+      },
+      {
+        "event_id": "E014",
+        "actor": "MARTY",
+        "anchor_id": "w0096",
+        "changes": {
+          "affect": "Happy-85"
+        },
+        "reason": "Marty becomes more emphatic as he tells Dion that his abilities exceed what Dion realizes."
+      },
+      {
+        "event_id": "E015",
+        "actor": "MARTY",
+        "anchor_id": "w0105",
+        "changes": {
+          "gaze": "GAZE-PACKAGING"
+        },
+        "reason": "Marty redirects his attention to the package for one more appreciative look."
+      }
+    ],
+    "DION": [
+      {
+        "event_id": "E002",
+        "actor": "DION",
+        "anchor_id": "w0024",
+        "changes": {
+          "affect": "Sassy-65"
+        },
+        "reason": "Dion answers with playful confidence, enjoying the dramatic reveal."
+      },
+      {
+        "event_id": "E004",
+        "actor": "DION",
+        "anchor_id": "w0035",
+        "changes": {
+          "affect": "Friendly-75"
+        },
+        "reason": "Dion shifts from playful boasting to sincere reassurance about the investment."
+      },
+      {
+        "event_id": "E006",
+        "actor": "DION",
+        "anchor_id": "w0049",
+        "changes": {
+          "gaze": "GAZE-PACKAGING"
+        },
+        "reason": "Dion directs his attention to the packaging he wants Marty to see."
+      },
+      {
+        "event_id": "E010",
+        "actor": "DION",
+        "anchor_id": "w0071",
+        "changes": {
+          "affect": "Happy-70"
+        },
+        "reason": "Dion takes visible pleasure in Marty's impressed reaction."
+      },
+      {
+        "event_id": "E013",
+        "actor": "DION",
+        "anchor_id": "w0093",
+        "changes": {
+          "affect": "Polite-65"
+        },
+        "reason": "Dion receives the praise modestly and appreciatively."
+      },
+      {
+        "event_id": "E016",
+        "actor": "DION",
+        "anchor_id": "w0108",
+        "changes": {
+          "affect": "Friendly-75"
+        },
+        "reason": "Dion answers with warm, sincere gratitude."
+      }
+    ]
+  },
+  "diagnostics": {
+    "errors": [],
+    "warnings": []
+  },
+  "provenance": {
+    "format": "dual_sparse_anchor_semantic_v2",
+    "source_proposal": "C:\\Users\\xyang\\Desktop\\Project\\JALITEST\\data\\processed\\hci_runs\\run_20260901_101234_939391\\performance_proposal.txt",
+    "event_ids": [
+      "E001",
+      "E003",
+      "E005",
+      "E007",
+      "E008",
+      "E009",
+      "E011",
+      "E012",
+      "E014",
+      "E015",
+      "E002",
+      "E004",
+      "E006",
+      "E010",
+      "E013",
+      "E016"
+    ],
+    "original_authored_content": {
+      "characters": [
+        "MARTY",
+        "DION"
+      ],
+      "initial_states": {
+        "MARTY": {
+          "head": "HEAD-NONE",
+          "affect": "Neutral-35",
+          "gaze": "GAZE-DION"
+        },
+        "DION": {
+          "head": "HEAD-NONE",
+          "affect": "Friendly-55",
+          "gaze": "GAZE-MARTY"
+        }
+      },
+      "initial_reasons": {
+        "MARTY": "Marty is attentive and curious, watching Dion for an explanation.",
+        "DION": "Dion is relaxed and pleased to reveal the work he has arranged."
+      },
+      "tracks": [
+        {
+          "actor": "DION",
+          "anchor_id": "w0024",
+          "changes": {
+            "affect": "Sassy-65"
+          },
+          "reason": "Dion answers with playful confidence, enjoying the dramatic reveal."
+        },
+        {
+          "actor": "DION",
+          "anchor_id": "w0035",
+          "changes": {
+            "affect": "Friendly-75"
+          },
+          "reason": "Dion shifts from playful boasting to sincere reassurance about the investment."
+        },
+        {
+          "actor": "DION",
+          "anchor_id": "w0049",
+          "changes": {
+            "gaze": "GAZE-PACKAGING"
+          },
+          "reason": "Dion directs his attention to the packaging he wants Marty to see."
+        },
+        {
+          "actor": "DION",
+          "anchor_id": "w0071",
+          "changes": {
+            "affect": "Happy-70"
+          },
+          "reason": "Dion takes visible pleasure in Marty's impressed reaction."
+        },
+        {
+          "actor": "DION",
+          "anchor_id": "w0093",
+          "changes": {
+            "affect": "Polite-65"
+          },
+          "reason": "Dion receives the praise modestly and appreciatively."
+        },
+        {
+          "actor": "DION",
+          "anchor_id": "w0108",
+          "changes": {
+            "affect": "Friendly-75"
+          },
+          "reason": "Dion answers with warm, sincere gratitude."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0001",
+          "changes": {
+            "affect": "Surprised-70"
+          },
+          "reason": "The unexpected result catches Marty off guard."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0031",
+          "changes": {
+            "affect": "Happy-65"
+          },
+          "reason": "Hearing that Dion and his father believe in him visibly warms and encourages Marty."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0042",
+          "changes": {
+            "gaze": "GAZE-RACHEL"
+          },
+          "reason": "Marty turns his attention toward Rachel as he invites her to inspect the result."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0051",
+          "changes": {
+            "gaze": "GAZE-PACKAGING"
+          },
+          "reason": "Marty settles his attention on the package and begins reading it with growing interest."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0061",
+          "changes": {
+            "affect": "Surprised-75"
+          },
+          "reason": "The professional presentation makes Marty's admiration visibly intensify."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0066",
+          "changes": {
+            "gaze": "GAZE-DION"
+          },
+          "reason": "The unusual orange spheres prompt Marty to look back to Dion for confirmation."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0078",
+          "changes": {
+            "affect": "Surprised-90"
+          },
+          "reason": "The realization overwhelms Marty, leaving him openly stunned."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0091",
+          "changes": {
+            "affect": "Happy-75"
+          },
+          "reason": "Marty recognizes the creativity behind the drawing and responds with genuine admiration."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0096",
+          "changes": {
+            "affect": "Happy-85"
+          },
+          "reason": "Marty becomes more emphatic as he tells Dion that his abilities exceed what Dion realizes."
+        },
+        {
+          "actor": "MARTY",
+          "anchor_id": "w0105",
+          "changes": {
+            "gaze": "GAZE-PACKAGING"
+          },
+          "reason": "Marty redirects his attention to the package for one more appreciative look."
+        }
+      ]
+    }
+  }
+}

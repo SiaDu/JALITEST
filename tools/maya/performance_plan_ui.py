@@ -64,6 +64,8 @@ from authoring_session_data import (  # noqa: E402
     load_authoring_session,
     normalize_study_ui_mode,
     record_study_ui_mode_change,
+    rebind_character_mappings,
+    runtime_character_mappings,
     save_authoring_session,
     study_ui_section_state,
 )
@@ -100,7 +102,7 @@ from jali_speech_base import (  # noqa: E402
     normalize_jali_speech_settings,
     speech_base_status_text,
 )
-from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, dual_actor_row_index, optional_look_at_validation_error  # noqa: E402
+from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, optional_look_at_validation_error  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
 
@@ -929,6 +931,45 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if semantic.text().strip() or maya_object.text().strip()
         ]
 
+    def _character_mapping_rows_data(self) -> list[dict[str, str]]:
+        return [
+            {"script_name": script_field.text().strip(), "maya_node": maya_field.text().strip()}
+            for script_field, maya_field, _row in self.character_rows
+        ]
+
+    def _rebind_character_rows(self, plan_characters: list[object]) -> None:
+        """Keep each Maya rig with its script actor when plan display order changes."""
+        rebound = rebind_character_mappings(plan_characters, self._character_mapping_rows_data())
+        for index, mapping in enumerate(rebound):
+            self.character_rows[index][0].setText(mapping["script_name"])
+            self.character_rows[index][1].setText(mapping["maya_node"])
+
+    def _dual_runtime_mappings(self, plan_characters: list[object]) -> dict[str, dict[str, str]]:
+        return runtime_character_mappings(plan_characters, self._character_mapping_rows_data())
+
+    def _invalidate_actor_rig_caches(self, mappings: dict[str, dict[str, str]]) -> None:
+        """Discard actor-bound data only when that actor has a genuinely new rig."""
+        invalidated: list[str] = []
+        baseline_actors = (self.jali_base_baseline or {}).get("actors") or {}
+        for actor, mapping in mappings.items():
+            node = mapping["maya_node"]
+            speech = self.jali_speech_bases.get(actor) or {}
+            baseline = baseline_actors.get(actor) if isinstance(baseline_actors, dict) else None
+            if (speech.get("maya_node") and speech.get("maya_node") != node) or (
+                isinstance(baseline, dict) and baseline.get("maya_node") and baseline.get("maya_node") != node
+            ):
+                self.jali_speech_bases.pop(actor, None)
+                self.dual_gaze_baselines.pop(actor, None)
+                for key in list(self.dual_gaze_calibrations):
+                    if key.startswith(actor + "->"):
+                        self.dual_gaze_calibrations.pop(key)
+                invalidated.append(actor)
+        if invalidated:
+            self.jali_base_baseline = None
+            self._append_backend_output(
+                "Discarded actor-bound JALI/gaze caches after rig change: " + ", ".join(invalidated)
+            )
+
     def generate_animation(self) -> None:
         if self.mode_combo.currentIndex() == 1:
             self._generate_dual_speaker_emotion()
@@ -1063,11 +1104,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             stage = "Preparing native JALI speech"
             self.animation_status.setText("Preparing native JALI speech...")
             QtCore.QCoreApplication.processEvents()
-            for actor, index in zip(plan_characters, (0, 1)):
-                name=self.character_rows[index][0].text().strip(); node=self.character_rows[index][1].text().strip()
-                if not name or not node or not cmds.objExists(node): raise RuntimeError(f"{actor}: valid script character and Maya rig mapping are required.")
-                mappings[actor]={"script_name":name,"maya_node":node}
-            if any(mappings[actor]["script_name"].upper()!=actor.upper() for actor in plan_characters): raise RuntimeError("Character Mapping does not match the dual Performance Plan.")
+            mappings = self._dual_runtime_mappings(plan_characters)
+            for actor, mapping in mappings.items():
+                if not mapping["maya_node"] or not cmds.objExists(mapping["maya_node"]):
+                    raise RuntimeError(f"{actor}: valid script character and Maya rig mapping are required.")
+            self._invalidate_actor_rig_caches(mappings)
             source_transcripts = export_dual_source_transcripts(
                 script=script, audio_folder=audio, characters=plan_characters
             )
@@ -1286,13 +1327,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(self, "Restore JALI Base", "The loaded plan has no valid dual character mapping.")
             return
         try:
-            mappings = {
-                actor: {
-                    "script_name": self.character_rows[dual_actor_row_index(self.plan or {}, actor)][0].text().strip(),
-                    "maya_node": self.character_rows[dual_actor_row_index(self.plan or {}, actor)][1].text().strip(),
-                }
-                for actor in actors
-            }
+            mappings = self._dual_runtime_mappings(actors)
         except ValueError as exc:
             QtWidgets.QMessageBox.warning(self, "Restore JALI Base", str(exc))
             return
@@ -1365,10 +1400,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _capture_dual_look_at(self, actor: str, target: str) -> None:
         try:
-            row_index = dual_actor_row_index(self.plan or {}, actor)
+            node = self._dual_runtime_mappings([actor])[actor]["maya_node"]
         except ValueError as exc:
             QtWidgets.QMessageBox.warning(self, "Look-at Capture", str(exc)); return
-        node=self.character_rows[row_index][1].text().strip()
         eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
         if not node or not cmds.objExists(eye) or not cmds.objExists(both):
             QtWidgets.QMessageBox.warning(self, "Look-at Capture", f"{actor} needs a mapped rig with eyeStare_world and CNT_BOTH_EYES."); return
@@ -1392,10 +1426,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
 
     def _capture_dual_baseline(self, actor: str) -> dict[str, object] | None:
         try:
-            row_index = dual_actor_row_index(self.plan or {}, actor)
+            node = self._dual_runtime_mappings([actor])[actor]["maya_node"]
         except ValueError:
             return None
-        node=self.character_rows[row_index][1].text().strip(); eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
+        eye=qualify_rig_control(node, "eyeStare_world"); both=qualify_rig_control(node, "CNT_BOTH_EYES")
         if not node or not cmds.objExists(eye) or not cmds.objExists(both):
             return None
         result: dict[str, object] = {"baseline_translateZ": float(cmds.getAttr(eye + ".translateZ")), "both_eyes_translate": [0.0, 0.0]}
@@ -1403,7 +1437,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         return result
 
     def _restore_authoring_session(
-        self, session: dict[str, Any], *, preserve_authoring_text: bool = False
+        self, session: dict[str, Any], *, preserve_authoring_text: bool = False,
+        plan_characters: list[object] | None = None,
     ) -> None:
         mode = str(session.get("mode") or "single")
         blocker = QtCore.QSignalBlocker(self.mode_combo)
@@ -1444,7 +1479,12 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             script_field.clear()
             maya_field.clear()
         missing_nodes: list[str] = []
-        for index, mapping in enumerate(session.get("characters", [])):
+        saved_characters = session.get("characters", [])
+        restored_characters = (
+            rebind_character_mappings(plan_characters, saved_characters)
+            if plan_characters is not None else saved_characters
+        )
+        for index, mapping in enumerate(restored_characters):
             if index >= len(self.character_rows) or not isinstance(mapping, dict):
                 continue
             self.character_rows[index][0].setText(str(mapping.get("script_name") or ""))
@@ -1745,9 +1785,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                         if event not in loaded_semantic_edit_events
                     ],
                 ]
+                plan_characters = loaded_plan.get("characters", [])
                 self._restore_authoring_session(
                     self.authoring_session,
                     preserve_authoring_text=preserve_authoring_text,
+                    plan_characters=plan_characters if isinstance(plan_characters, list) else None,
                 )
         except Exception as exc:
             QtWidgets.QMessageBox.warning(
@@ -1795,6 +1837,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         )
         self.current_event_index = None
         self._building = True
+        if self.plan.get("schema_version") in {"dual_performance_plan_v1", "dual_performance_plan_v2"}:
+            plan_characters = self.plan.get("characters", [])
+            if isinstance(plan_characters, list) and len(plan_characters) == 2:
+                self._rebind_character_rows(plan_characters)
         events = [event for event in self.plan.get("events", []) if isinstance(event, dict)]
         dual_phrases = [
             phrase for phrase in self.plan.get("phrases", []) if isinstance(phrase, dict)
@@ -1854,11 +1900,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             if isinstance(characters, dict):
                 self.character_rows[0][0].setText(str(characters.get("A") or ""))
                 self.character_rows[1][0].setText(str(characters.get("B") or ""))
-        if self.plan.get("schema_version") in {"dual_performance_plan_v1", "dual_performance_plan_v2"} and self.authoring_session is None:
-            characters = self.plan.get("characters", [])
-            if isinstance(characters, list) and len(characters) == 2:
-                self.character_rows[0][0].setText(str(characters[0]))
-                self.character_rows[1][0].setText(str(characters[1]))
         reason_count = len(self.score_model.reason_entries()) if isinstance(self.score_model, DualSparseScoreModel) else len(self.score_model.phrases)
         self.phrase_number.setMaximum(max(1, reason_count))
         self.phrase_number.setValue(1)

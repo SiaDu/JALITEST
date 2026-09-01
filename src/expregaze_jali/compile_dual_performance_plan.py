@@ -41,7 +41,7 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
         text = str(value or "")
         if text.upper() in {"GAZE-NONE", "GLANCE-NONE"}: return False
         mode, separator, target = text.partition("-")
-        return bool(separator and target.upper() != "NONE" and re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target) and mode in ({"GAZE"} if initial else {"GAZE", "GLANCE"}))
+        return bool(separator and target.upper() not in {"NONE", "TARGET"} and re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target) and mode in ({"GAZE"} if initial else {"GAZE", "GLANCE"}))
     for actor in characters:
         state = initial_states[actor]
         if not isinstance(state, dict) or not set(state) <= {"affect", "gaze", "head"}:
@@ -55,8 +55,6 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
         affect = state.get("affect")
         if not valid_affect(affect, initial=True):
             raise ValueError(f"{actor}: invalid v2 initial affect {affect!r}.")
-        if not str(initial_reasons[actor] or "").strip():
-            raise ValueError(f"{actor}: v2 initial reason is required.")
     anchors = {anchor.anchor_id for anchor in model.anchors}
     event_ids: set[str] = set()
     for actor in characters:
@@ -78,8 +76,6 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
             if event["anchor_id"] in assigned_anchors:
                 raise ValueError(f"{actor}: duplicate v2 event at anchor {event['anchor_id']}.")
             assigned_anchors.add(event["anchor_id"])
-            if not str(event.get("reason") or "").strip():
-                raise ValueError(f"{event['event_id']}: v2 event reason is required.")
             if "affect" in changes and not valid_affect(changes["affect"], initial=False):
                 raise ValueError(f"{event['event_id']}: invalid v2 affect {changes['affect']!r}.")
             if "gaze" in changes and not valid_gaze(changes["gaze"], initial=False):

@@ -378,6 +378,19 @@ def test_authoring_session_restores_script_and_context_in_ui_source():
     assert "input_context=self.input_context.toPlainText()" in build
 
 
+def test_dual_ui_rebinds_and_resolves_character_mappings_by_identity():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _jali_speech_status_label", 1
+    )[0]
+    restore = source.split("    def _restore_authoring_session", 1)[1].split(
+        "    def _build_authoring_session_data", 1
+    )[0]
+    assert "self._dual_runtime_mappings(plan_characters)" in dual
+    assert "zip(plan_characters" not in dual
+    assert "rebind_character_mappings(plan_characters, saved_characters)" in restore
+
+
 def test_dual_v2_uses_actor_calibration_and_discards_legacy_jali_baselines():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     refresh = source.split("    def _refresh_required_look_at_targets", 1)[1].split(

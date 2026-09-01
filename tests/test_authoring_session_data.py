@@ -4,6 +4,8 @@ import copy
 from pathlib import Path
 import sys
 
+import pytest
+
 
 MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 if str(MAYA_TOOLS) not in sys.path:
@@ -21,11 +23,52 @@ from authoring_session_data import (  # noqa: E402
     finish_study_ui_session,
     load_authoring_session,
     normalize_study_ui_mode,
+    rebind_character_mappings,
     record_study_ui_mode_change,
+    runtime_character_mappings,
     save_authoring_session,
     study_ui_section_state,
     validate_authoring_session,
 )
+
+
+def test_character_mapping_rebinds_rigs_by_identity_not_plan_row_order():
+    previous = [
+        {"script_name": "WILL", "maya_node": "Angela"},
+        {"script_name": "AGNES", "maya_node": "ValleyGirl"},
+    ]
+    assert rebind_character_mappings(["AGNES", "WILL"], previous) == [
+        {"script_name": "AGNES", "maya_node": "ValleyGirl"},
+        {"script_name": "WILL", "maya_node": "Angela"},
+    ]
+    assert rebind_character_mappings(["MARTY", "DION"], previous) == [
+        {"script_name": "MARTY", "maya_node": ""},
+        {"script_name": "DION", "maya_node": ""},
+    ]
+
+
+def test_bug00_session_fixture_rebinds_its_actor_rigs_when_plan_order_swaps():
+    fixture = Path(__file__).resolve().parents[1] / "data/processed/hci_runs/bug00"
+    session = load_authoring_session(next(fixture.glob("*__authoring_session.json")))
+    rebound = rebind_character_mappings(["WILL", "AGNES"], session["characters"])
+    assert rebound == [
+        {"script_name": "WILL", "maya_node": "|ValleyGirl_jRigMaya:JALI_GRP"},
+        {"script_name": "AGNES", "maya_node": "|Angela_jRigMaya:JALI_GRP"},
+    ]
+
+
+def test_runtime_character_mapping_and_session_order_are_identity_keyed():
+    persisted = [
+        {"script_name": "WILL", "maya_node": "Angela"},
+        {"script_name": "AGNES", "maya_node": "ValleyGirl"},
+    ]
+    restored = rebind_character_mappings(["AGNES", "WILL"], persisted)
+    assert runtime_character_mappings(["WILL", "AGNES"], restored) == {
+        "WILL": {"script_name": "WILL", "maya_node": "Angela"},
+        "AGNES": {"script_name": "AGNES", "maya_node": "ValleyGirl"},
+    }
+    with pytest.raises(ValueError, match="Duplicate Character Mapping identity"):
+        runtime_character_mappings(["WILL"], [{"script_name": "WILL", "maya_node": "Angela"}, {"script_name": "will", "maya_node": "Other"}])
 
 
 def test_single_session_round_trip_preserves_mappings_audio_and_unknown_fields(tmp_path: Path):

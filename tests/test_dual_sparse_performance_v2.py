@@ -171,6 +171,12 @@ def test_semantic_beat_prompt_treats_aversion_and_thinking_as_transient_eye_acti
     assert "earliest semantically sufficient heard cue" in prompt
     assert "These are acting priors, not fixed psychological codes" in prompt
     assert "attention: hold" not in prompt and "attention: brief_check" not in prompt
+    assert "focus: HAWK" in prompt and "focus: FRONT_DOOR" in prompt
+    assert "eye_action: brief_check HAWK" in prompt
+    assert "AGNES` with `affect: Watchful-60`, `focus: WILL`" in prompt
+    assert "WILL` with `affect: Nervous-55`, `focus: AGNES`" in prompt
+    assert "`TARGET` is documentation metavocabulary only" in prompt
+    assert "Invalid examples (do not output): `focus: TARGET`, `eye_action: brief_check TARGET`." in prompt
 
 
 def _normalization_proposal(events, *, alice_initial=None, bob_initial=None):

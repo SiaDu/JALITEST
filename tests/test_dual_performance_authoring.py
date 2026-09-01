@@ -337,7 +337,8 @@ def test_dual_prompt_and_generation_use_one_call_and_write_expected_artifacts(tm
     assert "Open natural language is allowed only in reason fields" not in prompt
     assert "Built-in attention directions" in prompt
     assert "Directional gaze targets" not in prompt
-    assert "affect, focus, eye_action, head, and blink are all optional" in prompt
+    assert "each individual semantic channel is optional, but every beat must contain at least one actual semantic change" in prompt
+    assert "Do not output an acting-only beat" in prompt
     assert "A beat may contain one or multiple changed semantic channels" in prompt
     assert "CRITICAL GAZE FIELD EXCLUSIVITY" in prompt
     assert "Never output both `focus:` and `eye_action:` in one beat" in prompt
@@ -383,7 +384,8 @@ def test_dual_prompt_identity_contract_is_dynamic_and_examples_never_assign_scen
         script="ALICE: Hello.\nBOB: Hello.", character_a="ALICE", character_b="BOB"
     )
     assert "ALICE and BOB are immutable script identities." in generic_prompt
-    assert "AGNES" not in generic_prompt and "WILL" not in generic_prompt
+    assert "Concrete INITIAL illustration: `AGNES`" in generic_prompt
+    assert "`WILL` with `affect: Nervous-55`, `focus: AGNES`" in generic_prompt
 
 
 def test_semantic_beat_generation_preserves_raw_and_compiles_chayton_joan_fixture(tmp_path: Path):

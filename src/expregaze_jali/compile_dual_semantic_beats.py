@@ -5,11 +5,14 @@ from __future__ import annotations
 from typing import Any
 
 from expregaze_jali.dual_sparse_performance_proposal_parser import DIRECTION_TARGETS
+from expregaze_jali.dual_semantic_beat_parser import is_reserved_attention_target
 from expregaze_jali.performance_proposal_parser import ProposalValidationError
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 
 
 def _gaze(target: str, *, transient: bool = False) -> str:
+    if is_reserved_attention_target(target):
+        raise ProposalValidationError('"TARGET" is a reserved placeholder and cannot be compiled as a gaze target')
     return ("GLANCE-" if transient else "GAZE-") + target
 
 
@@ -22,6 +25,8 @@ def compile_dual_semantic_beats(semantic_ir: dict[str, Any], *, anchor_model: Co
     warnings = list((semantic_ir.get("diagnostics") or {}).get("warnings") or [])
 
     def record_target(target: str) -> None:
+        if is_reserved_attention_target(target):
+            raise ProposalValidationError('"TARGET" is a reserved placeholder and cannot be recorded as a calibration target')
         if target.upper() in DIRECTION_TARGETS or any(speaker_key(target) == speaker_key(name) for name in characters):
             return
         if target not in calibration:

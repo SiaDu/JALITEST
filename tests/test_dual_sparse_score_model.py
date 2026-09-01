@@ -150,6 +150,21 @@ def test_new_score_event_uses_user_edited_reason_without_an_original_rationale()
     assert added["edited_by_user"] is True
     assert added["reason"] is None
     assert added["original_reason"] is None
+    assert added["reason_status"] == "user_added_no_reason"
+
+    reapplied = model.apply(dict(model.score_texts))
+    repeated = next(event for event in reapplied["tracks"]["BOB"] if event["anchor_id"] == "w0004")
+    assert repeated["reason"] is repeated["original_reason"] is None
+    assert repeated["edited_by_user"] is True
+    assert repeated["reason_status"] == "user_added_no_reason"
+
+    edited = dict(model.score_texts)
+    edited["BOB"] = edited["BOB"].replace("<HEAD-UP-SUBTLE>", "<HEAD-DOWN-SUBTLE>")
+    edited_plan = model.apply(edited)
+    changed = next(event for event in edited_plan["tracks"]["BOB"] if event["anchor_id"] == "w0004")
+    assert changed["reason"] is changed["original_reason"] is None
+    assert changed["edited_by_user"] is True
+    assert changed["reason_status"] == "user_added_no_reason"
 
 
 def test_edited_semantics_use_non_blocking_user_edited_provenance():
@@ -198,7 +213,8 @@ def test_user_added_event_rationale_identifies_absent_llm_reason():
     texts = dict(model.score_texts)
     texts["BOB"] = texts["BOB"].replace("No.", "<HEAD-UP-SUBTLE>No.")
     model.apply(texts)
-    assert "No original rationale — user-added semantic change." in model.rationale_view(5)
+    assert "No original acting interpretation" in model.rationale_view(5)
+    assert "user-added semantic change." in model.rationale_view(5)
 
 
 def test_initial_edit_has_separate_reason_provenance():
@@ -218,7 +234,13 @@ def test_score_requires_visible_initial_affect_and_initial_reason():
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("<Watchful-80>", "", 1)).valid
     assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("<Watchful-80>", "<MASK-NONE>", 1)).valid
     model.plan["initial_reasons"]["ALICE"] = ""
-    assert not model.validate_actor("ALICE", model.score_texts["ALICE"]).valid
+    assert model.validate_actor("ALICE", model.score_texts["ALICE"]).valid
+
+
+def test_score_rejects_reserved_target_tags_case_insensitively():
+    model = DualSparseScoreModel(PLAN, ANCHORS)
+    assert not model.validate_actor("ALICE", model.score_texts["ALICE"], model.initial_score_texts["ALICE"].replace("GAZE-BOB", "GAZE-target")).valid
+    assert not model.validate_actor("BOB", model.score_texts["BOB"].replace("<Nervous-60>", "<Nervous-60><GLANCE-TARGET>")).valid
 
 
 def test_score_validation_rejects_invalid_authored_blink_hold_sequences_early():

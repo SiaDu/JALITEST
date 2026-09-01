@@ -1,0 +1,64 @@
+{
+  "gaze_calibrations": {},
+  "jali_base_baseline": null,
+  "jali_speech_bases": {},
+  "jali_speech_settings": {
+    "filter_silence_gaps": true,
+    "silence_threshold_db": -60.0,
+    "animate_from_scratch_next": false
+  },
+  "inspection_events": [
+    {
+      "event": "semantic_section_closed",
+      "event_type": "inspection",
+      "timestamp": "2026-09-01T09:11:49.711366+00:00",
+      "study_ui_mode": "normal"
+    },
+    {
+      "event": "semantic_section_opened",
+      "event_type": "inspection",
+      "timestamp": "2026-09-01T09:11:50.670673+00:00",
+      "study_ui_mode": "normal"
+    }
+  ],
+  "semantic_edit_events": [],
+  "study_ui_sessions": [
+    {
+      "started_at": "2026-09-01T09:11:42.355681+00:00",
+      "ended_at": null,
+      "study_ui_mode": "normal",
+      "initial_section_state": {
+        "semantic": {
+          "visible": true,
+          "expanded": true
+        },
+        "interpretation": {
+          "visible": true,
+          "expanded": false
+        }
+      },
+      "mode_changes": [],
+      "sequence_id": "run_20260901_101234_939391",
+      "run_id": "run_20260901_101234_939391"
+    }
+  ],
+  "schema_version": "authoring_session_v0",
+  "sequence_id": "run_20260901_101234_939391",
+  "mode": "dual",
+  "audio_folder": "C:/Users/xyang/Documents/maya/projects/EPJaliCHI/sound/Seq3",
+  "input_script": "MARTY: Whoa. You did the orange?\nDION: Yep.\nMARTY: How'd you do the orange?\nDION: I contacted someone at Halex. They colored the celluloid for me.\nMARTY: How?\nDION: Money, baby. Me and my pop, we believe in you. We're invested. That's why he's been so mad.\nMARTY: Check it out, Rachel.\nDION: Here, check out the packaging.\nMARTY: Marty Supreme. The official Marty Mauser championship table tennis ball. Professionally made. Orange...\nMARTY: Orange spheres? You came up with that?\nDION: Yeah. Pretty good, right?\nMARTY: That's Pretty good? Damn, this is... I'm stunned. I'm stunned.\nDION: Hand-drawn too.\nMARTY: You drew this?\nDION: Yeah.\nMARTY: It's inspired.\nDION: I appreciate it.\nMARTY: I don't think you know what you're capable of.\nMARTY: Check it out.\nDION: Thanks a lot.",
+  "input_context": "",
+  "characters": [
+    {
+      "alias": "A",
+      "script_name": "MARTY",
+      "maya_node": ""
+    },
+    {
+      "alias": "B",
+      "script_name": "DION",
+      "maya_node": ""
+    }
+  ],
+  "look_at_targets": []
+}

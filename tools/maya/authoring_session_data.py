@@ -28,6 +28,62 @@ INSPECTION_EVENT_NAMES = {
 SEMANTIC_EDIT_EVENT_NAMES = {"semantic_edit_started"}
 
 
+def script_identity(value: object) -> str:
+    """Normalize a script actor name for identity-keyed UI mappings."""
+    return str(value or "").strip().casefold()
+
+
+def identity_keyed_character_mappings(
+    rows: Iterable[dict[str, Any]],
+) -> dict[str, dict[str, str]]:
+    """Index character mappings by script identity without silent collisions."""
+    indexed: dict[str, dict[str, str]] = {}
+    for row in rows:
+        script_name = str(row.get("script_name") or "").strip()
+        identity = script_identity(script_name)
+        if not identity:
+            continue
+        if identity in indexed:
+            raise ValueError(f"Duplicate Character Mapping identity: {script_name!r}.")
+        indexed[identity] = {
+            "script_name": script_name,
+            "maya_node": str(row.get("maya_node") or "").strip(),
+        }
+    return indexed
+
+
+def rebind_character_mappings(
+    plan_characters: Iterable[object], existing_rows: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Make plan-order rows while keeping rigs attached to actor identity."""
+    existing = identity_keyed_character_mappings(existing_rows)
+    rebound: list[dict[str, str]] = []
+    for actor_value in plan_characters:
+        actor = str(actor_value or "").strip()
+        if not actor:
+            raise ValueError("Performance Plan character names must be non-empty.")
+        rebound.append({
+            "script_name": actor,
+            "maya_node": existing.get(script_identity(actor), {}).get("maya_node", ""),
+        })
+    return rebound
+
+
+def runtime_character_mappings(
+    plan_characters: Iterable[object], ui_rows: Iterable[dict[str, Any]],
+) -> dict[str, dict[str, str]]:
+    """Resolve every plan actor through UI identity, never UI row position."""
+    indexed = identity_keyed_character_mappings(ui_rows)
+    result: dict[str, dict[str, str]] = {}
+    for actor_value in plan_characters:
+        actor = str(actor_value or "").strip()
+        mapping = indexed.get(script_identity(actor))
+        if mapping is None:
+            raise ValueError(f"{actor}: no Character Mapping is configured.")
+        result[actor] = {"script_name": mapping["script_name"], "maya_node": mapping["maya_node"]}
+    return result
+
+
 def normalize_study_ui_mode(value: str | None) -> str:
     """Validate an internal study presentation mode without touching plan data."""
     mode = str(value or STUDY_UI_NORMAL).strip().lower()

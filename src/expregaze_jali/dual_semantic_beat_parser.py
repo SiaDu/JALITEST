@@ -18,6 +18,11 @@ _AFFECT = re.compile(r"^(.+)-(\d+)$")
 _TARGET = re.compile(r"^[A-Za-z][A-Za-z0-9_'\-]*$")
 
 
+def is_reserved_attention_target(value: str) -> bool:
+    """Return whether documentation-only TARGET was used as executable content."""
+    return value.strip().casefold() == "target"
+
+
 def _affect(
     value: str, *, label: str, vocabulary: SemanticVocabulary, allow_none: bool = False,
 ) -> str:
@@ -41,6 +46,8 @@ def _focus(value: str, *, label: str, characters: tuple[str, str]) -> str:
     target = value.strip()
     if not _TARGET.fullmatch(target):
         raise ProposalValidationError(f'{label}: Invalid focus target "{target}"')
+    if is_reserved_attention_target(target):
+        raise ProposalValidationError(f'{label}: "TARGET" is a reserved placeholder and cannot be used as a focus target')
     actor = next((name for name in characters if speaker_key(name) == speaker_key(target)), None)
     return actor or target.upper()
 
@@ -54,6 +61,8 @@ def _eye_action(value: str, *, label: str, characters: tuple[str, str]) -> dict[
     target = parts[1]
     if not _TARGET.fullmatch(target):
         raise ProposalValidationError(f'{label}: Invalid eye_action target "{target}"')
+    if is_reserved_attention_target(target):
+        raise ProposalValidationError(f'{label}: "TARGET" is a reserved placeholder and cannot be used as an eye-action target')
     actor = next((name for name in characters if speaker_key(name) == speaker_key(target)), None)
     return {"action": "brief_check", "target": actor or target.upper()}
 
@@ -142,8 +151,13 @@ def parse_dual_semantic_beats(
             blink = row["blink"].strip().upper()
             if blink not in BLINK_VALUES: raise ProposalValidationError(f'{event_id}: Invalid blink value "{blink}"')
             out["blink"] = blink
-        if len(out) == 4: raise ProposalValidationError(f"{event_id}: At least one semantic change is required")
+        if len(out) == 4:
+            # A syntactically valid acting-only beat is a harmless LLM no-op.
+            # Preserve its source event ID in diagnostics but emit no executable event.
+            continue
         beats.append(out)
     identities = [(row["actor"], row["anchor_id"]) for row in beats]
     if len(identities) != len(set(identities)): raise ProposalValidationError("Each actor may have at most one Semantic Beat at the same anchor")
-    return {"initial": initial, "beats": beats, "diagnostics": {"errors": [], "warnings": []}}
+    dropped = [row["event_id"] for row in raw_beats if row["event_id"] not in {beat["event_id"] for beat in beats}]
+    warnings = [f"{event_id}: dropped acting-only beat because it contains no semantic changes" for event_id in dropped]
+    return {"initial": initial, "beats": beats, "diagnostics": {"errors": [], "warnings": warnings}}

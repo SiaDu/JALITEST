@@ -191,7 +191,7 @@ class DualSparseScoreModel:
         gaze = _GAZE.fullmatch(value)
         if gaze:
             mode, target = gaze.group(1).upper(), gaze.group(2)
-            if target.upper() == "NONE":
+            if target.upper() in {"NONE", "TARGET"}:
                 return f'Unknown or invalid v2 tag <{value}>'
             directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
             if re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target):
@@ -228,8 +228,6 @@ class DualSparseScoreModel:
             errors.append(ScoreIssue(actor, "Initial affect cannot be MASK-NONE"))
         if "gaze" not in changes:
             errors.append(ScoreIssue(actor, "Initial performance must include a persistent GAZE tag"))
-        if not str(self.plan.get("initial_reasons", {}).get(actor) or "").strip():
-            errors.append(ScoreIssue(actor, "Initial performance requires a meaningful reason"))
         return changes, errors
 
     def validate_actor(self, actor: str, text: str, initial_text: str | None = None) -> ScoreValidation:
@@ -344,17 +342,19 @@ class DualSparseScoreModel:
             if prior is None:
                 next_id += 1
             changes = deepcopy(row["changes"])
-            original_changes = deepcopy((original or prior or {}).get("original_changes", (original or prior or {}).get("changes") or {}))
+            source = original or prior
+            user_added = original is None and (prior is None or prior.get("reason_status") == "user_added_no_reason")
+            original_changes = deepcopy(source.get("original_changes", source.get("changes") or {}) if source else {})
             semantic_changed = original is None or changes != original_changes
-            original_reason = (original or prior or {}).get("original_reason", (original or prior or {}).get("reason"))
+            original_reason = source.get("original_reason", source.get("reason")) if source else None
             tracks[row["actor"]].append({
-                "event_id": event_id, "actor": row["actor"], "source_event_id": (original or prior or {}).get("source_event_id", event_id),
+                "event_id": event_id, "actor": row["actor"], "source_event_id": source.get("source_event_id", event_id) if source else event_id,
                 "anchor_id": row["anchor_id"], "changes": changes,
                 "original_changes": original_changes if original is not None else None,
                 "reason": original_reason,
                 "original_reason": original_reason,
                 "edited_by_user": semantic_changed,
-                "reason_status": "stale_after_user_edit" if semantic_changed else "llm_original",
+                "reason_status": "user_added_no_reason" if user_added else ("stale_after_user_edit" if semantic_changed else "llm_original"),
             })
         self.plan["tracks"] = tracks
         self.plan["initial_states"] = initial_states
@@ -391,8 +391,8 @@ class DualSparseScoreModel:
             return "No sparse change events have reasons."
         actor, event = rows[max(0, min(event_number - 1, len(rows) - 1))]
         reason = event.get("reason")
-        if reason is None and event.get("edited_by_user"):
-            rationale = "No original rationale — user-added semantic change."
+        if event.get("reason_status") == "user_added_no_reason":
+            rationale = "No original acting interpretation — user-added semantic change."
         else:
             rationale = str(reason or "(none)")
             if event.get("reason_status") == "stale_after_user_edit" and reason:
