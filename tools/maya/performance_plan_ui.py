@@ -69,6 +69,7 @@ from authoring_session_data import (  # noqa: E402
 )
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
+    apply_master_audio_to_maya_timeline,
     apply_dual_listener_mask_artifacts,
     capture_dual_jali_base_if_absent,
     apply_dual_gaze_only_artifacts,
@@ -84,6 +85,7 @@ from animation_apply_runner import (  # noqa: E402
     prepare_dual_v2_head_blink_overlays,
     apply_dual_v2_head_blink_overlays,
     diagnose_v2_blink_ownership,
+    master_audio_timeline_info,
     restore_dual_jali_base,
 )
 from authoring_requirements import (  # noqa: E402
@@ -91,8 +93,13 @@ from authoring_requirements import (  # noqa: E402
     refresh_look_at_mappings,
     required_look_at_targets,
 )
-from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav  # noqa: E402
-from jali_speech_base import ensure_dual_jali_speech_bases, speech_base_status_text  # noqa: E402
+from dual_source_transcripts import export_dual_source_transcripts, resolve_character_wav, resolve_dual_master_wav  # noqa: E402
+from jali_speech_base import (  # noqa: E402
+    ensure_dual_jali_speech_bases,
+    jali_speech_settings_for_audio_folder,
+    normalize_jali_speech_settings,
+    speech_base_status_text,
+)
 from dual_gaze_calibration import capture_target_pose_and_restore, required_calibration_pairs, calibration_key, display_target, dual_actor_row_index, optional_look_at_validation_error  # noqa: E402
 from backend_process_runner import AnimationProcessRunner, BackendProcessRunner  # noqa: E402
 
@@ -294,6 +301,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.jali_speech_bases: dict[str, dict[str, Any]] = {}
         self._pending_animation_mode = "single"
         self._pending_dual_mappings: dict[str, dict[str, str]] = {}
+        self._pending_dual_master_audio: dict[str, Any] | None = None
         self._score_resize_scheduled = False
         self.study_ui_mode = normalize_study_ui_mode(
             study_ui_mode or os.getenv("JALITEST_STUDY_UI_MODE") or STUDY_UI_NORMAL
@@ -658,6 +666,28 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         file_controls.addWidget(self.save_as_button)
         layout.addLayout(file_controls)
 
+        self.jali_speech_settings_group = QtWidgets.QGroupBox("JALI Speech Settings")
+        jali_settings = QtWidgets.QFormLayout(self.jali_speech_settings_group)
+        self.jali_filter_silence_gaps = QtWidgets.QCheckBox("Filter Silence Gaps")
+        self.jali_filter_silence_gaps.setChecked(True)
+        jali_settings.addRow(self.jali_filter_silence_gaps)
+        self.jali_silence_threshold = QtWidgets.QDoubleSpinBox()
+        self.jali_silence_threshold.setRange(-100.0, 0.0)
+        self.jali_silence_threshold.setDecimals(1)
+        self.jali_silence_threshold.setSingleStep(1.0)
+        self.jali_silence_threshold.setValue(-35.0)
+        self.jali_silence_threshold.setSuffix(" dB")
+        jali_settings.addRow("Silence Threshold", self.jali_silence_threshold)
+        self.jali_animate_from_scratch = QtWidgets.QCheckBox(
+            "Animate from scratch on next Generate"
+        )
+        jali_settings.addRow(self.jali_animate_from_scratch)
+        self.jali_filter_silence_gaps.toggled.connect(
+            self.jali_silence_threshold.setEnabled
+        )
+        self.audio_folder.editingFinished.connect(self._apply_jali_sequence_defaults)
+        layout.addWidget(self.jali_speech_settings_group)
+
         layout.addWidget(QtWidgets.QLabel("Backend Generation Log"))
         self.backend_log = QtWidgets.QPlainTextEdit()
         _configure_multiline_editor(
@@ -675,6 +705,22 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         )
         if path:
             self.audio_folder.setText(path)
+            self._apply_jali_sequence_defaults()
+
+    def _apply_jali_sequence_defaults(self) -> None:
+        settings = jali_speech_settings_for_audio_folder(self.audio_folder.text())
+        self.jali_filter_silence_gaps.setChecked(settings["filter_silence_gaps"])
+        self.jali_silence_threshold.setValue(settings["silence_threshold_db"])
+
+    def _jali_speech_settings_data(self) -> dict[str, Any]:
+        settings = normalize_jali_speech_settings({
+            "filter_silence_gaps": self.jali_filter_silence_gaps.isChecked(),
+            "silence_threshold_db": self.jali_silence_threshold.value(),
+        })
+        return {
+            **settings,
+            "animate_from_scratch_next": self.jali_animate_from_scratch.isChecked(),
+        }
 
     def _use_scene_selection(self, field: QtWidgets.QLineEdit) -> None:
         selected = cmds.ls(selection=True, long=True) or []
@@ -720,6 +766,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.character_mapping_rows[1].setVisible(dual)
         if hasattr(self, "jali_speech_status_labels"):
             self.jali_speech_status_labels["B"].setVisible(dual)
+        if hasattr(self, "jali_speech_settings_group"):
+            self.jali_speech_settings_group.setVisible(dual)
         if hasattr(self, "legacy_look_at_label"):
             self.legacy_look_at_label.setVisible(not dual)
             for _semantic, _maya, row in self.look_at_rows:
@@ -984,6 +1032,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self._append_backend_output(f"Maya scene FPS: {fps}")
 
     def _generate_dual_speaker_emotion(self) -> None:
+        self._pending_dual_master_audio = None
         if self.plan is None or self.score_model is None or self.source_path is None or not self.commit_current_event(show_error=True) or not self.validate_score(show_dialog=True): return
         script=self.input_script.toPlainText(); audio=self.audio_folder.text().strip()
         if not script.strip() or not audio:
@@ -991,14 +1040,29 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}; self.backend_log.clear()
         self.generate_animation_button.setEnabled(False)
         self.restore_jali_base_button.setEnabled(False)
-        self.animation_status.setText("Preparing native JALI speech...")
+        self.animation_status.setText("Preflighting master audio...")
         self.animation_status.setStyleSheet("color: #1d4ed8;")
         QtCore.QCoreApplication.processEvents()
-        stage = "Preparing native JALI speech"
+        stage = "Preflighting master audio"
         try:
             plan_characters = self.plan.get("characters", [])
             if not isinstance(plan_characters, list) or len(plan_characters) != 2:
                 raise RuntimeError("Dual Performance Plan requires two named characters.")
+            fps = current_scene_fps()
+            master_wav = resolve_dual_master_wav(audio, plan_characters)
+            self._pending_dual_master_audio = master_audio_timeline_info(
+                master_wav, fps
+            )
+            self._append_backend_output(
+                "Master audio preflight: "
+                f"{self._pending_dual_master_audio['path']}; "
+                f"seconds={self._pending_dual_master_audio['seconds']:.3f}; "
+                f"fps={self._pending_dual_master_audio['fps']:g}; "
+                f"end_frame={self._pending_dual_master_audio['end_frame']}"
+            )
+            stage = "Preparing native JALI speech"
+            self.animation_status.setText("Preparing native JALI speech...")
+            QtCore.QCoreApplication.processEvents()
             for actor, index in zip(plan_characters, (0, 1)):
                 name=self.character_rows[index][0].text().strip(); node=self.character_rows[index][1].text().strip()
                 if not name or not node or not cmds.objExists(node): raise RuntimeError(f"{actor}: valid script character and Maya rig mapping are required.")
@@ -1007,11 +1071,19 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             source_transcripts = export_dual_source_transcripts(
                 script=script, audio_folder=audio, characters=plan_characters
             )
+            ui_jali_settings = self._jali_speech_settings_data()
+            force_from_scratch = ui_jali_settings["animate_from_scratch_next"]
+            effective_jali_settings = {
+                key: ui_jali_settings[key]
+                for key in ("filter_silence_gaps", "silence_threshold_db")
+            }
             prepared = ensure_dual_jali_speech_bases(
                 actors=plan_characters,
                 character_mappings=mappings,
                 source_transcripts=source_transcripts,
                 saved_metadata=self.jali_speech_bases,
+                jali_settings=effective_jali_settings,
+                force_from_scratch=force_from_scratch,
                 cmds_module=cmds,
                 mel_module=mel,
                 status_callback=self._set_jali_speech_status,
@@ -1029,6 +1101,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 ):
                     self.jali_base_baseline = None
             self.jali_speech_bases = prepared
+            if force_from_scratch:
+                self.jali_animate_from_scratch.setChecked(False)
+                self._save_authoring_session_for_path(self.source_path)
             for actor in plan_characters:
                 row = prepared[actor]
                 mappings[actor] = {
@@ -1043,7 +1118,10 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 self._append_backend_output(
                     f"{actor}: JALI speech base {row['preparation_status']}; rig={row['maya_node']}; "
                     f"jSync={row['jsync']}; sound_file={row['sound_file']}; transcript={row['txt_path']}; "
-                    f"txt_sha256={row['txt_sha256']}"
+                    f"txt_sha256={row['txt_sha256']}; "
+                    f"filter_silence_gaps={effective_jali_settings['filter_silence_gaps']}; "
+                    f"silence_threshold_db={effective_jali_settings['silence_threshold_db']:g}; "
+                    f"from_scratch={'yes' if force_from_scratch else 'no'}"
                 )
             # Native JALI bases for BOTH actors are now verified. Capture the
             # immutable baseline before any backend compile or semantic overlay.
@@ -1070,7 +1148,6 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
                 self.plan = save_animation_runtime_plan(self.score_model, self._score_payload(), runtime_plan)
             self._save_authoring_session_for_path(self.source_path)
-            fps=current_scene_fps()
             self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings
             command=self.animation_runner.start_dual(performance_plan=runtime_plan,script=script,audio_folder=audio,output_dir=animation_dir,fps=fps,runtime_mapping=runtime)
             self._append_backend_output(f"Dual emotion-only output: {command.output_dir}")
@@ -1145,6 +1222,23 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     self._append_backend_output(f"Applied: native speaker Mask; listener User Mask reactions; calibrated gaze ({gaze_events} events){overlay_summary}\njSync preserved: yes")
                     if blink_diagnostic:
                         self._append_backend_output("Blink ownership diagnostic: JALI calculate_blinks=False; native JALI eyelid/paralingual curves allowed; User performative blink controls owned by JALITEST blink layer.")
+                    if self._pending_dual_master_audio is None:
+                        raise RuntimeError("Dual master audio preflight state is missing.")
+                    timeline_audio = apply_master_audio_to_maya_timeline(
+                        self._pending_dual_master_audio["path"],
+                        self._pending_dual_master_audio["fps"],
+                        cmds_module=cmds,
+                        mel_module=mel,
+                    )
+                    self._append_backend_output(
+                        "Master timeline audio: "
+                        f"path={timeline_audio['path']}; "
+                        f"seconds={timeline_audio['seconds']:.3f}; "
+                        f"fps={timeline_audio['fps']:g}; "
+                        f"end_frame={timeline_audio['end_frame']}; "
+                        f"audio_node={timeline_audio['audio_node']}; "
+                        f"node_action={'reused' if timeline_audio['audio_node_reused'] else 'created'}"
+                    )
                 else: apply_animation_artifacts(
                     manifest_path=Path(str(manifest_path)),
                     active_character_node=self.character_rows[0][1].text().strip(),
@@ -1159,13 +1253,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.restore_jali_base_button.setEnabled(True)
         self.animation_status.setText("Dual performance animation applied." if self._pending_animation_mode == "dual_emotion_only" else "Animation generated.")
         self.animation_status.setStyleSheet("color: #166534;")
-        self._pending_animation_mode = "single"; self._pending_dual_mappings = {}
+        self._pending_animation_mode = "single"; self._pending_dual_mappings = {}; self._pending_dual_master_audio = None
         QtWidgets.QMessageBox.information(
             self, "Animation Generated", "Animation artifacts were compiled and applied in Maya."
         )
 
     def _animation_failed(self, message: str) -> None:
-        self._pending_animation_mode = "single"; self._pending_dual_mappings = {}
+        self._pending_animation_mode = "single"; self._pending_dual_mappings = {}; self._pending_dual_master_audio = None
         self.generate_animation_button.setEnabled(True)
         self.restore_jali_base_button.setEnabled(True)
         self.animation_status.setText("Animation generation failed.")
@@ -1320,6 +1414,16 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             self.input_script.setPlainText(str(session.get("input_script") or ""))
             self.input_context.setPlainText(str(session.get("input_context") or ""))
         self.audio_folder.setText(str(session.get("audio_folder") or ""))
+        saved_jali_settings = session.get("jali_speech_settings")
+        if isinstance(saved_jali_settings, dict):
+            normalized = normalize_jali_speech_settings(saved_jali_settings)
+            self.jali_filter_silence_gaps.setChecked(normalized["filter_silence_gaps"])
+            self.jali_silence_threshold.setValue(normalized["silence_threshold_db"])
+            self.jali_animate_from_scratch.setChecked(
+                bool(saved_jali_settings.get("animate_from_scratch_next", False))
+            )
+        else:
+            self._apply_jali_sequence_defaults()
         # Legacy lists contain world positions only and must be recaptured.
         self.dual_gaze_calibrations = {str(key): dict(value) for key, value in (session.get("gaze_calibrations") or {}).items() if isinstance(value, dict) and isinstance(value.get("eye_stare_translate"), (list, tuple)) and len(value["eye_stare_translate"]) == 3}
         self.dual_gaze_baselines = {}
@@ -1410,6 +1514,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                 "gaze_calibrations": self.dual_gaze_calibrations,
                 "jali_base_baseline": self.jali_base_baseline,
                 "jali_speech_bases": self.jali_speech_bases,
+                "jali_speech_settings": self._jali_speech_settings_data(),
                 "inspection_events": list(self._inspection_events),
                 "semantic_edit_events": list(self._semantic_edit_events),
                 "study_ui_sessions": study_ui_sessions,

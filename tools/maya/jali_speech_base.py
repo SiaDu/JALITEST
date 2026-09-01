@@ -7,8 +7,10 @@ safety can be tested outside Maya.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
+import math
 import os
 from pathlib import Path
 from typing import Any, Callable, Iterable
@@ -36,6 +38,10 @@ STATUS_TEXT = {
     "not_started": "Not started",
 }
 StatusCallback = Callable[[str, str, str], None]
+DEFAULT_JALI_SPEECH_SETTINGS = {
+    "filter_silence_gaps": True,
+    "silence_threshold_db": -35.0,
+}
 
 
 def speech_base_status_text(actor: str, clip_name: str, status: str) -> str:
@@ -58,7 +64,24 @@ def _wav_identity(path: Path) -> dict[str, int]:
     return {"wav_size": int(stat.st_size), "wav_mtime_ns": int(stat.st_mtime_ns)}
 
 
-def load_jali_speech_base_config(config_path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, int]:
+def normalize_jali_speech_settings(value: dict[str, Any] | None) -> dict[str, Any]:
+    raw = value if isinstance(value, dict) else DEFAULT_JALI_SPEECH_SETTINGS
+    filter_silence = raw.get("filter_silence_gaps", True)
+    threshold = raw.get("silence_threshold_db", -35.0)
+    if not isinstance(filter_silence, bool):
+        raise ValueError("filter_silence_gaps must be true or false.")
+    if isinstance(threshold, bool) or not isinstance(threshold, (int, float)):
+        raise ValueError("silence_threshold_db must be a number.")
+    threshold = float(threshold)
+    if not math.isfinite(threshold) or not -100.0 <= threshold <= 0.0:
+        raise ValueError("silence_threshold_db must be between -100 and 0 dB.")
+    return {
+        "filter_silence_gaps": filter_silence,
+        "silence_threshold_db": threshold,
+    }
+
+
+def load_jali_speech_base_config(config_path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]:
     # Maya's bundled Python does not include PyYAML. Reuse the repository's
     # established Maya-compatible loader instead of adding a runtime package.
     from expregaze_jali.maya_apply_gaze import _load_yaml_file
@@ -66,13 +89,64 @@ def load_jali_speech_base_config(config_path: str | Path = DEFAULT_MAYA_CONFIG) 
     section = raw.get("maya_jali_speech_base") if isinstance(raw, dict) else None
     if not isinstance(section, dict):
         raise ValueError("Maya config requires a maya_jali_speech_base mapping.")
-    result: dict[str, int] = {}
+    result: dict[str, Any] = {}
     for key in ("language_code", "speech_style"):
         value = section.get(key)
         if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             raise ValueError(f"maya_jali_speech_base.{key} must be a non-negative integer.")
         result[key] = value
+    result.update(normalize_jali_speech_settings(section))
+    overrides = section.get("sequence_overrides", {})
+    if not isinstance(overrides, dict):
+        raise ValueError("maya_jali_speech_base.sequence_overrides must be a mapping.")
+    result["sequence_overrides"] = {
+        str(sequence): normalize_jali_speech_settings({
+            **{
+                "filter_silence_gaps": result["filter_silence_gaps"],
+                "silence_threshold_db": result["silence_threshold_db"],
+            },
+            **(override if isinstance(override, dict) else {}),
+        })
+        for sequence, override in overrides.items()
+        if str(sequence).strip()
+    }
+    if any(not isinstance(override, dict) for override in overrides.values()):
+        raise ValueError("Each JALI sequence override must be a mapping.")
     return result
+
+
+def jali_speech_settings_for_audio_folder(
+    audio_folder: str | Path,
+    config_path: str | Path = DEFAULT_MAYA_CONFIG,
+) -> dict[str, Any]:
+    """Resolve editable defaults, including an exact folder-name override."""
+    config = load_jali_speech_base_config(config_path)
+    settings = normalize_jali_speech_settings(config)
+    sequence = Path(str(audio_folder).strip()).name.casefold()
+    override = next(
+        (
+            row
+            for name, row in config["sequence_overrides"].items()
+            if str(name).casefold() == sequence
+        ),
+        None,
+    )
+    return normalize_jali_speech_settings(override or settings)
+
+
+def _jali_speech_settings_match(saved: Any, current: dict[str, Any]) -> bool:
+    if not isinstance(saved, dict):
+        return False
+    try:
+        old = normalize_jali_speech_settings(saved)
+    except ValueError:
+        return False
+    if old["filter_silence_gaps"] != current["filter_silence_gaps"]:
+        return False
+    return (
+        not current["filter_silence_gaps"]
+        or old["silence_threshold_db"] == current["silence_threshold_db"]
+    )
 
 
 def _mel_string(value: str | Path) -> str:
@@ -160,9 +234,58 @@ def _validate_sources(actor: str, maya_node: str, wav_path: str | Path, txt_path
     return rig, wav, txt, wav.stem
 
 
+_JALI_GLOBALS = (
+    ("silence_handling", "int", "jalitest_get_silence_handling"),
+    ("silence_handling_decibel", "float", "jalitest_get_silence_threshold"),
+    ("jali_afscratch", "int", "jalitest_get_animate_from_scratch"),
+)
+
+
+def _read_mel_global(mel_module: Any, name: str, mel_type: str, getter: str) -> Any:
+    if not mel_module.eval(f'exists "{getter}"'):
+        mel_module.eval(
+            f"global proc {mel_type} {getter}() {{ "
+            f"global {mel_type} ${name}; return ${name}; }}"
+        )
+    return mel_module.eval(f"{getter}()")
+
+
+def _set_mel_global(mel_module: Any, name: str, mel_type: str, value: Any) -> None:
+    rendered = str(int(value)) if mel_type == "int" else repr(float(value))
+    mel_module.eval(f"global {mel_type} ${name}; ${name} = {rendered};")
+
+
+@contextmanager
+def jali_alignment_settings(
+    mel_module: Any,
+    settings: dict[str, Any],
+    *,
+    animate_from_scratch: bool,
+) -> Iterable[None]:
+    """Temporarily apply the three JALI alignment globals used by call_jSync."""
+    normalized = normalize_jali_speech_settings(settings)
+    old = {
+        name: _read_mel_global(mel_module, name, mel_type, getter)
+        for name, mel_type, getter in _JALI_GLOBALS
+    }
+    desired = {
+        "silence_handling": int(normalized["filter_silence_gaps"]),
+        "silence_handling_decibel": normalized["silence_threshold_db"],
+        "jali_afscratch": int(bool(animate_from_scratch)),
+    }
+    try:
+        for name, mel_type, _getter in _JALI_GLOBALS:
+            _set_mel_global(mel_module, name, mel_type, desired[name])
+        yield
+    finally:
+        for name, mel_type, _getter in _JALI_GLOBALS:
+            _set_mel_global(mel_module, name, mel_type, old[name])
+
+
 def inspect_jali_speech_base(
     *, actor: str, script_name: str, maya_node: str, wav_path: str | Path,
     txt_path: str | Path, saved_metadata: dict[str, Any] | None = None,
+    jali_settings: dict[str, Any] | None = None,
     cmds_module: Any | None = None,
 ) -> dict[str, Any]:
     """Inspect an exact rig+sound base and determine conservative reuse."""
@@ -191,6 +314,7 @@ def inspect_jali_speech_base(
         str(cmds_module.getAttr(f"{jsync}.text_input_path") or ""), live_sound
     )
     digest = transcript_sha256(txt)
+    settings = normalize_jali_speech_settings(jali_settings)
     if live_sound != sound or _normalized_path(live_txt) != _normalized_path(txt):
         return {"reusable": False, "reason": "live jSync source identity does not match",
                 "jsync": jsync, "sound_file": sound, "wav_path": str(wav), "txt_path": str(txt),
@@ -225,13 +349,16 @@ def inspect_jali_speech_base(
             **_wav_identity(wav),
         }
         mismatches = [key for key, value in expected.items() if str(saved.get(key) or "") != str(value)]
+        if not _jali_speech_settings_match(saved.get("jali_settings"), settings):
+            mismatches.append("jali_settings")
         if mismatches:
-            return {**expected, "reusable": False,
+            return {**expected, "jali_settings": settings, "reusable": False,
                     "reason": "saved speech-base identity/fingerprint changed: " + ", ".join(mismatches)}
     return {
         "reusable": True, "reason": "exact live source identity and fingerprint match",
         "script_name": str(script_name), "maya_node": rig, "jsync": jsync,
         "sound_file": sound, "wav_path": str(wav), "txt_path": str(txt), "txt_sha256": digest,
+        "jali_settings": settings,
         **_wav_identity(wav),
     }
 
@@ -266,6 +393,8 @@ def _retire_alignment_cache(folder: Path, sound: str, digest: str) -> list[Path]
 def prepare_jali_speech_base(
     *, actor: str, script_name: str, maya_node: str, wav_path: str | Path,
     txt_path: str | Path, language_code: int, speech_style: int,
+    jali_settings: dict[str, Any] | None = None,
+    animate_from_scratch: bool = False,
     known_mapped_rigs: Iterable[str] = (), cmds_module: Any | None = None,
     mel_module: Any | None = None,
 ) -> dict[str, Any]:
@@ -277,6 +406,7 @@ def prepare_jali_speech_base(
     rig, wav, txt, sound = _validate_sources(
         actor, maya_node, wav_path, txt_path, cmds_module
     )
+    settings = normalize_jali_speech_settings(jali_settings)
     ensure_jali_runtime_available(mel_module=mel_module)
     original = [str(item) for item in (cmds_module.ls(selection=True, long=True) or [])]
     rigs = [str(item) for item in known_mapped_rigs]
@@ -302,7 +432,10 @@ def prepare_jali_speech_base(
             f'"{_mel_folder(wav.parent)}", "{_mel_string(sound)}", '
             f"{int(language_code)}, {int(speech_style)});"
         )
-        mel_module.eval(command)
+        with jali_alignment_settings(
+            mel_module, settings, animate_from_scratch=animate_from_scratch
+        ):
+            mel_module.eval(command)
         matches = _matching_nodes(cmds_module, rig, sound)
         if len(matches) != 1:
             all_new = sorted(set(_jsync_nodes(cmds_module)) - before_all)
@@ -317,7 +450,8 @@ def prepare_jali_speech_base(
             )
         inspected = inspect_jali_speech_base(
             actor=actor, script_name=script_name, maya_node=rig, wav_path=wav,
-            txt_path=txt, saved_metadata=None, cmds_module=cmds_module,
+            txt_path=txt, saved_metadata=None, jali_settings=settings,
+            cmds_module=cmds_module,
         )
         if not inspected["reusable"]:
             raise RuntimeError(f"{actor}: JALI postcondition failed: {inspected['reason']}")
@@ -365,6 +499,8 @@ def prepare_jali_speech_base(
         _restore_selection(cmds_module, original)
     return {
         **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns")},
+        "jali_settings": settings,
+        "animated_from_scratch": bool(animate_from_scratch),
         "preparation_status": "prepared", "prepared_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -373,21 +509,33 @@ def ensure_jali_speech_base(
     *, actor: str, script_name: str, maya_node: str, wav_path: str | Path,
     txt_path: str | Path, saved_metadata: dict[str, Any] | None,
     language_code: int, speech_style: int, known_mapped_rigs: Iterable[str],
+    jali_settings: dict[str, Any] | None = None,
+    force_from_scratch: bool = False,
     cmds_module: Any, mel_module: Any,
 ) -> dict[str, Any]:
-    inspected = inspect_jali_speech_base(
-        actor=actor, script_name=script_name, maya_node=maya_node, wav_path=wav_path,
-        txt_path=txt_path, saved_metadata=saved_metadata, cmds_module=cmds_module,
-    )
+    settings = normalize_jali_speech_settings(jali_settings)
+    inspected = {"reusable": False, "reason": "forced from scratch"}
+    # A live node alone cannot prove which silence settings produced it.
+    # Reuse requires sidecar provenance; post-create validation calls inspect
+    # directly and therefore remains independent of saved metadata.
+    if not force_from_scratch and isinstance(saved_metadata, dict):
+        inspected = inspect_jali_speech_base(
+            actor=actor, script_name=script_name, maya_node=maya_node, wav_path=wav_path,
+            txt_path=txt_path, saved_metadata=saved_metadata,
+            jali_settings=settings, cmds_module=cmds_module,
+        )
     if inspected["reusable"]:
         return {
             **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns")},
+            "jali_settings": settings,
+            "animated_from_scratch": False,
             "preparation_status": "reused",
             "prepared_at": str((saved_metadata or {}).get("prepared_at") or datetime.now(timezone.utc).isoformat()),
         }
     return prepare_jali_speech_base(
         actor=actor, script_name=script_name, maya_node=maya_node, wav_path=wav_path,
         txt_path=txt_path, language_code=language_code, speech_style=speech_style,
+        jali_settings=settings, animate_from_scratch=force_from_scratch,
         known_mapped_rigs=known_mapped_rigs, cmds_module=cmds_module, mel_module=mel_module,
     )
 
@@ -395,6 +543,7 @@ def ensure_jali_speech_base(
 def ensure_dual_jali_speech_bases(
     *, actors: Iterable[str], character_mappings: dict[str, dict[str, Any]],
     source_transcripts: dict[str, dict[str, Any]], saved_metadata: dict[str, Any] | None = None,
+    jali_settings: dict[str, Any] | None = None, force_from_scratch: bool = False,
     config_path: str | Path = DEFAULT_MAYA_CONFIG, cmds_module: Any | None = None,
     mel_module: Any | None = None, status_callback: StatusCallback | None = None,
 ) -> dict[str, dict[str, Any]]:
@@ -407,6 +556,7 @@ def ensure_dual_jali_speech_bases(
     if len(names) != 2 or names[0].casefold() == names[1].casefold():
         raise ValueError("Dual JALI speech preparation requires two distinct actors.")
     config = load_jali_speech_base_config(config_path)
+    settings = normalize_jali_speech_settings(jali_settings or config)
     preflight: dict[str, dict[str, Any]] = {}
     for actor in names:
         mapping, source = character_mappings.get(actor), source_transcripts.get(actor)
@@ -436,6 +586,7 @@ def ensure_dual_jali_speech_bases(
                 wav_path=item["wav"], txt_path=item["txt"],
                 saved_metadata=(saved_metadata or {}).get(actor),
                 language_code=config["language_code"], speech_style=config["speech_style"],
+                jali_settings=settings, force_from_scratch=force_from_scratch,
                 known_mapped_rigs=rigs, cmds_module=cmds_module, mel_module=mel_module,
             )
         except Exception:

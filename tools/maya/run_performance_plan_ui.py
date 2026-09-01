@@ -28,6 +28,7 @@ _LOCAL_MODULES = (
     "authoring_requirements",
     "backend_process_runner",
     "animation_apply_runner",
+    "dual_source_transcripts",
     "jali_speech_base",
 )
 

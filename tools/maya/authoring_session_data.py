@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
+import math
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -172,6 +173,21 @@ def validate_authoring_session(session: dict[str, Any]) -> None:
     if session["mode"] == "dual" and len(characters) not in {0, 2}:
         raise ValueError("Dual mode must contain both A and B character mappings, or no mappings.")
     _mapping_rows(session.get("look_at_targets", []), ("semantic_target", "maya_node"))
+    speech_settings = session.get("jali_speech_settings")
+    if speech_settings is not None:
+        if not isinstance(speech_settings, dict):
+            raise ValueError("jali_speech_settings must be an object when present.")
+        filter_silence = speech_settings.get("filter_silence_gaps")
+        threshold = speech_settings.get("silence_threshold_db")
+        from_scratch = speech_settings.get("animate_from_scratch_next")
+        if not isinstance(filter_silence, bool):
+            raise ValueError("jali_speech_settings.filter_silence_gaps must be boolean.")
+        if isinstance(threshold, bool) or not isinstance(threshold, (int, float)):
+            raise ValueError("jali_speech_settings.silence_threshold_db must be numeric.")
+        if not math.isfinite(float(threshold)) or not -100.0 <= float(threshold) <= 0.0:
+            raise ValueError("jali_speech_settings.silence_threshold_db must be between -100 and 0.")
+        if not isinstance(from_scratch, bool):
+            raise ValueError("jali_speech_settings.animate_from_scratch_next must be boolean.")
     speech_bases = session.get("jali_speech_bases", {})
     if not isinstance(speech_bases, dict):
         raise ValueError("jali_speech_bases must be an actor-keyed object.")
@@ -189,6 +205,20 @@ def validate_authoring_session(session: dict[str, Any]) -> None:
             raise ValueError(f"{actor}: invalid JALI speech-base preparation_status.")
         if len(item["txt_sha256"]) != 64:
             raise ValueError(f"{actor}: txt_sha256 must be a SHA-256 hex digest.")
+        item_settings = item.get("jali_settings")
+        if item_settings is not None:
+            if not isinstance(item_settings, dict):
+                raise ValueError(f"{actor}: jali_settings must be an object.")
+            if not isinstance(item_settings.get("filter_silence_gaps"), bool):
+                raise ValueError(f"{actor}: invalid JALI filter_silence_gaps metadata.")
+            item_threshold = item_settings.get("silence_threshold_db")
+            if isinstance(item_threshold, bool) or not isinstance(item_threshold, (int, float)):
+                raise ValueError(f"{actor}: invalid JALI silence_threshold_db metadata.")
+            if not math.isfinite(float(item_threshold)) or not -100.0 <= float(item_threshold) <= 0.0:
+                raise ValueError(f"{actor}: JALI silence_threshold_db metadata is out of range.")
+        animated_from_scratch = item.get("animated_from_scratch")
+        if animated_from_scratch is not None and not isinstance(animated_from_scratch, bool):
+            raise ValueError(f"{actor}: animated_from_scratch metadata must be boolean.")
     inspection_events = session.get("inspection_events", [])
     if not isinstance(inspection_events, list):
         raise ValueError("Authoring session inspection_events must be a list.")

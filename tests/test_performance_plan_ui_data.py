@@ -406,6 +406,96 @@ def test_dual_generate_prepares_native_jali_before_baseline_and_backend_compile(
     assert 'self._animation_failed(f"{stage} failed: {exc}")' in dual
 
 
+def test_dual_generate_preflights_master_audio_before_maya_or_backend_mutation():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _jali_speech_status_label", 1
+    )[0]
+    resolve_at = dual.index("resolve_dual_master_wav(")
+    inspect_at = dual.index("master_audio_timeline_info(")
+    export_at = dual.index("export_dual_source_transcripts(")
+    maya_at = dual.index("ensure_dual_jali_speech_bases(")
+    compile_at = dual.index("self.animation_runner.start_dual(")
+    assert resolve_at < inspect_at < export_at < maya_at < compile_at
+    assert "self._pending_dual_master_audio = None" in dual
+    assert 'stage = "Preflighting master audio"' in dual
+    assert 'self.animation_status.setText("Preflighting master audio...")' in dual
+
+
+def test_advanced_jali_controls_and_seq3_defaults_are_editable_but_not_reset_on_generate():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    advanced = source.split("    def _build_advanced_tab", 1)[1].split(
+        "    def _select_audio_folder", 1
+    )[0]
+    dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _jali_speech_status_label", 1
+    )[0]
+    assert 'QCheckBox("Filter Silence Gaps")' in advanced
+    assert '"Animate from scratch on next Generate"' in advanced
+    assert "setRange(-100.0, 0.0)" in advanced
+    assert "jali_speech_settings_for_audio_folder" in source
+    assert "_apply_jali_sequence_defaults" not in dual
+
+
+def test_dual_generate_passes_jali_settings_and_consumes_one_shot_only_after_success():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _jali_speech_status_label", 1
+    )[0]
+    ensure_at = dual.index("ensure_dual_jali_speech_bases(")
+    consume_at = dual.index("self.jali_animate_from_scratch.setChecked(False)")
+    compile_at = dual.index("self.animation_runner.start_dual(")
+    assert "jali_settings=effective_jali_settings" in dual
+    assert "force_from_scratch=force_from_scratch" in dual
+    assert ensure_at < consume_at < compile_at
+    assert "filter_silence_gaps=" in dual
+    assert "silence_threshold_db=" in dual
+    assert "from_scratch=" in dual
+
+
+def test_jali_ui_settings_are_saved_and_legacy_session_uses_sequence_defaults():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    restore = source.split("    def _restore_authoring_session", 1)[1].split(
+        "    def _build_authoring_session_data", 1
+    )[0]
+    build = source.split("    def _build_authoring_session_data", 1)[1].split(
+        "    def _save_authoring_session_for_path", 1
+    )[0]
+    assert 'session.get("jali_speech_settings")' in restore
+    assert "self._apply_jali_sequence_defaults()" in restore
+    assert '"jali_speech_settings": self._jali_speech_settings_data()' in build
+
+
+def test_dual_timeline_audio_applies_only_after_all_animation_channels_succeed():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    succeeded = source.split("    def _animation_compile_succeeded", 1)[1].split(
+        "    def _animation_failed", 1
+    )[0]
+    speaker_at = succeeded.index("apply_dual_speaker_emotion_artifacts(")
+    listener_at = succeeded.index("apply_dual_listener_mask_artifacts(")
+    gaze_at = succeeded.index("apply_dual_gaze_only_artifacts(")
+    overlay_at = succeeded.index("apply_dual_v2_head_blink_overlays(")
+    timeline_at = succeeded.index("apply_master_audio_to_maya_timeline(")
+    assert max(speaker_at, listener_at, gaze_at, overlay_at) < timeline_at
+    assert "path={timeline_audio['path']}" in succeeded
+    assert "seconds={timeline_audio['seconds']:.3f}" in succeeded
+    assert "end_frame={timeline_audio['end_frame']}" in succeeded
+    assert "node_action={'reused' if timeline_audio['audio_node_reused'] else 'created'}" in succeeded
+
+
+def test_dual_master_audio_pending_state_clears_on_success_and_failure():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    succeeded = source.split("    def _animation_compile_succeeded", 1)[1].split(
+        "    def _animation_failed", 1
+    )[0]
+    failed = source.split("    def _animation_failed", 1)[1].split(
+        "    def _restore_jali_base", 1
+    )[0]
+    assert "self._pending_dual_master_audio = None" in succeeded
+    assert "self._pending_dual_master_audio = None" in failed
+    assert 'self._animation_failed(f"Maya apply failed: {exc}")' in succeeded
+
+
 def test_jali_speech_runtime_metadata_is_sidecar_only_and_not_semantic_dirty_state():
     source = (Path(__file__).resolve().parents[1] / "tools/maya/performance_plan_ui.py").read_text(encoding="utf-8")
     build = source.split("    def _build_authoring_session_data", 1)[1].split(
@@ -435,6 +525,7 @@ def test_maya_launcher_clears_stale_local_helper_modules_before_loading_ui():
     source = (MAYA_TOOLS / "run_performance_plan_ui.py").read_text(encoding="utf-8")
     assert '"performance_plan_ui_data"' in source
     assert '"performance_score_model"' in source
+    assert '"dual_source_transcripts"' in source
     assert "sys.modules.pop(name, None)" in source
     assert "Path(cached_path).resolve().parent == tools_root" in source
 

@@ -24,6 +24,7 @@ from authoring_session_data import (  # noqa: E402
     record_study_ui_mode_change,
     save_authoring_session,
     study_ui_section_state,
+    validate_authoring_session,
 )
 
 
@@ -212,6 +213,26 @@ def test_jali_speech_base_runtime_metadata_round_trips_without_semantic_events(t
     loaded = load_authoring_session(path)
     assert loaded["jali_speech_bases"] == speech_bases
     assert loaded["semantic_edit_events"] == []
+
+
+def test_optional_jali_settings_round_trip_and_legacy_sessions_remain_valid(tmp_path: Path):
+    settings = {
+        "filter_silence_gaps": True,
+        "silence_threshold_db": -60.0,
+        "animate_from_scratch_next": True,
+    }
+    session = build_authoring_session(
+        sequence_id="Seq3", mode="dual", audio_folder="C:/audio/Seq3",
+        characters=[
+            {"alias": "A", "script_name": "DION", "maya_node": "DION:JALI_GRP"},
+            {"alias": "B", "script_name": "MARTY", "maya_node": "MARTY:JALI_GRP"},
+        ],
+        look_at_targets=[], base={"jali_speech_settings": settings},
+    )
+    assert session["jali_speech_settings"] == settings
+    legacy = dict(session)
+    legacy.pop("jali_speech_settings")
+    validate_authoring_session(legacy)
 
 
 def test_separate_event_streams_support_before_first_semantic_edit_metric():

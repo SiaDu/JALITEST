@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 import sys
 from types import SimpleNamespace
+import wave
 
 import pytest
 
@@ -14,6 +15,7 @@ if str(MAYA_TOOLS) not in sys.path:
 
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
+    apply_master_audio_to_maya_timeline,
     build_explicit_target_map,
     qualify_rig_control,
     adapt_dual_gaze_events,
@@ -57,11 +59,147 @@ from animation_apply_runner import (  # noqa: E402
     _v2_overlay_config,
     _resolve_user_blink_brow_plugs,
     micro_saccade_layer_name,
+    master_audio_timeline_info,
     idle_head_layer_name,
     plan_idle_head_drift,
 )
 from listener_mask_library import AU_TO_USER_CONTROL, FACTORY_MASK_AUS, user_pose_for_mask  # noqa: E402
 from diagnose_eyelid_user_mappings import diagnose_eyelid_user_mappings  # noqa: E402
+
+
+def _write_wav(path: Path, *, seconds: float, sample_rate: int = 100) -> None:
+    with wave.open(str(path), "wb") as audio:
+        audio.setnchannels(1)
+        audio.setsampwidth(2)
+        audio.setframerate(sample_rate)
+        audio.writeframes(b"\0\0" * int(seconds * sample_rate))
+
+
+class _TimelineCmds:
+    def __init__(self, sounds=None, *, animation_start=-12.0, maximum=240.0):
+        self.sounds = {
+            node: {"file": str(row["file"]), "offset": float(row.get("offset", 0))}
+            for node, row in (sounds or {}).items()
+        }
+        self.animation_start = float(animation_start)
+        self.options = {
+            "minTime": 0.0,
+            "maxTime": float(maximum),
+            "animationEndTime": float(maximum),
+        }
+        self.time_controls = []
+        self.sound_edits = []
+
+    def ls(self, **kwargs):
+        assert kwargs == {"type": "audio"}
+        return list(self.sounds)
+
+    def sound(self, node=None, **kwargs):
+        if kwargs.get("query") and kwargs.get("file"):
+            return self.sounds[str(node)]["file"]
+        if kwargs.get("edit"):
+            self.sounds[str(node)]["offset"] = float(kwargs["offset"])
+            self.sound_edits.append(str(node))
+            return node
+        base = str(kwargs["name"])
+        created = base
+        suffix = 1
+        while created in self.sounds:
+            created = f"{base}{suffix}"; suffix += 1
+        self.sounds[created] = {
+            "file": str(kwargs["file"]),
+            "offset": float(kwargs["offset"]),
+        }
+        return created
+
+    def getAttr(self, plug):
+        node, attribute = plug.rsplit(".", 1)
+        if attribute == "filename":
+            return self.sounds[node]["file"]
+        raise KeyError(plug)
+
+    def timeControl(self, slider, **kwargs):
+        self.time_controls.append((slider, dict(kwargs)))
+
+    def playbackOptions(self, **kwargs):
+        if kwargs.get("query") and kwargs.get("animationStartTime"):
+            return self.animation_start
+        if "animationStartTime" in kwargs:
+            self.animation_start = float(kwargs["animationStartTime"])
+        self.options.update({key: float(value) for key, value in kwargs.items()})
+
+
+def test_master_audio_duration_uses_ceil_and_rejects_zero_length(tmp_path):
+    wav = tmp_path / "SeqT.wav"; _write_wav(wav, seconds=42)
+    assert master_audio_timeline_info(wav, 30) == {
+        "path": str(wav.resolve()),
+        "seconds": 42.0,
+        "fps": 30.0,
+        "end_frame": 1260,
+    }
+    fractional = tmp_path / "fractional.wav"; _write_wav(fractional, seconds=1.01)
+    assert master_audio_timeline_info(fractional, 30)["end_frame"] == 31
+    empty = tmp_path / "empty.wav"; _write_wav(empty, seconds=0)
+    with pytest.raises(ValueError, match="positive sample rate and audio length"):
+        master_audio_timeline_info(empty, 30)
+
+
+def test_master_audio_timeline_reuses_node_preserves_other_audio_and_negative_start(tmp_path):
+    master = tmp_path / "SeqT.wav"; _write_wav(master, seconds=42)
+    agnes = tmp_path / "SeqT_AGNES.wav"; _write_wav(agnes, seconds=20)
+    will = tmp_path / "SeqT_WILL.wav"; _write_wav(will, seconds=18)
+    other = tmp_path / "reference.wav"; _write_wav(other, seconds=3)
+    sounds = {
+        "agnesAudio": {"file": agnes, "offset": 4},
+        "willAudio": {"file": will, "offset": 7},
+        "referenceAudio": {"file": other, "offset": 9},
+        "existingMaster": {"file": master.resolve(), "offset": 22},
+    }
+    cmds = _TimelineCmds(sounds, animation_start=-24, maximum=2000)
+    mel = SimpleNamespace(eval=lambda expression: "timeControl1" if "$gPlayBackSlider" in expression else "")
+
+    result = apply_master_audio_to_maya_timeline(
+        master, 30, cmds_module=cmds, mel_module=mel
+    )
+    again = apply_master_audio_to_maya_timeline(
+        master, 30, cmds_module=cmds, mel_module=mel
+    )
+
+    assert result["audio_node"] == again["audio_node"] == "existingMaster"
+    assert result["audio_node_reused"] is True and len(cmds.sounds) == 4
+    assert cmds.sounds["existingMaster"]["offset"] == 0
+    assert cmds.sounds["agnesAudio"]["offset"] == 4
+    assert cmds.sounds["willAudio"]["offset"] == 7
+    assert cmds.sounds["referenceAudio"]["offset"] == 9
+    assert cmds.animation_start == -24
+    assert cmds.options == {"minTime": 0.0, "maxTime": 1260.0, "animationEndTime": 1260.0}
+    assert cmds.time_controls[-1] == (
+        "timeControl1",
+        {"edit": True, "sound": "existingMaster", "displaySound": True},
+    )
+
+
+def test_master_audio_timeline_creates_at_zero_and_can_lengthen_and_shorten(tmp_path):
+    long_wav = tmp_path / "long.wav"; _write_wav(long_wav, seconds=10)
+    short_wav = tmp_path / "short.wav"; _write_wav(short_wav, seconds=2)
+    cmds = _TimelineCmds(animation_start=10, maximum=100)
+    mel = SimpleNamespace(eval=lambda _expression: "playbackSlider")
+
+    long_result = apply_master_audio_to_maya_timeline(
+        long_wav, 30, cmds_module=cmds, mel_module=mel
+    )
+    assert long_result["audio_node_reused"] is False
+    assert cmds.sounds["long"]["offset"] == 0
+    assert cmds.options["maxTime"] == 300
+    assert cmds.animation_start == 0
+
+    short_result = apply_master_audio_to_maya_timeline(
+        short_wav, 30, cmds_module=cmds, mel_module=mel
+    )
+    assert short_result["audio_node"] == "short"
+    assert cmds.options["minTime"] == 0
+    assert cmds.options["maxTime"] == cmds.options["animationEndTime"] == 60
+    assert len(cmds.sounds) == 2
 
 
 def test_v2_overlay_config_uses_maya_safe_yaml_fallback_without_pyyaml(monkeypatch):

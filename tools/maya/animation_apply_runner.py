@@ -12,6 +12,7 @@ import re
 import shutil
 import sys
 from typing import Any, Iterable
+import wave
 
 from listener_mask_library import AU_TO_USER_CONTROL, EYELID_AUS, PROVENANCE, mapped_user_plugs, parse_mask_state, unmapped_expressive_eyelid_aus, user_pose_for_mask
 
@@ -46,6 +47,111 @@ def current_scene_fps() -> float:
     from maya import cmds  # type: ignore
 
     return scene_fps_from_unit(str(cmds.currentUnit(query=True, time=True)))
+
+
+def master_audio_timeline_info(
+    wav_path: str | Path, scene_fps: float
+) -> dict[str, Any]:
+    """Read a master WAV and calculate Maya's inclusive playback end frame."""
+    path = Path(wav_path).expanduser().resolve()
+    fps = float(scene_fps)
+    if not math.isfinite(fps) or fps <= 0:
+        raise ValueError(f"Scene FPS must be positive and finite; got {scene_fps!r}.")
+    if not path.is_file():
+        raise FileNotFoundError(f"Master WAV does not exist: {path}")
+    try:
+        with wave.open(str(path), "rb") as audio:
+            sample_rate = int(audio.getframerate())
+            sample_frames = int(audio.getnframes())
+    except (OSError, wave.Error) as exc:
+        raise ValueError(f"Could not read master WAV {path}: {exc}") from exc
+    if sample_rate <= 0 or sample_frames <= 0:
+        raise ValueError(
+            f"Master WAV must contain positive sample rate and audio length: {path}"
+        )
+    seconds = sample_frames / float(sample_rate)
+    end_frame = int(math.ceil(seconds * fps))
+    if not math.isfinite(seconds) or seconds <= 0 or end_frame <= 0:
+        raise ValueError(f"Master WAV has an invalid or zero duration: {path}")
+    return {
+        "path": str(path),
+        "seconds": seconds,
+        "fps": fps,
+        "end_frame": end_frame,
+    }
+
+
+def _absolute_audio_path_key(value: str | Path) -> str:
+    raw = os.path.expandvars(os.path.expanduser(str(value).strip()))
+    if not raw:
+        return ""
+    return os.path.normcase(str(Path(raw).resolve()))
+
+
+def apply_master_audio_to_maya_timeline(
+    wav_path: str | Path,
+    scene_fps: float,
+    *,
+    cmds_module: Any | None = None,
+    mel_module: Any | None = None,
+) -> dict[str, Any]:
+    """Display one master WAV and match Maya playback range to its full duration."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    if mel_module is None:
+        from maya import mel as mel_module  # type: ignore
+    info = master_audio_timeline_info(wav_path, scene_fps)
+    target_key = _absolute_audio_path_key(info["path"])
+    audio_node = ""
+    for node in cmds_module.ls(type="audio") or []:
+        try:
+            node_path = cmds_module.sound(node, query=True, file=True)
+        except Exception:
+            try:
+                node_path = cmds_module.getAttr(f"{node}.filename")
+            except Exception:
+                continue
+        if _absolute_audio_path_key(node_path) == target_key:
+            audio_node = str(node)
+            break
+    reused = bool(audio_node)
+    if reused:
+        cmds_module.sound(audio_node, edit=True, offset=0)
+    else:
+        audio_node = str(
+            cmds_module.sound(
+                file=info["path"], name=Path(info["path"]).stem, offset=0
+            )
+        )
+    playback_slider = str(mel_module.eval("$tmp = $gPlayBackSlider") or "").strip()
+    if not playback_slider:
+        raise RuntimeError("Could not resolve Maya playback slider for master audio.")
+    cmds_module.timeControl(
+        playback_slider,
+        edit=True,
+        sound=audio_node,
+        displaySound=True,
+    )
+    animation_start = float(
+        cmds_module.playbackOptions(query=True, animationStartTime=True)
+    )
+    playback_options: dict[str, float] = {
+        "minTime": 0.0,
+        "maxTime": float(info["end_frame"]),
+        "animationEndTime": float(info["end_frame"]),
+    }
+    if animation_start >= 0:
+        animation_start = 0.0
+        playback_options["animationStartTime"] = animation_start
+    cmds_module.playbackOptions(**playback_options)
+    return {
+        **info,
+        "audio_node": audio_node,
+        "audio_node_reused": reused,
+        "offset": 0.0,
+        "playback_slider": playback_slider,
+        "animation_start_time": animation_start,
+    }
 
 
 def build_explicit_target_map(

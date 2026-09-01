@@ -8,17 +8,79 @@ import shutil
 from typing import Iterable
 
 
+def _top_level_wavs(folder: Path) -> list[Path]:
+    return sorted(
+        (
+            path
+            for path in folder.iterdir()
+            if path.is_file() and path.suffix.casefold() == ".wav"
+        ),
+        key=lambda path: path.name.casefold(),
+    )
+
+
+def _character_token_pattern(character: str, *, at_end: bool = False) -> re.Pattern[str]:
+    tokens = re.findall(r"[^\W_]+", str(character), flags=re.UNICODE)
+    if not tokens:
+        raise ValueError("Script Character names must contain letters or numbers.")
+    separator = r"[\W_]+"
+    body = separator.join(re.escape(token) for token in tokens)
+    suffix = r"$" if at_end else r"(?![^\W_])"
+    return re.compile(r"(?<![^\W_])" + body + suffix, flags=re.IGNORECASE)
+
+
 def resolve_character_wav(audio_folder: str | Path, character: str) -> Path:
     folder, name = Path(audio_folder), str(character).strip()
     if not folder.is_dir():
         raise ValueError("Input Audio Folder does not exist.")
-    candidates = [path for path in folder.glob("*.wav") if path.stem.casefold() == name.casefold()]
+    wavs = _top_level_wavs(folder)
+    candidates = [path for path in wavs if path.stem.casefold() == name.casefold()]
     if not candidates:
-        candidates = [path for path in folder.glob("*.wav") if path.stem.casefold().endswith("_" + name.casefold())]
+        suffix = _character_token_pattern(name, at_end=True)
+        candidates = [path for path in wavs if suffix.search(path.stem)]
     if len(candidates) != 1:
         label = "No WAV" if not candidates else "Ambiguous WAVs"
         rendered = ", ".join(str(path) for path in candidates) or "none"
         raise ValueError(f"{label} for {name!r}: {rendered}")
+    return candidates[0].resolve()
+
+
+def resolve_dual_master_wav(
+    audio_folder: str | Path,
+    characters: Iterable[str],
+    *,
+    character_wavs: Iterable[str | Path] | None = None,
+) -> Path:
+    """Resolve the one top-level WAV that is not attributable to either actor."""
+    folder = Path(audio_folder)
+    if not folder.is_dir():
+        raise ValueError("Input Audio Folder does not exist.")
+    names = [str(name).strip() for name in characters]
+    if len(names) != 2 or not all(names) or names[0].casefold() == names[1].casefold():
+        raise ValueError("Master WAV resolution requires two distinct Script Character names.")
+    resolved_character_wavs = (
+        [Path(path).resolve() for path in character_wavs]
+        if character_wavs is not None
+        else [resolve_character_wav(folder, name) for name in names]
+    )
+    if len(resolved_character_wavs) != 2:
+        raise ValueError("Master WAV resolution requires two resolved character WAVs.")
+    excluded_paths = {str(path).casefold() for path in resolved_character_wavs}
+    character_patterns = [_character_token_pattern(name) for name in names]
+    wavs = _top_level_wavs(folder)
+    candidates = [
+        path.resolve()
+        for path in wavs
+        if str(path.resolve()).casefold() not in excluded_paths
+        and not any(pattern.search(path.stem) for pattern in character_patterns)
+    ]
+    if len(candidates) != 1:
+        rendered = ", ".join(str(path) for path in candidates) or "none"
+        scanned = ", ".join(str(path.resolve()) for path in wavs) or "none"
+        raise ValueError(
+            "Expected exactly one master WAV after excluding character audio; "
+            f"found {len(candidates)}. Candidates: {rendered}. Top-level WAVs: {scanned}"
+        )
     return candidates[0]
 
 
