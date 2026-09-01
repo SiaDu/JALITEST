@@ -19,6 +19,7 @@ from jali_speech_base import (  # noqa: E402
     jali_speech_settings_for_audio_folder,
     load_jali_speech_base_config,
     prepare_jali_speech_base,
+    resolve_existing_jali_speech_base,
     speech_base_status_text,
     transcript_sha256,
 )
@@ -31,7 +32,10 @@ class FakeCmds:
         self.selection = ["prop_CTRL"]
         self.select_calls: list[tuple[object, dict]] = []
 
-    def add_jsync(self, rig: str, node_name: str, sound: str, txt: Path) -> str:
+    def add_jsync(
+        self, rig: str, node_name: str, sound: str, txt: Path,
+        *, filter_silence: bool = True, threshold: float = -35.0,
+    ) -> str:
         node = f"{rig}|speech|{node_name}"
         self.nodes.add(node)
         self.values[f"{node}.sound_file"] = sound
@@ -39,6 +43,8 @@ class FakeCmds:
         self.values[f"{node}.transcript"] = txt.read_text(encoding="utf-8")
         self.values[f"{node}.sound_file_format"] = ".wav"
         self.values[f"{node}.output_path"] = str(txt.parent)
+        self.values[f"{node}.silence_handling"] = int(filter_silence)
+        self.values[f"{node}.silence_handling_decibel"] = float(threshold)
         (txt.parent / f"{sound}_PraatOutput.txt").write_text(
             "alignment", encoding="utf-8"
         )
@@ -79,6 +85,21 @@ class FakeCmds:
         else:
             self.selection = list(items or [])
 
+    def delete(self, items):
+        for node in list(items if isinstance(items, (list, tuple)) else [items]):
+            self.nodes.discard(node)
+            for plug in [key for key in self.values if key.startswith(node + ".")]:
+                self.values.pop(plug)
+
+    def rename(self, node, short_name):
+        parent = node.rsplit("|", 1)[0]
+        renamed = parent + "|" + short_name
+        self.nodes.remove(node)
+        self.nodes.add(renamed)
+        for plug in [key for key in self.values if key.startswith(node + ".")]:
+            self.values[renamed + plug[len(node):]] = self.values.pop(plug)
+        return renamed
+
 
 class FakeMel:
     def __init__(self, *, available=True, on_call=None, fail_call=False):
@@ -96,11 +117,12 @@ class FakeMel:
 
     def eval(self, command):
         self.calls.append(command)
-        if command == 'exists "call_jSync"':
-            return int(self.available)
         exists = re.fullmatch(r'exists "([^"]+)"', command)
         if exists:
-            return int(exists.group(1) in self.getters)
+            name = exists.group(1)
+            if name in {"jali_prepare_folder_for_aligning", "jAnalyze_batch", "call_jSync"}:
+                return int(self.available)
+            return int(name in self.getters)
         getter_definition = re.search(
             r"global proc (?:int|float) (\w+)\(\).*\$(\w+); return",
             command,
@@ -126,6 +148,13 @@ class FakeMel:
             return None
         if command == "JaliMayaStart(0);":
             self.available = True
+            return None
+        if command.startswith("jAnalyze_batch"):
+            quoted = re.findall(r'"([^"]+)"', command)
+            sound = quoted[2]
+            Path(quoted[1]).joinpath(f"{sound}_PraatOutput.txt").write_text(
+                "alignment", encoding="utf-8"
+            )
             return None
         if command.startswith("call_jSync"):
             self.settings_at_call.append(dict(self.globals))
@@ -226,12 +255,91 @@ def test_no_existing_jsync_calls_jali_once_and_verifies_new_node(tmp_path):
     assert '/", "' in command
 
 
-def test_jali_alignment_settings_are_applied_during_call_and_restored(tmp_path):
+def test_native_alignment_runs_prepare_analyze_then_create(tmp_path):
     source = sources(tmp_path)["AGNES"]
     cmds = FakeCmds()
     mel = FakeMel(
         on_call=lambda: cmds.add_jsync(
             "|AGNES|JALI_GRP", "jSync17", "SeqT_AGNES", Path(source["txt"])
+        )
+    )
+    prepare_jali_speech_base(
+        actor="AGNES", script_name="AGNES", maya_node="|AGNES|JALI_GRP",
+        wav_path=source["wav"], txt_path=source["txt"], language_code=0,
+        speech_style=0, known_mapped_rigs=("|AGNES|JALI_GRP", "|WILL|JALI_GRP"),
+        cmds_module=cmds, mel_module=mel,
+    )
+    prepare_at = next(i for i, call in enumerate(mel.calls) if call.startswith("jali_prepare_folder_for_aligning"))
+    analyze_at = next(i for i, call in enumerate(mel.calls) if call.startswith("jAnalyze_batch"))
+    create_at = next(i for i, call in enumerate(mel.calls) if call.startswith("call_jSync"))
+    assert prepare_at < analyze_at < create_at
+
+
+def test_created_jsync_persists_requested_silence_settings(tmp_path):
+    source = sources(tmp_path)["AGNES"]
+    cmds = FakeCmds()
+    mel = FakeMel(
+        on_call=lambda: cmds.add_jsync(
+            "|AGNES|JALI_GRP", "jSync17", "SeqT_AGNES", Path(source["txt"]),
+            threshold=-35.0,
+        )
+    )
+    result = prepare_jali_speech_base(
+        actor="AGNES", script_name="AGNES", maya_node="|AGNES|JALI_GRP",
+        wav_path=source["wav"], txt_path=source["txt"], language_code=0,
+        speech_style=0,
+        jali_settings={"filter_silence_gaps": True, "silence_threshold_db": -60},
+        known_mapped_rigs=("|AGNES|JALI_GRP", "|WILL|JALI_GRP"),
+        cmds_module=cmds, mel_module=mel,
+    )
+    assert result["actual_jali_settings"] == {
+        "filter_silence_gaps": True,
+        "silence_threshold_db": -60.0,
+    }
+    assert cmds.values[f"{result['jsync']}.silence_handling_decibel"] == -60.0
+
+
+def test_overlay_only_resolves_existing_jsync_without_mel_or_file_changes(tmp_path):
+    source = sources(tmp_path)["AGNES"]
+    cmds = FakeCmds()
+    jsync = cmds.add_jsync(
+        "|AGNES|JALI_GRP", "jSync23", "SeqT_AGNES", Path(source["txt"])
+    )
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    result = resolve_existing_jali_speech_base(
+        actor="AGNES", script_name="AGNES", maya_node="|AGNES|JALI_GRP",
+        wav_path=source["wav"], cmds_module=cmds,
+    )
+    after = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    assert result["jsync"] == jsync
+    assert result["preparation_status"] == "existing"
+    assert after == before
+
+
+def test_overlay_only_requires_one_exact_sound_match(tmp_path):
+    source = sources(tmp_path)["AGNES"]
+    cmds = FakeCmds()
+    with pytest.raises(RuntimeError, match="Run JALI Animate from File"):
+        resolve_existing_jali_speech_base(
+            actor="AGNES", script_name="AGNES", maya_node="|AGNES|JALI_GRP",
+            wav_path=source["wav"], cmds_module=cmds,
+        )
+    cmds.add_jsync("|AGNES|JALI_GRP", "jSync1", "SeqT_AGNES", Path(source["txt"]))
+    cmds.add_jsync("|AGNES|JALI_GRP", "jSync2", "SeqT_AGNES", Path(source["txt"]))
+    with pytest.raises(RuntimeError, match="found 2"):
+        resolve_existing_jali_speech_base(
+            actor="AGNES", script_name="AGNES", maya_node="|AGNES|JALI_GRP",
+            wav_path=source["wav"], cmds_module=cmds,
+        )
+
+
+def test_jali_alignment_settings_are_applied_during_call_and_restored(tmp_path):
+    source = sources(tmp_path)["AGNES"]
+    cmds = FakeCmds()
+    mel = FakeMel(
+        on_call=lambda: cmds.add_jsync(
+            "|AGNES|JALI_GRP", "jSync17", "SeqT_AGNES", Path(source["txt"]),
+            threshold=-60.0,
         )
     )
     result = prepare_jali_speech_base(
@@ -266,7 +374,8 @@ def test_setting_change_and_force_from_scratch_both_bypass_reuse(tmp_path):
         saved = metadata("AGNES", rig, old, source)
         mel = FakeMel(
             on_call=lambda c=cmds: c.add_jsync(
-                rig, "jSync17", "SeqT_AGNES", Path(source["txt"])
+                rig, "jSync17", "SeqT_AGNES", Path(source["txt"]),
+                threshold=threshold,
             )
         )
         result = ensure_jali_speech_base(
@@ -299,7 +408,7 @@ def test_legacy_metadata_without_jali_settings_is_not_reused(tmp_path):
     assert "jali_settings" in inspected["reason"]
 
 
-def test_live_node_without_saved_provenance_is_reprepared(tmp_path):
+def test_live_node_without_saved_provenance_is_safely_adopted(tmp_path):
     source = sources(tmp_path)["AGNES"]
     rig = "|AGNES|JALI_GRP"
     cmds = FakeCmds()
@@ -317,15 +426,19 @@ def test_live_node_without_saved_provenance_is_reprepared(tmp_path):
         known_mapped_rigs=(rig, "|WILL|JALI_GRP"),
         cmds_module=cmds, mel_module=mel,
     )
-    assert result["preparation_status"] == "prepared"
-    assert len(mel.settings_at_call) == 1
+    assert result["preparation_status"] == "reused"
+    assert result["jsync"].endswith("jSync1")
+    assert mel.settings_at_call == []
 
 
 def test_threshold_does_not_invalidate_when_silence_filter_is_off(tmp_path):
     source = sources(tmp_path)["AGNES"]
     rig = "|AGNES|JALI_GRP"
     cmds = FakeCmds()
-    jsync = cmds.add_jsync(rig, "jSync17", "SeqT_AGNES", Path(source["txt"]))
+    jsync = cmds.add_jsync(
+        rig, "jSync17", "SeqT_AGNES", Path(source["txt"]),
+        filter_silence=False,
+    )
     saved = metadata("AGNES", rig, jsync, source)
     saved["jali_settings"] = {
         "filter_silence_gaps": False,
@@ -397,7 +510,7 @@ def test_changed_transcript_content_invalidates_same_path(tmp_path):
         txt_path=source["txt"], saved_metadata=saved, cmds_module=cmds,
     )
     assert inspected["reusable"] is False
-    assert "txt_sha256" in inspected["reason"]
+    assert "transcript content" in inspected["reason"]
 
 
 def test_node_identity_without_completed_native_speech_is_not_reusable(tmp_path):
@@ -418,7 +531,7 @@ def test_node_identity_without_completed_native_speech_is_not_reusable(tmp_path)
     assert "no transcript" in inspected["reason"]
 
 
-def test_changed_transcript_reprepares_and_keeps_old_node_as_stale(tmp_path):
+def test_changed_transcript_reprepares_and_replaces_old_node(tmp_path):
     all_sources = sources(tmp_path); source = all_sources["AGNES"]; cmds = FakeCmds(); rig = "|AGNES|JALI_GRP"
     old = cmds.add_jsync(rig, "jSync1", "SeqT_AGNES", Path(source["txt"]))
     saved = metadata("AGNES", rig, old, source)
@@ -433,9 +546,10 @@ def test_changed_transcript_reprepares_and_keeps_old_node_as_stale(tmp_path):
     )
     assert calls == ["call"]
     assert result["preparation_status"] == "prepared"
-    assert result["jsync"].endswith("jSync17")
+    assert result["jsync"].endswith("jSync1")
     assert old in cmds.nodes
-    assert str(cmds.values[f"{old}.sound_file"]).startswith("SeqT_AGNES__JALITEST_STALE_")
+    assert cmds.values[f"{old}.sound_file"] == "SeqT_AGNES"
+    assert not any(node.endswith("jSync17") for node in cmds.nodes)
     assert (tmp_path / "SeqT_AGNES_PraatOutput.txt").is_file()
     assert list(tmp_path.glob("SeqT_AGNES_PraatOutput.txt.JALITEST_STALE_*"))
 
@@ -486,7 +600,11 @@ def test_dual_resolution_does_not_depend_on_jsync_numbering(tmp_path):
 def test_startup_existing_source_success_and_still_missing_failure(tmp_path):
     already = FakeMel(available=True)
     assert ensure_jali_runtime_available(mel_module=already) is None
-    assert already.calls == ['exists "call_jSync"']
+    assert already.calls == [
+        'exists "jali_prepare_folder_for_aligning"',
+        'exists "jAnalyze_batch"',
+        'exists "call_jSync"',
+    ]
     startup = tmp_path / "scripts" / "JaliMayaStart.mel"; startup.parent.mkdir(); startup.write_text("// test")
     missing = FakeMel(available=False)
     assert ensure_jali_runtime_available(mel_module=missing, install_path=tmp_path) == startup
@@ -495,7 +613,7 @@ def test_startup_existing_source_success_and_still_missing_failure(tmp_path):
         def eval(self, command):
             self.calls.append(command)
             return 0 if command == 'exists "call_jSync"' else None
-    with pytest.raises(RuntimeError, match="call_jSync is not loaded"):
+    with pytest.raises(RuntimeError, match="native Animate from File pipeline is not loaded"):
         ensure_jali_runtime_available(mel_module=NeverAvailable(available=False), install_path=tmp_path)
 
 
@@ -511,7 +629,26 @@ def test_selection_restored_after_failed_preparation(tmp_path):
     assert cmds.selection == ["prop_CTRL"]
 
 
-def test_failed_call_preserves_but_retires_new_partial_jsync(tmp_path):
+def test_failed_replacement_restores_old_node_and_alignment(tmp_path):
+    source = sources(tmp_path)["AGNES"]
+    cmds = FakeCmds()
+    rig = "|AGNES|JALI_GRP"
+    old = cmds.add_jsync(rig, "jSync1", "SeqT_AGNES", Path(source["txt"]))
+    alignment = tmp_path / "SeqT_AGNES_PraatOutput.txt"
+    alignment.write_text("original alignment", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="alignment failed"):
+        prepare_jali_speech_base(
+            actor="AGNES", script_name="AGNES", maya_node=rig,
+            wav_path=source["wav"], txt_path=source["txt"], language_code=0,
+            speech_style=0, known_mapped_rigs=(rig, "|WILL|JALI_GRP"),
+            cmds_module=cmds, mel_module=FakeMel(fail_call=True),
+        )
+    assert old in cmds.nodes
+    assert cmds.values[f"{old}.sound_file"] == "SeqT_AGNES"
+    assert alignment.read_text(encoding="utf-8") == "original alignment"
+
+
+def test_failed_call_removes_new_partial_jsync(tmp_path):
     source = sources(tmp_path)["AGNES"]
     cmds = FakeCmds()
 
@@ -535,10 +672,7 @@ def test_failed_call_preserves_but_retires_new_partial_jsync(tmp_path):
             mel_module=FakeMel(on_call=create_then_fail),
         )
     partial = "|AGNES|JALI_GRP|speech|jSync17"
-    assert partial in cmds.nodes
-    assert str(cmds.values[f"{partial}.sound_file"]).startswith(
-        "SeqT_AGNES__JALITEST_FAILED_"
-    )
+    assert partial not in cmds.nodes
     assert cmds.selection == ["prop_CTRL"]
 
 

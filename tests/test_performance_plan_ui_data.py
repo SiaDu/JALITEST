@@ -461,9 +461,28 @@ def test_dual_generate_passes_jali_settings_and_consumes_one_shot_only_after_suc
     assert "jali_settings=effective_jali_settings" in dual
     assert "force_from_scratch=force_from_scratch" in dual
     assert ensure_at < consume_at < compile_at
-    assert "filter_silence_gaps=" in dual
-    assert "silence_threshold_db=" in dual
+    assert "requested_filter=" in dual
+    assert "requested_threshold_db=" in dual
+    assert "actual_filter=" in dual
+    assert "actual_threshold_db=" in dual
     assert "from_scratch=" in dual
+
+
+def test_dual_generate_defaults_to_one_shot_overlay_only_jali_mode():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    assert 'QCheckBox(\n            "Prepare JALI Speech on next Generate"' in source
+    assert "self.prepare_jali_speech_next.setChecked(False)" in source
+    assert "self.prepare_jali_speech_next.setChecked(False)" in source.split(
+        "    def load_plan", 1
+    )[1]
+    dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(
+        "    def _jali_speech_status_label", 1
+    )[0]
+    assert "if prepare_requested:" in dual
+    assert "resolve_existing_jali_speech_base(" in dual
+    assert "JALI preparation skipped" in dual
+    assert dual.index("if prepare_requested:") < dual.index("export_dual_source_transcripts(")
+    assert "self.prepare_jali_speech_next.setChecked(False)" in dual
 
 
 def test_jali_ui_settings_are_saved_and_legacy_session_uses_sequence_defaults():

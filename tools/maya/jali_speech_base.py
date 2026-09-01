@@ -27,9 +27,13 @@ REQUIRED_JSYNC_ATTRS = (
     "text_input_path",
     "transcript",
     "sound_file_format",
+    "silence_handling",
+    "silence_handling_decibel",
 )
 STATUS_TEXT = {
     "will_prepare": "Will prepare automatically",
+    "existing": "Ready - Existing",
+    "existing_required": "Use existing JALI speech",
     "waiting": "Waiting...",
     "preparing": "Preparing JALI speech...",
     "reused": "Ready - Reused",
@@ -163,10 +167,11 @@ def _mel_folder(value: str | Path) -> str:
 def ensure_jali_runtime_available(
     *, mel_module: Any | None = None, install_path: str | Path | None = None,
 ) -> Path | None:
-    """Load JALI's documented startup script when ``call_jSync`` is absent."""
+    """Load JALI's documented native Animate-from-File pipeline when absent."""
     if mel_module is None:
         from maya import mel as mel_module  # type: ignore
-    if mel_module.eval('exists "call_jSync"'):
+    required = ("jali_prepare_folder_for_aligning", "jAnalyze_batch", "call_jSync")
+    if all(mel_module.eval(f'exists "{name}"') for name in required):
         return None
     install = Path(install_path or os.environ.get("JALI_INSTALL") or "C:/ProgramData/Jali")
     startup = install / "scripts" / "JaliMayaStart.mel"
@@ -177,9 +182,11 @@ def ensure_jali_runtime_available(
         )
     mel_module.eval(f'source "{_mel_string(startup)}";')
     mel_module.eval("JaliMayaStart(0);")
-    if not mel_module.eval('exists "call_jSync"'):
+    missing = [name for name in required if not mel_module.eval(f'exists "{name}"')]
+    if missing:
         raise RuntimeError(
-            "Automatic JALI preparation is unavailable because call_jSync is not loaded. "
+            "Automatic JALI preparation is unavailable because the native Animate from File "
+            f"pipeline is not loaded ({', '.join(missing)}). "
             "Check the JALI installation/plugin and JALI_INSTALL path."
         )
     return startup
@@ -319,10 +326,24 @@ def inspect_jali_speech_base(
         return {"reusable": False, "reason": "live jSync source identity does not match",
                 "jsync": jsync, "sound_file": sound, "wav_path": str(wav), "txt_path": str(txt),
                 "txt_sha256": digest, **_wav_identity(wav)}
-    if not str(cmds_module.getAttr(f"{jsync}.transcript") or "").strip():
+    live_transcript = str(cmds_module.getAttr(f"{jsync}.transcript") or "")
+    if not live_transcript.strip():
         return {
             "reusable": False,
             "reason": "live jSync has no transcript content",
+            "jsync": jsync,
+            "sound_file": sound,
+            "wav_path": str(wav),
+            "txt_path": str(txt),
+            "txt_sha256": digest,
+            **_wav_identity(wav),
+        }
+    expected_transcript = txt.read_text(encoding="utf-8").replace("ing _ ", "ing_")
+    expected_transcript = expected_transcript.replace("\n", "").replace("\r", "")
+    if live_transcript.replace("\n", "").replace("\r", "") != expected_transcript:
+        return {
+            "reusable": False,
+            "reason": "live jSync transcript content does not match the source TXT",
             "jsync": jsync,
             "sound_file": sound,
             "wav_path": str(wav),
@@ -339,6 +360,33 @@ def inspect_jali_speech_base(
             "wav_path": str(wav),
             "txt_path": str(txt),
             "txt_sha256": digest,
+            **_wav_identity(wav),
+        }
+    live_filter = bool(cmds_module.getAttr(f"{jsync}.silence_handling"))
+    live_threshold = float(cmds_module.getAttr(f"{jsync}.silence_handling_decibel"))
+    if live_filter != settings["filter_silence_gaps"] or (
+        live_filter
+        and not math.isclose(
+            live_threshold, settings["silence_threshold_db"], abs_tol=1e-6
+        )
+    ):
+        return {
+            "reusable": False,
+            "reason": (
+                "live jSync silence settings do not match: "
+                f"requested filter={settings['filter_silence_gaps']}, "
+                f"threshold={settings['silence_threshold_db']:g}; "
+                f"actual filter={live_filter}, threshold={live_threshold:g}"
+            ),
+            "jsync": jsync,
+            "sound_file": sound,
+            "wav_path": str(wav),
+            "txt_path": str(txt),
+            "txt_sha256": digest,
+            "actual_jali_settings": {
+                "filter_silence_gaps": live_filter,
+                "silence_threshold_db": live_threshold,
+            },
             **_wav_identity(wav),
         }
     saved = saved_metadata if isinstance(saved_metadata, dict) else None
@@ -359,7 +407,71 @@ def inspect_jali_speech_base(
         "script_name": str(script_name), "maya_node": rig, "jsync": jsync,
         "sound_file": sound, "wav_path": str(wav), "txt_path": str(txt), "txt_sha256": digest,
         "jali_settings": settings,
+        "actual_jali_settings": {
+            "filter_silence_gaps": live_filter,
+            "silence_threshold_db": live_threshold,
+        },
         **_wav_identity(wav),
+    }
+
+
+def resolve_existing_jali_speech_base(
+    *, actor: str, script_name: str, maya_node: str, wav_path: str | Path,
+    cmds_module: Any | None = None,
+) -> dict[str, Any]:
+    """Resolve one existing/manual jSync without changing JALI or source files."""
+    if cmds_module is None:
+        from maya import cmds as cmds_module  # type: ignore
+    requested_rig = str(maya_node).strip()
+    if not requested_rig or not cmds_module.objExists(requested_rig):
+        raise RuntimeError(f"{actor}: mapped JALI_GRP does not exist: {requested_rig or '<empty>'}")
+    rig_matches = [str(item) for item in (cmds_module.ls(requested_rig, long=True) or [])]
+    if len(rig_matches) != 1:
+        raise RuntimeError(
+            f"{actor}: mapped JALI_GRP must resolve to exactly one DAG node: "
+            f"{requested_rig!r} -> {rig_matches}"
+        )
+    rig = rig_matches[0]
+    wav = Path(wav_path).resolve()
+    if not wav.is_file():
+        raise FileNotFoundError(f"{actor}: WAV not found: {wav}")
+    sound = wav.stem
+    matches = _matching_nodes(cmds_module, rig, sound)
+    if len(matches) != 1:
+        rendered = ", ".join(matches) or "none"
+        raise RuntimeError(
+            f"{actor}: overlay-only Generate requires exactly one existing jSync for "
+            f"{sound!r} beneath {rig!r}; found {len(matches)} ({rendered}). "
+            "Run JALI Animate from File for this actor, then retry with "
+            "Prepare JALI Speech unchecked."
+        )
+    jsync = matches[0]
+    required = ("sound_file", "text_input_path", "transcript", "sound_file_format")
+    missing = [attr for attr in required if not cmds_module.objExists(f"{jsync}.{attr}")]
+    if missing:
+        raise RuntimeError(
+            f"{actor}: existing jSync {jsync!r} is missing: {', '.join(missing)}"
+        )
+    if not str(cmds_module.getAttr(f"{jsync}.transcript") or "").strip():
+        raise RuntimeError(f"{actor}: existing jSync {jsync!r} has no aligned transcript.")
+    if str(cmds_module.getAttr(f"{jsync}.sound_file_format") or "").casefold() != wav.suffix.casefold():
+        raise RuntimeError(
+            f"{actor}: existing jSync {jsync!r} does not use {wav.suffix} audio."
+        )
+    txt = resolve_jali_source_transcript_path(
+        str(cmds_module.getAttr(f"{jsync}.text_input_path") or ""), sound
+    )
+    if not txt.is_file():
+        raise FileNotFoundError(f"{actor}: existing jSync transcript not found: {txt}")
+    return {
+        "script_name": str(script_name),
+        "maya_node": rig,
+        "jsync": jsync,
+        "sound_file": sound,
+        "wav_path": str(wav),
+        "txt_path": str(txt.resolve()),
+        "transcript_path": str(txt.resolve()),
+        "preparation_status": "existing",
     }
 
 
@@ -370,12 +482,35 @@ def _restore_selection(cmds_module: Any, selection: list[str]) -> None:
         cmds_module.select(clear=True)
 
 
-def _retire_alignment_cache(folder: Path, sound: str, digest: str) -> list[Path]:
+def _jali_selection_for_rig(cmds_module: Any, rig: str) -> str:
+    """Select FACSMaster so JALI resolves the intended namespace in multi-rig scenes."""
+    try:
+        descendants = cmds_module.listRelatives(
+            rig, allDescendents=True, fullPath=True
+        ) or []
+    except (AttributeError, TypeError):
+        descendants = []
+    facs_masters = [
+        str(node)
+        for node in descendants
+        if str(node).rsplit("|", 1)[-1].rsplit(":", 1)[-1] == "FACSMaster"
+    ]
+    if len(facs_masters) > 1:
+        raise RuntimeError(
+            f"Mapped JALI rig {rig!r} contains multiple FACSMaster controls: "
+            + ", ".join(facs_masters)
+        )
+    return facs_masters[0] if facs_masters else rig
+
+
+def _retire_alignment_cache(
+    folder: Path, sound: str, digest: str
+) -> list[tuple[Path, Path]]:
     """Preserve, but deactivate, JALI alignment files before a fresh run."""
     candidates = [folder / f"{sound}_PraatOutput.txt"]
     candidates.extend(sorted(folder.glob(f"{sound}*.TextGrid")))
     candidates.extend(sorted(folder.glob(f"{sound}*.Textgrid")))
-    retired: list[Path] = []
+    retired: list[tuple[Path, Path]] = []
     for source in dict.fromkeys(candidates):
         if not source.is_file():
             continue
@@ -386,8 +521,22 @@ def _retire_alignment_cache(folder: Path, sound: str, digest: str) -> list[Path]
             target = source.with_name(source.name + suffix + f".{counter}")
             counter += 1
         source.replace(target)
-        retired.append(target)
+        retired.append((source, target))
     return retired
+
+
+def _restore_alignment_cache(retired: Iterable[tuple[Path, Path]]) -> None:
+    for source, backup in reversed(list(retired)):
+        if backup.is_file():
+            if source.is_file():
+                source.unlink()
+            backup.replace(source)
+
+
+def _delete_nodes(cmds_module: Any, nodes: Iterable[str]) -> None:
+    existing = [node for node in nodes if cmds_module.objExists(node)]
+    if existing:
+        cmds_module.delete(existing)
 
 
 def prepare_jali_speech_base(
@@ -398,7 +547,7 @@ def prepare_jali_speech_base(
     known_mapped_rigs: Iterable[str] = (), cmds_module: Any | None = None,
     mel_module: Any | None = None,
 ) -> dict[str, Any]:
-    """Invoke ``call_jSync`` once and prove the result belongs to the actor rig."""
+    """Run JALI's native prepare/analyze/create sequence for one actor rig."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     if mel_module is None:
@@ -418,24 +567,46 @@ def prepare_jali_speech_base(
             f"{actor}: ambiguous stale matching jSync nodes beneath {rig!r}: "
             + ", ".join(stale_matches)
         )
-    retired: tuple[str, str] | None = None
+    retired_node: tuple[str, str] | None = None
+    retired_cache: list[tuple[Path, Path]] = []
     try:
         if stale_matches:
             stale = stale_matches[0]
             retired_sound = f"{sound}__JALITEST_STALE_{transcript_sha256(txt)[:12]}"
             cmds_module.setAttr(f"{stale}.sound_file", retired_sound, type="string")
-            retired = (stale, sound)
-        _retire_alignment_cache(wav.parent, sound, transcript_sha256(txt))
-        cmds_module.select(rig, replace=True)
-        command = (
-            f'call_jSync("{_mel_folder(txt.parent)}", "{_mel_folder(wav.parent)}", '
-            f'"{_mel_folder(wav.parent)}", "{_mel_string(sound)}", '
-            f"{int(language_code)}, {int(speech_style)});"
+            retired_node = (stale, sound)
+        retired_cache = _retire_alignment_cache(
+            wav.parent, sound, transcript_sha256(txt)
+        )
+        cmds_module.select(_jali_selection_for_rig(cmds_module, rig), replace=True)
+        folder = _mel_folder(wav.parent)
+        prepare_command = (
+            f'jali_prepare_folder_for_aligning("{folder}", "{folder}", '
+            f'"{_mel_string(sound)}", 0, 1);'
+        )
+        analyze_command = (
+            f'jAnalyze_batch("{folder}", "{folder}", '
+            f'"{_mel_string(sound)}", {int(language_code)});'
+        )
+        create_command = (
+            f'call_jSync("{_mel_folder(txt.parent)}", "{folder}", "{folder}", '
+            f'"{_mel_string(sound)}", {int(language_code)}, {int(speech_style)});'
         )
         with jali_alignment_settings(
             mel_module, settings, animate_from_scratch=animate_from_scratch
         ):
-            mel_module.eval(command)
+            mel_module.eval(prepare_command)
+            mel_module.eval(analyze_command)
+            alignment_output = wav.parent / f"{sound}_PraatOutput.txt"
+            if not alignment_output.is_file():
+                raise RuntimeError(
+                    f"{actor}: native JALI alignment did not create {alignment_output}"
+                )
+            # jAnalyze_batch changes Maya's active selection. Native Animate from
+            # File restores the user's rig selection immediately before
+            # call_jSync so jali_find_prefix resolves the correct character.
+            cmds_module.select(_jali_selection_for_rig(cmds_module, rig), replace=True)
+            mel_module.eval(create_command)
         matches = _matching_nodes(cmds_module, rig, sound)
         if len(matches) != 1:
             all_new = sorted(set(_jsync_nodes(cmds_module)) - before_all)
@@ -448,6 +619,20 @@ def prepare_jali_speech_base(
                 f"rig {rig!r}. New jSync nodes: {all_new}. "
                 f"Discovered nodes by mapped rig: {discovered}"
             )
+        # The native Animate-from-File pipeline aligns before call_jSync. In that
+        # case call_jSync reports "Already aligned" and leaves these two node
+        # attributes at factory defaults even though jAnalyze_batch used the
+        # requested globals. Persist the effective values on the resulting node
+        # and immediately verify them through inspect_jali_speech_base below.
+        created_jsync = matches[0]
+        cmds_module.setAttr(
+            f"{created_jsync}.silence_handling",
+            int(settings["filter_silence_gaps"]),
+        )
+        cmds_module.setAttr(
+            f"{created_jsync}.silence_handling_decibel",
+            float(settings["silence_threshold_db"]),
+        )
         inspected = inspect_jali_speech_base(
             actor=actor, script_name=script_name, maya_node=rig, wav_path=wav,
             txt_path=txt, saved_metadata=None, jali_settings=settings,
@@ -473,33 +658,35 @@ def prepare_jali_speech_base(
                 f"{actor}: JALI created {inspected['jsync']} without the expected "
                 f"audio format {wav.suffix!r}; native speech alignment did not complete."
             )
-        alignment_output = wav.parent / f"{sound}_PraatOutput.txt"
-        if not alignment_output.is_file():
-            raise RuntimeError(
-                f"{actor}: JALI alignment output was not created: {alignment_output}"
+        actual = inspected["actual_jali_settings"]
+        if retired_node is not None:
+            old_node, _old_sound = retired_node
+            old_short_name = old_node.rsplit("|", 1)[-1]
+            _delete_nodes(cmds_module, [old_node])
+            try:
+                cmds_module.rename(inspected["jsync"], old_short_name)
+            except Exception:
+                # A valid replacement need not fail solely because Maya retained
+                # its generated node name.
+                pass
+            inspected["jsync"] = resolve_jsync_for_character(
+                rig, sound, cmds_module=cmds_module
             )
     except Exception:
-        for index, node in enumerate(
-            sorted(set(_jsync_nodes(cmds_module)) - before_all), start=1
-        ):
-            plug = f"{node}.sound_file"
-            if (
-                cmds_module.objExists(plug)
-                and str(cmds_module.getAttr(plug) or "") == sound
-            ):
-                cmds_module.setAttr(
-                    plug,
-                    f"{sound}__JALITEST_FAILED_{transcript_sha256(txt)[:12]}_{index}",
-                    type="string",
-                )
-        if retired is not None:
-            cmds_module.setAttr(f"{retired[0]}.sound_file", retired[1], type="string")
+        _delete_nodes(cmds_module, sorted(set(_jsync_nodes(cmds_module)) - before_all))
+        if retired_node is not None and cmds_module.objExists(retired_node[0]):
+            cmds_module.setAttr(
+                f"{retired_node[0]}.sound_file", retired_node[1], type="string"
+            )
+        _restore_alignment_cache(retired_cache)
         raise
     finally:
         _restore_selection(cmds_module, original)
     return {
         **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns")},
         "jali_settings": settings,
+        "actual_jali_settings": actual,
+        "alignment_status": "prepared",
         "animated_from_scratch": bool(animate_from_scratch),
         "preparation_status": "prepared", "prepared_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -515,10 +702,9 @@ def ensure_jali_speech_base(
 ) -> dict[str, Any]:
     settings = normalize_jali_speech_settings(jali_settings)
     inspected = {"reusable": False, "reason": "forced from scratch"}
-    # A live node alone cannot prove which silence settings produced it.
-    # Reuse requires sidecar provenance; post-create validation calls inspect
-    # directly and therefore remains independent of saved metadata.
-    if not force_from_scratch and isinstance(saved_metadata, dict):
+    # The live node exposes its transcript and effective silence settings, so a
+    # matching native/manual jSync can be adopted even without a sidecar.
+    if not force_from_scratch:
         inspected = inspect_jali_speech_base(
             actor=actor, script_name=script_name, maya_node=maya_node, wav_path=wav_path,
             txt_path=txt_path, saved_metadata=saved_metadata,
@@ -528,6 +714,8 @@ def ensure_jali_speech_base(
         return {
             **{key: inspected[key] for key in ("script_name", "maya_node", "jsync", "sound_file", "wav_path", "txt_path", "txt_sha256", "wav_size", "wav_mtime_ns")},
             "jali_settings": settings,
+            "actual_jali_settings": inspected["actual_jali_settings"],
+            "alignment_status": "reused",
             "animated_from_scratch": False,
             "preparation_status": "reused",
             "prepared_at": str((saved_metadata or {}).get("prepared_at") or datetime.now(timezone.utc).isoformat()),
