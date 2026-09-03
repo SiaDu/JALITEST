@@ -126,7 +126,7 @@ def build_dual_speaker_jali_annotation(source_text: str, phrases: list[dict[str,
 def build_sparse_speaker_jali_annotation(
     source_text: str, spoken_anchors: list[dict[str, Any]], *, actor: str, script_name: str
 ) -> tuple[str, dict[str, Any]]:
-    """Annotate persistent v2 affect across this actor's isolated spoken words."""
+    """Annotate persistent affect across this actor's isolated spoken words."""
     tokens = iter_word_tokens(source_text)
     token_texts = [str(token["text"]) for token in tokens]
     cursor = 0

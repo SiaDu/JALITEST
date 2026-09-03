@@ -27,13 +27,8 @@ maya_gaze:
   directional_eye_limit: 6
   apply_weighted_flat_tangents: true
 
-  # Gaze targets are not listed here. They are read dynamically from:
-  #   data/processed/gaze_script/{sequence_id}__gaze_events_resolved.json
-  #
-  # Workflow:
-  #   1) run tools/maya/run_create_gaze_targets.py
-  #   2) move created locators manually in Maya
-  #   3) run tools/maya/run_apply_gaze_events.py
+  # Gaze targets are supplied through the Performance Plan UI's scene mapping
+  # and look-at calibration workflow.
   dynamic_target_locator_group: JALITEST_gaze_targets_GRP
   dynamic_target_locator_size: 4.0
   dynamic_target_locator_suffix: _lookat_LOC

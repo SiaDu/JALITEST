@@ -29,7 +29,7 @@ def validate_clean_dialogue_script(script: str) -> None:
     """Reject legacy performance markup without altering participant dialogue."""
     if _ANNOTATION_TAG.search(str(script)):
         raise ValueError(
-            "Input Script contains performance annotation tags. Generate Performance Plan "
+            "Dialogue contains performance annotation tags. Generate Performance Plan "
             "expects clean dialogue text without JALI or legacy performance tags."
         )
 

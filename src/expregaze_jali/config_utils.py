@@ -8,8 +8,8 @@ from typing import Any
 import yaml
 
 
-DEFAULT_PROJECT_CONFIG = Path("configs/project.yaml")
-DEFAULT_SEQUENCE_CONFIG = Path("configs/sequences/Jali_proto_candidate_001_ProfessorCrystal.yaml")
+DEFAULT_PROJECT_CONFIG = Path("configs/llm.yaml")
+DEFAULT_SEQUENCE_CONFIG = Path("configs/maya/valleygirl.yaml")
 DEFAULT_LLM_CONFIG = Path("configs/llm.yaml")
 
 
@@ -38,7 +38,7 @@ def repo_root_from_project_config(project_config_path: str | Path, project_confi
     root = Path(str(raw_root))
     if root.is_absolute():
         return root
-    # configs/project.yaml -> repo root is configs/..
+    # Configuration files live directly below the repository configuration root.
     return (config_path.parent.parent / root).resolve()
 
 
@@ -168,7 +168,7 @@ def compiled_output_dir(project_config: dict[str, Any], repo_root: str | Path) -
 
 def prompt_template_path(project_config: dict[str, Any], repo_root: str | Path) -> Path:
     prompt_cfg = _as_mapping(project_config.get("prompt"), "prompt")
-    path = resolve_repo_path(prompt_cfg.get("template", "prompts/actor_performance_annotation_prompt_v2.md"), repo_root)
+    path = resolve_repo_path(prompt_cfg.get("template", "prompts/single_performance_plan_prompt.md"), repo_root)
     assert path is not None
     return path
 

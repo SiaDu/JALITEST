@@ -37,6 +37,9 @@ desktop.ini
 data/MovieNet/
 data/processed/candidate_sequences/audio_exports/
 data/processed/candidate_sequences/videos/
+data/processed/**
+!data/processed/candidate_sequences/
+!data/processed/candidate_sequences/.gitkeep
 *.mp4
 *.mkv
 *.mov
@@ -44,6 +47,7 @@ data/processed/candidate_sequences/videos/
 *.wav
 *.mp3
 data/seqt_runtime/compiled/maya_adapter/
+data/seqt_runtime/compiled/**
 
 # Editor / OS noise
 .DS_Store

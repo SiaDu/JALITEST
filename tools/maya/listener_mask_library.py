@@ -1,6 +1,6 @@
 """Versioned JALI 2025 factory Mask data for listener visible affect.
 
-The data is read from the checked-in runtime export, not from Maya/MEL globals.
+The data is read from checked-in JALI runtime exports, not from Maya/MEL globals.
 Only the semantic visible-affect rows and their non-zero AU coefficients are
 retained below, so custom runtime rows cannot affect listener realization.
 """
@@ -21,8 +21,8 @@ PROVENANCE: Final = (
 )
 
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-FACTORY_EXPORT_PATH: Final = _REPOSITORY_ROOT / "data" / "debug" / "jali_factory_paralingual_array_JALI2025.json"
-COMBINED_EXPORT_PATH: Final = _REPOSITORY_ROOT / "data" / "debug" / "FACS_paralingual_array_JALI2025.json"
+FACTORY_EXPORT_PATH: Final = _REPOSITORY_ROOT / "resources" / "jali" / "factory_mask_table.json"
+COMBINED_EXPORT_PATH: Final = _REPOSITORY_ROOT / "resources" / "jali" / "combined_mask_table.json"
 
 # Expressive eyelid AUs are persistent Mask pose, distinct from the central
 # transient blink control. These mappings are live-validated on Angela and

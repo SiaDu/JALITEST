@@ -44,7 +44,7 @@ def test_labeled_script_rejects_mixed_unlabeled_lines_and_more_than_two_speakers
     "AGNES: <m01=Friendly-50>Good day.</m01>",
 ])
 def test_legacy_annotation_tags_are_rejected_before_anchor_generation(script):
-    with pytest.raises(ValueError, match="Input Script contains performance annotation tags"):
+    with pytest.raises(ValueError, match="Dialogue contains performance annotation tags"):
         build_transcript_anchor_model(script, target_character="AGNES")
 
 

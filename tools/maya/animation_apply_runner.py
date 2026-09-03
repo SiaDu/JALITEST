@@ -20,7 +20,7 @@ from jali_mel_globals import temporary_jali_alignment_globals
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MAYA_CONFIG = REPO_ROOT / "configs" / "maya" / "valleygirl.yaml"
-DEFAULT_V2_AFFECT_TRANSITION_FRAMES = 12
+DEFAULT_AFFECT_TRANSITION_FRAMES = 12
 GLANCE_FRAME_EPSILON = 1e-6
 
 _FPS_BY_UNIT = {
@@ -513,7 +513,7 @@ def build_listener_mask_timeline(
     return result
 
 
-def build_listener_mask_key_schedule(
+def build_legacy_listener_mask_key_schedule(
     intervals: Iterable[dict[str, Any]], *, fps: float, transition_frames: int = 4
 ) -> list[dict[str, Any]]:
     """Emit only complete-state changes, using the frozen +/- half transition."""
@@ -538,13 +538,13 @@ def build_listener_mask_key_schedule(
     return keys
 
 
-def build_v2_listener_mask_key_schedule(
+def build_listener_mask_key_schedule(
     intervals: Iterable[dict[str, Any]], *, fps: float,
-    transition_frames: int = DEFAULT_V2_AFFECT_TRANSITION_FRAMES,
+    transition_frames: int = DEFAULT_AFFECT_TRANSITION_FRAMES,
 ) -> list[dict[str, Any]]:
-    """Realize exact v2 semantic boundaries with role-aware visual interpolation."""
+    """Realize exact semantic boundaries with role-aware visual interpolation."""
     if fps <= 0 or transition_frames < 1:
-        raise ValueError("V2 Listener Mask timing requires positive fps and transition_frames.")
+        raise ValueError("Listener Mask timing requires positive fps and transition_frames.")
     keys: list[dict[str, Any]] = []
     previous: dict[str, float] | None = None
     ordered = list(intervals)
@@ -577,7 +577,7 @@ def gaze_layer_name(alias: str) -> str:
     return f"{GAZE_LAYER_PREFIX}{alias}"
 
 
-def prepare_dual_listener_mask_artifacts(
+def prepare_legacy_dual_listener_mask_artifacts(
     *, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None
 ) -> dict[str, Any]:
     """Preflight both User FACS lanes before either actor is changed."""
@@ -622,7 +622,7 @@ def prepare_dual_listener_mask_artifacts(
         scene_range = None
         if hasattr(cmds_module, "playbackOptions"):
             scene_range = (float(cmds_module.playbackOptions(query=True, minTime=True)), float(cmds_module.playbackOptions(query=True, maxTime=True)))
-        prepared[alias] = {"rig": rig, "facs_source_plug": source_plug, "add_index": add_index, "managed_user_plugs": plugs, "timeline": timeline[alias], "key_schedule": build_listener_mask_key_schedule(timeline[alias], fps=float(manifest["fps"])), "listener_mask_events": len(events), "layer": _listener_layer_name(alias), "scene_range": scene_range}
+        prepared[alias] = {"rig": rig, "facs_source_plug": source_plug, "add_index": add_index, "managed_user_plugs": plugs, "timeline": timeline[alias], "key_schedule": build_legacy_listener_mask_key_schedule(timeline[alias], fps=float(manifest["fps"])), "listener_mask_events": len(events), "layer": _listener_layer_name(alias), "scene_range": scene_range}
     return prepared
 
 
@@ -866,7 +866,7 @@ def load_dual_animation_manifest(path: str | Path) -> dict[str, Any]:
     return value
 
 
-def _v2_overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]:
+def _overlay_config(path: str | Path = DEFAULT_MAYA_CONFIG) -> dict[str, Any]:
     source_path = str(REPO_ROOT / "src")
     if source_path not in sys.path:
         sys.path.insert(0, source_path)
@@ -905,7 +905,7 @@ def _head_target(value: str, config: dict[str, Any]) -> dict[str, float]:
         return target
     match = re.fullmatch(r"HEAD-(UP|DOWN|TILT_LEFT|TILT_RIGHT)-(SUBTLE|MEDIUM|STRONG)", value)
     if not match:
-        raise ValueError(f"Unsupported v2 head pose: {value}")
+        raise ValueError(f"Unsupported dual head pose: {value}")
     direction, strength = match.groups()
     degrees = float((config.get("strength_degrees") or {})[strength])
     if direction in {"UP", "DOWN"}:
@@ -1002,7 +1002,7 @@ def build_blink_overlay_key_schedule(events: Iterable[dict[str, Any]], *, fps: f
 
 
 def build_blink_brow_companion_key_schedule(events: Iterable[dict[str, Any]], *, fps: float, config: dict[str, Any]) -> list[dict[str, Any]]:
-    """Build additive BrowDown delta keys synchronized with V2 blink keys."""
+    """Build additive BrowDown delta keys synchronized with canonical blink keys."""
     companion = config.get("brow_companion") or {}
     delta = float(companion["delta"])
     presets = config.get("presets") or {}
@@ -1061,10 +1061,10 @@ def _affect_identity(value: object) -> str:
     return state if separator and intensity.isdigit() else text
 
 
-def plan_v2_blinks(
+def plan_blinks(
     events: Iterable[dict[str, Any]], *, initial_state: dict[str, Any] | None = None,
     fps: float | None = None,
-    affect_transition_frames: int = DEFAULT_V2_AFFECT_TRANSITION_FRAMES,
+    affect_transition_frames: int = DEFAULT_AFFECT_TRANSITION_FRAMES,
     blink_config: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Plan explicit and deterministic regulatory blinks for one actor.
@@ -1203,7 +1203,7 @@ def inject_idle_regulatory_blinks(
 ) -> list[dict[str, Any]]:
     """Deterministically fill semantic blink-free time with normal idle blinks.
 
-    This deliberately returns ordinary ``BLINK`` events so both existing V2
+    This deliberately returns ordinary ``BLINK`` events so both existing dual
     blink schedules own their application, including the brow companion.
     """
     semantic = list(planned)
@@ -1275,7 +1275,7 @@ def _resolve_user_blink_brow_plugs(rig: str, config: dict[str, Any], cmds_module
 def _actor_speaking_intervals(manifest: dict[str, Any], actor: str) -> list[tuple[float, float]]:
     path = Path(str((manifest.get("artifacts") or {}).get("conversation_anchor_timing") or ""))
     if not path.is_file():
-        raise FileNotFoundError("V2 idle head requires conversation_anchor_timing.")
+        raise FileNotFoundError("Dual idle head requires conversation_anchor_timing.")
     payload = json.loads(path.read_text(encoding="utf-8"))
     rows = payload.values() if isinstance(payload, dict) else []
     intervals = sorted((float(row["start"]), float(row["end"])) for row in rows if isinstance(row, dict) and row.get("speaker") == actor and "start" in row and "end" in row)
@@ -1308,12 +1308,12 @@ def plan_idle_head_drift(*, actor: str, sound_file: str, speaking_intervals: Ite
     return sorted({key["frame"]: key for key in keys}.values(), key=lambda key: key["frame"])
 
 
-def prepare_dual_v2_head_blink_overlays(
+def prepare_dual_head_blink_overlays(
     *, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]],
     baseline: dict[str, Any], cmds_module: Any | None = None, mel_module: Any | None = None,
     config_path: str | Path = DEFAULT_MAYA_CONFIG,
 ) -> dict[str, Any]:
-    """Read-only, both-character preflight for v2 head/blink overlay mutation."""
+    """Read-only, both-character preflight for dual head/blink overlay mutation."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     if mel_module is None:
@@ -1321,10 +1321,10 @@ def prepare_dual_v2_head_blink_overlays(
     manifest = load_dual_animation_manifest(manifest_path)
     if manifest.get("schema_version") != "dual_animation_manifest_v2":
         raise ValueError("Expected dual_animation_manifest_v2.")
-    config = _v2_overlay_config(config_path)
+    config = _overlay_config(config_path)
     characters = manifest["characters"]
     if set(character_mappings) != set(characters):
-        raise ValueError("V2 Maya mapping must be name-keyed for exactly both manifest characters.")
+        raise ValueError("Dual Maya mapping must be name-keyed for exactly both manifest characters.")
     baseline_preflight = _validate_dual_jali_base(baseline, character_mappings, cmds_module=cmds_module, mel_module=mel_module)
     prepared: dict[str, Any] = {"schema_version": "dual_v2_head_blink_prepared_v1", "fps": float(manifest["fps"]), "actors": {}}
     for actor in characters:
@@ -1337,14 +1337,14 @@ def prepare_dual_v2_head_blink_overlays(
         artifact_row = manifest["artifacts"]["characters"][actor]
         for required in ("resolved_sparse_events", "jali_speaker_annotated", "jali_speaker_annotation"):
             if not Path(str(artifact_row.get(required) or "")).is_file():
-                raise FileNotFoundError(f"{actor}: required v2 artifact {required} is missing.")
+                raise FileNotFoundError(f"{actor}: required dual artifact {required} is missing.")
         payload = json.loads(Path(artifact_row["resolved_sparse_events"]).read_text(encoding="utf-8"))
         events = payload.get("events", [])
         initial_state = ((payload.get("initial_state") or {}).get("state") or {})
         head_events = [event for event in events if "head" in (event.get("changes") or {})]
         if initial_state.get("head") not in (None, "NONE", "HEAD-NONE"):
             head_events = [{"event_id": "INITIAL_STATE", "actor": actor, "timing_role": "INITIAL_STATE", "resolved_start": 0.0, "changes": {"head": initial_state["head"]}}] + head_events
-        blink_events = plan_v2_blinks(
+        blink_events = plan_blinks(
             events,
             initial_state=initial_state,
             fps=float(manifest["fps"]),
@@ -1388,12 +1388,12 @@ def prepare_dual_v2_head_blink_overlays(
     return prepared
 
 
-def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_module: Any | None = None) -> dict[str, Any]:
+def apply_dual_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_module: Any | None = None) -> dict[str, Any]:
     """Apply only JALITEST-owned additive head and performative blink layers."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     if prepared_context.get("schema_version") != "dual_v2_head_blink_prepared_v1":
-        raise ValueError("Invalid prepared v2 overlay context.")
+        raise ValueError("Invalid prepared dual overlay context.")
     result: dict[str, Any] = {}
     for actor, item in prepared_context["actors"].items():
         if "idle_head_layer" in item:
@@ -1423,7 +1423,7 @@ def apply_dual_v2_head_blink_overlays(*, prepared_context: dict[str, Any], cmds_
     return result
 
 
-def _load_v2_actor_events(manifest: dict[str, Any], actor: str) -> list[dict[str, Any]]:
+def _load_dual_actor_events(manifest: dict[str, Any], actor: str) -> list[dict[str, Any]]:
     path = Path(manifest["artifacts"]["characters"][actor]["resolved_sparse_events"])
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value.get("events"), list):
@@ -1431,14 +1431,14 @@ def _load_v2_actor_events(manifest: dict[str, Any], actor: str) -> list[dict[str
     return value["events"]
 
 
-def _load_v2_actor_initial_state(manifest: dict[str, Any], actor: str) -> dict[str, Any]:
+def _load_dual_actor_initial_state(manifest: dict[str, Any], actor: str) -> dict[str, Any]:
     path = Path(manifest["artifacts"]["characters"][actor]["resolved_sparse_events"])
     value = json.loads(path.read_text(encoding="utf-8"))
     return dict(((value.get("initial_state") or {}).get("state") or {}))
 
 
-def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
-    """Build persistent v2 User FACS semantic-affect schedules."""
+def prepare_dual_listener_mask_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Build persistent dual User FACS semantic-affect schedules."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     manifest = load_dual_animation_manifest(manifest_path)
@@ -1450,11 +1450,11 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
     unresolved_eyelids = list(unmapped_expressive_eyelid_aus())
     if unresolved_eyelids:
         raise RuntimeError("Unmapped JALI 2025 expressive eyelid AUs: " + ", ".join(unresolved_eyelids))
-    affect_config = _v2_overlay_config()["affect"]
+    affect_config = _overlay_config()["affect"]
     prepared: dict[str, Any] = {"schema_version": "dual_listener_mask_prepared_v1", "fps": float(manifest["fps"]), "provenance": PROVENANCE, "expressive_eyelid_mapping_requirement": []}
     for actor in actors:
-        events = _load_v2_actor_events(manifest, actor)
-        initial_state = _load_v2_actor_initial_state(manifest, actor)
+        events = _load_dual_actor_events(manifest, actor)
+        initial_state = _load_dual_actor_initial_state(manifest, actor)
         affect_events: list[dict[str, Any]] = []
         for event in events:
             if "affect" in (event.get("changes") or {}):
@@ -1491,12 +1491,12 @@ def prepare_dual_v2_listener_mask_artifacts(*, manifest_path: str | Path, charac
         missing = [plug for plug in plugs if not cmds_module.objExists(plug)]
         if missing:
             raise RuntimeError(f"{actor}: missing User FACS controls: {', '.join(missing)}")
-        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_v2_listener_mask_key_schedule(intervals, fps=float(manifest["fps"]), transition_frames=int(affect_config["transition_frames"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
+        prepared[actor] = {"rig": rig, "facs_source_plug": source_plug, "add_index": _enum_index(facs, "FACS_animationSource", "Add", cmds_module), "managed_user_plugs": plugs, "timeline": intervals, "key_schedule": build_listener_mask_key_schedule(intervals, fps=float(manifest["fps"]), transition_frames=int(affect_config["transition_frames"])), "listener_mask_events": sum(row["state"] != "NONE" for row in intervals), "layer": _listener_layer_name(actor), "scene_range": None}
     return prepared
 
 
-def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
-    """Preflight calibrated persistent v2 gaze for both named actors."""
+def prepare_dual_gaze_artifacts(*, manifest_path: str | Path, character_mappings: dict[str, dict[str, Any]], cmds_module: Any | None = None) -> dict[str, Any]:
+    """Preflight calibrated persistent gaze for both named actors."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     manifest = load_dual_animation_manifest(manifest_path)
@@ -1506,7 +1506,7 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
     if source_path not in sys.path: sys.path.insert(0, source_path)
     from expregaze_jali.maya_apply_gaze import load_maya_gaze_config  # noqa: PLC0415
     gaze_config = load_maya_gaze_config(DEFAULT_MAYA_CONFIG)
-    overlay_config = _v2_overlay_config()
+    overlay_config = _overlay_config()
     micro_config = overlay_config["micro_saccade"]
     prepared: dict[str, Any] = {"schema_version": "dual_gaze_only_prepared_v1", "fps": float(manifest["fps"]), "jsync_nodes": {}, "warnings": []}
     directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
@@ -1516,17 +1516,17 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
         runtime = manifest["character_runtime_mapping"][actor]
         prepared["jsync_nodes"][actor] = resolve_jsync_for_character(rig, str(runtime["sound_file"]), cmds_module=cmds_module)
         raw = []
-        gaze_rows = [event for event in _load_v2_actor_events(manifest, actor) if "gaze" in (event.get("changes") or {})]
-        initial_gaze = _load_v2_actor_initial_state(manifest, actor).get("gaze")
+        gaze_rows = [event for event in _load_dual_actor_events(manifest, actor) if "gaze" in (event.get("changes") or {})]
+        initial_gaze = _load_dual_actor_initial_state(manifest, actor).get("gaze")
         if not initial_gaze:
-            raise ValueError(f"{actor}: v2 initial gaze is required.")
+            raise ValueError(f"{actor}: initial gaze is required.")
         gaze_rows = [{"event_id": "INITIAL_STATE", "resolved_start": 0.0, "timing_role": "INITIAL_STATE", "changes": {"gaze": initial_gaze}, "reason": None}] + gaze_rows
         for index, event in enumerate(gaze_rows):
             value = str(event["changes"]["gaze"])
             start = float(event["resolved_start"])
             mode, target = value.split("-", 1)
             if mode not in {"GAZE", "GLANCE"}:
-                raise ValueError(f"{actor}: v2 executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
+                raise ValueError(f"{actor}: executable gaze mode must be GAZE or GLANCE, got {mode!r}.")
             if mode == "GLANCE":
                 transition = float(gaze_config.get("glance_transition_frames", 3)) / float(manifest["fps"])
                 end = start + float(gaze_config.get("glance_hold_seconds", 0.5)) + transition
@@ -1565,13 +1565,13 @@ def prepare_dual_v2_gaze_only_artifacts(*, manifest_path: str | Path, character_
         try:
             keys = build_dual_gaze_key_schedule(schedule, fps=float(manifest["fps"]), transition_frames=int(gaze_config.get("gaze_transition_frames", 3)), glance_transition_frames=int(gaze_config.get("glance_transition_frames", 3)), glance_hold_seconds=float(gaze_config.get("glance_hold_seconds", 0.5)), allow_shortened_glance=True)
         except ValueError as exc:
-            raise ValueError(f"{actor}: v2 gaze event cannot be scheduled: {exc}") from exc
+            raise ValueError(f"{actor}: gaze event cannot be scheduled: {exc}") from exc
         micro_node = qualify_rig_control(rig, str(micro_config["control_suffix"]))
         micro_plugs = [f"{micro_node}.{micro_config['x_attribute']}", f"{micro_node}.{micro_config['y_attribute']}"]
         if any(not cmds_module.objExists(plug) for plug in micro_plugs):
             raise RuntimeError(f"{actor}: required fixation micro-saccade controls do not exist.")
-        blink_plan = plan_v2_blinks(
-            _load_v2_actor_events(manifest, actor), initial_state=_load_v2_actor_initial_state(manifest, actor),
+        blink_plan = plan_blinks(
+            _load_dual_actor_events(manifest, actor), initial_state=_load_dual_actor_initial_state(manifest, actor),
             fps=float(manifest["fps"]), affect_transition_frames=int(overlay_config["affect"]["transition_frames"]), blink_config=overlay_config["blink"],
         )
         blink_plan = inject_idle_regulatory_blinks(
@@ -1591,7 +1591,7 @@ def diagnose_head_local_axes(character_node: str, *, degrees: float = 5.0, cmds_
     """Interactive Maya probe: print local jNeck rotations at +/- degrees, then restore."""
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
-    config = _v2_overlay_config(config_path)["head"]
+    config = _overlay_config(config_path)["head"]
     neck = qualify_rig_control(character_node, str(config["control_suffix"]))
     plugs = [f"{neck}.rotate{axis}" for axis in "XYZ"]
     if any(not cmds_module.objExists(plug) for plug in plugs):
@@ -1608,8 +1608,8 @@ def diagnose_head_local_axes(character_node: str, *, degrees: float = 5.0, cmds_
             cmds_module.setAttr(plug, value)
 
 
-def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module: Any | None = None, strict: bool = True) -> dict[str, Any]:
-    """Post-Generate Maya probe for exclusive JALITEST v2 blink ownership.
+def diagnose_blink_ownership(*, prepared_context: dict[str, Any], cmds_module: Any | None = None, strict: bool = True) -> dict[str, Any]:
+    """Post-Generate Maya probe for exclusive JALITEST blink ownership.
 
     Native JALI eyelid/paralingual curves may legitimately contribute to the
     configured vendor output. Ownership is therefore established by disabled
@@ -1618,7 +1618,7 @@ def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module
     if cmds_module is None:
         from maya import cmds as cmds_module  # type: ignore
     if prepared_context.get("schema_version") != "dual_v2_head_blink_prepared_v1":
-        raise ValueError("Invalid prepared v2 overlay context.")
+        raise ValueError("Invalid prepared dual overlay context.")
     report: dict[str, Any] = {"schema_version": "dual_v2_blink_ownership_diagnostic_v1", "actors": {}, "passed": True}
     problems: list[str] = []
     for actor, item in prepared_context["actors"].items():
@@ -1644,7 +1644,7 @@ def diagnose_v2_blink_ownership(*, prepared_context: dict[str, Any], cmds_module
             problems.append(f"{actor}: User blink controls have curves outside {item['blink_layer']}: {foreign_user_curves}")
     report["passed"] = not problems
     if problems and strict:
-        raise RuntimeError("V2 blink ownership diagnostic failed after Generate: " + "; ".join(problems))
+        raise RuntimeError("Blink ownership diagnostic failed after Generate: " + "; ".join(problems))
     return report
 
 

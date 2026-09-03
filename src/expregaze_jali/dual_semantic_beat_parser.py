@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 from typing import Any
 
-from expregaze_jali.dual_sparse_performance_proposal_parser import BLINK_VALUES, HEAD_VALUES
+from expregaze_jali.performance_vocabulary import BLINK_VALUES, HEAD_VALUES
 from expregaze_jali.performance_proposal_parser import ProposalValidationError, SemanticVocabulary
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 

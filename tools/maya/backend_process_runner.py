@@ -80,7 +80,7 @@ def prepare_generation_command(
 ) -> BackendCommand:
     clean_script = str(script)
     if not clean_script.strip():
-        raise ValueError("Input Script is required.")
+        raise ValueError("Dialogue is required.")
     if mode not in {"single", "dual"}:
         raise ValueError("Generation mode must be 'single' or 'dual'.")
     clean_a = str(character_a or target_character or "").strip()
@@ -145,7 +145,7 @@ def prepare_animation_command(
     if not plan_path.is_file():
         raise FileNotFoundError(f"Performance Plan not found: {plan_path}")
     if not str(script).strip():
-        raise ValueError("Input Script is required for animation compilation.")
+        raise ValueError("Dialogue is required for animation compilation.")
     audio_path = Path(audio_folder).resolve()
     if not audio_path.is_dir():
         raise FileNotFoundError(f"Input Audio Folder does not exist: {audio_path}")

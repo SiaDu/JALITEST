@@ -153,7 +153,7 @@ def test_dirty_script_is_rejected_before_the_llm_runner_is_called(tmp_path: Path
         called = True
         raise AssertionError("LLM runner must not be called for tagged dialogue")
 
-    with pytest.raises(ValueError, match="Input Script contains performance annotation tags"):
+    with pytest.raises(ValueError, match="Dialogue contains performance annotation tags"):
         generate_performance_plan(
             script="<heart01=Happy-28>AGNES: The Latin tutor.</heart01>",
             target_character="AGNES",

@@ -27,9 +27,9 @@ if str(TOOLS_DIR) not in sys.path:
 
 from performance_plan_ui_data import (  # noqa: E402
     default_edited_path,
-    canonical_v2_authored_content,
-    is_v2_plan_changed_from_loaded_snapshot,
-    is_v2_plan_edited,
+    canonical_dual_authored_content,
+    is_dual_plan_changed_from_loaded_snapshot,
+    is_dual_plan_edited,
     load_performance_plan,
     save_animation_runtime_plan,
     save_performance_plan,
@@ -80,13 +80,13 @@ from animation_apply_runner import (  # noqa: E402
     qualify_rig_control,
     resolve_jali_source_transcript_path,
     resolve_jsync_for_character,
-    prepare_dual_listener_mask_artifacts,
     prepare_dual_gaze_only_artifacts,
-    prepare_dual_v2_listener_mask_artifacts,
-    prepare_dual_v2_gaze_only_artifacts,
-    prepare_dual_v2_head_blink_overlays,
-    apply_dual_v2_head_blink_overlays,
-    diagnose_v2_blink_ownership,
+    prepare_dual_listener_mask_artifacts,
+    prepare_legacy_dual_listener_mask_artifacts,
+    prepare_dual_gaze_artifacts,
+    prepare_dual_head_blink_overlays,
+    apply_dual_head_blink_overlays,
+    diagnose_blink_ownership,
     master_audio_timeline_info,
     restore_dual_jali_base,
 )
@@ -289,7 +289,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         self.score_model: PerformanceScoreModel | DualPerformanceScoreModel | DualSparseScoreModel | None = None
         self.authoring_session: dict[str, Any] | None = None
         self.source_path: Path | None = None
-        self._loaded_v2_snapshot_content: dict[str, Any] | None = None
+        self._loaded_dual_snapshot_content: dict[str, Any] | None = None
         self._generation_had_active_plan = False
         self._suppress_score_dirty_tracking = False
         self._clean_score_baseline: str | dict[str, str] | None = None
@@ -418,9 +418,9 @@ class PerformancePlanEditor(QtWidgets.QDialog):
     def _build_setup(self, parent: QtWidgets.QVBoxLayout) -> None:
         group = QtWidgets.QGroupBox("SETUP")
         layout = QtWidgets.QVBoxLayout(group)
-        layout.addWidget(QtWidgets.QLabel("Input Script"))
+        layout.addWidget(QtWidgets.QLabel("Dialogue"))
         self.input_script = QtWidgets.QPlainTextEdit()
-        self.input_script.setPlaceholderText("Paste or load the dialogue/script used for the performance plan.")
+        self.input_script.setPlaceholderText("Paste or enter the dialogue used for the performance.")
         _configure_multiline_editor(self.input_script, height=240)
         layout.addWidget(self.input_script)
 
@@ -816,7 +816,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         character_b = self.character_rows[1][0].text().strip()
         if not script.strip():
             QtWidgets.QMessageBox.warning(
-                self, "Input Script Required", "Enter the script before generating a performance plan."
+                self, "Dialogue Required", "Enter the dialogue before generating a performance plan."
             )
             return
         if not character_a or (dual and not character_b):
@@ -1006,7 +1006,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         script = self.input_script.toPlainText()
         if not script.strip():
             QtWidgets.QMessageBox.warning(
-                self, "Input Script Required", "Input Script is required to compile animation."
+                self, "Dialogue Required", "Dialogue is required to compile animation."
             )
             return
         audio_folder = self.audio_folder.text().strip()
@@ -1101,7 +1101,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         if self.plan is None or self.score_model is None or self.source_path is None or not self.commit_current_event(show_error=True) or not self.validate_score(show_dialog=True): return
         script=self.input_script.toPlainText(); audio=self.audio_folder.text().strip()
         if not script.strip() or not audio:
-            QtWidgets.QMessageBox.warning(self,"Animation Setup Incomplete","Input Script and Input Audio Folder are required."); return
+            QtWidgets.QMessageBox.warning(self,"Animation Setup Incomplete","Dialogue and Input Audio Folder are required."); return
         mappings: dict[str, dict[str, str]]={}; runtime: dict[str, dict[str, str]]={}; self.backend_log.clear()
         self.generate_animation_button.setEnabled(False)
         self.restore_jali_base_button.setEnabled(False)
@@ -1234,17 +1234,17 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             animation_dir=self.source_path.parent/"animation"
             candidate_plan = self.score_model.apply(self._score_payload())
             if candidate_plan.get("schema_version") == "dual_performance_plan_v2":
-                loaded_content = self._loaded_v2_snapshot_content or canonical_v2_authored_content(self.plan)
-                if is_v2_plan_changed_from_loaded_snapshot(candidate_plan, loaded_content):
+                loaded_content = self._loaded_dual_snapshot_content or canonical_dual_authored_content(self.plan)
+                if is_dual_plan_changed_from_loaded_snapshot(candidate_plan, loaded_content):
                     runtime_plan = default_edited_path(self.source_path)
                     save_performance_plan(candidate_plan, runtime_plan)
                     self.source_path = runtime_plan
-                    self._loaded_v2_snapshot_content = canonical_v2_authored_content(candidate_plan)
+                    self._loaded_dual_snapshot_content = canonical_dual_authored_content(candidate_plan)
                 else:
                     runtime_plan = self.source_path
                 self.plan = candidate_plan
             else:
-                runtime_plan = default_edited_path(self.source_path) if is_v2_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
+                runtime_plan = default_edited_path(self.source_path) if is_dual_plan_edited(candidate_plan, self.score_model.original_plan) else self.source_path
                 self.plan = save_animation_runtime_plan(self.score_model, self._score_payload(), runtime_plan)
             self._save_authoring_session_for_path(self.source_path)
             self._pending_animation_mode="dual_emotion_only"; self._pending_dual_mappings=mappings
@@ -1299,13 +1299,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     self.animation_status.setText("Applying semantic animation...")
                     QtCore.QCoreApplication.processEvents()
                     gaze_mappings = {alias: {**row, "gaze_targets": {key.split("->", 1)[1]: value for key, value in self.dual_gaze_calibrations.items() if key.startswith(alias + "->")}} for alias, row in self._pending_dual_mappings.items()}
-                    is_v2 = (self.plan or {}).get("schema_version") == "dual_performance_plan_v2"
-                    if is_v2:
-                        # Every v2 prepare call is read-only. Complete both-character
+                    is_canonical_dual_plan = (self.plan or {}).get("schema_version") == "dual_performance_plan_v2"
+                    if is_canonical_dual_plan:
+                        # Every canonical-dual prepare call is read-only. Complete both-character
                         # preflight before speaker realignment mutates either rig.
-                        listener_context = prepare_dual_v2_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
-                        gaze_context = prepare_dual_v2_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
-                        overlay_context = prepare_dual_v2_head_blink_overlays(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings, baseline=self.jali_base_baseline or {})
+                        listener_context = prepare_legacy_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                        gaze_context = prepare_dual_gaze_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
+                        overlay_context = prepare_dual_head_blink_overlays(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings, baseline=self.jali_base_baseline or {})
                     else:
                         listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                         gaze_context = prepare_dual_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
@@ -1315,13 +1315,13 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     gaze_result = apply_dual_gaze_only_artifacts(prepared_context=gaze_context)
                     for warning in gaze_context.get("warnings", []):
                         self._append_backend_output(f"Gaze timing warning: {warning}")
-                    overlay_result = apply_dual_v2_head_blink_overlays(prepared_context=overlay_context) if overlay_context else {}
-                    blink_diagnostic = diagnose_v2_blink_ownership(prepared_context=overlay_context) if overlay_context else None
+                    overlay_result = apply_dual_head_blink_overlays(prepared_context=overlay_context) if overlay_context else {}
+                    blink_diagnostic = diagnose_blink_ownership(prepared_context=overlay_context) if overlay_context else None
                     for actor, item in result.items(): self._append_backend_output(f"{actor}: jSync={item['jsync_node']}; staging={item['staging_dir']}; mask_tags={item['mask_tag_count']}; realign={'completed' if item['realign_completed'] else 'failed'}; realign_filter={item['jali_settings']['filter_silence_gaps']}; realign_threshold_db={item['jali_settings']['silence_threshold_db']:g}; calculate_paralinguals={item['calculate_paralinguals']}; calculate_blinks={item['calculate_blinks']}; paths_restored={'yes' if item['paths_restored'] else 'no'}; mask_binding={'applied' if item['mask_binding'] else 'skipped'}")
                     for actor in self.plan.get("characters", []):
                         item = listener_result[actor]
                         self._append_backend_output(f"{actor}: listener_mask_events={item['listener_mask_events']}; managed_user_plugs={len(item['managed_user_plugs'])}; FACS_animationSource=Add")
-                    if is_v2 and listener_context.get("expressive_eyelid_mapping_requirement"):
+                    if is_canonical_dual_plan and listener_context.get("expressive_eyelid_mapping_requirement"):
                         self._append_backend_output("Expressive eyelid Maya-smoke requirement (no guessed User mapping): " + ", ".join(listener_context["expressive_eyelid_mapping_requirement"]))
                     gaze_events = sum(gaze_result[actor]['gaze_events'] for actor in self.plan.get("characters", []))
                     overlay_summary = f"; additive head/blink overlays ({sum(overlay_result[actor]['head_key_count'] + overlay_result[actor]['blink_key_count'] for actor in self.plan.get('characters', []))} keys)" if overlay_result else ""
@@ -1533,7 +1533,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
         else:
             self.jali_base_baseline = None
             if saved_baseline is not None:
-                self._append_backend_output("Discarded legacy JALI baseline; a fresh dual_jali_base_v2 baseline will be captured on Generate.")
+                self._append_backend_output("Discarded legacy JALI baseline; a fresh JALI baseline will be captured on Generate.")
         saved_speech_bases = session.get("jali_speech_bases")
         self.jali_speech_bases = {
             str(actor): dict(row)
@@ -1899,8 +1899,8 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return False
 
         self.source_path = path
-        self._loaded_v2_snapshot_content = (
-            canonical_v2_authored_content(loaded_plan)
+        self._loaded_dual_snapshot_content = (
+            canonical_dual_authored_content(loaded_plan)
             if loaded_plan.get("schema_version") == "dual_performance_plan_v2" else None
         )
         self.current_event_index = None
@@ -2220,7 +2220,7 @@ class PerformancePlanEditor(QtWidgets.QDialog):
             return
         self.source_path = path
         if (self.plan or {}).get("schema_version") == "dual_performance_plan_v2":
-            self._loaded_v2_snapshot_content = canonical_v2_authored_content(self.plan or {})
+            self._loaded_dual_snapshot_content = canonical_dual_authored_content(self.plan or {})
         QtWidgets.QMessageBox.information(
             self,
             "Plan Saved",

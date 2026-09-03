@@ -1,12 +1,16 @@
 [project]
 name = "jalitest"
 version = "0.1.0"
-description = "Minimal JALI + ExpreGaze prototype."
+description = "Context-aware editable semantic performance authoring for JALI/Maya character animation."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "openai>=2.37.0",
-    "python-docx>=1.2.0",
     "python-dotenv>=1.2.2",
     "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+study = [
+    "python-docx>=1.2.0",
 ]

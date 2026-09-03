@@ -14,10 +14,10 @@ if str(MAYA_TOOLS) not in sys.path:
     sys.path.insert(0, str(MAYA_TOOLS))
 
 from performance_plan_ui_data import (  # noqa: E402
-    canonical_v2_authored_content,
+    canonical_dual_authored_content,
     default_edited_path,
-    is_v2_plan_changed_from_loaded_snapshot,
-    is_v2_plan_edited,
+    is_dual_plan_changed_from_loaded_snapshot,
+    is_dual_plan_edited,
     load_performance_plan,
     save_animation_runtime_plan,
     save_performance_plan,
@@ -506,7 +506,7 @@ def test_dual_timeline_audio_applies_only_after_all_animation_channels_succeed()
     speaker_at = succeeded.index("apply_dual_speaker_emotion_artifacts(")
     listener_at = succeeded.index("apply_dual_listener_mask_artifacts(")
     gaze_at = succeeded.index("apply_dual_gaze_only_artifacts(")
-    overlay_at = succeeded.index("apply_dual_v2_head_blink_overlays(")
+    overlay_at = succeeded.index("apply_dual_head_blink_overlays(")
     timeline_at = succeeded.index("apply_master_audio_to_maya_timeline(")
     assert max(speaker_at, listener_at, gaze_at, overlay_at) < timeline_at
     assert "path={timeline_audio['path']}" in succeeded
@@ -743,12 +743,12 @@ def test_v2_ui_tracks_loaded_snapshot_baseline_only_after_load_or_save_paths():
         "    def _animation_compile_succeeded", 1
     )[0]
     save = source.split("    def _save_to", 1)[1].split("\n\ndef show_performance", 1)[0]
-    assert "self._loaded_v2_snapshot_content" in source
-    assert "is_v2_plan_changed_from_loaded_snapshot(candidate_plan, loaded_content)" in dual_animation
+    assert "self._loaded_dual_snapshot_content" in source
+    assert "is_dual_plan_changed_from_loaded_snapshot(candidate_plan, loaded_content)" in dual_animation
     assert "self.source_path = runtime_plan" in dual_animation
-    assert "self._loaded_v2_snapshot_content = canonical_v2_authored_content(candidate_plan)" in dual_animation
+    assert "self._loaded_dual_snapshot_content = canonical_dual_authored_content(candidate_plan)" in dual_animation
     assert "self.source_path = path" in save
-    assert "self._loaded_v2_snapshot_content = canonical_v2_authored_content(self.plan or {})" in save
+    assert "self._loaded_dual_snapshot_content = canonical_dual_authored_content(self.plan or {})" in save
 
 
 def test_sparse_highlighter_discounts_initial_display_separator_from_projection_offsets():
@@ -813,11 +813,11 @@ def test_v2_canonical_snapshots_are_immutable_and_unedited_runtime_reuses_origin
     plan = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "tracks": {"ALICE": [], "BOB": []}}
     original = tmp_path / "performance_plan.json"
     save_performance_plan(plan, original)
-    with pytest.raises(ValueError, match="Immutable v2"):
+    with pytest.raises(ValueError, match="Immutable dual"):
         save_performance_plan(plan, original)
     edited = tmp_path / "performance_plan_edited_01.json"
     save_performance_plan(plan, edited)
-    with pytest.raises(ValueError, match="Immutable v2"):
+    with pytest.raises(ValueError, match="Immutable dual"):
         save_performance_plan(plan, edited)
     assert default_edited_path(original).name == "performance_plan_edited_02.json"
 
@@ -825,18 +825,18 @@ def test_v2_canonical_snapshots_are_immutable_and_unedited_runtime_reuses_origin
 def test_v2_edit_detection_only_snapshots_actual_animator_edits():
     original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"affect": "Watchful-60"}, "BOB": {"affect": "Neutral-60"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0001", "changes": {"gaze": "GAZE-BOB"}, "reason": "Looks."}], "BOB": []}}
     current = copy.deepcopy(original)
-    current["provenance"] = {"original_authored_content": canonical_v2_authored_content(original)}
-    assert is_v2_plan_edited(current, original) is False
+    current["provenance"] = {"original_authored_content": canonical_dual_authored_content(original)}
+    assert is_dual_plan_edited(current, original) is False
     current["tracks"]["ALICE"] = []
-    assert is_v2_plan_edited(current, original) is True
-    assert is_v2_plan_edited({**current, "acting_interpretation": "Different display text."}, original) is True
+    assert is_dual_plan_edited(current, original) is True
+    assert is_dual_plan_edited({**current, "acting_interpretation": "Different display text."}, original) is True
 
 
 def test_v2_canonical_comparison_detects_every_authored_change_but_ignores_display_metadata():
     original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"affect": "Watchful-60"}, "BOB": {"affect": "Neutral-60"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0001", "changes": {"gaze": "GAZE-BOB", "head": "HEAD-NONE"}, "reason": "Looks."}], "BOB": []}}
-    baseline = canonical_v2_authored_content(original)
+    baseline = canonical_dual_authored_content(original)
     unchanged = {**copy.deepcopy(original), "acting_interpretation": "Read-only context.", "provenance": {"original_authored_content": baseline}}
-    assert not is_v2_plan_edited(unchanged, original)
+    assert not is_dual_plan_edited(unchanged, original)
     variants = []
     added = copy.deepcopy(unchanged); added["tracks"]["BOB"].append({"actor": "BOB", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "Adds."}); variants.append(added)
     removed_channel = copy.deepcopy(unchanged); removed_channel["tracks"]["ALICE"][0]["changes"].pop("head"); variants.append(removed_channel)
@@ -845,69 +845,69 @@ def test_v2_canonical_comparison_detects_every_authored_change_but_ignores_displ
     changed_reason = copy.deepcopy(unchanged); changed_reason["tracks"]["ALICE"][0]["reason"] = "Changed."; variants.append(changed_reason)
     changed_initial = copy.deepcopy(unchanged); changed_initial["initial_states"]["ALICE"]["affect"] = "Happy-60"; variants.append(changed_initial)
     changed_initial_reason = copy.deepcopy(unchanged); changed_initial_reason["initial_reasons"]["ALICE"] = "Changed."; variants.append(changed_initial_reason)
-    assert all(is_v2_plan_edited(plan, original) for plan in variants)
+    assert all(is_dual_plan_edited(plan, original) for plan in variants)
 
 
 def test_v2_gaze_target_candidates_are_metadata_not_authored_content():
     original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "gaze_target_candidates": ["LETTER"], "initial_states": {"ALICE": {}, "BOB": {}}, "initial_reasons": {"ALICE": None, "BOB": None}, "tracks": {"ALICE": [], "BOB": []}}
     changed = {**copy.deepcopy(original), "gaze_target_candidates": ["WINDOW", "DOOR"]}
-    assert canonical_v2_authored_content(changed) == canonical_v2_authored_content(original)
+    assert canonical_dual_authored_content(changed) == canonical_dual_authored_content(original)
 
 
 def test_v2_loaded_snapshot_comparison_is_distinct_from_immutable_llm_baseline():
     original = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"gaze": "GAZE-BOB"}, "BOB": {"gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [], "BOB": []}}
-    original["provenance"] = {"original_authored_content": canonical_v2_authored_content(original)}
+    original["provenance"] = {"original_authored_content": canonical_dual_authored_content(original)}
     edited_01 = copy.deepcopy(original)
     edited_01["initial_states"]["ALICE"]["gaze"] = "GAZE-DOWN"
     unchanged = copy.deepcopy(edited_01)
-    assert not is_v2_plan_changed_from_loaded_snapshot(unchanged, edited_01)
+    assert not is_dual_plan_changed_from_loaded_snapshot(unchanged, edited_01)
 
     changed_again = copy.deepcopy(edited_01)
     changed_again["initial_states"]["ALICE"]["gaze"] = "GAZE-RIGHT"
-    assert is_v2_plan_changed_from_loaded_snapshot(changed_again, edited_01)
+    assert is_dual_plan_changed_from_loaded_snapshot(changed_again, edited_01)
 
     reverted_to_llm = copy.deepcopy(edited_01)
     reverted_to_llm["initial_states"]["ALICE"]["gaze"] = "GAZE-BOB"
-    assert not is_v2_plan_edited(reverted_to_llm, original)
-    assert is_v2_plan_changed_from_loaded_snapshot(reverted_to_llm, edited_01)
+    assert not is_dual_plan_edited(reverted_to_llm, original)
+    assert is_dual_plan_changed_from_loaded_snapshot(reverted_to_llm, edited_01)
 
 
 def test_v2_loaded_snapshot_comparison_ignores_metadata_and_advances_with_snapshot_sequence(tmp_path: Path):
     loaded = {"schema_version": "dual_performance_plan_v2", "characters": ["ALICE", "BOB"], "initial_states": {"ALICE": {"gaze": "GAZE-BOB"}, "BOB": {"gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "One.", "BOB": "Two."}, "tracks": {"ALICE": [], "BOB": []}}
     metadata_only = copy.deepcopy(loaded)
     metadata_only.update({"gaze_target_candidates": ["WINDOW"], "diagnostics": {"warnings": ["note"]}, "provenance": {"anything": "ignored"}})
-    assert not is_v2_plan_changed_from_loaded_snapshot(metadata_only, loaded)
+    assert not is_dual_plan_changed_from_loaded_snapshot(metadata_only, loaded)
 
     original_path = tmp_path / "performance_plan.json"
     assert default_edited_path(original_path).name == "performance_plan_edited_01.json"
     edited_01 = copy.deepcopy(loaded); edited_01["initial_states"]["ALICE"]["gaze"] = "GAZE-DOWN"
-    assert is_v2_plan_changed_from_loaded_snapshot(edited_01, loaded)
+    assert is_dual_plan_changed_from_loaded_snapshot(edited_01, loaded)
     active = copy.deepcopy(edited_01)
-    assert not is_v2_plan_changed_from_loaded_snapshot(edited_01, active)
+    assert not is_dual_plan_changed_from_loaded_snapshot(edited_01, active)
     (tmp_path / "performance_plan_edited_01.json").write_text("{}", encoding="utf-8")
     edited_02 = copy.deepcopy(edited_01); edited_02["initial_states"]["ALICE"]["gaze"] = "GAZE-RIGHT"
-    assert is_v2_plan_changed_from_loaded_snapshot(edited_02, active)
+    assert is_dual_plan_changed_from_loaded_snapshot(edited_02, active)
     assert default_edited_path(original_path).name == "performance_plan_edited_02.json"
-    assert not is_v2_plan_changed_from_loaded_snapshot(edited_02, edited_02)
+    assert not is_dual_plan_changed_from_loaded_snapshot(edited_02, edited_02)
 
 
 def test_real_v2_builder_baseline_is_canonical_and_untouched_score_is_not_edited():
-    from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
+    from expregaze_jali.dual_performance_plan import build_dual_performance_plan
     from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
     from tools.maya.dual_sparse_score_model import DualSparseScoreModel
 
     anchors = build_conversation_anchor_model("ALICE: Hello.\nBOB: No.", character_a="ALICE", character_b="BOB")
     proposal = {"analyze": "Context.", "initial_states": {"ALICE": {"affect": "Watchful-60", "gaze": "GAZE-BOB"}, "BOB": {"affect": "Neutral-60", "gaze": "GAZE-ALICE"}}, "initial_reasons": {"ALICE": "Ready.", "BOB": "Ready."}, "events": [{"event_id": "E1", "actor": "ALICE", "anchor_id": "w0002", "changes": {"gaze": "GAZE-DOWN", "head": "HEAD-DOWN-SUBTLE"}, "reason": "Withdraws."}], "diagnostics": {"errors": [], "warnings": []}}
-    plan = build_dual_performance_plan_v2(proposal, anchor_model=anchors, sequence_id="fixture")
-    assert plan["provenance"]["original_authored_content"] == canonical_v2_authored_content(plan)
+    plan = build_dual_performance_plan(proposal, anchor_model=anchors, sequence_id="fixture")
+    assert plan["provenance"]["original_authored_content"] == canonical_dual_authored_content(plan)
     model = DualSparseScoreModel(plan, anchors)
     untouched = model.apply(dict(model.score_texts))
-    assert not is_v2_plan_edited(untouched, model.original_plan)
+    assert not is_dual_plan_edited(untouched, model.original_plan)
     assert len(untouched["tracks"]["ALICE"]) == 1
     assert untouched["tracks"]["ALICE"][0]["changes"] == {"gaze": "GAZE-DOWN", "head": "HEAD-DOWN-SUBTLE"}
     texts = dict(model.score_texts)
     texts["ALICE"] = texts["ALICE"].replace("<GAZE-DOWN>", "<GAZE-RIGHT>")
-    assert is_v2_plan_edited(model.apply(texts), model.original_plan)
+    assert is_dual_plan_edited(model.apply(texts), model.original_plan)
 
 
 def test_v2_delete_only_edit_saves_numbered_snapshot_without_resurrecting_event(tmp_path: Path):
@@ -923,7 +923,7 @@ def test_v2_delete_only_edit_saves_numbered_snapshot_without_resurrecting_event(
     texts["ALICE"] = texts["ALICE"].replace("<GAZE-DOWN>", "")
     current = model.apply(texts)
     assert current["tracks"]["ALICE"] == []
-    assert is_v2_plan_edited(current, model.original_plan)
+    assert is_dual_plan_edited(current, model.original_plan)
     snapshot = default_edited_path(original_path)
     save_animation_runtime_plan(model, texts, snapshot)
     assert json.loads(original_path.read_text(encoding="utf-8"))["tracks"]["ALICE"][0]["event_id"] == "E1"

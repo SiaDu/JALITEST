@@ -1,7 +1,7 @@
 """Generate anonymised Study A materials from the production dual-plan pipeline.
 
 This script deliberately calls ``generate_dual_performance_plan`` for every
-sample.  It only projects the resulting canonical v2 plan into a read-only
+sample.  It only projects the resulting canonical dual plan into a read-only
 DOCX view; it does not introduce a study-specific LLM prompt or schema.
 """
 from __future__ import annotations
@@ -31,7 +31,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tools" / "maya")]
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model  # noqa: E402
 from dual_sparse_score_model import build_dialogue_projection, render_actor_score, render_initial_score  # noqa: E402
 
-DEFAULT_PROMPT_TEMPLATE = ROOT / "prompts" / "actor_dual_semantic_beat_prompt_v1.md"
+DEFAULT_PROMPT_TEMPLATE = ROOT / "prompts" / "dual_semantic_performance_prompt.md"
 
 SCENES = {
     "S1": ("SOL", "DANA", "Dana and Sol are colleagues working on a prototype. The prototype has failed several times during the week, but Sol has now repaired the problem. There is no unresolved disagreement between them.", "SOL: I thought it was going to fail again.\nDANA: It didn't.\nSOL: You think it's ready?\nDANA: Yes. You did a good job."),
@@ -130,7 +130,7 @@ def add_plan(doc: Document, plan: dict[str, Any], script: str, actors: tuple[str
         _paragraph(bcell, "DIALOGUE PERFORMANCE", bold=True, size=8.5, color="666666", keep=True)
         score = bcell.add_table(rows=1, cols=1).cell(0, 0); _shade(score, "1F2937"); _clear_initial_paragraph(score)
         _score_paragraph(score, _score_runs(render_actor_score(plan, projection, actor), projection, actor))
-        _paragraph(bcell, "REASON BY PHRASE", bold=True, size=8.5, color="666666", keep=True)
+        _paragraph(bcell, "ACTING INTERPRETATION BY PHRASE", bold=True, size=8.5, color="666666", keep=True)
         reasons: list[tuple[str, str]] = [("Initial", str(plan["initial_reasons"][actor]))]
         seen = set(reasons)
         for event in plan["tracks"][actor]:
@@ -209,7 +209,7 @@ def _render_participants(out: Path, plans: dict[str, dict[str, Any]], *, users: 
         target = (target_dir or out / "participants") / f"{user}.docx"; target.parent.mkdir(parents=True, exist_ok=True); doc.save(target)
         text = _read_docx_text(target)
         assert not _forbidden(text), f"Participant leak in {target}"
-        assert text.count("REASON BY PHRASE") == 24
+        assert text.count("ACTING INTERPRETATION BY PHRASE") == 24
         assert text.count("INITIAL PERFORMANCE") == 24 and text.count("DIALOGUE PERFORMANCE") == 24
 
 def _timing_stats(samples: list[dict[str, Any]]) -> dict[str, float]:

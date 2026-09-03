@@ -12,6 +12,9 @@ import pytest
 MAYA_TOOLS = Path(__file__).resolve().parents[1] / "tools" / "maya"
 if str(MAYA_TOOLS) not in sys.path:
     sys.path.insert(0, str(MAYA_TOOLS))
+MAYA_DEV_TOOLS = MAYA_TOOLS / "dev"
+if str(MAYA_DEV_TOOLS) not in sys.path:
+    sys.path.insert(0, str(MAYA_DEV_TOOLS))
 
 from animation_apply_runner import (  # noqa: E402
     apply_animation_artifacts,
@@ -28,12 +31,12 @@ from animation_apply_runner import (  # noqa: E402
     apply_dual_animation_artifacts,
     apply_dual_speaker_emotion_artifacts,
     apply_dual_listener_mask_artifacts,
-    build_listener_mask_key_schedule,
-    build_v2_listener_mask_key_schedule,
+    build_legacy_listener_mask_key_schedule,
+    build_listener_mask_key_schedule as build_v2_listener_mask_key_schedule,
     build_listener_mask_timeline,
     capture_character_gaze_reference,
     capture_eyelid_animation_reference,
-    prepare_dual_listener_mask_artifacts,
+    prepare_legacy_dual_listener_mask_artifacts,
     resolve_character_look_at_target,
     resolve_jsync_for_character,
     resolve_jali_source_transcript_path,
@@ -50,14 +53,14 @@ from animation_apply_runner import (  # noqa: E402
     build_fixation_micro_saccade_key_schedule,
     fixation_gaze_intervals,
     plan_fixation_micro_saccades,
-    apply_dual_v2_head_blink_overlays,
-    prepare_dual_v2_head_blink_overlays,
-    prepare_dual_v2_gaze_only_artifacts,
-    plan_v2_blinks,
+    apply_dual_head_blink_overlays,
+    prepare_dual_head_blink_overlays,
+    prepare_dual_gaze_artifacts,
+    plan_blinks as plan_v2_blinks,
     inject_idle_regulatory_blinks,
-    diagnose_v2_blink_ownership,
-    prepare_dual_v2_listener_mask_artifacts,
-    _v2_overlay_config,
+    diagnose_blink_ownership as diagnose_v2_blink_ownership,
+    prepare_dual_listener_mask_artifacts,
+    _overlay_config as _v2_overlay_config,
     _resolve_user_blink_brow_plugs,
     micro_saccade_layer_name,
     master_audio_timeline_info,
@@ -420,7 +423,7 @@ def test_listener_timeline_assigns_affect_only_to_non_speaker_and_updates_intens
     })
     assert [item["state"] for item in timeline["A"]] == ["NONE", "NONE", "Smug-20"]
     assert [item["state"] for item in timeline["B"]] == ["Watchful-25", "Watchful-35", "NONE"]
-    keys = build_listener_mask_key_schedule(timeline["B"], fps=24)
+    keys = build_legacy_listener_mask_key_schedule(timeline["B"], fps=24)
     assert [key["frame"] for key in keys] == [0.0, 22.0, 26.0, 46.0, 50.0]
     assert keys[2]["pose"]["usr_OuterBrowRaise_L.OuterBrowRaise_L"] == 1.75
 
@@ -459,7 +462,7 @@ def _listener_mappings():
 def test_listener_preflight_and_apply_only_write_user_mask_controls(monkeypatch, tmp_path):
     cmds = _ListenerCmds()
     manifest = _listener_manifest(tmp_path)
-    prepared = prepare_dual_listener_mask_artifacts(manifest_path=manifest, character_mappings=_listener_mappings(), cmds_module=cmds)
+    prepared = prepare_legacy_dual_listener_mask_artifacts(manifest_path=manifest, character_mappings=_listener_mappings(), cmds_module=cmds)
     assert prepared["A"]["add_index"] == 2 and prepared["B"]["listener_mask_events"] == 1
     result = apply_dual_listener_mask_artifacts(prepared_context=prepared, cmds_module=cmds)
     set_attrs = [call[1][0] for call in cmds.calls if call[0] == "setAttr"]
@@ -475,14 +478,14 @@ def test_listener_preflight_and_apply_only_write_user_mask_controls(monkeypatch,
 def test_listener_unsupported_mask_fails_preflight_before_either_actor_mutates(tmp_path):
     cmds = _ListenerCmds()
     with pytest.raises(ValueError, match="Unsupported listener Mask"):
-        prepare_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path, b_affect="Alien-25"), character_mappings=_listener_mappings(), cmds_module=cmds)
+        prepare_legacy_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path, b_affect="Alien-25"), character_mappings=_listener_mappings(), cmds_module=cmds)
     assert cmds.calls == []
 
 
 def test_listener_missing_b_control_fails_before_either_actor_mutates(tmp_path):
     cmds = _ListenerCmds(missing="B:usr_Squint_R.Squint_R")
     with pytest.raises(RuntimeError, match="B: missing User FACS controls"):
-        prepare_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path), character_mappings=_listener_mappings(), cmds_module=cmds)
+        prepare_legacy_dual_listener_mask_artifacts(manifest_path=_listener_manifest(tmp_path), character_mappings=_listener_mappings(), cmds_module=cmds)
     assert cmds.calls == []
 
 
@@ -509,7 +512,7 @@ def test_v2_initial_affect_is_active_for_both_actors_from_scene_start(tmp_path):
         "character_runtime_mapping": {"ALICE": {"script_name": "ALICE", "sound_file": "A"}, "BOB": {"script_name": "BOB", "sound_file": "B"}},
         "artifacts": artifacts,
     }))
-    prepared = prepare_dual_v2_listener_mask_artifacts(
+    prepared = prepare_dual_listener_mask_artifacts(
         manifest_path=manifest,
         character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}},
         cmds_module=_ListenerCmds(),
@@ -615,7 +618,7 @@ def test_v2_listener_mask_ownership_is_per_actor_for_overlapping_turns(tmp_path)
     artifacts["conversation_anchor_timing"] = str(timing)
     manifest = tmp_path / "manifest.json"
     manifest.write_text(json.dumps({"schema_version": "dual_animation_manifest_v2", "characters": ["ALICE", "BOB"], "fps": 24, "shared_duration_seconds": 5, "character_runtime_mapping": {"ALICE": {"script_name": "ALICE", "sound_file": "A"}, "BOB": {"script_name": "BOB", "sound_file": "B"}}, "artifacts": artifacts}))
-    prepared = prepare_dual_v2_listener_mask_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=_ListenerCmds())
+    prepared = prepare_dual_listener_mask_artifacts(manifest_path=manifest, character_mappings={"ALICE": {"maya_node": "|ALICE:ROOT"}, "BOB": {"maya_node": "|BOB:ROOT"}}, cmds_module=_ListenerCmds())
     alice = [(row["start"], row["state"]) for row in prepared["ALICE"]["timeline"]]
     bob = [(row["start"], row["state"]) for row in prepared["BOB"]["timeline"]]
     assert alice == [(0.0, "Watchful-80")]
@@ -653,7 +656,7 @@ def test_v2_user_mask_affect_persists_through_turn_boundaries_until_next_affect(
         "character_runtime_mapping": {"CHAYTON": {"script_name": "CHAYTON", "sound_file": "C"}, "JOAN": {"script_name": "JOAN", "sound_file": "J"}},
         "artifacts": artifacts,
     }))
-    prepared = prepare_dual_v2_listener_mask_artifacts(
+    prepared = prepare_dual_listener_mask_artifacts(
         manifest_path=manifest,
         character_mappings={"CHAYTON": {"maya_node": "|CHAYTON:ROOT"}, "JOAN": {"maya_node": "|JOAN:ROOT"}},
         cmds_module=_ListenerCmds(),
@@ -888,7 +891,7 @@ def test_v2_gaze_prepare_keeps_micro_saccades_in_a_separate_runtime_section(monk
     monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda rig, *_args, **_kwargs: f"{rig}|jSync")
     monkeypatch.setattr(runner, "capture_character_gaze_reference", lambda rig, **_kwargs: {"eye_stare_node": qualify_rig_control(rig, "eyeStare_world"), "both_eyes_node": qualify_rig_control(rig, "CNT_BOTH_EYES"), "eye_stare_translate": [0, 0, 9], "both_eyes_translate": [0, 0]})
     mappings = {"ALICE": {"maya_node": "|ALICE:ROOT", "gaze_targets": {"BOB": {"eye_stare_translate": [1, 2, 3]}}}, "BOB": {"maya_node": "|BOB:ROOT", "gaze_targets": {"ALICE": {"eye_stare_translate": [4, 5, 6]}}}}
-    prepared = prepare_dual_v2_gaze_only_artifacts(manifest_path=manifest, character_mappings=mappings, cmds_module=_ListenerCmds())
+    prepared = prepare_dual_gaze_artifacts(manifest_path=manifest, character_mappings=mappings, cmds_module=_ListenerCmds())
     alice = prepared["ALICE"]
     assert prepared["warnings"] == []
     assert alice["micro_saccade_layer"] == "JALITEST_microSaccade_ALICE"
@@ -1010,7 +1013,7 @@ def test_v2_overlay_apply_uses_owned_additive_layers_and_user_blink_only():
             "head_keys": [], "blink_keys": [],
         },
     }}
-    result = apply_dual_v2_head_blink_overlays(prepared_context=context, cmds_module=cmds)
+    result = apply_dual_head_blink_overlays(prepared_context=context, cmds_module=cmds)
     layer_calls = [call for call in cmds.calls if call[0] == "animLayer"]
     assert layer_calls and not any(call[2].get("override") is True for call in layer_calls)
     assert any(call[2].get("attribute") == "ALICE:usr_BrowInDown.BrowDown" for call in layer_calls)
@@ -1074,7 +1077,7 @@ def test_v2_actor_two_blink_preflight_fails_before_any_maya_mutation(monkeypatch
     monkeypatch.setattr(runner, "_validate_dual_jali_base", lambda *_a, **_k: {actor: {} for actor in mappings})
     monkeypatch.setattr(runner, "resolve_jsync_for_character", lambda rig, *_a, **_k: rig + "|jSync1")
     with pytest.raises(RuntimeError, match="BOB.*no usable User blink control"):
-        prepare_dual_v2_head_blink_overlays(manifest_path=manifest, character_mappings=mappings, baseline={}, cmds_module=cmds, mel_module=SimpleNamespace())
+        prepare_dual_head_blink_overlays(manifest_path=manifest, character_mappings=mappings, baseline={}, cmds_module=cmds, mel_module=SimpleNamespace())
     assert cmds.calls == []
 
 

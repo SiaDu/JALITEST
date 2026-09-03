@@ -99,7 +99,7 @@ def extract_speaker_dialogue(script: str, characters: Iterable[str]) -> dict[str
             continue
         actor = by_folded.get(match.group(1).strip().casefold())
         if actor is None:
-            raise ValueError(f"Unknown speaker label in Input Script: {match.group(1)!r}")
+            raise ValueError(f"Unknown speaker label in Dialogue: {match.group(1)!r}")
         text = match.group(2)
         if text:
             result[actor].append(text)

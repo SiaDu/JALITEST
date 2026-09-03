@@ -15,22 +15,22 @@ from expregaze_jali.textgrid_parser import parse_textgrid_words
 from expregaze_jali.jali_annotation_exporter import build_dual_speaker_jali_annotation, build_sparse_speaker_jali_annotation
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model, speaker_key
 from expregaze_jali.dual_performance_plan_from_proposal import adapt_dual_performance_plan_v0
-from expregaze_jali.dual_sparse_performance_proposal_parser import BLINK_VALUES, HEAD_VALUES
+from expregaze_jali.performance_vocabulary import BLINK_VALUES, HEAD_VALUES
 from expregaze_jali.performance_proposal_parser import load_semantic_vocabulary
 
-def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
+def _validate_dual_plan(plan: dict[str, Any], model: Any) -> None:
     characters = plan.get("characters")
     tracks = plan.get("tracks")
     if not isinstance(characters, list) or len(characters) != 2 or len(set(characters)) != 2 or any(not isinstance(name, str) or not name.strip() for name in characters):
-        raise ValueError("Dual v2 plan requires two ordered character names.")
+        raise ValueError("Dual plan requires two ordered character names.")
     if not isinstance(tracks, dict) or set(tracks) != set(characters):
-        raise ValueError("Dual v2 plan requires name-keyed character tracks.")
+        raise ValueError("Dual plan requires name-keyed character tracks.")
     initial_states = plan.get("initial_states", {})
     initial_reasons = plan.get("initial_reasons")
     if not isinstance(initial_states, dict) or set(initial_states) != set(characters):
-        raise ValueError("Dual v2 initial_states must be name-keyed by plan characters.")
+        raise ValueError("Dual initial_states must be name-keyed by plan characters.")
     if not isinstance(initial_reasons, dict) or set(initial_reasons) != set(characters):
-        raise ValueError("Dual v2 initial_reasons must be name-keyed by plan characters.")
+        raise ValueError("Dual initial_reasons must be name-keyed by plan characters.")
     affect_states = {name.casefold() for name in load_semantic_vocabulary().affect_states.values()}
     def valid_affect(value: object, *, initial: bool) -> bool:
         text = str(value or "")
@@ -45,45 +45,45 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
     for actor in characters:
         state = initial_states[actor]
         if not isinstance(state, dict) or not set(state) <= {"affect", "gaze", "head"}:
-            raise ValueError(f"{actor}: v2 initial state may contain only affect, gaze, and head.")
+            raise ValueError(f"{actor}: initial state may contain only affect, gaze, and head.")
         gaze = state.get("gaze")
         if not valid_gaze(gaze, initial=True):
-            raise ValueError(f"{actor}: invalid v2 initial gaze {gaze!r}.")
+            raise ValueError(f"{actor}: invalid initial gaze {gaze!r}.")
         head = state.get("head")
         if head is not None and head not in HEAD_VALUES:
-            raise ValueError(f"{actor}: invalid v2 initial head {head!r}.")
+            raise ValueError(f"{actor}: invalid initial head {head!r}.")
         affect = state.get("affect")
         if not valid_affect(affect, initial=True):
-            raise ValueError(f"{actor}: invalid v2 initial affect {affect!r}.")
+            raise ValueError(f"{actor}: invalid initial affect {affect!r}.")
     anchors = {anchor.anchor_id for anchor in model.anchors}
     event_ids: set[str] = set()
     for actor in characters:
         if not isinstance(tracks[actor], list):
-            raise ValueError(f"Dual v2 track {actor} must be a list.")
+            raise ValueError(f"Dual track {actor} must be a list.")
         anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(model.anchors)}
         assigned_anchors: set[str] = set()
         blink_hold_active = False
         ordered_events = sorted(enumerate(tracks[actor]), key=lambda row: (anchor_order.get(row[1].get("anchor_id"), len(anchor_order)), row[0]))
         for _source_index, event in ordered_events:
             if not isinstance(event, dict) or not event.get("event_id") or event.get("actor") != actor or event.get("anchor_id") not in anchors:
-                raise ValueError(f"{actor}: v2 event requires event_id, matching actor, and known anchor_id.")
+                raise ValueError(f"{actor}: event requires event_id, matching actor, and known anchor_id.")
             if event["event_id"] in event_ids:
-                raise ValueError(f"Duplicate v2 event_id {event['event_id']}.")
+                raise ValueError(f"Duplicate event_id {event['event_id']}.")
             event_ids.add(event["event_id"])
             changes = event.get("changes")
             if not isinstance(changes, dict) or not changes or not set(changes) <= {"affect", "gaze", "head", "blink"}:
-                raise ValueError(f"{event['event_id']}: invalid or empty v2 changes.")
+                raise ValueError(f"{event['event_id']}: invalid or empty changes.")
             if event["anchor_id"] in assigned_anchors:
-                raise ValueError(f"{actor}: duplicate v2 event at anchor {event['anchor_id']}.")
+                raise ValueError(f"{actor}: duplicate event at anchor {event['anchor_id']}.")
             assigned_anchors.add(event["anchor_id"])
             if "affect" in changes and not valid_affect(changes["affect"], initial=False):
-                raise ValueError(f"{event['event_id']}: invalid v2 affect {changes['affect']!r}.")
+                raise ValueError(f"{event['event_id']}: invalid affect {changes['affect']!r}.")
             if "gaze" in changes and not valid_gaze(changes["gaze"], initial=False):
-                raise ValueError(f"{event['event_id']}: invalid v2 executable gaze {changes['gaze']!r}.")
+                raise ValueError(f"{event['event_id']}: invalid executable gaze {changes['gaze']!r}.")
             if "head" in changes and changes["head"] not in HEAD_VALUES:
-                raise ValueError(f"{event['event_id']}: invalid v2 head {changes['head']!r}.")
+                raise ValueError(f"{event['event_id']}: invalid head {changes['head']!r}.")
             if "blink" in changes and changes["blink"] not in BLINK_VALUES:
-                raise ValueError(f"{event['event_id']}: invalid authored v2 blink {changes['blink']!r}.")
+                raise ValueError(f"{event['event_id']}: invalid authored blink {changes['blink']!r}.")
             blink = changes.get("blink")
             if blink == "EYE_CLOSE_HOLD":
                 if blink_hold_active:
@@ -97,13 +97,13 @@ def _validate_v2_plan(plan: dict[str, Any], model: Any) -> None:
                 raise ValueError(f"{actor}: {event['event_id']} {blink} is invalid while an authored eye hold is active.")
 
 
-def _compile_v2(
+def _compile_dual_plan(
     *, plan: dict[str, Any], model: Any, anchor_times: dict[str, dict[str, Any]],
     mapping: dict[str, Any], audio_folder: str | Path, fps: float, out: Path,
     performance_plan_path: str | Path, script_source: str | Path | None,
     wavs: dict[str, tuple[Path, float]], shared_duration: float, duration_warning: str,
 ) -> dict[str, Any]:
-    _validate_v2_plan(plan, model)
+    _validate_dual_plan(plan, model)
     characters = plan["characters"]
     anchor_order = {anchor.anchor_id: index for index, anchor in enumerate(model.anchors)}
     artifacts: dict[str, Any] = {"characters": {}}
@@ -279,8 +279,8 @@ def build_canonical_phrase_timeline(
 
 def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: str, audio_folder: str | Path, fps: float, runtime_mapping: dict[str, Any], output_dir: str | Path, script_source: str | Path | None = None) -> dict[str, Any]:
     raw_plan = json.loads(Path(performance_plan_path).read_text(encoding="utf-8"))
-    is_v2 = raw_plan.get("schema_version") == "dual_performance_plan_v2"
-    plan = raw_plan if is_v2 else adapt_dual_performance_plan_v0(raw_plan)
+    is_canonical_dual_plan = raw_plan.get("schema_version") == "dual_performance_plan_v2"
+    plan = raw_plan if is_canonical_dual_plan else adapt_dual_performance_plan_v0(raw_plan)
     characters = plan.get("characters")
     if not isinstance(characters, list) or len(characters) != 2:
         raise ValueError("Dual plan requires two ordered character names.")
@@ -297,7 +297,7 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
         if speaker_key(name) != speaker_key(str(mapping[name]["script_name"])):
             raise ValueError(f"Runtime mapping {name} script_name does not match dual plan character.")
     model = build_conversation_anchor_model(script, character_a=characters[0], character_b=characters[1])
-    phrases = None if is_v2 else _validate_plan(plan, model)
+    phrases = None if is_canonical_dual_plan else _validate_plan(plan, model)
     timings = {name: discover_character_timing(audio_folder, str(row["sound_file"])) for name, row in mapping.items()}
     wavs = {name: _wav_duration(audio_folder, str(row["sound_file"])) for name,row in mapping.items()}
     shared_duration = min(wavs[name][1] for name in characters)
@@ -326,8 +326,8 @@ def compile_dual_performance_plan(*, performance_plan_path: str | Path, script: 
             remaining=timing.words[cursors[actor]:]
             raise ValueError(f"{actor}: {len(remaining)} unexpected remaining timing word(s) in {timing.path}: {remaining[:3]}")
     out = Path(output_dir); out.mkdir(parents=True, exist_ok=True)
-    if is_v2:
-        return _compile_v2(
+    if is_canonical_dual_plan:
+        return _compile_dual_plan(
             plan=plan, model=model, anchor_times=anchor_times, mapping=mapping,
             audio_folder=audio_folder, fps=fps, out=out,
             performance_plan_path=performance_plan_path, script_source=script_source,

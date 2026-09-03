@@ -8,9 +8,9 @@ from pathlib import Path
 import re
 from typing import Any, Callable, Iterable
 
-from expregaze_jali.actor_prompt_builder import load_prompt_template
-from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
-from expregaze_jali.dual_sparse_performance_proposal_parser import BLINK_VALUES, DIRECTION_TARGETS, HEAD_VALUES
+from expregaze_jali.prompt_templates import load_prompt_template
+from expregaze_jali.dual_performance_plan import build_dual_performance_plan
+from expregaze_jali.performance_vocabulary import BLINK_VALUES, DIRECTION_TARGETS, HEAD_VALUES
 from expregaze_jali.dual_semantic_beat_parser import parse_dual_semantic_beats
 from expregaze_jali.compile_dual_semantic_beats import compile_dual_semantic_beats, render_compiled_dual_performance_proposal
 from expregaze_jali.generate_performance_plan import (
@@ -27,7 +27,7 @@ from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, buil
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_dual_semantic_beat_prompt_v1.md"
+DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "dual_semantic_performance_prompt.md"
 ProposalRunner = Callable[..., tuple[str, dict[str, Any]]]
 
 
@@ -138,7 +138,7 @@ def generate_dual_performance_plan(
     semantic_beats_json.write_text(json.dumps(semantic_ir, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     proposal = compile_dual_semantic_beats(semantic_ir, anchor_model=model)
     paths.proposal.write_text(render_compiled_dual_performance_proposal(proposal, characters=(character_a, character_b)), encoding="utf-8")
-    plan = build_dual_performance_plan_v2(
+    plan = build_dual_performance_plan(
         proposal, anchor_model=model, sequence_id=resolved_run_id,
         proposal_path=str(paths.proposal),
     )

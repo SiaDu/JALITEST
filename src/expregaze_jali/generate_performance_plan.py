@@ -15,7 +15,7 @@ from pathlib import Path
 import re
 from typing import Any, Callable, Iterable
 
-from expregaze_jali.actor_prompt_builder import load_prompt_template
+from expregaze_jali.prompt_templates import load_prompt_template
 from expregaze_jali.performance_plan_from_proposal import build_performance_plan_from_proposal
 from expregaze_jali.performance_proposal_parser import (
     BLINK_VALUES,
@@ -35,7 +35,7 @@ from expregaze_jali.transcript_anchor_model import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "actor_performance_proposal_prompt_v3.md"
+DEFAULT_PROMPT_TEMPLATE = REPO_ROOT / "prompts" / "single_performance_plan_prompt.md"
 DEFAULT_EXTRA_CONFIG_FILES = (
     DEFAULT_SEMANTIC_VOCABULARY_PATH,
     REPO_ROOT / "configs" / "performance_rules.yaml",

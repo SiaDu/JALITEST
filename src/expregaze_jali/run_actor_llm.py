@@ -279,7 +279,7 @@ def main() -> None:
     output_meta = args.output_meta or args.llm_process_dir / f"{clip}__llm_response_meta.json"
 
     if not prompt_path.exists():
-        raise FileNotFoundError(f"Prompt not found: {prompt_path}. Run scripts/01_build_actor_prompt.sh first.")
+        raise FileNotFoundError(f"Prompt not found: {prompt_path}.")
 
     prompt = prompt_path.read_text(encoding="utf-8")
 

@@ -1,229 +1,91 @@
 # JALITEST
 
-JALITEST is a small ExpreGaze + JALI prototype for generating script-aware performance annotations and compiling them into JALI / Maya-ready outputs.
+Context-aware, editable semantic performance authoring for conversational character animation in JALI/Maya.
 
-## Current pipeline
-
-```text
-full_context + shot_range + exact transcript
-  -> actor prompt
-  -> LLM actor-style annotation
-  -> JALI transcript tags + resolved gaze events + eye/blink overlay events
-  -> optional Maya application scripts
-```
-
-The LLM does **not** output JSON, seconds, frames, or Maya controls. It outputs a readable actor-style transcript annotation. Code parses that annotation and compiles executable outputs.
-
-## Config layout
-
-The configs are intentionally split by purpose:
+## Overview
 
 ```text
-configs/
-  llm.yaml                                  # Step 01 OpenAI runtime settings only
-  project.yaml                              # stable repo paths and prompt extra files
-  jali_emotion_options.yaml                 # prompt-only JALI mask / heart reference
-  performance_rules.yaml                    # prompt-only acting/tagging rules
-  sequences/
-    CustumName.yaml
-    example.yaml                            # copy this for a new sequence
-  maya/
-    valleygirl.yaml                         # Maya adapter settings for gaze/eye/JALI injection
+Dialogue + Acting Direction
+        ↓
+Semantic Beat Generation
+        ↓
+Deterministic Performance Plan Compilation
+        ↓
+Editable Semantic Performance Tags
+        ↓
+JALI / Maya Animation
 ```
 
-Removed legacy config files:
+JALITEST makes one LLM call to propose semantic performance decisions. Deterministic code builds dialogue anchors, validates the Semantic Beat IR, compiles a canonical Performance Plan, and produces timing and Maya execution artifacts. Animators can inspect and locally edit semantic tags before animation is generated.
+
+## Design Principles
+
+- One LLM call proposes semantic performance decisions.
+- Deterministic code owns transcript anchors and executable compilation.
+- Animators inspect and locally edit semantic decisions.
+- Acting Interpretation is visible metadata, not executable state.
+- JALI provides the native speech-animation base.
+- Semantic affect, gaze, head, and blink overlays are compiled deterministically.
+
+## Requirements
+
+- Python 3.12 for the backend (`pyproject.toml` specifies the supported range).
+- Autodesk Maya 2025 with its bundled Python 3.11 and PySide6 for the Maya UI.
+- An installed compatible JALI Maya runtime and character rigs.
+- An OpenAI API key configured as `OPENAI_API_KEY` (or the environment variable selected in `configs/llm.yaml`).
+
+JALI and Maya are external dependencies; this repository does not distribute either application/runtime.
+
+## Installation
+
+Create the backend environment with your preferred Python 3.12 environment manager, then install the project dependencies. Set `OPENAI_API_KEY` in the environment or in a local `.env` file. If Maya cannot infer the repository location, set `JALITEST_REPO_ROOT` to the checkout directory.
+
+## Running the Maya UI
+
+In Maya 2025, run `tools/maya/run_performance_plan_ui.py`. It loads the participant-facing authoring UI and launches backend generation in the configured Python environment.
+
+## Authoring Workflow
+
+1. Enter Dialogue and optional Acting Direction.
+2. Set Character Mapping and audio inputs.
+3. Generate Performance Plan.
+4. Inspect or edit Semantic Performance Tags.
+5. Optionally inspect Acting Interpretation by Phrase.
+6. Complete animation setup and generate animation.
+
+Dual-character authoring uses one canonical dual Performance Plan. The UI projects actor-specific tracks for Character A and Character B; it does not create two independent plans.
+
+## Semantic Performance Representation
+
+The plan records an initial performance state and dialogue-anchored changes. Executable semantic channels include visible affect, persistent gaze, transient glances, head direction, and blink actions. Acting Interpretation by Phrase is natural-language context for the animator and is not executable state.
+
+## System Architecture
+
+See [docs/architecture.md](docs/architecture.md).
+
+## Repository Structure
+
+- `src/expregaze_jali/` — generation, validation, semantic compilation, and timing compilation.
+- `tools/maya/` — Maya UI, scene setup, and animation application.
+- `prompts/` — active single and dual semantic-performance prompts.
+- `configs/` — LLM, semantic vocabulary, and Maya configuration.
+- `resources/jali/` — checked-in JALI runtime exports required for listener-mask realization.
+- `tests/` — automated tests and stable fixtures.
+
+## User Study Modes
+
+The Maya authoring session supports `NORMAL`, `EDITABLE_PLAN`, and `DIRECT_GENERATION` study modes. These modes control the study experience; they do not change the semantic architecture.
+
+## Testing
 
 ```text
-configs/base.yaml
-configs/path_local.yaml
-configs/path_local.example.yaml
-configs/tt0032138.yaml
-configs/runs/*.yaml
-configs/maya/CustumName.yaml
+pytest -q
 ```
 
-For a new sequence, copy `configs/sequences/example.yaml` and edit only that file:
+## External Dependencies
 
-```yaml
-sequence:
-  sequence_id: YOUR_SEQUENCE_ID
-  movie_id: tt0032138
-  movie_name: The Wizard of Oz
-  local_window: 3
-  shot_range:
-    start_shot_idx: 38
-    end_shot_idx: 38
-  fps: 30.0
-  clip_end_frame: null
+JALI, Maya, and the model API are external dependencies. JALI-derived runtime export files are retained only because current listener-mask realization loads them. Their redistribution/licensing status is not established by this repository.
 
-jali:
-  project_root: /mnt/e/maya_project/JALI_test
-  input_dir: scenes/sounds_proto1
-```
+## Citation
 
-Derived paths are automatic:
-
-```text
-full_context_file = data/processed/full_context/{movie_id}__full_context.csv
-transcript_file   = {jali.project_root}/{jali.input_dir}/{clip_name}.txt
-textgrid_file     = {jali.project_root}/{jali.input_dir}/{clip_name}.Textgrid
-words_jsonl       = data/processed/textgrid/{clip_name}__words.jsonl
-actor_prompt      = data/processed/gaze_script/llm_process/{clip_name}__actor_prompt.txt
-```
-
-## Numbered scripts
-
-| Step | Script | Calls LLM? | Purpose |
-|---:|---|---:|---|
-| 00 | `scripts/00_build_actor_prompt.sh` | No | Build `context_pack.json` and `actor_prompt.txt`. |
-| 01 | `scripts/01_run_actor_llm.sh` | Yes | Call OpenAI and write `performance_annotation.txt`. |
-| 02 | `scripts/02_parse_textgrid.sh` | No | Parse JALI/Praat TextGrid into word timing JSONL. |
-| 03 | `scripts/03_compile_actor_annotation.sh` | No | Compile annotation into JALI / gaze / overlay outputs. |
-| 04 | `scripts/04_validate_actor_outputs.sh` | No | Validate sections, timing, targets, and outputs. |
-
-## Step 00: build actor prompt
-
-```bash
-bash scripts/00_build_actor_prompt.sh \
-  --sequence-id CustumName \
-  --overwrite
-```
-
-Outputs:
-
-```text
-data/processed/gaze_script/llm_process/{clip}__context_pack.json
-data/processed/gaze_script/llm_process/{clip}__actor_prompt.txt
-```
-
-Step 00 uses:
-
-```text
-configs/project.yaml
-configs/sequences/<sequence>.yaml
-configs/jali_emotion_options.yaml
-configs/performance_rules.yaml
-```
-
-## Step 01: run actor LLM
-
-```bash
-bash scripts/01_run_actor_llm.sh \
-  --sequence-id CustumName \
-  --overwrite
-```
-
-LLM runtime settings live in `configs/llm.yaml`:
-
-```yaml
-llm:
-  provider: openai
-  model: gpt-5-mini
-  temperature: 0.2
-  max_output_tokens: 8000
-  reasoning_effort: low
-  api_key_env: OPENAI_API_KEY
-  max_retries: 3
-  request_sleep_sec: 2
-```
-
-You can override it with:
-
-```bash
-bash scripts/01_run_actor_llm.sh --llm-config configs/llm.yaml --overwrite
-```
-
-`--base-config` is still accepted as a deprecated alias for `--llm-config`.
-
-## Step 02: parse TextGrid
-
-```bash
-bash scripts/02_parse_textgrid.sh \
-  --sequence-id CustumName
-```
-
-Output paths are derived from `clip_name / sequence_id` automatically.
-
-## Step 03: compile actor annotation
-
-```bash
-bash scripts/03_compile_actor_annotation.sh \
-  --sequence-id CustumName \
-  --overwrite
-```
-
-Outputs:
-
-```text
-data/processed/gaze_script/{clip}__annotated_for_jali.txt
-data/processed/gaze_script/{clip}__gaze_events_resolved.json
-data/processed/gaze_script/{clip}__actor_overlay_events.json
-data/processed/gaze_script/llm_process/{clip}__debug_full_annotation.txt
-```
-
-## Step 04: validate outputs
-
-```bash
-bash scripts/04_validate_actor_outputs.sh \
-  --sequence-id CustumName
-```
-
-Use strict mode to fail on warnings:
-
-```bash
-bash scripts/04_validate_actor_outputs.sh \
-  --sequence-id CustumName \
-  --strict
-```
-
-## Maya helper scripts
-
-```text
-import os
-
-os.environ["JALITEST_SEQUENCE_ID"] = "s029_1talk"
-os.environ.pop("JALITEST_SEQUENCE_CONFIG", None)
-```
-
-```text
-exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_create_gaze_targets.py", encoding="utf-8").read())
-
-exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_apply_gaze_events.py", encoding="utf-8").read())
-
-exec(open(r"\\wsl.localhost\Ubuntu-24.04\home\sia\JaliTest\tools\maya\run_apply_eye_performance_events.py", encoding="utf-8").read())
-```
-
-Maya-side runner scripts live in:
-
-```text
-tools/maya/
-```
-
-They are not Python package source. `src/` is reserved for importable package code under `src/expregaze_jali/`.
-
-Default Maya config:
-
-```text
-configs/maya/valleygirl.yaml
-```
-
-The three Maya runners all read that single config:
-
-```text
-tools/maya/run_apply_jali_annotation.py
-tools/maya/run_apply_gaze_events.py
-tools/maya/run_apply_eye_performance_events.py
-```
-
-## Annotation tag set
-
-```text
-<g##=MODE-TARGET>...</g##>          gaze
-<m##=MaskName-Strength>...</m##>    visible facial mask
-<h##=HeartName-Strength>...</h##>   hidden heart / inner undercurrent
-<l##=VALUE>...</l##>                sustained eyelid state
-<pb##=MODE>...</pb##>               performative blink / intentional eye-close beat
-<bs##=SUPPRESS/ALLOW>...</bs##>     blink suppression state
-```
-
-`l/pb/bs` are actor overlay tags, not JALI-native mask/heart tags.
+CHI citation placeholder — to be added when publication details are available.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from expregaze_jali.compile_dual_semantic_beats import compile_dual_semantic_beats, render_compiled_dual_performance_proposal
-from expregaze_jali.dual_performance_plan_v2 import build_dual_performance_plan_v2
+from expregaze_jali.dual_performance_plan import build_dual_performance_plan
 from expregaze_jali.performance_proposal_parser import ProposalValidationError
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
@@ -34,7 +34,7 @@ def test_focus_and_eye_action_compiler_derives_gaze_state_and_calibration_metada
     assert proposal["gaze_target_candidates"] == ["RACHEL", "PACKAGING"]
     assert all(row["event_id"] != "E5" for row in proposal["events"])
     assert "E5: dropped after no semantic changes remained" in proposal["diagnostics"]["warnings"]
-    assert build_dual_performance_plan_v2(proposal, anchor_model=MODEL, sequence_id="semantic")["schema_version"] == "dual_performance_plan_v2"
+    assert build_dual_performance_plan(proposal, anchor_model=MODEL, sequence_id="semantic")["schema_version"] == "dual_performance_plan_v2"
     rendered = render_compiled_dual_performance_proposal(proposal, characters=("AGNES", "WILL"))
     assert "[GAZE_TARGETS]\nRACHEL\nPACKAGING" in rendered and "gaze: GLANCE-UP_RIGHT" in rendered
 

@@ -1,4 +1,4 @@
-"""Pure-Python editable score projection for dual Performance Plan v2."""
+"""Pure-Python editable score projection for the canonical dual Performance Plan."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
-from expregaze_jali.dual_sparse_performance_proposal_parser import BLINK_VALUES, HEAD_VALUES
+from expregaze_jali.performance_vocabulary import BLINK_VALUES, HEAD_VALUES
 from expregaze_jali.performance_proposal_parser import load_semantic_vocabulary
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key
 
@@ -206,11 +206,11 @@ def _canonical_offset_from_tag_free_text(
 
 
 class DualSparseScoreModel:
-    """Validate and apply independent actor score editors for v2 plans."""
+    """Validate and apply independent actor score editors for canonical dual plans."""
 
     def __init__(self, plan: dict[str, Any], anchor_model: ConversationAnchorModel):
         if plan.get("schema_version") != "dual_performance_plan_v2":
-            raise ValueError("DualSparseScoreModel requires dual_performance_plan_v2")
+            raise ValueError("DualSparseScoreModel requires the canonical dual Performance Plan schema")
         self.plan = deepcopy(plan)
         self.original_plan = deepcopy(plan)
         provenance = self.plan.setdefault("provenance", {})
@@ -218,7 +218,7 @@ class DualSparseScoreModel:
         self.original_plan.setdefault("provenance", {})["original_authored_content"] = deepcopy(provenance["original_authored_content"])
         self.characters = list(self.plan.get("characters", []))
         if len(self.characters) != 2 or set(self.plan.get("tracks", {})) != set(self.characters):
-            raise ValueError("v2 requires two named characters and name-keyed tracks")
+            raise ValueError("The canonical dual plan requires two named characters and name-keyed tracks")
         self.plan["initial_states"] = {
             actor: {**INITIAL_DEFAULTS, **((self.plan.get("initial_states") or {}).get(actor) or {})}
             for actor in self.characters
@@ -259,7 +259,7 @@ class DualSparseScoreModel:
         if gaze:
             mode, target = gaze.group(1).upper(), gaze.group(2)
             if target.upper() in {"NONE", "TARGET"}:
-                return f'Unknown or invalid v2 tag <{value}>'
+                return f'Unknown or invalid semantic tag <{value}>'
             directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
             if re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*", target):
                 named = next((name for name in self.characters if speaker_key(name) == speaker_key(target)), target)
@@ -268,7 +268,7 @@ class DualSparseScoreModel:
             return "head", upper
         if upper in BLINK_VALUES:
             return "blink", upper
-        return f'Unknown or invalid v2 tag <{value}>'
+        return f'Unknown or invalid semantic tag <{value}>'
 
     def validate_initial_actor(self, actor: str, text: str) -> tuple[dict[str, str], list[ScoreIssue]]:
         errors: list[ScoreIssue] = []

@@ -1,10 +1,10 @@
-"""Deterministically compile Semantic Beat focus and eye actions into v2 changes."""
+"""Deterministically compile Semantic Beat focus and eye actions into canonical changes."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from expregaze_jali.dual_sparse_performance_proposal_parser import DIRECTION_TARGETS
+from expregaze_jali.performance_vocabulary import DIRECTION_TARGETS
 from expregaze_jali.dual_semantic_beat_parser import is_reserved_attention_target
 from expregaze_jali.performance_proposal_parser import ProposalValidationError
 from expregaze_jali.transcript_anchor_model import ConversationAnchorModel, speaker_key

@@ -16,7 +16,7 @@ REPO_SRC = Path(__file__).resolve().parents[2] / "src"
 if str(REPO_SRC) not in sys.path:
     sys.path.insert(0, str(REPO_SRC))
 
-from expregaze_jali.dual_v2_authored_content import canonical_v2_authored_content
+from expregaze_jali.dual_authored_content import canonical_dual_authored_content
 
 HEAD_VALUE_BY_INVOLVEMENT = {
     0.0: "NONE",
@@ -37,14 +37,14 @@ def load_performance_plan(path: str | Path) -> dict[str, Any]:
             characters = value.get("characters")
             tracks = value.get("tracks")
             if not isinstance(characters, list) or len(characters) != 2:
-                raise ValueError("Dual v2 Performance Plan JSON must contain exactly two named characters.")
+                raise ValueError("Dual Performance Plan JSON must contain exactly two named characters.")
             if not isinstance(tracks, dict) or set(tracks) != set(characters):
-                raise ValueError("Dual v2 Performance Plan JSON must contain name-keyed tracks.")
+                raise ValueError("Dual Performance Plan JSON must contain name-keyed tracks.")
             if not all(isinstance(tracks[name], list) for name in characters):
-                raise ValueError("Every dual v2 character track must be a list.")
+                raise ValueError("Every dual character track must be a list.")
             initial_states = value.get("initial_states", {})
             if not isinstance(initial_states, dict) or not set(initial_states) <= set(characters):
-                raise ValueError("Dual v2 initial_states must be name-keyed by plan characters.")
+                raise ValueError("Dual initial_states must be name-keyed by plan characters.")
             return value
         if not isinstance(value.get("phrases"), list):
             raise ValueError("Dual Performance Plan JSON must contain a phrases list.")
@@ -62,7 +62,7 @@ def default_edited_path(path: str | Path) -> Path:
 
 
 def next_edited_snapshot_path(path: str | Path) -> Path:
-    """Choose a new immutable numbered v2 editor snapshot beside the original."""
+    """Choose a new immutable numbered dual editor snapshot beside the original."""
     source = Path(path)
     base = re.sub(r"_edited_\d+$", "", source.stem)
     existing = [
@@ -72,24 +72,24 @@ def next_edited_snapshot_path(path: str | Path) -> Path:
     return source.with_name(f"{base}_edited_{max(existing, default=0) + 1:02d}{source.suffix}")
 
 
-def is_v2_plan_edited(plan: dict[str, Any], original_plan: dict[str, Any] | None = None) -> bool:
-    """Compare current v2 semantics with the immutable LLM-authored baseline."""
+def is_dual_plan_edited(plan: dict[str, Any], original_plan: dict[str, Any] | None = None) -> bool:
+    """Compare current dual-plan semantics with the immutable LLM-authored baseline."""
     if plan.get("schema_version") != "dual_performance_plan_v2":
         return True
     baseline = ((original_plan or plan).get("provenance") or {}).get("original_authored_content")
-    baseline = canonical_v2_authored_content(baseline) if isinstance(baseline, dict) else canonical_v2_authored_content(original_plan or plan)
-    return canonical_v2_authored_content(plan) != baseline
+    baseline = canonical_dual_authored_content(baseline) if isinstance(baseline, dict) else canonical_dual_authored_content(original_plan or plan)
+    return canonical_dual_authored_content(plan) != baseline
 
 
-def is_v2_plan_changed_from_loaded_snapshot(
+def is_dual_plan_changed_from_loaded_snapshot(
     current_plan: dict[str, Any], loaded_snapshot_plan: dict[str, Any],
 ) -> bool:
-    """Compare current v2 semantics to the immutable snapshot active in this editor."""
+    """Compare current dual-plan semantics to the immutable snapshot active in this editor."""
     if current_plan.get("schema_version") != "dual_performance_plan_v2":
         return True
     return (
-        canonical_v2_authored_content(current_plan)
-        != canonical_v2_authored_content(loaded_snapshot_plan)
+        canonical_dual_authored_content(current_plan)
+        != canonical_dual_authored_content(loaded_snapshot_plan)
     )
 
 
@@ -102,14 +102,14 @@ def score_text_matches_clean_baseline(
     return current == baseline
 
 
-def _is_canonical_v2_snapshot(path: Path) -> bool:
+def _is_canonical_dual_snapshot(path: Path) -> bool:
     return bool(re.fullmatch(r"performance_plan(?:_edited_\d+)?\.json", path.name))
 
 
 def save_performance_plan(plan: dict[str, Any], path: str | Path) -> Path:
     output = Path(path)
-    if plan.get("schema_version") == "dual_performance_plan_v2" and output.exists() and _is_canonical_v2_snapshot(output):
-        raise ValueError(f"Immutable v2 performance-plan snapshot already exists: {output}")
+    if plan.get("schema_version") == "dual_performance_plan_v2" and output.exists() and _is_canonical_dual_snapshot(output):
+        raise ValueError(f"Immutable dual performance-plan snapshot already exists: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return output
@@ -122,7 +122,7 @@ def save_animation_runtime_plan(
     plan = score_model.apply(score_text)
     if plan.get("schema_version") == "dual_performance_plan_v2":
         output = Path(path)
-        if output.exists() and output.name == "performance_plan.json" and not is_v2_plan_edited(plan):
+        if output.exists() and output.name == "performance_plan.json" and not is_dual_plan_edited(plan):
             return plan
     save_performance_plan(plan, path)
     return plan

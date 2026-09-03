@@ -146,7 +146,7 @@ def _compiled_event(
 def compile_plan_events(plan: dict[str, Any], transcript: str) -> dict[str, Any]:
     """Translate canonical plan spans directly into the established event shape."""
     if not transcript.strip():
-        raise ValueError("Exact input script is required.")
+        raise ValueError("Exact dialogue is required.")
 
     events: list[dict[str, Any]] = []
     order = 0
@@ -160,7 +160,7 @@ def compile_plan_events(plan: dict[str, Any], transcript: str) -> dict[str, Any]
         expected = str(event_span.get("text") or "")
         if transcript[start:end] != expected:
             raise ValueError(
-                f"Input Script does not match canonical event {event_index} at [{start}, {end})."
+                f"Dialogue does not match canonical event {event_index} at [{start}, {end})."
             )
 
         rationale = plan_event.get("rationale") if isinstance(plan_event.get("rationale"), dict) else {}
@@ -354,7 +354,7 @@ def compile_performance_plan(
     alignment_warnings = resolved.get("diagnostics", {}).get("alignment_warnings", [])
     if alignment_warnings:
         raise ValueError(
-            "Input Script does not match the timing alignment: "
+            "Dialogue does not match the timing alignment: "
             + str(alignment_warnings[0])
         )
     unresolved = resolved.get("diagnostics", {}).get("unresolved_events", [])
@@ -362,7 +362,7 @@ def compile_performance_plan(
         ids = ", ".join(str(item.get("id") or "?") for item in unresolved[:10])
         raise ValueError(
             "Timing alignment could not resolve canonical event(s): "
-            f"{ids}. Check that Input Script matches the alignment transcript."
+            f"{ids}. Check that Dialogue matches the alignment transcript."
         )
     clip_end_sec = _clip_end_seconds(timing.words)
     clip_end_frame = clip_end_sec * float(fps)

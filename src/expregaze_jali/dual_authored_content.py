@@ -1,4 +1,4 @@
-"""Canonical animator-authorable content for dual Performance Plan v2."""
+"""Canonical animator-authorable content for the dual Performance Plan."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import json
 from typing import Any
 
 
-def canonical_v2_authored_content(plan: dict[str, Any]) -> dict[str, Any]:
-    """Normalize v2 semantic content while excluding runtime/provenance fields."""
+def canonical_dual_authored_content(plan: dict[str, Any]) -> dict[str, Any]:
+    """Normalize dual semantic content while excluding runtime/provenance fields."""
     characters = [str(actor) for actor in plan.get("characters", [])]
     tracks: list[dict[str, Any]] = []
     source_tracks = plan.get("tracks") or {}

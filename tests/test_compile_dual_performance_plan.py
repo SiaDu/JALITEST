@@ -2,7 +2,7 @@ from __future__ import annotations
 import json, re, wave
 from pathlib import Path
 import pytest
-from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan, _validate_v2_plan, _compile_v2
+from expregaze_jali.compile_dual_performance_plan import build_canonical_phrase_timeline, compile_dual_performance_plan, _validate_dual_plan, _compile_dual_plan
 from expregaze_jali.transcript_anchor_model import build_conversation_anchor_model
 
 SCRIPT="AGNES: one\nWILL: two\nAGNES: three"
@@ -293,36 +293,36 @@ def test_v2_hyphenated_anchor_consumes_split_timing_and_sparse_annotation_tokens
 def test_v2_compiler_rejects_manual_avert_bypass():
     model = build_conversation_anchor_model("AGNES: one\nWILL: two", character_a="AGNES", character_b="WILL")
     plan = {"characters": ["AGNES", "WILL"], "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}}, "initial_reasons": {"AGNES": "Ready.", "WILL": "Ready."}, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "AVERT-RIGHT"}, "reason": "Bad."}], "WILL": []}}
-    with pytest.raises(ValueError, match="invalid v2 executable gaze"):
-        _validate_v2_plan(plan, model)
+    with pytest.raises(ValueError, match="invalid executable gaze"):
+        _validate_dual_plan(plan, model)
 
 
 def test_v2_compiler_rejects_none_duplicate_channels_and_invalid_blink_hold_order():
     model = build_conversation_anchor_model("AGNES: one two\nWILL: three", character_a="AGNES", character_b="WILL")
     base = {"characters": ["AGNES", "WILL"], "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}}, "initial_reasons": {"AGNES": "Ready.", "WILL": "Ready."}, "tracks": {"AGNES": [], "WILL": []}}
     none = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "GLANCE-NONE"}, "reason": "Bad."}], "WILL": []}}
-    with pytest.raises(ValueError, match="invalid v2 executable gaze"):
-        _validate_v2_plan(none, model)
+    with pytest.raises(ValueError, match="invalid executable gaze"):
+        _validate_dual_plan(none, model)
     duplicate = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"gaze": "GAZE-WILL"}, "reason": "One."}, {"event_id": "E2", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}, "reason": "Two."}], "WILL": [{"event_id": "E3", "actor": "WILL", "anchor_id": "w0001", "changes": {"head": "HEAD-NONE"}, "reason": "Independent actor."}]}}
-    with pytest.raises(ValueError, match="duplicate v2 event"):
-        _validate_v2_plan(duplicate, model)
+    with pytest.raises(ValueError, match="duplicate event"):
+        _validate_dual_plan(duplicate, model)
     invalid_hold = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"blink": "EYE_OPEN"}, "reason": "Bad open."}], "WILL": []}}
     with pytest.raises(ValueError, match="requires an active"):
-        _validate_v2_plan(invalid_hold, model)
+        _validate_dual_plan(invalid_hold, model)
     valid_hold = {**base, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"blink": "EYE_CLOSE_HOLD"}, "reason": "Close."}, {"event_id": "E2", "actor": "AGNES", "anchor_id": "w0002", "changes": {"blink": "EYE_OPEN"}, "reason": "Open."}], "WILL": []}}
-    _validate_v2_plan(valid_hold, model)
+    _validate_dual_plan(valid_hold, model)
 
 
 def test_v2_compiler_allows_nullable_reasons_but_rejects_reserved_target():
     model = build_conversation_anchor_model("AGNES: one two\nWILL: three", character_a="AGNES", character_b="WILL")
     base = {"characters": ["AGNES", "WILL"], "initial_states": {"AGNES": {"affect": "Neutral-60", "gaze": "GAZE-WILL"}, "WILL": {"affect": "Neutral-60", "gaze": "GAZE-AGNES"}}, "initial_reasons": {"AGNES": None, "WILL": ""}, "tracks": {"AGNES": [{"event_id": "E1", "actor": "AGNES", "anchor_id": "w0001", "changes": {"head": "HEAD-UP-SUBTLE"}, "reason": None}], "WILL": []}}
-    _validate_v2_plan(base, model)
+    _validate_dual_plan(base, model)
     initial_target = {**base, "initial_states": {**base["initial_states"], "AGNES": {"affect": "Neutral-60", "gaze": "GAZE-target"}}}
-    with pytest.raises(ValueError, match="invalid v2 initial gaze"):
-        _validate_v2_plan(initial_target, model)
+    with pytest.raises(ValueError, match="invalid initial gaze"):
+        _validate_dual_plan(initial_target, model)
     event_target = {**base, "tracks": {"AGNES": [{**base["tracks"]["AGNES"][0], "changes": {"gaze": "GLANCE-TARGET"}}], "WILL": []}}
-    with pytest.raises(ValueError, match="invalid v2 executable gaze"):
-        _validate_v2_plan(event_target, model)
+    with pytest.raises(ValueError, match="invalid executable gaze"):
+        _validate_dual_plan(event_target, model)
 
 
 def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_path):
@@ -360,7 +360,7 @@ def test_v2_initial_state_and_real_listener_cue_compile_before_next_line(tmp_pat
         mapping[actor] = {"script_name": actor, "sound_file": actor, "transcript_path": str(source)}
         wavs[actor] = (wav, 10.0)
     out = tmp_path / "out"; out.mkdir()
-    result = _compile_v2(plan=plan, model=model, anchor_times=anchor_times, mapping=mapping, audio_folder=audio, fps=24, out=out, performance_plan_path=tmp_path / "plan.json", script_source="script.txt", wavs=wavs, shared_duration=10.0, duration_warning="")
+    result = _compile_dual_plan(plan=plan, model=model, anchor_times=anchor_times, mapping=mapping, audio_folder=audio, fps=24, out=out, performance_plan_path=tmp_path / "plan.json", script_source="script.txt", wavs=wavs, shared_duration=10.0, duration_warning="")
     bob_artifacts = result["artifacts"]["characters"]["BOB"]
     payload = json.loads(Path(bob_artifacts["resolved_sparse_events"]).read_text())
     initial = payload["initial_state"]
