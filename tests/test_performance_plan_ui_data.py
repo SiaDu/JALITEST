@@ -404,6 +404,19 @@ def test_dual_v2_uses_actor_calibration_and_discards_legacy_jali_baselines():
     assert "Discarded legacy JALI baseline" in restore
 
 
+def test_canonical_dual_ui_uses_canonical_listener_mask_preflight():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    callback = source.split("    def _animation_compile_succeeded", 1)[1].split(
+        "    def _animation_failed", 1
+    )[0]
+    canonical = callback.split("if is_canonical_dual_plan:", 1)[1].split("else:", 1)[0]
+    legacy = callback.split("else:", 1)[1]
+
+    assert "prepare_dual_listener_mask_artifacts(" in canonical
+    assert "prepare_legacy_dual_listener_mask_artifacts(" not in canonical
+    assert "prepare_legacy_dual_listener_mask_artifacts(" in legacy
+
+
 def test_dual_generate_prepares_native_jali_before_baseline_and_backend_compile():
     source = (Path(__file__).resolve().parents[1] / "tools/maya/performance_plan_ui.py").read_text(encoding="utf-8")
     dual = source.split("    def _generate_dual_speaker_emotion", 1)[1].split(

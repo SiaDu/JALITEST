@@ -1303,11 +1303,11 @@ class PerformancePlanEditor(QtWidgets.QDialog):
                     if is_canonical_dual_plan:
                         # Every canonical-dual prepare call is read-only. Complete both-character
                         # preflight before speaker realignment mutates either rig.
-                        listener_context = prepare_legacy_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                        listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                         gaze_context = prepare_dual_gaze_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
                         overlay_context = prepare_dual_head_blink_overlays(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings, baseline=self.jali_base_baseline or {})
                     else:
-                        listener_context = prepare_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
+                        listener_context = prepare_legacy_dual_listener_mask_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
                         gaze_context = prepare_dual_gaze_only_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=gaze_mappings)
                         overlay_context = None
                     result=apply_dual_speaker_emotion_artifacts(manifest_path=Path(str(manifest_path)), character_mappings=self._pending_dual_mappings)
