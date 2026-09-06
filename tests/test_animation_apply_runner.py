@@ -538,6 +538,32 @@ def test_v2_glance_returns_to_persistent_gaze_before_clip_end():
     assert any(key["frame"] == 66.0 and key["eye_stare"] == [1, 2, 3] for key in keys)
 
 
+@pytest.mark.parametrize(
+    ("target", "expected_eyes"),
+    [("DOWN", [2.0, -4.0]), ("UP", [2.0, 6.0])],
+)
+def test_directional_glance_offsets_current_persistent_gaze(target, expected_eyes):
+    events = [{
+        "mode": "GLANCE",
+        "target": target,
+        "resolved_time": {"start": 2.0, "end": 2.75},
+    }]
+
+    schedule = build_dual_gaze_schedule(
+        events,
+        neutral_position=[7, 8, 9],
+        neutral_eyes=[2, 1],
+        target_positions={},
+    )
+
+    assert schedule[0]["eye_stare"] == [7, 8, 9]
+    assert schedule[0]["eyes"] == expected_eyes
+    assert schedule[0]["return_state"] == {
+        "eye_stare": [7, 8, 9],
+        "eyes": [2, 1],
+    }
+
+
 def test_v2_glance_returns_to_persistent_gaze_until_later_authored_gaze():
     events = [
         {"mode": "GAZE", "target": "BOB", "resolved_time": {"start": 0.0, "end": 2.0}},

@@ -1748,7 +1748,21 @@ def build_dual_gaze_schedule(events: Iterable[dict[str, Any]], *, neutral_positi
             directions = {"RIGHT", "LEFT", "DOWN", "DOWN_LEFT", "DOWN_RIGHT", "UP", "UP_LEFT", "UP_RIGHT"}
             if target in directions:
                 x, y = directional_eye_offset(target, magnitude=magnitude, limit=limit)
-                state.update({"eye_stare": list(neutral_position), "eyes": [x, y]})
+                if mode == "GLANCE":
+                    # A directional glance is a temporary local eye action
+                    # relative to the current persistent gaze. Keep the
+                    # calibrated eyeStare target and add the offset to the
+                    # current detailed-eye controls.
+                    bound = abs(float(limit))
+                    state.update({
+                        "eye_stare": list(previous["eye_stare"]),
+                        "eyes": [
+                            max(-bound, min(bound, float(previous["eyes"][0]) + x)),
+                            max(-bound, min(bound, float(previous["eyes"][1]) + y)),
+                        ],
+                    })
+                else:
+                    state.update({"eye_stare": list(neutral_position), "eyes": [x, y]})
             else:
                 if target not in target_positions: raise ValueError(f"No artist-captured gaze target position for {target}.")
                 state.update({"eye_stare":list(target_positions[target]),"eyes":[0.0, 0.0]})
