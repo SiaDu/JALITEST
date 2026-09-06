@@ -7,7 +7,7 @@ __pycache__/
 # Pytest and coverage artifacts
 .pytest_cache/
 .pytest-tmp*/
-.pytest_tmp/
+.pytest_tmp*/
 pytestdebug.log
 pytest-report*.xml
 .mypy_cache/
