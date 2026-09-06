@@ -1,0 +1,258 @@
+% Drop-in manuscript update generated from the formal questionnaire analysis.
+% Formal dataset: U01--U10 only (N=10).
+% U0 and U11 were incomplete. U12--U16 were synthetic supervisor-preview records
+% and MUST NOT be included in formal human-subject results.
+
+% ---------- Replace Section 5.1 ----------
+\subsection{Participants and Overall Procedure}
+\label{sec:eval_participants}
+
+We analyzed ten usable participant records from the formal study.
+Participants had character-animation or closely related performance-authoring
+backgrounds spanning game/film animation, animation/VFX study, and professional
+character animation. Seven participants reported a numeric duration of relevant
+experience, ranging from 2 to 8 years ($M=4.57$, $SD=1.99$). Of the nine
+participants who completed the software-background items, all reported prior
+experience with Maya or another keyframe-animation package. We use animation
+background and production experience only as descriptive participant
+characteristics.
+
+Participants first received an explanation of the semantic fields exposed by
+the Semantic Performance Tag representation and completed a tutorial example.
+The same participants then completed the end-to-end authoring tasks and the
+text-only context-ablation ratings. Formal stimuli did not overlap across the
+two studies.
+
+% NOTE TO AUTHORS: fill session duration, compensation, and ethics reference from
+% the approved study record; they are not recoverable from the questionnaire data.
+
+% ---------- Replace the final paragraph of Section 5.2.1 ----------
+Each participant completed two formal scenes with Direct Generation followed by
+two scenes with Editable Semantic Performance Tags. The four authoring scenes
+were distributed across participants, but the workflow order was fixed in the
+collected sessions. Consequently, Study~A is analyzed as a paired first-use
+comparison and any workflow difference must be interpreted with a possible
+practice/order effect rather than as an order-independent causal estimate.
+Direct low-level Maya curve editing was excluded from the formal task.
+
+% ---------- Replace Section 5.2.3 ----------
+\subsubsection{Subjective Measures}
+After each formal authoring task, participants rated (1) how well the final
+performance matched their intended reading of the scene and (2) satisfaction
+with the final performance on seven-point scales. After each two-task workflow
+block, participants completed the six raw NASA-TLX dimensions. They also rated
+nine workflow statements individually on seven-point agreement scales,
+covering expression of acting direction, local revision while preserving
+accepted choices, revision clarity, control of the final acting direction,
+speaker--listener coordination, movement between visual judgment and semantic
+revision, creative ownership, exploration of alternatives, and whether the
+result justified the invested effort. We report these items individually rather
+than combine them into an unvalidated composite score.
+
+After the Editable Semantic Performance Tag block, participants additionally
+rated three diagnostic items concerning whether the tags matched the level at
+which they wanted to edit performance, whether phrase-level acting
+interpretations were useful, and whether the dual-character layout supported
+speaker--listener coordination. These diagnostic items were not used in the
+between-workflow statistical comparison.
+
+% ---------- Add at the end of Section 5.2 ----------
+\subsubsection{Study A Analysis}
+For the two task-level outcomes, we first averaged each participant's two tasks
+within each workflow. The nine workflow items and six NASA-TLX dimensions were
+analyzed as paired participant-level observations. Because the sample is small
+and the primary questionnaire outcomes are ordinal, we use two-sided Wilcoxon
+signed-rank tests. We report rank-biserial correlations as paired effect sizes
+and apply Holm correction within the task-outcome, workflow-item, and NASA-TLX
+families. Positive rank-biserial values indicate higher ratings in the Editable
+Semantic Performance Tag condition; for NASA-TLX, higher values indicate
+greater workload except for the performance dimension, where 0 denotes perfect
+performance and 100 denotes failure.
+
+% ---------- Replace Section 5.3.3 ----------
+\subsubsection{Study B Analysis}
+The primary outcome is overall contextual appropriateness; acting intention,
+affect, attention/gaze, and temporal placement are secondary outcomes. For each
+criterion, we averaged the six Dialogue-Only ratings and the six Full-Context
+ratings within participant and compared the paired participant-level values
+with two-sided Wilcoxon signed-rank tests. We report rank-biserial correlations
+and Holm-adjusted $p$ values across the five criteria. Starting-plan choices are
+reported descriptively after decoding the counterbalanced anonymous Plan A/Plan
+B assignments back to Dialogue-Only and Full-Context; ``No preference'',
+missing, and ambiguous responses are retained separately.
+
+% ---------- Add Section 5.4 ----------
+\subsection{Results}
+\label{sec:results}
+
+\subsubsection{Study A: Authoring Workflow}
+Editable Semantic Performance Tags produced numerically higher final-performance
+ratings, but the differences were not statistically reliable in this sample.
+Mean match to the participant's intended reading increased from
+$5.10$ ($SD=0.97$) with Direct Generation to $5.65$ ($SD=0.82$) with editable
+tags ($W=9.0$, $p=.117$, Holm-adjusted $p=.219$, $r_{rb}=.60$).
+Final-performance satisfaction similarly increased from $5.15$ ($SD=1.06$) to
+$5.75$ ($SD=0.89$; $W=4.0$, $p=.109$, Holm-adjusted $p=.219$,
+$r_{rb}=.71$). Figure~\ref{fig:study_a_task} summarizes these task-level
+outcomes.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_studya_task_outcomes.png}
+  \caption{Study A final-performance ratings. Bars show participant-level means
+  with standard-deviation error bars. The formal analysis includes ten usable
+  participant records.}
+  \label{fig:study_a_task}
+\end{figure}
+
+Across the nine workflow items, the largest directional difference concerned
+revision clarity: Direct Generation $M=4.89$ ($SD=1.54$) versus editable tags
+$M=6.22$ ($SD=0.67$), $W=0$, $p=.063$, Holm-adjusted $p=.563$,
+$r_{rb}=1.00$ ($n=9$ paired responses). Dyadic coordination also increased
+directionally from $M=5.00$ ($SD=1.49$) to $M=5.80$ ($SD=0.92$),
+but this difference was not significant ($p=.250$; Holm-adjusted $p=1.00$).
+No workflow item remained significant after family-wise correction
+(Table~\ref{tab:workflow_results}).
+
+\begin{table*}[t]
+\centering
+\caption{Study A workflow-item ratings. Positive $r_{rb}$ favors Editable
+Semantic Performance Tags. Holm correction is applied across the nine items.}
+\label{tab:workflow_results}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Item & $n$ & Direct $M$ & Tags $M$ & $W$ & $p_{\mathrm{Holm}}$ & $r_{rb}$\\
+\midrule
+Express intended acting direction & 10 & 5.50 & 5.80 & 2.0 & 1.000 & .60\\
+Local revision while preserving choices & 10 & 5.00 & 5.50 & 13.0 & 1.000 & .28\\
+Understand what was being changed & 9 & 4.89 & 6.22 & 0.0 & .563 & 1.00\\
+Control of final acting direction & 10 & 5.20 & 5.60 & 4.0 & 1.000 & .47\\
+Coordinate speaking/listening behavior & 10 & 5.00 & 5.80 & 2.0 & 1.000 & .73\\
+Move between visual judgment and revision & 9 & 5.22 & 5.00 & 2.5 & 1.000 & -.50\\
+Creative ownership & 9 & 4.78 & 5.33 & 2.5 & 1.000 & .67\\
+Explore alternative performances & 10 & 6.30 & 6.40 & 2.0 & 1.000 & .33\\
+Quality worth time/effort & 8 & 6.13 & 6.13 & 5.0 & 1.000 & .00\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Raw NASA-TLX scores did not show a statistically reliable workload difference
+between workflows on any dimension after Holm correction. Mental demand was
+$39.3$ ($SD=18.1$) for Direct Generation and $41.5$ ($SD=19.2$) for editable
+tags; effort was $37.0$ ($SD=21.6$) and $40.3$ ($SD=24.2$), respectively.
+The NASA-TLX performance dimension (0=perfect, 100=failure) was numerically
+higher for editable tags ($M=55.2$) than Direct Generation ($M=43.0$), but the
+unadjusted comparison did not cross the conventional threshold
+($p=.055$; Holm-adjusted $p=.328$). We therefore find no evidence that the
+editable representation reduced workload in this first-use study.
+
+The three tag-specific diagnostics were positive but should be read as
+descriptive. Participants rated the match between Semantic Performance Tags and
+their desired level of editing at $M=5.00$ ($SD=1.05$), the usefulness of
+phrase-level acting interpretation at $M=5.30$ ($SD=1.34$), and the
+dual-character layout for coordinating speaker and listener performance at
+$M=6.20$ ($SD=0.63$).
+
+\subsubsection{Study B: Context Ablation}
+Full-Context proposals received higher overall scene-fit ratings than
+Dialogue-Only proposals. Participant-level means increased from
+$5.22$ ($SD=0.90$) to $5.58$ ($SD=1.02$), with all non-zero participant
+differences favoring Full-Context ($W=0$, $p=.0078$, Holm-adjusted $p=.039$,
+$r_{rb}=1.00$). This was the only criterion that remained significant after
+Holm correction. Intention ($5.20$ vs.\ $5.43$), affect ($5.05$ vs.\ $5.08$),
+attention/gaze ($5.42$ vs.\ $5.48$), and temporal placement ($5.45$ vs.\
+$5.59$) did not show corrected significant differences
+(Table~\ref{tab:context_results}). Thus, in the tested setup, added context
+changed the holistic appropriateness of a proposed performance more clearly
+than any single exposed semantic channel.
+
+\begin{table}[t]
+\centering
+\caption{Study B participant-level ratings for Dialogue-Only (D) and
+Full-Context (F) proposals. Holm correction is across the five criteria.}
+\label{tab:context_results}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Criterion & D $M$ & F $M$ & $p_{\mathrm{Holm}}$ & $r_{rb}$\\
+\midrule
+Overall scene fit & 5.22 & 5.58 & .039 & 1.00\\
+Character intentions & 5.20 & 5.43 & 1.000 & .38\\
+Facial affect & 5.05 & 5.08 & 1.000 & .19\\
+Attention/gaze & 5.42 & 5.48 & 1.000 & .21\\
+Change timing & 5.45 & 5.59 & .375 & .86\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Across 60 scene-level preference questions, Full-Context was selected 27 times,
+Dialogue-Only 15 times, and ``No preference'' 11 times; six responses were
+missing and one response was ambiguous. Among the 42 determinate choices for
+one of the two proposals, Full-Context therefore accounted for 64.3\%.
+We treat this as descriptive support for the appropriateness result rather than
+as an independent inferential test.
+
+% ---------- Replace Discussion 6.1 ----------
+\subsection{When Does Context Change a Performance Interpretation?}
+Study~B provides evidence that narrative and interpersonal context matters at
+the level of the performance as a whole. Full-Context proposals improved
+overall scene-fit ratings after correction, while the individual ratings for
+intention, affect, gaze, and temporal placement did not independently reach
+corrected significance. One interpretation is that context changes the
+coherence among several plausible choices rather than simply moving a single
+facial channel in a predictable direction. This is consistent with the design
+premise that contextual information constrains an acting space without
+establishing one uniquely correct performance. The starting-plan preferences
+point in the same direction, but the presence of no-preference and missing
+responses cautions against treating Full-Context as uniformly preferable.
+
+% ---------- Replace Discussion 6.2 ----------
+\subsection{Performance Interpretation as an Authoring Object}
+Study~A does not support a strong claim that exposing Semantic Performance Tags
+improves control, workload, or final quality. Final-performance ratings moved
+in a favorable direction and revision clarity showed the largest paired effect,
+but none of the workflow comparisons survived multiple-comparison correction
+in this ten-participant sample. The tag-specific diagnostics nevertheless
+suggest that participants generally understood the representation and
+especially valued the dual-character coordination view. These findings are
+better read as evidence that the semantic layer was usable as an authoring
+surface than as evidence of superiority over prompt-level regeneration.
+
+The absence of a workload reduction is also informative. Editable semantic
+control introduces an additional object that must be inspected and revised.
+The present data therefore fit a control--effort trade-off more closely than an
+efficiency narrative. A larger counterbalanced study would be required to
+separate the value of semantic locality from practice and order effects.
+
+% ---------- Replace Discussion 6.4 ----------
+\subsection{Interpretation Visibility Without Treating Reasons as Ground Truth}
+Phrase-level acting interpretation received a mean diagnostic rating of 5.30
+out of 7, indicating moderate-to-positive perceived usefulness, but lower than
+the 6.20 rating for the dual-character layout. This supports keeping the
+interpretation available as lightweight provenance rather than making
+explanation the center of the workflow. The representation communicates the
+system's proposed acting reading so that it can be accepted or contested; it
+does not establish that the proposal is correct or expose hidden model
+reasoning.
+
+% ---------- Add to Limitations 6.5 ----------
+The final authoring sample was small ($N=10$), and the collected Study~A
+sessions used a fixed Direct-Generation-then-editable-tags order. Practice,
+familiarity with the scenes and interface, or fatigue may therefore contribute
+to paired workflow differences. The present quantitative analysis is also
+stronger for RQ1 and RQ2 than for RQ3: the questionnaire data characterize
+ratings and preferences, but claims about which generated semantic decisions
+were accepted, modified, or removed require the original-to-final plan diffs
+and session logs to be analyzed separately. We therefore do not infer
+acceptance or rejection rates from the questionnaire alone.
+
+% ---------- Replace the result placeholder in Conclusion ----------
+In the context ablation, Full-Context proposals were rated higher on overall
+scene fit than Dialogue-Only proposals, while individual affect, gaze, intention,
+and timing ratings did not show corrected differences. In the first-use
+authoring comparison, editable Semantic Performance Tags produced directional
+improvements in final-performance ratings and revision clarity but no corrected
+significant workflow or workload advantage, supporting a cautious view of the
+representation as an inspectable authoring surface rather than a demonstrated
+replacement for prompt-level regeneration.
