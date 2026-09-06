@@ -1,0 +1,4 @@
+measure,label,n,mean,sd,median
+tag_level_match,Semantic tags matched the level participants wanted to edit,10,5.0,1.0540925533894598,5.0
+interpretation_helpful,Phrase-level acting interpretation was helpful,10,5.3,1.3374935098492586,5.5
+dual_layout_coordination,Dual-character layout supported coordination,10,6.2,0.6324555320336759,6.0
