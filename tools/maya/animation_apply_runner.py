@@ -802,6 +802,68 @@ def apply_dual_speaker_emotion_artifacts(*, manifest_path: str | Path, character
     return result
 
 
+def refresh_dual_timing_from_realign(
+    *, manifest_path: str | Path, realign_result: dict[str, Any]
+) -> str:
+    """Recompile semantic timing from the TextGrids produced by speaker realign.
+
+    The first compile creates the annotated transcripts needed by JALI. Those
+    tags can materially improve alignment, so gaze and other overlays must be
+    resolved from the resulting staged TextGrids rather than the preliminary
+    unannotated alignments.
+    """
+    manifest_file = Path(manifest_path)
+    manifest = load_dual_animation_manifest(manifest_file)
+    if manifest.get("schema_version") != "dual_animation_manifest_v2":
+        return str(manifest_file)
+    timing_dir = manifest_file.parent / "jali_runtime" / "resolved_timing"
+    timing_dir.mkdir(parents=True, exist_ok=True)
+    original_wavs = {
+        actor: dict((manifest.get("wav_durations", {}).get(actor) or {}))
+        for actor in manifest["characters"]
+    }
+    for actor in manifest["characters"]:
+        row = realign_result.get(actor)
+        if not isinstance(row, dict) or not row.get("realign_completed"):
+            raise RuntimeError(f"{actor}: completed staged JALI realign is required before timing refresh.")
+        sound = Path(str(manifest["character_runtime_mapping"][actor]["sound_file"])).name
+        stage = Path(str(row.get("staging_dir") or ""))
+        grids = list(dict.fromkeys(
+            path for path in (stage / f"{sound}.TextGrid", stage / f"{sound}.textgrid")
+            if path.is_file()
+        ))
+        if len(grids) != 1:
+            raise FileNotFoundError(f"{actor}: staged realign must produce exactly one TextGrid for {sound!r}.")
+        staged_wav = Path(str(row.get("staging_wav") or ""))
+        if not staged_wav.is_file():
+            raise FileNotFoundError(f"{actor}: staged realign WAV is missing: {staged_wav}")
+        shutil.copy2(grids[0], timing_dir / f"{sound}.TextGrid")
+        shutil.copy2(staged_wav, timing_dir / f"{sound}.wav")
+    script_path = Path(str(manifest.get("full_script_source") or ""))
+    plan_path = Path(str(manifest.get("performance_plan_source") or ""))
+    if not script_path.is_file() or not plan_path.is_file():
+        raise FileNotFoundError("Dual timing refresh requires the manifest script and Performance Plan sources.")
+    source_path = str(REPO_ROOT / "src")
+    if source_path not in sys.path:
+        sys.path.insert(0, source_path)
+    from expregaze_jali.compile_dual_performance_plan import compile_dual_performance_plan  # noqa: PLC0415
+
+    refreshed = compile_dual_performance_plan(
+        performance_plan_path=plan_path,
+        script=script_path.read_text(encoding="utf-8"),
+        audio_folder=timing_dir,
+        fps=float(manifest["fps"]),
+        runtime_mapping=manifest["character_runtime_mapping"],
+        output_dir=manifest_file.parent,
+        script_source=script_path,
+    )
+    refreshed_path = Path(str(refreshed["manifest_path"]))
+    refreshed_manifest = json.loads(refreshed_path.read_text(encoding="utf-8"))
+    refreshed_manifest["wav_durations"] = original_wavs
+    refreshed_path.write_text(json.dumps(refreshed_manifest, indent=2) + "\n", encoding="utf-8")
+    return str(refreshed_path)
+
+
 def load_animation_manifest(path: str | Path) -> dict[str, Any]:
     manifest_path = Path(path)
     value = json.loads(manifest_path.read_text(encoding="utf-8"))

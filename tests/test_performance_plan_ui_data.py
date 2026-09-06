@@ -528,6 +528,20 @@ def test_dual_timeline_audio_applies_only_after_all_animation_channels_succeed()
     assert "node_action={'reused' if timeline_audio['audio_node_reused'] else 'created'}" in succeeded
 
 
+def test_canonical_dual_refreshes_timing_after_realign_before_overlay_preparation():
+    source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
+    succeeded = source.split("    def _animation_compile_succeeded", 1)[1].split(
+        "    def _animation_failed", 1
+    )[0]
+    canonical = succeeded.split("if is_canonical_dual_plan:", 1)[1].split("else:", 1)[0]
+    speaker_at = canonical.index("apply_dual_speaker_emotion_artifacts(")
+    refresh_at = canonical.index("refresh_dual_timing_from_realign(")
+    listener_at = canonical.index("prepare_dual_listener_mask_artifacts(")
+    gaze_at = canonical.index("prepare_dual_gaze_artifacts(")
+    overlay_at = canonical.index("prepare_dual_head_blink_overlays(")
+    assert speaker_at < refresh_at < min(listener_at, gaze_at, overlay_at)
+
+
 def test_dual_apply_reports_nonfatal_gaze_timing_warnings():
     source = (MAYA_TOOLS / "performance_plan_ui.py").read_text(encoding="utf-8")
     succeeded = source.split("    def _animation_compile_succeeded", 1)[1].split(
